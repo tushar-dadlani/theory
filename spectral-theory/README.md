@@ -14,9 +14,11 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `Landauer.v` charges the cost of the involution to the diffusion. It puts a lazy bit-flip diffusion `stepQ` on the square (`Rop`'s space) and proves the residue is an exact ½-eigen-sector — `stepQ (anti f) = ½·anti f` — because `e0 ⊕ e1 = DIAG` makes the two neighbours `Rop`-conjugate and they cancel. Defining dissipated heat as lost L²-energy `⟨g,g⟩ − ⟨stepQ g, stepQ g⟩`, it shows `heat_dissipated (anti f) = ¾·‖anti f‖² ≥ 0`, strictly `> 0` whenever the residue is nonzero, and `= 0` exactly when `f` was already `Rop`-fixed. This is the honest "no involution is free" for the *irreversible reset*: erasing the residue always costs strictly positive energy (Landauer's structure, not `kT ln 2` — there's no temperature in the model; the cost is charged to the diffusion, not the free involution). Standard `Reals` axioms only; no `admit`.
 
+`LandauerBound.v` is the genuine `kT ln 2` — the information/thermodynamics accounting of the same erasure. It defines the Bernoulli (Shannon) entropy `Hb` and proves, as pure theorems, that a fair bit has entropy `ln 2` (`Hb (1/2) = ln 2`), a deterministic bit has entropy 0, and so erasing a fair bit drops entropy by exactly `ln 2`. With `k, T > 0` as section variables (no physical constant added to the base), the model's minimum dissipated heat `k·T·ΔH` for that erasure is exactly `k·T·ln 2`, strictly positive; the inequality form takes the second law (`Q ≥ kT·ΔS`) as an *explicit hypothesis*, not an axiom, and yields `Q ≥ kT ln 2`. So the `ln 2` is proved and the `kT` is the carried physical conversion. This is the textbook Landauer floor for the one bit of information in the involution residue. Standard classical-`Reals` axioms only; no `admit`.
+
 `WalshHadamardHilbert.v` lifts the whole picture into a genuine (finite, 4-dimensional) real Hilbert space: it equips the signal space with the inner product ⟨f,g⟩ = Σ f g and proves it positive-definite, that the Hadamard operator is self-adjoint and satisfies Parseval (⟨Hf,Hg⟩ = 4⟨f,g⟩), that the normalized transform `Ur = ½H` is a real unitary involution (⟨Ur f, Ur g⟩ = ⟨f,g⟩, Ur² = I), that the apex reflection is a self-adjoint involution with orthogonal ±1 eigenspaces (nodes ⊥ antinodes), and that the standing-wave amplitude is a −1-eigenvector of norm²=2 preserved by `Ur`. Uses only the standard Coq `Reals` axioms; no custom axioms, no `admit`. (The infinite-dimensional ℓ²/L² lift the Hilbert–Pólya program needs is a much larger, analysis-library undertaking.)
 
-**23 proof file(s):**
+**24 proof file(s):**
 
 - `DiracDiagonal.v`
 - `DiracOnCategory.v`
@@ -30,6 +32,7 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 - `KappaOmega.v`
 - `KroneckerSelfAdjoint.v`
 - `Landauer.v`
+- `LandauerBound.v`
 - `PrimorialSpectralTheory.v`
 - `SpectralAlgebra.v`
 - `SpectralEvent.v`
