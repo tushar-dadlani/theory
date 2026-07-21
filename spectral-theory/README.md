@@ -10,9 +10,11 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `MassGap.v` makes the "gap = mass gap" identification precise. Reading a Walsh mode `χ_y` as a state of energy `|y|` (number of flipped bits = quanta), it proves the bridge `μ(y) = 1 − |y|/3` (so `HeatFlow`'s decay eigenvalue is set by the energy), that the vacuum (`y=0`) is massless and stationary, and that the lightest excitation (`|y|=1`, `μ=2/3`, the slowest-decaying transient) has energy 1. That single number `1` is then shown to be simultaneously the `EigenSystem.spectral_gap` of the energy spectrum, the `physics.has_mass_gap` of the excitation spectrum, and — via `E=mc²` at `c=1` — the rest mass of the lightest excitation (`gap_is_mass_gap`). The nat statements are axiom-free (`cube_spectral_gap` is "Closed under the global context"); the bundled master theorem uses the standard `Reals` axioms only for the `μ` bridge.
 
+`Involution.v` is the honest form of "no involution is free." A reversible (orthogonal) involution is lossless — we proved `Rop` orthogonal — so that slogan is *false* as an axiom and is **not** assumed. What is true and proved is the **residue decomposition**: every `f = sym f + anti f`, where `sym f = (f+Rop f)/2` is `Rop`-fixed (the free, conserved part) and `anti f = (f−Rop f)/2` is `Rop`-negated (the residue, a −1-eigenvector); the residue vanishes exactly on fixed points, the two sectors are orthogonal, and the reflection is not globally free (the standing-wave amplitude is a *pure* residue). The residue is precisely the antisymmetric/antinode part a diffusion dissipates — the residue is the seed of the flow. Standard `Reals` axioms only; no `admit`.
+
 `WalshHadamardHilbert.v` lifts the whole picture into a genuine (finite, 4-dimensional) real Hilbert space: it equips the signal space with the inner product ⟨f,g⟩ = Σ f g and proves it positive-definite, that the Hadamard operator is self-adjoint and satisfies Parseval (⟨Hf,Hg⟩ = 4⟨f,g⟩), that the normalized transform `Ur = ½H` is a real unitary involution (⟨Ur f, Ur g⟩ = ⟨f,g⟩, Ur² = I), that the apex reflection is a self-adjoint involution with orthogonal ±1 eigenspaces (nodes ⊥ antinodes), and that the standing-wave amplitude is a −1-eigenvector of norm²=2 preserved by `Ur`. Uses only the standard Coq `Reals` axioms; no custom axioms, no `admit`. (The infinite-dimensional ℓ²/L² lift the Hilbert–Pólya program needs is a much larger, analysis-library undertaking.)
 
-**21 proof file(s):**
+**22 proof file(s):**
 
 - `DiracDiagonal.v`
 - `DiracOnCategory.v`
@@ -20,6 +22,7 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 - `FanoSelfAdjoint.v`
 - `FredholmDirac.v`
 - `HeatFlow.v`
+- `Involution.v`
 - `KappaInvariant.v`
 - `MassGap.v`
 - `KappaOmega.v`

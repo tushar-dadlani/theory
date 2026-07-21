@@ -425,3 +425,4 @@ spectral-theory/StandingWaveSpectrum.v
 spectral-theory/WalshHadamardHilbert.v
 spectral-theory/HeatFlow.v
 spectral-theory/MassGap.v
+spectral-theory/Involution.v
