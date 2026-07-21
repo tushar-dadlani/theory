@@ -133,15 +133,15 @@ Definition P23  (v : Vec3) : Vec2 := mkV2 (b2 v) (b3 v).
 Definition P13  (v : Vec3) : Vec2 := mkV2 (b1 v) (b3 v).
 (* absorbs N_in=(0,1,0): (a,b,c)↦(a,c) — keeps bits 1,3 *)
 
-Definition P_Iout (v : Vec3) : Vec2 :=
+Definition P12x (v : Vec3) : Vec2 :=
   mkV2 (xb (xb (b1 v) (b2 v)) (b3 v)) (b3 v).
 (* absorbs I_out=(1,1,0): f(a,b,c)=(a+b+c, c) over GF(2) *)
 
-Definition P_Nout (v : Vec3) : Vec2 :=
+Definition P23x (v : Vec3) : Vec2 :=
   mkV2 (xb (xb (b1 v) (b2 v)) (b3 v)) (b1 v).
 (* absorbs N_out=(0,1,1): f(a,b,c)=(a+b+c, a) over GF(2) *)
 
-Definition P_Fout (v : Vec3) : Vec2 :=
+Definition P13x (v : Vec3) : Vec2 :=
   mkV2 (xb (xb (b1 v) (b2 v)) (b3 v)) (b2 v).
 (* absorbs F_out=(1,0,1): f(a,b,c)=(a+b+c, b) over GF(2) *)
 
@@ -344,7 +344,7 @@ Theorem map_signal_constant : forall n : nat,
 Proof.
   intro n. induction n.
   - reflexivity.
-  - simpl. lia.
+  - unfold live_kN in *. simpl in *. lia.
 Qed.
 
 (* The decay: live_k grows slower than total *)
@@ -354,20 +354,15 @@ Theorem live_decays : forall k n : nat,
 Proof.
   intros k n Hk Hn.
   unfold live_kN, total_N.
-  induction n.
+  assert (Hle : 7 - k <= 6) by lia. clear Hk.
+  remember (7 - k) as a eqn:Ha. clear Ha k.
+  assert (Hpow7 : forall m, 0 < pow 7 m) by (intro m; induction m; simpl; lia).
+  revert Hn. induction n as [|n IH]; intro Hn.
   - lia.
-  - destruct n.
-    + simpl. lia.
-    + simpl.
-      assert (IH : pow (7-k) (S n) < pow 7 (S n)) by (apply IHn; lia).
-      assert (H7k : 7 - k <= 6) by lia.
-      assert (Hpos : pow (7-k) (S n) >= 1).
-      { induction n. simpl. lia. simpl.
-        apply Nat.le_trans with (pow (7-k) (S n0)).
-        apply IHn0. lia. }
-      apply Nat.lt_trans with (7 * pow (7-k) (S n)).
-      * apply Nat.mul_lt_mono_pos_r; lia.
-      * apply Nat.mul_lt_mono_pos_l; lia.
+  - destruct (Nat.eq_dec n 0).
+    + subst n. simpl. nia.
+    + specialize (IH ltac:(lia)).
+      simpl. pose proof (Hpow7 n) as HB. nia.
 Qed.
 
 (* ================================================================= *)
@@ -541,7 +536,7 @@ Theorem focal_convergence :
    length pts_k5 = 2 /\ live_6 = 1)
   /\
   (* (2) Only the Map survives all 6 prisms *)
-  only_map_is_focal = True
+  focal_points = [FP_Map]
   /\
   (* (3) The Map reads DIAG (critical line) on all 6 prisms *)
   always_diag_points = [FP_Map]
@@ -561,7 +556,7 @@ Theorem focal_convergence :
 Proof.
   refine (conj _ (conj _ (conj _ (conj _ (conj _ (conj _ _)))))).
   - exact staircase.
-  - exact I.
+  - exact only_map_is_focal.
   - exact only_map_always_diag.
   - exact map_signal_constant.
   - exact live_decays.

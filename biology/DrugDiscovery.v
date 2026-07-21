@@ -17,7 +17,14 @@ Require Import Coq.Lists.List.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
 Require Import Coq.QArith.QArith.
+Require Import Coq.micromega.Lqa.
+Require Import Coq.Strings.String.
+Require Import Coq.Numbers.DecimalString.
 Import ListNotations.
+
+(* Decimal rendering of a natural number as a string. *)
+Definition string_of_nat (n : nat) : string :=
+  NilZero.string_of_uint (Nat.to_uint n).
 
 (* ================================================================ *)
 (* SECTION 1 : Molecular primitives                                 *)
@@ -190,15 +197,7 @@ Theorem store_binding_site_sound :
   forall (site : BindingSite),
     site <> [] ->
     store_binding_site site <> [].
-Proof.
-  intros site Hne.
-  destruct site as [| bsr rest].
-  - contradiction.
-  - unfold store_binding_site. simpl.
-    destruct (bsr_props bsr).
-    + simpl. admit.  (* depends on rest *)
-    + simpl. discriminate.
-Admitted.
+Proof. Admitted.
 
 (* ================================================================ *)
 (* SECTION 4 : Stage 2 — Hit Discovery                             *)
@@ -223,7 +222,7 @@ Axiom locate_pharmacophore :
     Satisfiable ns ->
     exists (ph : Pharmacophore),
       satisfies (ph_assignment ph) ns /\
-      ph_readings ph = 1.  (* one reading always *)
+      ph_readings ph = 1%nat.  (* one reading always *)
 
 (* DERIVE: one transformation from pharmacophore to molecule *)
 Parameter derive_molecule : Pharmacophore -> Molecule.
@@ -265,8 +264,8 @@ Definition hit_discovery
 (* Hit discovery takes one reading *)
 Theorem hit_discovery_one_reading :
   forall (protein : ProteinStructure),
-    exists (steps : nat), steps = 1.
-Proof. intro. exists 1. reflexivity. Qed.
+    exists (steps : nat), steps = 1%nat.
+Proof. intro. exists 1%nat. reflexivity. Qed.
 
 (* ================================================================ *)
 (* SECTION 5 : Stage 3 — Lead Optimization                         *)
@@ -305,7 +304,7 @@ Definition locate_optimization_gap
     (flat_map (fun c => [c_lit1 c; c_lit2 c; c_lit3 c]) unsatisfied)
     0   (* coordinate: computed by kernel *)
     1   (* target: computed by kernel *)
-    (length unsatisfied).
+    (List.length unsatisfied).
 
 (* Lead optimization: minimum change to close the gap *)
 Parameter derive_optimization : OptimizationGap -> SMILES -> SMILES.
@@ -315,7 +314,7 @@ Axiom optimization_minimal :
   forall (gap : OptimizationGap) (binder : SMILES),
     let improved := derive_optimization gap binder in
     (* Number of changed atoms is minimized *)
-    gap_min_change gap <= gap_min_change gap.  (* tautology: placeholder *)
+    (gap_min_change gap <= gap_min_change gap)%nat.  (* tautology: placeholder *)
 
 (* ================================================================ *)
 (* SECTION 6 : Stage 4 — ADMET Prediction                          *)
@@ -332,9 +331,9 @@ Axiom optimization_minimal :
 (* Absorption: Lipinski Rule of Five *)
 (* MW ≤ 500, logP ≤ 5, HBD ≤ 5, HBA ≤ 10 *)
 Definition lipinski_clauses (mol : Molecule) : NodeSet :=
-  let hbd_count := length (filter (fun p =>
+  let hbd_count := List.length (filter (fun p =>
     match p with HBondDonor _ => true | _ => false end) mol) in
-  let hba_count := length (filter (fun p =>
+  let hba_count := List.length (filter (fun p =>
     match p with HBondAcceptor _ => true | _ => false end) mol) in
   (* Simplified: HBD ≤ 5 and HBA ≤ 10 *)
   if (hbd_count <=? 5) && (hba_count <=? 10)
@@ -361,7 +360,7 @@ Definition bbb_clauses (mol : Molecule) (cns_target : bool) : NodeSet :=
 (* Metabolism: CYP450 liability *)
 (* Aromatic amines and certain scaffolds are metabolized fast *)
 Definition cyp_clauses (mol : Molecule) : NodeSet :=
-  let aromatic_count := length (filter (fun p =>
+  let aromatic_count := List.length (filter (fun p =>
     match p with Aromatic _ => true | _ => false end) mol) in
   if 3 <=? aromatic_count
   then
@@ -412,7 +411,7 @@ Definition check_admet
   else mkADMET false
     (map c_source (filter (fun c =>
       negb (eval_clause (fun _ => true) c)) ns))
-    (Some "route_to_stage_3").  (* fail → improve the molecule *)
+    (Some "route_to_stage_3"%string).  (* fail → improve the molecule *)
 
 (* ================================================================ *)
 (* SECTION 7 : Stage 1 — Target Identification                     *)
@@ -515,8 +514,8 @@ Definition run_pipeline
       ("Candidate for " ++ prot_name protein ++
        " failed ADMET after optimization. " ++
        "Failures: " ++
-       fold_left (fun acc s => acc ++ ", " ++ s)
-         (admet_failures admet2) "")
+       fold_left (fun acc s => (acc ++ ", " ++ s)%string)
+         (admet_failures admet2) ""%string)
   end
   end.
 
@@ -542,28 +541,34 @@ Theorem pipeline_no_hallucination :
 Proof.
   intros phenotype cns.
   unfold run_pipeline.
-  destruct (identify_target phenotype) as [msg | protein].
-  - simpl. trivial.
+  destruct (identify_target phenotype) as [protein | msg].
   - destruct (hit_discovery protein) as [candidate |].
-    + simpl.
-      destruct (admet_passes _) eqn:H1.
-      * simpl. exact H1.
-      * destruct (admet_passes _) eqn:H2.
-        { simpl. exact H2. }
-        { simpl. trivial. }
-    + simpl. trivial.
+    + cbn.
+      match goal with
+      | |- context[if admet_passes ?a then _ else _] =>
+          destruct (admet_passes a) eqn:H1
+      end.
+      * cbn. exact H1.
+      * match goal with
+        | |- context[if admet_passes ?a then _ else _] =>
+            destruct (admet_passes a) eqn:H2
+        end.
+        { cbn. exact H2. }
+        { cbn. trivial. }
+    + cbn. trivial.
+  - cbn. trivial.
 Qed.
 
 (* Each stage takes one reading *)
 Theorem pipeline_one_reading_per_stage :
   forall (protein : ProteinStructure),
     exists (stage2_reads stage3_reads stage4_reads : nat),
-      stage2_reads = 1 /\
-      stage3_reads = 1 /\
-      stage4_reads = 1.
+      stage2_reads = 1%nat /\
+      stage3_reads = 1%nat /\
+      stage4_reads = 1%nat.
 Proof.
   intro protein.
-  exists 1, 1, 1.
+  exists 1%nat, 1%nat, 1%nat.
   repeat split; reflexivity.
 Qed.
 
@@ -578,10 +583,10 @@ Proof.
   unfold run_pipeline, identify_target.
   destruct (Qle_bool (1#2) (pheno_confidence phenotype)) eqn:H.
   - apply Qle_bool_iff in H. lra.
-  - exists ("Target for " ++ pheno_name phenotype ++
+  - exists (("Target for " ++ pheno_name phenotype ++
             " is in the Cause zone. " ++
             "A disease biologist is required. " ++
-            "The pathway is: " ++ pheno_pathway phenotype).
+            "The pathway is: " ++ pheno_pathway phenotype)%string).
     reflexivity.
 Qed.
 

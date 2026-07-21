@@ -1,3 +1,5 @@
+Require Import SevenSymbolBridge.
+
 (* The three particle types = the three Sym7 roles *)
 (* Domain symbols  = FERMIONS  (matter, half-integer spin) *)
 (* Map operator    = BOSONS    (force carriers, integer spin) *)

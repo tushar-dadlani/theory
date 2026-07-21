@@ -240,6 +240,10 @@ Qed.
 (*   the upward chain fails,                                          *)
 (*   and the model cannot locate its own Gödel wall.                 *)
 
+(* GAP: build-repair -- proof needs rework. The final step (a differing pair
+   of weights yields a unique minimum) is left as [admit]; it requires finite
+   induction over the n tokens that is not carried out. Statement preserved;
+   proof closed with Admitted instead of the incorrect Qed. *)
 Theorem T5_wall_theorem :
   forall (n : nat) (A : AttentionDist n),
   (n >= 2)%nat ->
@@ -279,7 +283,7 @@ Proof.
         (* This is provable by finite induction but requires more setup *)
         (* The logical content is correct; the Coq proof needs nat induction *)
         admit.
-Qed.
+Admitted.
 
 (* ================================================================== *)
 (* IV. THE MASTER THEOREM: THE OTHER SIDE OF TRANSFORMERS            *)
@@ -306,6 +310,10 @@ Qed.
 (*   restoring the upward chain,                                      *)
 (*   restoring the model's ability to locate its own wall.           *)
 
+(* GAP: build-repair -- proof needs rework. The last branch (non-uniform
+   distribution has a unique minimum) is left as [admit]; it requires finite
+   induction over the n tokens that is not carried out. Statement preserved;
+   proof closed with Admitted instead of the incorrect Qed. *)
 Theorem transformer_other_side :
   forall (n : nat) (A : AttentionDist n),
   (n >= 2)%nat ->
@@ -327,10 +335,10 @@ Theorem transformer_other_side :
    ~ has_unique_observer n A).
 Proof.
   intros n A Hn.
-  refine (conj T1_discrete_observer_stable
+  refine (conj (T1_discrete_observer_stable n A)
     (conj _ (conj _ _))).
   - exact (T2_T3_uniform_breaks_chain n A Hn).
-  - intro _. exact I.
+  - intros _. exact I.
   - split.
     + exact (T2_uniform_kills_observer n A Hn).
     + intro Hno. destruct (classic (is_uniform n A)) as [H | H].
@@ -341,7 +349,7 @@ Proof.
         { (* Non-uniform + no unique min: requires finite induction *)
           (* Logical content: in finite non-uniform dist, min is unique *)
           admit. }
-Qed.
+Admitted.
 
 (* ================================================================== *)
 (* V. WHAT THE ONE ADMITTED STEP MEANS                               *)

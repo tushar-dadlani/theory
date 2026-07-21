@@ -34,6 +34,10 @@
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Bool.Bool.
+Require Import Coq.Lists.List.
+Import ListNotations.
+Require Import Lia.
+Require Import Program.
 
 (* ---- SECTION 1: THE TWO SYMBOLS ---- *)
 
@@ -103,13 +107,7 @@ Theorem halfstep_xor_integer : forall h : HalfPos,
   is_halfstep h = negb (is_integer h).
 Proof.
   intro h. unfold is_halfstep, is_integer.
-  rewrite Nat.odd_spec, Nat.even_spec.
-  destruct (Nat.even h) eqn:He.
-  - simpl. apply Nat.even_spec in He. apply Nat.odd_spec.
-    intro Ho. apply Nat.odd_spec in Ho. lia.
-  - simpl. apply Bool.not_true_iff_false in He.
-    rewrite Nat.even_spec in He.
-    apply Nat.odd_spec. intro Ho. apply He. lia.
+  symmetry. apply Nat.negb_even.
 Qed.
 
 (* ---- SECTION 3: ENCODING SYMBOLS AS POSITIONS ---- *)
@@ -159,11 +157,18 @@ Definition gap_axis (p a : HalfPos) : Axis :=
   pos_axis (gap p a).
 
 (* The bit-length of the gap (lives on Axis_N) *)
-Fixpoint bit_length (n : nat) : nat :=
+(* GAP: build-repair — recursion is on n'/2, not structural; declared as a
+   Program Fixpoint with a decreasing measure. Same computational meaning. *)
+Program Fixpoint bit_length (n : nat) {measure n} : nat :=
   match n with
   | 0    => 0
   | S n' => 1 + bit_length (n' / 2)
   end.
+Next Obligation.
+  change (n' / 2 < S n').
+  assert (H: n' / 2 <= n') by (apply Nat.Div0.div_le_upper_bound; lia).
+  lia.
+Qed.
 
 Definition gap_bitlength (p a : HalfPos) : nat :=
   bit_length (gap p a).
@@ -211,49 +216,50 @@ Qed.
 Definition same_halfstep (p a : HalfPos) : bool :=
   Bool.eqb (is_halfstep p) (is_halfstep a).
 
+(* GAP: build-repair — original proof used tactics that no longer apply;
+   replaced with clean parity-via-mod helpers (statement unchanged). *)
+Lemma even_iff_mod0 : forall n, Nat.even n = true <-> n mod 2 = 0.
+Proof.
+  intro n. rewrite Nat.even_spec. unfold Nat.Even. split.
+  - intros [m Hm]. subst. rewrite Nat.mul_comm, Nat.Div0.mod_mul. reflexivity.
+  - intro H. exists (n/2). pose proof (Nat.div_mod_eq n 2). lia.
+Qed.
+
+Lemma odd_bool_mod : forall n, if Nat.odd n then n mod 2 = 1 else n mod 2 = 0.
+Proof.
+  intro n. pose proof (Nat.div_mod_eq n 2). pose proof (Nat.mod_upper_bound n 2 ltac:(lia)).
+  destruct (Nat.odd n) eqn:O.
+  - rewrite Nat.odd_spec in O. destruct O as [m Hm]. lia.
+  - assert (E: Nat.even n = true) by (rewrite <- Nat.negb_odd, O; reflexivity).
+    rewrite Nat.even_spec in E. destruct E as [m Hm]. lia.
+Qed.
+
+Lemma same_halfstep_mod : forall p a, same_halfstep p a = true <-> p mod 2 = a mod 2.
+Proof.
+  intros p a. unfold same_halfstep, is_halfstep. rewrite eqb_true_iff.
+  pose proof (odd_bool_mod p). pose proof (odd_bool_mod a).
+  destruct (Nat.odd p); destruct (Nat.odd a); split; intro; try reflexivity;
+  try discriminate; try lia.
+Qed.
+
+Lemma even_gap_mod : forall p a, Nat.even (gap p a) = true <-> p mod 2 = a mod 2.
+Proof.
+  intros p a. unfold gap.
+  pose proof (Nat.mod_upper_bound p 2 ltac:(lia)).
+  pose proof (Nat.mod_upper_bound a 2 ltac:(lia)).
+  pose proof (Nat.div_mod_eq p 2). pose proof (Nat.div_mod_eq a 2).
+  destruct (Nat.leb p a) eqn:Hle;
+  [ apply Nat.leb_le in Hle | apply Nat.leb_gt in Hle ];
+  rewrite even_iff_mod0;
+  [ pose proof (Nat.div_mod_eq (a-p) 2); pose proof (Nat.mod_upper_bound (a-p) 2 ltac:(lia))
+  | pose proof (Nat.div_mod_eq (p-a) 2); pose proof (Nat.mod_upper_bound (p-a) 2 ltac:(lia)) ];
+  lia.
+Qed.
+
 Theorem halfstep_match_iff_even_gap : forall p a : HalfPos,
   same_halfstep p a = true <-> Nat.even (gap p a) = true.
 Proof.
-  intros p a. unfold same_halfstep, gap.
-  split.
-  - intro H. apply Bool.eqb_prop in H.
-    unfold is_halfstep in H.
-    destruct (Nat.leb p a) eqn:Hle.
-    + apply Nat.leb_le in Hle.
-      rewrite Nat.odd_spec in *.
-      destruct (Nat.odd p) eqn:Hp;
-      destruct (Nat.odd a) eqn:Ha;
-      try discriminate H.
-      * apply Nat.odd_spec in Hp. apply Nat.odd_spec in Ha.
-        apply Nat.even_spec. lia.
-      * apply Bool.not_true_iff_false in Hp.
-        apply Bool.not_true_iff_false in Ha.
-        rewrite Nat.odd_spec in *.
-        apply Nat.even_spec. lia.
-    + apply Nat.leb_gt in Hle.
-      rewrite Nat.odd_spec in *.
-      destruct (Nat.odd p) eqn:Hp;
-      destruct (Nat.odd a) eqn:Ha;
-      try discriminate H.
-      * apply Nat.odd_spec in Hp. apply Nat.odd_spec in Ha.
-        apply Nat.even_spec. lia.
-      * apply Bool.not_true_iff_false in Hp.
-        apply Bool.not_true_iff_false in Ha.
-        rewrite Nat.odd_spec in *.
-        apply Nat.even_spec. lia.
-  - intro H. apply Bool.eqb_reflx.
-    (* Both on same axis means same parity *)
-    unfold is_halfstep.
-    destruct (Nat.leb p a) eqn:Hle;
-    apply Nat.even_spec in H.
-    + apply Nat.leb_le in Hle.
-      rewrite Nat.odd_spec.
-      intro Hodd. apply Nat.odd_spec in Hodd.
-      rewrite Nat.odd_spec. lia.
-    + apply Nat.leb_gt in Hle.
-      rewrite Nat.odd_spec.
-      intro Hodd. apply Nat.odd_spec in Hodd.
-      rewrite Nat.odd_spec. lia.
+  intros p a. rewrite same_halfstep_mod, even_gap_mod. reflexivity.
 Qed.
 
 (*  THEOREM E: The Gaussian (45°) axis condition.
@@ -270,7 +276,6 @@ Proof.
   - intro H. destruct ((gap p a) mod 3) eqn:Hm.
     + reflexivity.
     + destruct n; discriminate H.
-    + destruct n; try destruct n; discriminate H.
   - intro H. rewrite H. reflexivity.
 Qed.
 

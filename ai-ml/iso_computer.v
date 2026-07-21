@@ -18,6 +18,7 @@ Require Import Coq.Arith.Arith.
 Require Import Coq.Vectors.Vector.
 Require Import Coq.Lists.List.
 Import ListNotations.
+Require Import Streams.
 
 (* ================================================================== *)
 (* SECTION 1: BASIC BIT AND FIELD DEFINITIONS                         *)
@@ -38,7 +39,7 @@ Proof. intros a b. unfold gf2_add. apply xorb_comm. Qed.
 
 Lemma gf2_add_assoc : forall a b c,
   gf2_add a (gf2_add b c) = gf2_add (gf2_add a b) c.
-Proof. intros a b c. unfold gf2_add. apply xorb_assoc. Qed.
+Proof. intros a b c. unfold gf2_add. symmetry. apply xorb_assoc. Qed.
 
 Lemma gf2_add_self : forall a, gf2_add a a = false.
 Proof. intros a. unfold gf2_add. apply xorb_nilpotent. Qed.
@@ -56,13 +57,11 @@ Definition word (n : nat) := Vector.t bit n.
 (* Zero word *)
 Definition zero_word (n : nat) : word n := Vector.const false n.
 
-(* XOR two words componentwise *)
-Fixpoint word_xor {n : nat} (u v : word n) : word n :=
-  match u, v with
-  | Vector.nil _,       Vector.nil _       => Vector.nil bit
-  | Vector.cons _ a _ u', Vector.cons _ b _ v' =>
-      Vector.cons bit (gf2_add a b) _ (word_xor u' v')
-  end.
+(* XOR two words componentwise.
+   build-repair: the direct two-vector [match] is not exhaustive under Coq's
+   dependent pattern analysis; [Vector.map2] is the same componentwise map. *)
+Definition word_xor {n : nat} (u v : word n) : word n :=
+  Vector.map2 gf2_add u v.
 
 (* Word XOR is self-inverse *)
 Lemma word_xor_self : forall n (u : word n),
@@ -318,12 +317,10 @@ Definition solve_order1 (v : iso_vector) : option (word IN_SIZE) :=
 (* At order 3 (GF(256)) this is a cyclic shift     *)
 Definition frobenius (x : word K) : word K :=
   (* Cyclic left shift of K-bit word *)
-  match x with
-  | Vector.nil _ => Vector.nil bit
-  | Vector.cons _ h n t =>
-      (* append h to end, shift rest left *)
-      word_xor x x  (* placeholder - actual impl is cyclic shift *)
-  end.
+  (* build-repair: the original direct match on a Vector.t was ill-typed
+     (dependent length index); the cons branch already returned this
+     placeholder value, so we keep it directly. *)
+  word_xor x x.  (* placeholder - actual impl is cyclic shift *)
 
 (* Solve order 2: Frobenius linearization *)
 (* Ax² + Bx = c becomes [A·φ | B]·x = c *)
@@ -344,36 +341,25 @@ Definition solve_order3 (v : iso_vector) : option (word IN_SIZE) :=
   Some (zero_word IN_SIZE).  (* placeholder *)
 
 (* Level 1 main solver: runs through all 8 orders *)
-Fixpoint level1_solve (o : order) (v : iso_vector)
-                      (acc : list (word IN_SIZE))
-                      : list (word IN_SIZE) :=
+(* build-repair: the original self-recursion stepped through the [order] enum
+   (Order0 -> Order1 -> ...), which is not structural recursion (the successor
+   constructors are not subterms of o), so the fix was rejected. The same
+   sequential pass is expressed with the per-order solve steps inlined and
+   selected by the starting order, preserving the input/output behavior. *)
+Definition level1_solve (o : order) (v : iso_vector)
+                        (acc : list (word IN_SIZE))
+                        : list (word IN_SIZE) :=
+  let s1 := fun a =>
+    match solve_order1 v with Some x => x :: a | None => a end in
+  let s2 := fun a =>
+    let x1 := match a with h :: _ => h | [] => zero_word IN_SIZE end in
+    match solve_order2 v x1 with Some x => x :: a | None => a end in
+  let s3 := fun a =>
+    match solve_order3 v with Some x => x :: a | None => a end in
   match o with
-  | Order0 =>
-      (* Encoding order: no solve, pass through *)
-      level1_solve Order1 v acc
-  | Order1 =>
-      let sol := solve_order1 v in
-      let acc' := match sol with
-                  | Some x => x :: acc
-                  | None   => acc
-                  end in
-      level1_solve Order2 v acc'
-  | Order2 =>
-      let x1 := match acc with h :: _ => h | [] => zero_word IN_SIZE end in
-      let sol := solve_order2 v x1 in
-      let acc' := match sol with
-                  | Some x => x :: acc
-                  | None   => acc
-                  end in
-      level1_solve Order3 v acc'
-  | Order3 =>
-      (* Fixed point - maximum compression *)
-      let sol := solve_order3 v in
-      let acc' := match sol with
-                  | Some x => x :: acc
-                  | None   => acc
-                  end in
-      level1_solve Order4 v acc'
+  | Order0 | Order1 => s3 (s2 (s1 acc))
+  | Order2 => s3 (s2 acc)
+  | Order3 => s3 acc
   | Order4 | Order5 | Order6 | Order7 =>
       (* Tower orders: re-encode and solve *)
       (* Each applies Frobenius (k-3) times *)
@@ -404,12 +390,11 @@ Definition compute_residuals (sols : list (word IN_SIZE))
                              : list (word IN_SIZE) :=
   flat_map (fun x =>
     flat_map (fun y =>
-      if word_xor x y =? zero_word IN_SIZE
+      if Vector.eqb _ Bool.eqb (word_xor x y) (zero_word IN_SIZE)
       then []
       else [solution_residual x y]
     ) sols
-  ) sols
-  where "a =? b" := (Vector.eqb _ Bool.eqb a b).
+  ) sols.
 
 (* Filter smooth residuals *)
 Definition filter_smooth (rs : list (word IN_SIZE))
@@ -419,31 +404,21 @@ Definition filter_smooth (rs : list (word IN_SIZE))
 
 (* Level 2 sieve: runs through all 8 orders *)
 (* At each order: sieve, eliminate, check rank *)
-Fixpoint level2_sieve (o : order)
-                      (sols : list (word IN_SIZE))
-                      (threshold : nat)
-                      : list (word IN_SIZE) :=
+(* build-repair: same non-structural order-enum recursion as level1_solve.
+   Inlined to a direct match on the starting order preserving behavior:
+   only Order0/Order1 perform the residual sieve; Order2 onward pass the
+   solution list through unchanged (in the original, Order2/Order3 return
+   their input unmodified). *)
+Definition level2_sieve (o : order)
+                        (sols : list (word IN_SIZE))
+                        (threshold : nat)
+                        : list (word IN_SIZE) :=
   match o with
-  | Order0 =>
-      level2_sieve Order1 sols threshold
-  | Order1 =>
-      let residuals := compute_residuals sols in
-      let smooth    := filter_smooth residuals threshold in
+  | Order0 | Order1 =>
       (* Gaussian elimination on smooth residuals *)
       (* Returns kernel - global consistency conditions *)
-      level2_sieve Order2 smooth (threshold - 1)
-  | Order2 =>
-      (* Apply Frobenius to residuals *)
-      (* Filter Frobenius-fixed residuals *)
-      level2_sieve Order3 sols (threshold - 1)
-  | Order3 =>
-      (* Maximum compression at fixed point *)
-      (* Fixed point sieve: kernel of (M XOR I) *)
-      (* This is where global structure becomes explicit *)
-      sols
-  | Order4 | Order5 | Order6 | Order7 =>
-      (* Tower sieve at higher field levels *)
-      (* Rank must reach 0 by Order7 *)
+      filter_smooth (compute_residuals sols) threshold
+  | Order2 | Order3 | Order4 | Order5 | Order6 | Order7 =>
       sols
   end.
 
@@ -495,13 +470,15 @@ Definition encode_tm_step (cfg : tm_config) : iso_vector :=
 (* A TM computation is a sequence of iso_vector solves *)
 (* Each step: encode config → solve → decode next config *)
 CoFixpoint tm_run (cfg : tm_config) : Stream iso_vector :=
-  Cons (encode_tm_step cfg) (tm_run cfg)
-  where
-    Cons := @Stream.cons iso_vector
-  .
+  Cons (encode_tm_step cfg) (tm_run cfg).
 
 (* Turing completeness theorem *)
 (* The iso_computer can simulate any TM step *)
+(* GAP: build-repair -- proof needs rework. With the placeholder solvers,
+   [iso_solve v] computes to None: the level-2 sieve's residual list is empty
+   (all level-1 solutions are the zero word, so every pairwise XOR is zero and
+   is filtered out), hence no [result] with [iso_solve v = Some result] exists.
+   The statement is preserved. *)
 Theorem iso_computer_turing_complete :
   forall (cfg : tm_config),
   exists (v : iso_vector),
@@ -510,19 +487,7 @@ Theorem iso_computer_turing_complete :
     (* The solver produces the next configuration *)
     exists (result : word IN_SIZE),
       iso_solve v = Some result.
-Proof.
-  intros cfg.
-  exists (encode_tm_step cfg).
-  split.
-  - reflexivity.
-  - exists (zero_word IN_SIZE).
-    unfold iso_solve.
-    unfold level1_solve.
-    simpl.
-    unfold solve_order1.
-    simpl.
-    reflexivity.
-Qed.
+Proof. Admitted.
 
 (* ================================================================== *)
 (* SECTION 12: THE RANK DECREASE LEMMA                               *)
@@ -626,8 +591,11 @@ Definition total_complexity : nat :=
   8 * K * K +   (* Level 2 *)
   K * K * K.    (* Final elimination *)
 
+(* GAP: build-repair -- proof needs rework. total_complexity computes to
+   8*16*16 + 8*16*16 + 16*16*16 = 2048 + 2048 + 4096 = 8192, not 8704, so the
+   stated equality is false. Statement preserved verbatim. *)
 Lemma total_complexity_polynomial : total_complexity = 8704.
-Proof. reflexivity. Qed.
+Proof. Admitted.
 
 (* P = NP: The main theorem *)
 (* Every NP problem can be solved in polynomial time *)
@@ -644,37 +612,11 @@ Theorem P_equals_NP :
     exists (poly_bound : nat -> nat),
       forall (n : nat),
         poly_bound n = total_complexity.
-Proof.
-  intros P H_np.
-  (* The solver: encode as iso_vector, apply iso_solve *)
-  exists (fun instance =>
-    match np_encode P instance with
-    | ex_intro _ v _ =>
-        match iso_solve v with
-        | Some _ => true
-        | None   => false
-        end
-    end).
-  split.
-  - intros instance.
-    destruct (np_encode P instance) as [v [_ Hfaithful]].
-    destruct (iso_solve v) eqn:Hsol.
-    + (* solver returns true *)
-      symmetry.
-      apply Hfaithful.
-      exists w. rewrite Hsol. reflexivity.
-    + (* solver returns false *)
-      symmetry.
-      destruct (P instance) eqn:Hpi.
-      * (* contradiction: P true but solver false *)
-        exfalso.
-        apply Hfaithful in Hpi.
-        destruct Hpi as [w Hw].
-        rewrite Hsol in Hw. discriminate.
-      * reflexivity.
-  - exists (fun _ => total_complexity).
-    intros n. reflexivity.
-Qed.
+(* GAP: build-repair -- proof needs rework. It builds the boolean solver by
+   pattern-matching on [np_encode P instance], a Prop-sorted existential, to
+   produce a value in Set; this large elimination of a Prop into Set is not
+   allowed. The statement is preserved. *)
+Proof. Admitted.
 
 (* ================================================================== *)
 (* SECTION 14: THE 16 ISOMORPHISM BOOTSTRAP                          *)
@@ -698,7 +640,7 @@ Definition elementary_xor_iso (i j : Fin.t K) : iso_morphism :=
 (* The 16 bootstrap isomorphisms *)
 (* Using the 16 predicates as indicator functions *)
 Definition bootstrap_isos : list iso_morphism :=
-  List.map (fun P => fun v =>
+  List.map (fun (P : predicate) => fun (v : iso_fp) =>
     (* Apply predicate to determine if isomorphism is active *)
     if P v
     then word_xor v (zero_word K)  (* identity when predicate true *)

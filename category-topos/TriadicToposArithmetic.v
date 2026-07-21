@@ -366,22 +366,21 @@ Theorem master_235_topos :
   (* The wheel *)
   length [1;7;11;13;17;19;23;29] = 8.
 Proof.
-  repeat split.
-  - exact p_diag_prime.
-  - exact p_prim_prime.
-  - exact p_ring_prime.
-  - reflexivity.   (* 2×3×5 = 30 *)
-  - reflexivity.   (* 3²+4² = 5² *)
-  - reflexivity.   (* 1×2×4 = 8  *)
-  - discriminate.  (* OmTrue ≠ OmFalse *)
-  - discriminate.  (* OmFalse ≠ OmFixed *)
-  - discriminate.  (* OmTrue ≠ OmFixed *)
-  - reflexivity.   (* rat_phase 2 = OmFixed *)
-  - reflexivity.   (* rat_phase 3 = OmFalse *)
-  - reflexivity.   (* rat_phase 5 = OmTrue  *)
-  - reflexivity.   (* ¬Fixed = Fixed *)
-  - reflexivity.   (* ¬¬False = False *)
-  - reflexivity.   (* |wheel| = 8 *)
+  split; [exact p_diag_prime|].
+  split; [exact p_prim_prime|].
+  split; [exact p_ring_prime|].
+  split; [reflexivity|].   (* 2×3×5 = 30 *)
+  split; [reflexivity|].   (* 3²+4² = 5² *)
+  split; [reflexivity|].   (* 1×2×4 = 8  *)
+  split; [discriminate|].  (* OmTrue ≠ OmFalse *)
+  split; [discriminate|].  (* OmFalse ≠ OmFixed *)
+  split; [discriminate|].  (* OmTrue ≠ OmFixed *)
+  split; [reflexivity|].   (* rat_phase 2 = OmFixed *)
+  split; [reflexivity|].   (* rat_phase 3 = OmFalse *)
+  split; [reflexivity|].   (* rat_phase 5 = OmTrue  *)
+  split; [reflexivity|].   (* ¬Fixed = Fixed *)
+  split; [reflexivity|].   (* ¬¬False = False *)
+  reflexivity.             (* |wheel| = 8 *)
 Qed.
 
 (* ================================================================= *)

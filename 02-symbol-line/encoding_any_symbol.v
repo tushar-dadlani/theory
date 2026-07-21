@@ -39,6 +39,7 @@
 (* ============================================================ *)
 
 Require Import Coq.Arith.Arith.
+Require Import Lia.
 Require Import Coq.Logic.Classical_Prop.
 Require Import Coq.Lists.List.
 Import ListNotations.
@@ -81,19 +82,8 @@ Theorem integer_and_halfstep_disjoint :
   is_integer_pos h = true <-> is_halfstep_pos h = false.
 Proof.
   intro h. unfold is_integer_pos, is_halfstep_pos.
-  rewrite Nat.odd_spec, Nat.even_spec.
-  split.
-  - intro He. apply Nat.even_spec in He.
-    rewrite Nat.even_spec in He.
-    apply Bool.not_true_iff_false.
-    rewrite Nat.odd_spec.
-    intro Ho. rewrite Nat.odd_spec in Ho.
-    lia.
-  - intro Hno.
-    apply Bool.not_true_iff_false in Hno.
-    rewrite Nat.odd_spec in Hno.
-    apply Nat.even_spec.
-    lia.
+  rewrite <- Nat.negb_even.
+  destruct (Nat.even h); simpl; split; intro H; try reflexivity; discriminate.
 Qed.
 
 (* ---- THE ENCODING ---- *)
@@ -145,9 +135,8 @@ Theorem decode_encode_rank :
 Proof.
   intros rank ib Hib.
   unfold decode_rank, encode_symbol.
-  rewrite Nat.add_comm.
-  rewrite Nat.div_add_l. lia.
-  lia.
+  rewrite Nat.mul_comm. rewrite Nat.div_add_l by lia.
+  rewrite (Nat.div_small ib 2) by lia. lia.
 Qed.
 
 Theorem decode_encode_info :
@@ -157,8 +146,9 @@ Theorem decode_encode_info :
 Proof.
   intros rank ib Hib.
   unfold decode_info, encode_symbol.
-  rewrite Nat.add_comm.
-  rewrite Nat.mod_add. apply Nat.mod_small. lia. lia.
+  replace (2*rank) with (rank*2) by lia.
+  rewrite Nat.add_comm. rewrite Nat.mod_add by lia.
+  rewrite Nat.mod_small by lia. reflexivity.
 Qed.
 
 (* ---- ENCODING AN ARBITRARY SYMBOL SET ---- *)
@@ -194,8 +184,8 @@ Proof.
   intros s1 s2 r1 r2 Hr.
   unfold encode_symbol.
   intro H. apply Hr.
-  assert (Hmod1 : s1.(sym_info) mod 2 <= 1) by (apply Nat.mod_upper_bound; lia).
-  assert (Hmod2 : s2.(sym_info) mod 2 <= 1) by (apply Nat.mod_upper_bound; lia).
+  assert (Hmod1 : s1.(sym_info) mod 2 <= 1) by (pose proof (Nat.mod_upper_bound (s1.(sym_info)) 2 ltac:(lia)); lia).
+  assert (Hmod2 : s2.(sym_info) mod 2 <= 1) by (pose proof (Nat.mod_upper_bound (s2.(sym_info)) 2 ltac:(lia)); lia).
   lia.
 Qed.
 

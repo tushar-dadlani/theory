@@ -28,8 +28,11 @@ Inductive Nat : Type :=
   | Zero : MapOperator Nat -> Nat
   | Succ : Nat -> MapOperator Nat -> Nat.
 
-CoFixpoint zero_witness : MapOperator Nat :=
-  absorb Nat (Zero zero_witness) zero_witness.
+(* GAP: build-repair — Nat and MapOperator Nat mutually bootstrap with no
+   base case, so MapOperator Nat has no closed inhabitant; the intended
+   corecursive [zero_witness] is rejected by the guard condition. We assert
+   its existence as an axiom to keep the intended type and definitions. *)
+Axiom zero_witness : MapOperator Nat.
 
 Definition zero : Nat := Zero zero_witness.
 
@@ -76,15 +79,10 @@ CoFixpoint compose_witnesses
 (* One's witness is the absorbed zero witness *)
 (* Multiplying by one composes with the identity witness *)
 (* Which absorbs without residue *)
+(* GAP: build-repair — proof needs rework *)
 Theorem one_is_multiplicative_identity_left (n : Nat) :
   mul one n = n.
-Proof.
-  unfold one, succ, mul.
-  simpl.
-  induction n as [op | n' op IH].
-  - simpl. reflexivity.
-  - simpl. reflexivity.
-Qed.
+Proof. Admitted.
 
 (* Zero annihilates under multiplication *)
 (* Because zero carries no successor witness *)
@@ -104,19 +102,9 @@ Theorem mul_preserves_witness (n m : Nat) :
     mul n m = Zero op \/
     exists k : Nat, mul n m = Succ k op.
 Proof.
-  induction n as [op | n' op IH].
-  - exists op. left. simpl. reflexivity.
-  - destruct IH as [op' [IH | [k IH]]].
-    + simpl. 
-      exists (extract_witness (add m (Zero op'))).
-      right.
-      exists (Zero op').
-      reflexivity.
-    + simpl.
-      exists (extract_witness (add m (Succ k op'))).
-      right.
-      exists k.
-      reflexivity.
+  destruct (mul n m) as [op | k op].
+  - exists op. left. reflexivity.
+  - exists op. right. exists k. reflexivity.
 Qed.
 
 (* The loop closure theorem *)

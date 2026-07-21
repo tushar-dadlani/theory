@@ -104,19 +104,22 @@ Theorem primorial_grows : forall k,
   primorial k < primorial (S k).
 Proof.
   intro k.
-  simpl.
-  destruct (primorial k) eqn:E.
-  - (* primorial k = 0 — impossible since it's a product of primes ≥ 2.
-       But we'd need to prove primorial k > 0 first; for now, observe
-       that even if primorial k = 1, primorial (S k) ≥ 3 > 1. *)
-    (* For the formal claim, we'd induct.  Skip the elementary case. *)
-    admit.
-  - (* primorial k > 0; need primorial k < primorial k * (kth_prime (S k)) *)
-    assert (Hp : kth_prime (S k) >= 2).
-    { (* kth_prime is always >= 2 in the actual definition; placeholder *)
-      admit. }
-    nia.
-Admitted.
+  assert (Hkp : forall j, kth_prime j >= 2).
+  { induction j as [|j' IH]; simpl; lia. }
+  assert (Hpos : forall j, primorial j >= 1).
+  { induction j as [|j' IH]; simpl.
+    - lia.
+    - apply Nat.le_trans with (1 * 1).
+      + lia.
+      + apply Nat.mul_le_mono; [ exact IH | pose proof (Hkp (S j')); lia ]. }
+  change (primorial (S k)) with (primorial k * kth_prime (S k)).
+  pose proof (Hkp (S k)) as Hp.
+  pose proof (Hpos k) as Hq.
+  destruct (kth_prime (S k)) as [|[|b']] eqn:Eb.
+  - lia.
+  - lia.
+  - rewrite !Nat.mul_succ_r. lia.
+Qed.
 
 (* The primorial growth is structurally correct; the elementary case 
    analysis is what's admitted. *)

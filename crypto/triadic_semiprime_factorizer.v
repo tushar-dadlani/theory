@@ -22,6 +22,8 @@ Require Import Coq.Bool.Bool.
 Require Import Coq.Logic.Classical_Prop.
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.micromega.Lia.
+Require Import Coq.Lists.List.
+Import ListNotations.
 
 (* ============================================================ *)
 (* SECTION 1 — Triadic Phase Infrastructure                    *)
@@ -68,8 +70,8 @@ Proof.
   unfold divides.
   rewrite Nat.eqb_eq.
   split; intro H.
-  - rewrite Nat.div_exact; assumption.
-  - symmetry. rewrite <- Nat.div_exact; assumption.
+  - symmetry. rewrite Nat.Div0.div_exact; assumption.
+  - rewrite <- Nat.Div0.div_exact. symmetry; assumption.
 Qed.
 
 (* Smallest divisor ≥ 2 of n, searched from d upward *)
@@ -101,19 +103,17 @@ Proof.
   induction fuel as [| f IHf]; intros n d Hd Hn.
   - simpl. split.
     + lia.
-    + apply Nat.div_exact. lia.
-      apply Nat.mod_same. lia.
+    + symmetry. rewrite Nat.Div0.div_exact. apply Nat.Div0.mod_same.
   - simpl.
     destruct (Nat.leb (d * d) n) eqn:Hdd.
     + destruct (divides d n) eqn:Hdiv.
       * split. lia.
         unfold divides in Hdiv.
         rewrite Nat.eqb_eq in Hdiv.
-        apply Nat.div_exact. lia. exact Hdiv.
+        symmetry. rewrite Nat.Div0.div_exact. exact Hdiv.
       * apply IHf. lia. exact Hn.
     + split. lia.
-      apply Nat.div_exact. lia.
-      apply Nat.mod_same. lia.
+      symmetry. rewrite Nat.Div0.div_exact. apply Nat.Div0.mod_same.
 Qed.
 
 Lemma smallest_divisor_pos : forall n : nat,
@@ -121,7 +121,7 @@ Lemma smallest_divisor_pos : forall n : nat,
 Proof.
   intros n Hn.
   unfold smallest_divisor.
-  destruct (sdf_divides n n 2 (le_refl 2) Hn) as [H _].
+  destruct (sdf_divides n n 2 (Nat.le_refl 2) Hn) as [H _].
   exact H.
 Qed.
 
@@ -130,7 +130,7 @@ Lemma smallest_divisor_divides : forall n : nat,
 Proof.
   intros n Hn.
   unfold smallest_divisor.
-  destruct (sdf_divides n n 2 (le_refl 2) Hn) as [_ H].
+  destruct (sdf_divides n n 2 (Nat.le_refl 2) Hn) as [_ H].
   exact H.
 Qed.
 
@@ -171,7 +171,8 @@ Proof.
         apply Nat.le_trans with (d * d).
         -- apply Nat.le_mul_r. lia.
         -- exact Hdd.
-      * apply IHf. lia. exact Hn. lia.
+      * apply Nat.leb_le in Hdd.
+        apply IHf. lia. exact Hn. nia.
     + lia.
 Qed.
 
@@ -205,17 +206,8 @@ Proof.
   intros n Hn.
   unfold factor. simpl.
   unfold smallest_divisor.
-  apply (proj1 (Nat.eqb_eq _ _)).
-  unfold divides in *.
-  destruct (sdf_divides n n 2 (le_refl 2) Hn) as [Hpos Hdiv].
-  apply Nat.eqb_eq.
-  apply Nat.div_exact in Hdiv.
-  - rewrite Nat.mul_comm in Hdiv.
-    apply Nat.mod_divide.
-    + apply sdf_ge2; lia.
-    + exists (n / smallest_divisor_from n 2 n).
-      exact Hdiv.
-  - apply sdf_ge2; lia.
+  destruct (sdf_divides n n 2 (Nat.le_refl 2) Hn) as [Hpos Hdiv].
+  rewrite <- Nat.Div0.div_exact. symmetry. exact Hdiv.
 Qed.
 
 (* p ≥ 2 *)
@@ -233,9 +225,11 @@ Theorem factor_q_ge1 : forall n : nat,
 Proof.
   intros n Hn.
   unfold factor. simpl.
-  apply Nat.div_le_lower_bound.
-  - apply smallest_divisor_ge2. exact Hn.
-  - simpl. apply smallest_divisor_divides. exact Hn.
+  assert (Hd : smallest_divisor n * (n / smallest_divisor n) = n)
+    by (apply smallest_divisor_divides; exact Hn).
+  destruct (n / smallest_divisor n) eqn:E.
+  - rewrite Nat.mul_0_r in Hd. lia.
+  - lia.
 Qed.
 
 (* ============================================================ *)
@@ -259,30 +253,10 @@ Definition is_semiprime (n : nat) : Prop :=
   nat_prime p /\ nat_prime q.
 
 (* smallest_divisor of a prime is the prime itself *)
+(* GAP: build-repair — proof needs rework *)
 Lemma prime_smallest_divisor : forall p : nat,
   nat_prime p -> smallest_divisor p = p.
-Proof.
-  intros p [Hp Hprime].
-  unfold smallest_divisor.
-  induction p as [| [| [| n]]] using Nat.strong_rec_on.
-  - lia.
-  - lia.
-  - simpl. reflexivity.
-  - (* For p ≥ 3, smallest divisor from 2 *)
-    unfold smallest_divisor_from.
-    destruct (Nat.leb (2 * 2) (S (S (S n)))) eqn:H4.
-    + destruct (divides 2 (S (S (S n)))) eqn:Hdiv.
-      * exfalso.
-        unfold divides in Hdiv.
-        rewrite Nat.eqb_eq in Hdiv.
-        apply (Hprime 2).
-        -- lia.
-        -- lia.
-        -- exists ((S (S (S n))) / 2).
-           apply Nat.div_exact. lia. exact Hdiv.
-      * admit. (* Full proof requires more arithmetic lemmas *)
-    + simpl. reflexivity.
-Admitted.
+Proof. Admitted.
 
 (* ============================================================ *)
 (* SECTION 6 — The TRIADIC Semiprime Factorizer                *)
@@ -520,11 +494,10 @@ Proof.
   intros n Hn.
   unfold factor.
   exists (smallest_divisor n), (n / smallest_divisor n).
-  repeat split.
-  - reflexivity.
-  - apply smallest_divisor_ge2. exact Hn.
-  - apply factor_q_ge1. exact Hn.
-  - apply smallest_divisor_divides. exact Hn.
+  split; [ reflexivity | ].
+  split; [ apply smallest_divisor_ge2; exact Hn | ].
+  split; [ apply factor_q_ge1; exact Hn | ].
+  apply smallest_divisor_divides. exact Hn.
 Qed.
 
 (* The master theorem: for any n ≥ 4,
@@ -597,8 +570,7 @@ Qed.
 Theorem phantom_different_primes : forall p : nat,
   mkTNum p PhI <> mkTNum p PhN.
 Proof.
-  intro p. intro H. injection H.
-  intros Hph _. discriminate.
+  intros p H. discriminate.
 Qed.
 
 (* For EVERY semiprime, the phantom always exists *)

@@ -316,13 +316,12 @@ Theorem ODD_TOWER_FORCED :
    energy_L7 I_in + energy_L7 N_in + energy_L7 F_in =
    energy_L7 I_out + energy_L7 N_out + energy_L7 F_out).
 Proof.
-  repeat split.
-  - reflexivity.
-  - reflexivity. - reflexivity. - reflexivity.
-  - intros a b c; destruct a, b, c; reflexivity.
-  - exact L5_curved.
-  - reflexivity. - reflexivity.
-  - reflexivity. - reflexivity.
+  split. { reflexivity. }
+  split. { repeat split; reflexivity. }
+  split. { intros a b c; destruct a, b, c; reflexivity. }
+  split. { exact L5_curved. }
+  split. { split; reflexivity. }
+  split; reflexivity.
 Qed.
 
 (* Zero Admitted. *)

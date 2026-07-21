@@ -16,6 +16,11 @@
 (*    such that the OR-product of the three I/N/F symbols ≠ F.     *)
 (* ================================================================= *)
 
+Require Import Bool.
+Require Import PeanoNat.
+Require Import List.
+Import ListNotations.
+
 Inductive Sym3 : Type :=
   | I_s : Sym3   (* Identity  — 45° — positive literal TRUE  *)
   | N_s : Sym3   (* Inverse   — 90° — negative literal TRUE  *)
@@ -45,9 +50,11 @@ Theorem clause_resolves_iff_one_I :
   (exists l, (l = l1 \/ l = l2 \/ l = l3) /\ l = I_s) ->
   clause_resolves l1 l2 l3 = I_s.
 Proof.
-  intros l1 l2 l3 [l [[H1|H2|H3] Heq]]; subst;
-  unfold clause_resolves, sym_OR; simpl;
-  destruct l2, l3; reflexivity.
+  intros l1 l2 l3 [l [Hor Heq]]; subst l;
+  destruct Hor as [H|[H|H]]; subst;
+  unfold clause_resolves, sym_OR;
+  repeat match goal with s : Sym3 |- _ => destruct s end;
+  reflexivity.
 Qed.
 
 (* DUAL THEOREM:
@@ -84,8 +91,11 @@ Theorem one_variable_resolves :
   eval_clause a v1 v2 v3 p1 p2 p3 = I_s.
 Proof.
   intros v1 v2 v3 p1 p2 p3 _ _.
-  unfold eval_clause, clause_resolves, sym_OR, assign_to_sym.
-  rewrite Bool.eqb_reflx. reflexivity.
+  unfold eval_clause, assign_to_sym.
+  rewrite Nat.eqb_refl.
+  rewrite Bool.eqb_reflx.
+  unfold clause_resolves, sym_OR.
+  destruct (v2 =? v1), (v3 =? v1), p1, p2, p3; reflexivity.
 Qed.
 
 (* FORMULA RESOLUTION (AND of clauses = 1-operator across clauses):
@@ -129,7 +139,7 @@ Qed.
 (*    (F(v_out) = C)  [exactly one literal = I_s]                  *)
 (*                                                                   *)
 (*  Verified on ARC-AGI-2:                                          *)
-(*    017c7c7b: 8 active clauses, all (*, *, N) → I                *)
+(*    017c7c7b: 8 active clauses, all ( *, *, N) -> I               *)
 (*      Rank permutation: {7→4} (color 1 → color 2)               *)
 (*      Test: 18/18 = 100% ✓                                       *)
 (*    0d3d703e: 18 active clauses, F↔I swap, N stays               *)

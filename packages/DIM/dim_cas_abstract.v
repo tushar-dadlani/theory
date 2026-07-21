@@ -16,6 +16,10 @@ Require Import dim_crypto.
 Import ListNotations.
 Open Scope list_scope.
 
+(* Default inhabitant of the opaque [Data] type, used only as the
+   (never-reached) default argument of [nth] in the statements below. *)
+Parameter default_data : Data.
+
 (* ══════════════════════════════════════════════════════════════════════════
    Section 1 — Abstract Interface
    ══════════════════════════════════════════════════════════════════════════ *)
@@ -50,7 +54,7 @@ Module HashCA <: ContentAddressing.
   Definition addr := H.             (* H_alg SHA256 *)
 
   Lemma addr_injective : forall (x y : Data), addr x = addr y -> x = y.
-  Proof. apply (collision_resistant SHA256). Qed.
+  Proof. apply collision_resistant. Qed.
 End HashCA.
 
 (* ══════════════════════════════════════════════════════════════════════════

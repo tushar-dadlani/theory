@@ -10,6 +10,9 @@ Inductive Op3 : Type :=
   | OpAND : Op3   (* 1 = AND = multiplicative *)
   | OpDIV : Op3.  (* / = ratio = diagonal *)
 
+Definition sym_axis (s:Sym3) : nat := match s with I=>0 | N=>90 | F=>45 end.
+Definition op_axis (o:Op3) : nat := match o with OpOR=>0 | OpAND=>90 | OpDIV=>45 end.
+
 (* Operators ARE their axis symbols — proved, not assumed *)
 Theorem op_sym_correspondence :
   op_axis OpOR  = sym_axis I /\   (* 0 = OR  lives on 0°  *)

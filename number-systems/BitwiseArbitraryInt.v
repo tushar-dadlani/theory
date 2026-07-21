@@ -38,6 +38,7 @@ Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
 Require Import Coq.NArith.NArith.
 Require Import Coq.ZArith.ZArith.
+Require Import Lia.
 Import ListNotations.
 
 Open Scope nat_scope.
@@ -122,15 +123,19 @@ Theorem encode_decode_rank : forall r i, i <= 1 ->
   decode_rank (encode_pos r i) = r.
 Proof.
   intros r i Hi. unfold decode_rank, encode_pos.
-  rewrite Nat.add_comm, Nat.div_add_l; lia.
+  replace (2 * r + i) with (i + r * 2) by lia.
+  rewrite Nat.div_add by lia.
+  rewrite Nat.div_small by lia.
+  reflexivity.
 Qed.
 
 Theorem encode_decode_info : forall r i, i <= 1 ->
   decode_info (encode_pos r i) = i.
 Proof.
   intros r i Hi. unfold decode_info, encode_pos.
-  rewrite Nat.add_comm, Nat.mod_add.
-  apply Nat.mod_small; lia. lia.
+  replace (2 * r + i) with (i + r * 2) by lia.
+  rewrite Nat.mod_add by lia.
+  apply Nat.mod_small; lia.
 Qed.
 
 Theorem encode_injective : forall r1 r2 i1 i2,
@@ -475,7 +480,7 @@ Definition big_shr (n : BigInt) (k : nat) : BigInt :=
 Theorem shl_then_shr : forall bits k,
   drop_bits k (prepend_zeros k bits) = bits.
 Proof.
-  induction k as [| k IH]; intro bits.
+  intros bits k. revert bits. induction k as [| k IH]; intro bits.
   - reflexivity.
   - simpl. apply IH.
 Qed.
@@ -495,7 +500,7 @@ Proof.
   intros [sign bits] k.
   unfold big_shl, bit_length, bit_length_aux. simpl.
   induction k as [| k IH].
-  - simpl. reflexivity.
+  - simpl. lia.
   - simpl. rewrite IH. lia.
 Qed.
 
@@ -540,13 +545,18 @@ Proof.
 Qed.
 
 (* Ripple-carry addition on bit lists — O(bit_length) *)
+(* Helper: add a trailing carry into a single bit list (structural on b) *)
+Fixpoint add_carry_bits (b : list bool) (carry : bool) : list bool :=
+  match b with
+  | []      => if carry then [true] else []
+  | y :: ys =>
+    let (s, c) := full_adder false y carry in
+    s :: add_carry_bits ys c
+  end.
+
 Fixpoint add_bits (a b : list bool) (carry : bool) : list bool :=
   match a, b with
-  | [],      []     =>
-    if carry then [true] else []
-  | [],      y :: ys =>
-    let (s, c) := full_adder false y carry in
-    s :: add_bits [] ys c
+  | [],      bs     => add_carry_bits bs carry
   | x :: xs, []     =>
     let (s, c) := full_adder x false carry in
     s :: add_bits xs [] c
@@ -560,31 +570,40 @@ Definition big_add_pos (a b : BigInt) : BigInt :=
   mkBig false (add_bits a.(big_bits) b.(big_bits) false).
 
 (* Semantic correctness of bit addition *)
+Lemma add_carry_bits_correct : forall b carry,
+  bits_to_nat (add_carry_bits b carry) =
+  bits_to_nat b + (if carry then 1 else 0).
+Proof.
+  induction b as [| y ys IHb]; intros carry.
+  - destruct carry; simpl; lia.
+  - simpl. destruct (full_adder false y carry) as [s c] eqn:Hfa.
+    simpl. rewrite IHb.
+    pose proof (full_adder_correct false y carry) as Hcorr.
+    rewrite Hfa in Hcorr. simpl in Hcorr.
+    destruct s, c, y, carry; simpl in *; lia.
+Qed.
+
 Theorem add_bits_correct : forall a b carry,
   bits_to_nat (add_bits a b carry) =
   bits_to_nat a + bits_to_nat b + (if carry then 1 else 0).
 Proof.
-  induction a as [| x xs IHa]; intros [| y ys] carry.
-  - (* [], [] *)
-    destruct carry; simpl; lia.
-  - (* [], y::ys *)
-    simpl. destruct (full_adder false y carry) as [s c] eqn:Hfa.
-    simpl. rewrite IHa.
-    have Hcorr := full_adder_correct false y carry.
-    rewrite Hfa in Hcorr. simpl in Hcorr.
-    destruct s, c, y, carry; simpl in *; lia.
-  - (* x::xs, [] *)
-    simpl. destruct (full_adder x false carry) as [s c] eqn:Hfa.
-    simpl. rewrite IHa.
-    have Hcorr := full_adder_correct x false carry.
-    rewrite Hfa in Hcorr. simpl in Hcorr.
-    destruct s, c, x, carry; simpl in *; lia.
-  - (* x::xs, y::ys *)
-    simpl. destruct (full_adder x y carry) as [s c] eqn:Hfa.
-    simpl. rewrite IHa.
-    have Hcorr := full_adder_correct x y carry.
-    rewrite Hfa in Hcorr. simpl in Hcorr.
-    destruct s, c, x, y, carry; simpl in *; lia.
+  intros a. induction a as [| x xs IHa]; intros b carry.
+  - (* [] *)
+    change (add_bits [] b carry) with (add_carry_bits b carry).
+    rewrite add_carry_bits_correct. simpl. lia.
+  - destruct b as [| y ys].
+    + (* x::xs, [] *)
+      simpl. destruct (full_adder x false carry) as [s c] eqn:Hfa.
+      simpl. rewrite IHa.
+      pose proof (full_adder_correct x false carry) as Hcorr.
+      rewrite Hfa in Hcorr. simpl in Hcorr.
+      destruct s, c, x, carry; simpl in *; lia.
+    + (* x::xs, y::ys *)
+      simpl. destruct (full_adder x y carry) as [s c] eqn:Hfa.
+      simpl. rewrite IHa.
+      pose proof (full_adder_correct x y carry) as Hcorr.
+      rewrite Hfa in Hcorr. simpl in Hcorr.
+      destruct s, c, x, y, carry; simpl in *; lia.
 Qed.
 
 Theorem big_add_pos_correct : forall a b,
@@ -616,7 +635,7 @@ Qed.
 (*    of each bit position on the RH line.                            *)
 (* ================================================================== *)
 
-Fixpoint bitwise_not_aux (bits : list bool) : list bool :=
+Definition bitwise_not_aux (bits : list bool) : list bool :=
   List.map bool_not bits.
 
 Definition big_not (n : BigInt) : BigInt :=
@@ -800,17 +819,19 @@ Proof.
   intros n bits.
   induction bits as [| b rest IH]; intro k.
   - reflexivity.
-  - simpl. rewrite big_add_pos_correct.
+  - cbn [big_mul_pos_aux]. rewrite big_add_pos_correct.
     rewrite IH.
     destruct b.
     + (* bit is 1: contribute n << k *)
-      unfold big_shl. simpl. f_equal.
-      unfold bit_length_aux.
-      induction k as [| k' IHk].
-      * simpl. lia.
-      * simpl. rewrite <- IHk. lia.
+      f_equal.
+      assert (Hp : forall bs j, bits_to_nat (prepend_zeros j bs)
+                                = bits_to_nat bs * 2 ^ j).
+      { intros bs j. induction j as [| j' IHj].
+        - simpl. lia.
+        - simpl. rewrite IHj. lia. }
+      unfold big_shl. cbn [big_bits]. rewrite Hp. reflexivity.
     + (* bit is 0: no contribution *)
-      simpl. lia.
+      unfold BigZero. cbn [big_bits bits_to_nat]. lia.
 Qed.
 
 
@@ -938,4 +959,3 @@ Theorem library_closure_not : forall n : BigInt,
   exists m : BigInt, m = big_not n.
 Proof. intros n. exists (big_not n). reflexivity. Qed.
 
-End BitwiseArbitraryInt.

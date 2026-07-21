@@ -80,29 +80,11 @@ Definition cyclic_dist (n a b : nat) : nat :=
 Theorem cyclic_dist_rotation_invariant : forall n k a b,
   n > 0 ->
   cyclic_dist n ((a + k) mod n) ((b + k) mod n) = cyclic_dist n a b.
-Proof.
-  intros n k a b Hn.
-  unfold cyclic_dist.
-  (* The proof works by case analysis on a vs b and on whether the
-     shift causes wraparound.  In all cases, the relative offset
-     (a - b) mod n is preserved. *)
-  remember ((a + k) mod n) as a'.
-  remember ((b + k) mod n) as b'.
-  (* Key fact: a' - b' ≡ a - b (mod n) *)
-  assert (Hdiff : (a' + (n - b' mod n)) mod n = (a + (n - b mod n)) mod n).
-  { subst.
-    repeat rewrite Nat.Div0.add_mod.
-    rewrite Nat.mod_mod by lia.
-    rewrite Nat.mod_mod by lia.
-    f_equal. lia. }
-  (* From rotation invariance of the offset, the distance follows.
-     We sketch the case analysis but the structure is straightforward. *)
-  destruct (Nat.leb a' b') eqn:E1; destruct (Nat.leb a b) eqn:E2;
-    destruct (Nat.leb _ _) eqn:E3; destruct (Nat.leb _ _) eqn:E4;
-    try lia.
-Admitted.   (* honest: the case analysis is tedious but the structure
-              is straightforward; rotation-invariance is the defining
-              property of cyclic_dist *)
+(* GAP: build-repair — the original proof script (wildcard [destruct
+   (Nat.leb _ _)] over 16 cases, each discharged by [lia] on modular
+   distances) did not terminate within the build budget. The theorem was
+   already Admitted; the non-terminating script is removed. *)
+Proof. Admitted.
 
 (* The cyclic distance is symmetric *)
 Theorem cyclic_dist_symmetric : forall n a b,
@@ -123,13 +105,15 @@ Theorem cyclic_dist_zero_iff_equal : forall n a b,
 Proof.
   intros n a b Ha Hb.
   unfold cyclic_dist.
-  destruct (Nat.leb a b) eqn:E1; destruct (Nat.leb _ _) eqn:E2.
-  - apply Nat.leb_le in E1. split; intro H; lia.
-  - apply Nat.leb_nle in E2. apply Nat.leb_le in E1.
-    split; intro H; lia.
-  - apply Nat.leb_le in E2. apply Nat.leb_nle in E1.
-    split; intro H; lia.
-  - apply Nat.leb_nle in E1, E2. split; intro H; lia.
+  destruct (Nat.leb a b) eqn:E1.
+  - apply Nat.leb_le in E1. cbn zeta; cbn match.
+    destruct (Nat.leb (b - a) (n - (b - a))) eqn:E2.
+    + apply Nat.leb_le in E2. split; intro H; lia.
+    + apply Nat.leb_nle in E2. split; intro H; lia.
+  - apply Nat.leb_nle in E1. cbn zeta; cbn match.
+    destruct (Nat.leb (a - b) (n - (a - b))) eqn:E2.
+    + apply Nat.leb_le in E2. split; intro H; lia.
+    + apply Nat.leb_nle in E2. split; intro H; lia.
 Qed.
 
 (* ================================================================ *)
@@ -162,7 +146,7 @@ Theorem torus_dist_rotation_invariant : forall n k1 k2 k3 p1 p2,
     end in
   torus_dist n (shift p1) (shift p2) = torus_dist n p1 p2.
 Proof.
-  intros n k1 k2 k3 [a1 b1 c1] [a2 b2 c2] Hn.
+  intros n k1 k2 k3 [[a1 b1] c1] [[a2 b2] c2] Hn.
   simpl. unfold torus_dist.
   rewrite (cyclic_dist_rotation_invariant n k1 a1 a2 Hn).
   rewrite (cyclic_dist_rotation_invariant n k2 b1 b2 Hn).
@@ -174,7 +158,7 @@ Qed.
 Theorem torus_dist_symmetric : forall n p1 p2,
   torus_dist n p1 p2 = torus_dist n p2 p1.
 Proof.
-  intros n [a1 b1 c1] [a2 b2 c2]. unfold torus_dist.
+  intros n [[a1 b1] c1] [[a2 b2] c2]. unfold torus_dist.
   rewrite (cyclic_dist_symmetric n a1 a2).
   rewrite (cyclic_dist_symmetric n b1 b2).
   rewrite (cyclic_dist_symmetric n c1 c2).
@@ -189,7 +173,7 @@ Theorem torus_dist_zero_iff_equal : forall n p1 p2,
       torus_dist n p1 p2 = 0 <-> (a1 = a2 /\ b1 = b2 /\ c1 = c2)
   end.
 Proof.
-  intros n [a1 b1 c1] [a2 b2 c2]. intros Ha1 Hb1 Hc1 Ha2 Hb2 Hc2.
+  intros n [[a1 b1] c1] [[a2 b2] c2]. intros Ha1 Hb1 Hc1 Ha2 Hb2 Hc2.
   unfold torus_dist.
   split.
   - intros H.

@@ -98,13 +98,11 @@ Theorem adelic_frob_injective :
 Proof.
   intros a b Ha Hb Heq.
   unfold adelic_frobenius_2_3 in Heq.
-  injection Heq as H3 H2.
-  assert (Ha6 : a mod 6 = a) by (apply Nat.mod_small; exact Ha).
-  assert (Hb6 : b mod 6 = b) by (apply Nat.mod_small; exact Hb).
-  rewrite <- Ha6, <- Hb6.
+  assert (H3 : a mod 3 = b mod 3) by congruence.
+  assert (H2 : a mod 2 = b mod 2) by congruence.
   (* Use Bezout reconstruction *)
   rewrite <- (frob_reconstruct a Ha), <- (frob_reconstruct b Hb).
-  unfold crt_reconstruct. rewrite H3, H2. reflexivity.
+  rewrite H3, H2. reflexivity.
 Qed.
 
 (* ── The ARC transformation encoding ────────────────────────────── *)
@@ -144,13 +142,14 @@ Theorem arc_class_is_adelic_frobenius :
   forall T : ARC_Transform,
   arc_crt_class T =
   crt_reconstruct
-    (adelic_frobenius_2_3 (arc_crt_class T)).1
-    (adelic_frobenius_2_3 (arc_crt_class T)).2.
+    (fst (adelic_frobenius_2_3 (arc_crt_class T)))
+    (snd (adelic_frobenius_2_3 (arc_crt_class T))).
 Proof.
   intro T.
-  unfold arc_crt_class, adelic_frobenius_2_3.
+  unfold adelic_frobenius_2_3. simpl.
+  symmetry.
   apply frob_reconstruct.
-  unfold crt_reconstruct.
+  unfold arc_crt_class, crt_reconstruct.
   apply Nat.mod_upper_bound. lia.
 Qed.
 
@@ -173,11 +172,9 @@ Theorem adelic_product_frob_is_crt_classifier :
   (* The two primes 2 and 3 are coprime = independent axes *)
   Nat.gcd 2 3 = 1.
 Proof.
-  repeat split.
-  - intro T. reflexivity.
-  - intros r3 r2. reflexivity.
-  - reflexivity.
-  - reflexivity.
+  split. { intro T. reflexivity. }
+  split. { intros r3 r2. reflexivity. }
+  split; reflexivity.
 Qed.
 
 Print Assumptions adelic_product_frob_is_crt_classifier.

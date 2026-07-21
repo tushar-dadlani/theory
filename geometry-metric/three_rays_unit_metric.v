@@ -126,6 +126,6 @@ Theorem gaussian_ray_necessary :
   g_metric Ray_I Ray_G <> MV_omega /\
   g_metric Ray_N Ray_G <> MV_omega.
 Proof.
-  intro _.
+  intros _.
   split; discriminate.
 Qed.

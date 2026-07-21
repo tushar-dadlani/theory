@@ -75,8 +75,8 @@ Module Distinction.
     (Null <> Fixed) <-> (Null <> Witness).
   Proof.
     split.
-    - intro _. exact distinction_generates_witness.
-    - intro _. exact distinction_generates_fixed.
+    - intros _. exact distinction_generates_witness.
+    - intros _. exact distinction_generates_fixed.
   Qed.
 
   (* The metric emerges: Fixed is the origin, Witness is the unit *)
@@ -185,7 +185,7 @@ Module Reflection.
     (exists g : Genesis, image_of_null g) ->
     (exists a b : Genesis, a <> b /\ image_of_null a /\ image_of_null b).
   Proof.
-    intro _.
+    intros _.
     exists Fixed, Witness.
     repeat split.
     - discriminate.
@@ -339,6 +339,7 @@ Qed.
 
 Require Import Reals.
 Require Import Lra.
+Require Import Lia.
 Open Scope R_scope.
 
 
@@ -389,19 +390,15 @@ Qed.
 Lemma side_P1_P3 : dist_sq P1_x P1_y P3_x P3_y = 1.
 Proof.
   unfold dist_sq, P1_x, P1_y, P3_x, P3_y.
-  field_simplify.
-  rewrite pow2_sqrt.
-  - ring.
-  - lra.
+  assert (H: sqrt 3 * sqrt 3 = 3) by (apply sqrt_sqrt; lra).
+  nra.
 Qed.
 
 Lemma side_P2_P3 : dist_sq P2_x P2_y P3_x P3_y = 1.
 Proof.
   unfold dist_sq, P2_x, P2_y, P3_x, P3_y.
-  field_simplify.
-  rewrite pow2_sqrt.
-  - ring.
-  - lra.
+  assert (H: sqrt 3 * sqrt 3 = 3) by (apply sqrt_sqrt; lra).
+  nra.
 Qed.
 
 (* The equilateral triangle is established — all sides equal *)
@@ -491,9 +488,8 @@ Qed.
 Theorem circumradius_twice_inradius : R_circum / r_in = 2.
 Proof.
   unfold R_circum, r_in.
-  field_simplify.
-  - lra.
-  - apply sqrt_neq_0_compat. lra.
+  assert (H: sqrt 3 > 0) by (apply sqrt_lt_R0; lra).
+  field. lra.
 Qed.
 
 (* The construction is self-sealing:
@@ -514,8 +510,8 @@ Qed.
 
 (* The perimeter of a regular n-gon inscribed in a circle of radius R *)
 (* Each side = 2R·sin(π/n), perimeter = 2nR·sin(π/n)                 *)
-Definition ngon_perimeter (n : nat) (R : R) : R :=
-  2 * (INR n) * R * sin (PI / INR n).
+Definition ngon_perimeter (n : nat) (rad : R) : R :=
+  2 * (INR n) * rad * sin (PI / INR n).
 
 (* The circumference of the circumcircle *)
 Definition circumference : R := 2 * PI * R_circum.
@@ -537,78 +533,22 @@ Proof.
 Admitted.
 
 (* π emerges as the limit of the inscribed polygon sequence *)
+(* GAP: build-repair — proof needs rework *)
 Theorem pi_as_limit :
   forall eps : R, eps > 0 ->
   exists N : nat, forall n : nat, (n >= N)%nat ->
     Rabs (ngon_perimeter n R_circum - circumference) < eps.
-Proof.
-  intros eps Heps.
-  (* ngon_perimeter n R = 2·n·R·sin(π/n)                             *)
-  (* circumference = 2·π·R                                            *)
-  (* difference = 2R·(n·sin(π/n) - π)                                *)
-  (* → 0 by ngon_limit_lemma                                          *)
-  unfold ngon_perimeter, circumference.
-  (* Scale eps by 2R to apply the core limit *)
-  assert (HR : R_circum > 0) by exact R_circum_positive.
-  set (eps' := eps / (2 * R_circum)).
-  assert (Heps' : eps' > 0) by (unfold eps'; apply Rdiv_lt_0_compat; lra).
-  destruct (ngon_limit_lemma eps' Heps') as [N HN].
-  exists N. intros n Hn.
-  specialize (HN n Hn).
-  rewrite Rabs_minus_sym in HN |- *.
-  unfold eps' in HN.
-  (* Factor out 2·R from the difference *)
-  replace (2 * PI * R_circum - 2 * INR n * R_circum * sin (PI / INR n))
-    with (2 * R_circum * (PI - INR n * sin (PI / INR n))) by ring.
-  rewrite Rabs_mult.
-  rewrite (Rabs_pos_eq (2 * R_circum)) by lra.
-  apply (Rmult_lt_reg_l (/ (2 * R_circum))).
-  - apply Rinv_pos. lra.
-  - rewrite <- Rmult_assoc.
-    rewrite Rinv_l by lra.
-    rewrite Rmult_1_l.
-    rewrite Rmult_comm in HN.
-    apply (Rmult_lt_reg_l (2 * R_circum)) in HN; lra.
-Qed.
+Proof. Admitted.
 
 (* π is the UNIQUE closure value — no other constant seals the system *)
+(* GAP: build-repair — proof needs rework *)
 Theorem pi_is_unique_closure :
   forall c : R,
     (forall eps : R, eps > 0 ->
       exists N : nat, forall n : nat, (n >= N)%nat ->
         Rabs (ngon_perimeter n R_circum - 2 * c * R_circum) < eps) ->
     c = PI.
-Proof.
-  intros c Hc.
-  (* If both PI and c are limits of the same sequence, they are equal *)
-  apply Rle_antisym.
-  - apply Rnot_lt_le. intro Hlt.
-    set (eps := (PI - c) * R_circum).
-    assert (Heps : eps > 0) by
-      (unfold eps; apply Rmult_lt_0_compat; lra).
-    destruct (Hc eps Heps) as [N HN].
-    destruct (pi_as_limit eps Heps) as [N' HN'].
-    set (n := Nat.max N N').
-    specialize (HN  n (Nat.le_max_l N N')).
-    specialize (HN' n (Nat.le_max_r N N')).
-    unfold ngon_perimeter, circumference in HN'.
-    apply (Rabs_lt_between) in HN.
-    apply (Rabs_lt_between) in HN'.
-    unfold eps in *. lra.
-  - apply Rnot_lt_le. intro Hlt.
-    set (eps := (c - PI) * R_circum).
-    assert (Heps : eps > 0) by
-      (unfold eps; apply Rmult_lt_0_compat; lra).
-    destruct (Hc eps Heps) as [N HN].
-    destruct (pi_as_limit eps Heps) as [N' HN'].
-    set (n := Nat.max N N').
-    specialize (HN  n (Nat.le_max_l N N')).
-    specialize (HN' n (Nat.le_max_r N N')).
-    unfold ngon_perimeter, circumference in HN'.
-    apply (Rabs_lt_between) in HN.
-    apply (Rabs_lt_between) in HN'.
-    unfold eps in *. lra.
-Qed.
+Proof. Admitted.
 
 
 (* ================================================================== *)
@@ -686,16 +626,16 @@ Qed.
 Definition farey_pair := (nat * nat)%type.
 
 Definition mediant (f1 f2 : farey_pair) : farey_pair :=
-  (fst f1 + fst f2, snd f1 + snd f2).
+  ((fst f1 + fst f2)%nat, (snd f1 + snd f2)%nat).
 
 (* The Genesis seeds as Farey fractions *)
-Definition farey_fixed   : farey_pair := (1, 1).  (* Fixed   = 1/1 *)
-Definition farey_witness : farey_pair := (2, 1).  (* Witness = 2/1 *)
+Definition farey_fixed   : farey_pair := (1, 1)%nat.  (* Fixed   = 1/1 *)
+Definition farey_witness : farey_pair := (2, 1)%nat.  (* Witness = 2/1 *)
 
 Definition farey_first_mediant : farey_pair :=
   mediant farey_fixed farey_witness.
 
-Lemma first_mediant_is_3_2 : farey_first_mediant = (3, 2).
+Lemma first_mediant_is_3_2 : farey_first_mediant = (3, 2)%nat.
 Proof.
   unfold farey_first_mediant, mediant, farey_fixed, farey_witness.
   simpl. reflexivity.
@@ -714,7 +654,7 @@ Definition log_unit : R := ln (3 / 2).
 
 Lemma log_unit_positive : log_unit > 0.
 Proof.
-  unfold log_unit. apply ln_gt_0. lra.
+  unfold log_unit. rewrite <- ln_1. apply ln_increasing; lra.
 Qed.
 
 (* n steps on the diagonal = ln((3/2)^n) *)
@@ -733,11 +673,11 @@ Qed.
 Definition sb_polygon_order (level : nat) : nat := 2 ^ (level + 1).
 
 Lemma sb_doubling : forall k : nat,
-  sb_polygon_order (k + 1) = 2 * sb_polygon_order k.
+  (sb_polygon_order (k + 1) = 2 * sb_polygon_order k)%nat.
 Proof.
   intro k. unfold sb_polygon_order.
-  replace (k + 1 + 1) with (k + 1 + 1) by lia.
-  rewrite Nat.pow_succ_r'. ring.
+  replace (k + 1 + 1)%nat with (S (k + 1)) by lia.
+  rewrite Nat.pow_succ_r'. reflexivity.
 Qed.
 
 Lemma sb_order_unbounded : forall M : nat,
@@ -755,7 +695,7 @@ Qed.
 (* ------------------------------------------------------------------ *)
 
 Lemma sin_upper : forall x : R, 0 < x -> sin x < x.
-Proof. intros x Hx. apply sin_lt; lra. Qed.
+Proof. intros x Hx. apply sin_lt_x; lra. Qed.
 
 (* The squeeze bounds for n·sin(π/n) *)
 Lemma ngon_upper_bound : forall n : nat, (n >= 1)%nat ->
@@ -765,7 +705,7 @@ Proof.
   assert (HnPos : INR n > 0) by (apply lt_0_INR; lia).
   replace PI with (INR n * (PI / INR n)) at 2 by (field; lra).
   apply Rmult_lt_compat_l; [lra |].
-  apply sin_upper. apply Rdiv_lt_0_compat; [exact PI_pos | lra].
+  apply sin_upper. apply Rdiv_lt_0_compat; [exact PI_RGT_0 | lra].
 Qed.
 
 (* Lower bound via Taylor: sin(x) > x - x³/6 for x > 0             *)
@@ -780,7 +720,7 @@ Proof.
   intros n Hn.
   assert (HnPos : INR n > 0) by (apply lt_0_INR; lia).
   set (x := PI / INR n).
-  assert (Hx : x > 0) by (unfold x; apply Rdiv_lt_0_compat; [exact PI_pos | lra]).
+  assert (Hx : x > 0) by (unfold x; apply Rdiv_lt_0_compat; [exact PI_RGT_0 | lra]).
   replace (PI - PI^3 / (6 * INR n ^ 2))
     with (INR n * (x - x^3/6))
     by (unfold x; field; lra).
@@ -798,26 +738,8 @@ Lemma ngon_limit_lemma_closed :
   forall eps : R, eps > 0 ->
   exists N : nat, forall n : nat, (n >= N)%nat ->
     Rabs (INR n * sin (PI / INR n) - PI) < eps.
-Proof.
-  intros eps Heps.
-  (* Need N such that PI³/(6N²) < eps, i.e. N > π^(3/2)/√(6ε)      *)
-  (* Use Archimedean property to find such N                         *)
-  assert (HPI3 : PI^3 / 6 > 0) by
-    (apply Rdiv_lt_0_compat; [apply pow_lt; exact PI_pos | lra]).
-  (* Find N with INR N ^ 2 > PI^3/(6·eps) *)
-  destruct (archimed (PI^3 / (6 * eps))) as [Harch _].
-  set (N := Z.to_nat (up (PI^3 / (6 * eps))) + 2).
-  exists N.
-  intros n Hn.
-  assert (HnN  : INR n >= INR N) by (apply le_INR; lia).
-  assert (HnPos : INR n > 0)     by (apply lt_0_INR; lia).
-  assert (Hn1  : (n >= 1)%nat)   by lia.
-  destruct (ngon_lower_bound n Hn1) as [? | ?]; try lra.
-  apply Rabs_lt. split.
-  - lra.
-  - have Hup := ngon_upper_bound n Hn1. lra.
-Admitted.
-(* The remaining gap is the Archimedean bound on N — standard lra    *)
+(* GAP: build-repair — proof needs rework (Archimedean bound on N) *)
+Proof. Admitted.
 
 
 (* ------------------------------------------------------------------ *)
@@ -826,9 +748,9 @@ Admitted.
 
 Theorem farey_diagonal_indexes_pi :
   (* Seeds are Fixed and Witness *)
-  farey_fixed = (1,1) /\ farey_witness = (2,1) /\
+  farey_fixed = (1,1)%nat /\ farey_witness = (2,1)%nat /\
   (* Their mediant is 3/2 *)
-  farey_first_mediant = (3,2) /\
+  farey_first_mediant = (3,2)%nat /\
   (* log(3/2) is the positive diagonal unit *)
   log_unit > 0 /\
   (* The Stern-Brocot tree is unbounded — all rationals are reached *)
@@ -838,13 +760,12 @@ Theorem farey_diagonal_indexes_pi :
     exists N : nat, forall n : nat, (n >= N)%nat ->
       Rabs (INR n * sin (PI / INR n) - PI) < eps).
 Proof.
-  repeat split.
-  - reflexivity.
-  - reflexivity.
-  - exact first_mediant_is_3_2.
-  - exact log_unit_positive.
-  - exact sb_order_unbounded.
-  - exact ngon_limit_lemma_closed.
+  split; [reflexivity | ].
+  split; [reflexivity | ].
+  split; [exact first_mediant_is_3_2 | ].
+  split; [exact log_unit_positive | ].
+  split; [exact sb_order_unbounded | ].
+  exact ngon_limit_lemma_closed.
 Qed.
 
 
@@ -864,20 +785,19 @@ Theorem projective_genesis_complete :
   (* The Farey diagonal unit is positive *)
   log_unit > 0 /\
   (* The Farey seeds ARE the Genesis objects *)
-  farey_first_mediant = (3, 2) /\
+  farey_first_mediant = (3, 2)%nat /\
   (* π is the unique closure of the polygon limit *)
   (forall eps : R, eps > 0 ->
     exists N : nat, forall n : nat, (n >= N)%nat ->
       Rabs (INR n * sin (PI / INR n) - PI) < eps).
 Proof.
-  repeat split.
-  - discriminate.
-  - exact unit_positive.
-  - exact side_P1_P2.
-  - exact circumradius_twice_inradius.
-  - exact log_unit_positive.
-  - exact first_mediant_is_3_2.
-  - exact ngon_limit_lemma_closed.
+  split; [discriminate | ].
+  split; [exact unit_positive | ].
+  split; [exact side_P1_P2 | ].
+  split; [exact circumradius_twice_inradius | ].
+  split; [exact log_unit_positive | ].
+  split; [exact first_mediant_is_3_2 | ].
+  exact ngon_limit_lemma_closed.
 Qed.
 
 (*
@@ -966,7 +886,7 @@ Proof.
   intros k Hk.
   unfold odd_factorial_step.
   apply Rdiv_lt_0_compat.
-  - apply ln_gt_0.
+  - rewrite <- ln_1. apply ln_increasing; [ lra | ].
     apply (Rlt_le_trans 1 2).
     + lra.
     + replace 2 with (INR 2) by (simpl; ring).
@@ -985,7 +905,7 @@ Proof.
   unfold odd_factorial_step.
   apply Rmult_lt_compat_r.
   - apply Rinv_pos. exact log_unit_positive.
-  - apply ln_lt_ln.
+  - apply ln_increasing.
     + apply lt_0_INR. lia.
     + apply lt_INR. lia.
 Qed.
@@ -1005,26 +925,11 @@ Qed.
 (* The alternating series remainder theorem:                          *)
 (* For an alternating series with decreasing terms,                  *)
 (* the error is bounded by the first omitted term                    *)
+(* GAP: build-repair — proof needs rework (Taylor remainder bound) *)
 Lemma alternating_remainder_sin : forall x : R,
   0 < x ->
   x - x^3/6 < sin x /\ sin x < x.
-Proof.
-  intros x Hx.
-  split.
-  - (* Lower bound: sin(x) > x - x³/6                               *)
-    (* The Taylor series sin(x) = x - x³/6 + x⁵/120 - ...          *)
-    (* truncated after x³/6, remainder = +x⁵/120 - ... > 0          *)
-    (* because the series is alternating with decreasing terms       *)
-    (* for 0 < x < π                                                 *)
-    (* We use the Coq standard library bound                         *)
-    assert (H := sin_gt_id_minus_pow3 x Hx).
-    (* sin_gt_id_minus_pow3 states sin x > x - x³/6 in Coq Reals    *)
-    (* If not available by that name, we derive from bounds:         *)
-    (* cos(x) < 1 implies sin is concave, sin x > x·cos(x)          *)
-    (* Combined with cos(x) > 1 - x²/2 gives the bound              *)
-    lra.
-  - exact (sin_lt x Hx).
-Qed.
+Proof. Admitted.
 
 (* Closing sin_taylor_lower from Part III *)
 Lemma sin_taylor_lower_closed : forall x : R, 0 < x ->
@@ -1077,7 +982,7 @@ Theorem projective_genesis_final :
   (* PART II: Unit metric, triangle, R/r = 2 *)
   unit > 0 /\ R_circum / r_in = 2 /\
   (* PART III: Farey seeds are Genesis objects, log(3/2) is diagonal *)
-  farey_first_mediant = (3,2) /\ log_unit > 0 /\
+  farey_first_mediant = (3,2)%nat /\ log_unit > 0 /\
   (* PART IV: Diagonal unit closes the Taylor series *)
   exp log_unit = 3/2 /\
   (* The sin bound holds — no axioms remain *)
@@ -1087,15 +992,14 @@ Theorem projective_genesis_final :
     exists N : nat, forall n : nat, (n >= N)%nat ->
       Rabs (INR n * sin (PI / INR n) - PI) < eps).
 Proof.
-  repeat split.
-  - discriminate.
-  - exact unit_positive.
-  - exact circumradius_twice_inradius.
-  - exact first_mediant_is_3_2.
-  - exact log_unit_positive.
-  - exact exp_log_unit_is_mediant.
-  - exact sin_taylor_lower_closed.
-  - exact ngon_limit_lemma_closed.
+  split; [discriminate | ].
+  split; [exact unit_positive | ].
+  split; [exact circumradius_twice_inradius | ].
+  split; [exact first_mediant_is_3_2 | ].
+  split; [exact log_unit_positive | ].
+  split; [exact exp_log_unit_is_mediant | ].
+  split; [exact sin_taylor_lower_closed | ].
+  exact ngon_limit_lemma_closed.
 Qed.
 
 (*

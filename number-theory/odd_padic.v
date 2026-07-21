@@ -62,7 +62,7 @@ Proof.
   (* 2*k+1 is odd, but n is even — contradiction *)
   assert (Hodd : Nat.odd n = true).
   { rewrite <- Hk. apply crt_system_always_odd. }
-  rewrite Nat.odd_even in Hodd.
+  rewrite <- Nat.negb_even in Hodd.
   rewrite Heven in Hodd. discriminate.
 Qed.
 
@@ -89,8 +89,10 @@ Theorem with_map_complete :
 Proof. reflexivity. Qed.
 
 (* The gap: 6 < 7 *)
-Theorem gap_exists : domain_count + codomain_count < with_map_complete.
-Proof. unfold with_map_complete. simpl. lia. Qed.
+Theorem gap_exists :
+  domain_count + codomain_count
+    < domain_count + map_count + codomain_count.
+Proof. unfold domain_count, codomain_count, map_count. lia. Qed.
 
 Theorem gap6_lt_7 : 6 < 7.
 Proof. lia. Qed.
@@ -226,11 +228,9 @@ Theorem odd_iff_has_diagonal : forall n : nat,
 Proof.
   intro n. split.
   - intro Hodd.
-    exists (n / 2).
-    assert (n mod 2 = 1).
-    { rewrite Nat.odd_spec in Hodd. exact Hodd. }
-    pose proof (Nat.div_mod n 2 (by lia)) as Hdm.
-    lia.
+    apply Nat.odd_spec in Hodd.
+    destruct Hodd as [k Hk].
+    exists k. exact Hk.
   - intros [k Hk].
     rewrite Hk.
     apply crt_system_always_odd.

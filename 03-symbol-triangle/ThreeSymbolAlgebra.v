@@ -311,7 +311,7 @@ Theorem div_exact_iff_mod_zero : forall a b : nat,
 Proof.
   intros a b Hb. unfold sym_mod, sym_mul.
   destruct b as [|b']. lia.
-  rewrite Nat.mod_eq_0_iff_dvd.
+  rewrite Nat.mod_divide.
   split.
   - intro H. destruct H as [k Hk]. exists k. exact Hk.
   - intro H. destruct H as [k Hk]. exists k. exact Hk.
@@ -423,16 +423,15 @@ Theorem three_symbols_two_ops_five_arith :
   (forall a b : nat, b > 0 ->
     sym_add (sym_mul (sym_div a b) b) (sym_mod a b) = a).
 Proof.
-  repeat split.
-  - discriminate.    (* I <> N *)
-  - discriminate.    (* N <> F *)
-  - discriminate.    (* I <> F *)
-  - discriminate.    (* OR <> AND *)
-  - reflexivity.     (* 2+2+1=5 *)
-  - reflexivity.     (* ADD on Ang0 *)
-  - reflexivity.     (* SUB on Ang0 *)
-  - reflexivity.     (* MUL on Ang90 *)
-  - reflexivity.     (* MOD on Ang90 *)
-  - reflexivity.     (* DIV on Ang45 *)
-  - exact euclidean_identity. (* Euclidean coherence *)
+  split; [discriminate|].    (* I <> N *)
+  split; [discriminate|].    (* N <> F *)
+  split; [discriminate|].    (* I <> F *)
+  split; [discriminate|].    (* OR <> AND *)
+  split; [reflexivity|].     (* 2+2+1=5 *)
+  split; [reflexivity|].     (* ADD on Ang0 *)
+  split; [reflexivity|].     (* SUB on Ang0 *)
+  split; [reflexivity|].     (* MUL on Ang90 *)
+  split; [reflexivity|].     (* MOD on Ang90 *)
+  split; [reflexivity|].     (* DIV on Ang45 *)
+  exact euclidean_identity.  (* Euclidean coherence *)
 Qed.

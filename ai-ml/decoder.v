@@ -23,6 +23,7 @@
 
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.PeanoNat.
+Require Import Lia.
 
 (* ---------------------------------------------------------------- *)
 (* THE STORED FORM (from encoder)                                    *)
@@ -68,7 +69,7 @@ Definition halfstep_to_gaussian (e : HalfStepEncoding) : GaussianTransit :=
   let n := hs_n e in
   let s := hs_h e in           (* h IS s = p+q directly *)
   let disc :=
-    if s * s >=? 4 * n
+    if 4 * n <=? s * s
     then s * s - 4 * n
     else 0
   in
@@ -93,10 +94,9 @@ Lemma traversal1_disc_exact : forall e,
   s * s >= 4 * n ->
   gt_disc g = s * s - 4 * n.
 Proof.
-  intros e g s n Hge.
-  unfold g, halfstep_to_gaussian.
-  simpl.
+  intros e. cbn zeta. intros Hge.
   apply Nat.leb_le in Hge.
+  unfold halfstep_to_gaussian. cbn zeta. cbn [gt_disc].
   rewrite Hge. reflexivity.
 Qed.
 
@@ -110,8 +110,7 @@ Lemma traversal1_x_is_gap : forall p q,
 Proof.
   intros p q Hlt s n disc.
   unfold disc, s, n.
-  ring_simplify.
-  lia.
+  nia.
 Qed.
 
 (* ---------------------------------------------------------------- *)
@@ -155,9 +154,10 @@ Lemma traversal2_p_exact : forall p q,
 Proof.
   intros p q Hle s x.
   unfold log_B_translate, s, x.
-  have : (p + q) - (q - p) = 2 * p by lia.
+  assert (H : (p + q) - (q - p) = 2 * p) by lia.
   rewrite H.
-  apply Nat.div_mul_cancel_l. lia.
+  rewrite Nat.mul_comm.
+  apply Nat.div_mul. lia.
 Qed.
 
 (* q recovery is exact *)
@@ -166,11 +166,11 @@ Lemma traversal2_q_exact : forall p q,
   let n := p * q in
   gaussian_to_q (mkGT n (p+q) ((p+q)*(p+q) - 4*(p*q)) (q-p)) p = q.
 Proof.
-  intros p q Hp n.
-  unfold gaussian_to_q. simpl.
+  intros p q Hp. cbn zeta.
+  unfold gaussian_to_q. cbn [gt_re]. cbn zeta.
   destruct (p =? 0) eqn:H.
   - apply Nat.eqb_eq in H. lia.
-  - apply Nat.div_mul_cancel_l. exact Hp.
+  - rewrite Nat.mul_comm. apply Nat.div_mul. lia.
 Qed.
 
 (* ---------------------------------------------------------------- *)
@@ -238,11 +238,14 @@ Proof. reflexivity. Qed.
 (*   All four are the same object seen from different axes           *)
 (* ---------------------------------------------------------------- *)
 
-Fixpoint B (n : nat) : nat :=
+(* build-repair: original structural Fixpoint recurred on [n / 2], which is
+   not a structural subterm and is rejected. B is the bit-length function
+   (B 0 = 0, B n = 1 + log2 n for n >= 1); this is exactly the same function
+   as B 0 = 0, B 1 = 1, B n = S (B (n / 2)). *)
+Definition B (n : nat) : nat :=
   match n with
   | 0   => 0
-  | S O => 1
-  | _   => S (B (n / 2))
+  | _   => S (Nat.log2 n)
   end.
 
 (* p always sits near B(n)/2 in bit-space *)

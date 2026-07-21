@@ -249,8 +249,8 @@ Proof.
   - apply Nat.eqb_neq in H3.
     destruct (Nat.eqb (n mod 2) 0) eqn:H2.
     + apply Nat.eqb_eq in H2.
-      split. intro _; split; assumption.
-      intro _; reflexivity.
+      split. intros _; split; assumption.
+      intros _; reflexivity.
     + apply Nat.eqb_neq in H2.
       split. intro H; discriminate H.
       intro Hc; destruct Hc as [_ Hc2]; contradiction.
@@ -296,13 +296,12 @@ Proof.
     + apply Nat.eqb_eq in H2.
       split. intro H; discriminate H.
       intro Hc; destruct Hc as [_ Hc2].
-      assert (1 <> 0) by lia.
-      rewrite H2 in Hc2. exact (H Hc2).
+      exfalso; lia.
     + apply Nat.eqb_neq in H2.
       assert (Hodd : n mod 2 = 1) by (
         assert (n mod 2 < 2) by (apply Nat.mod_upper_bound; lia); lia).
-      split. intro _; split; assumption.
-      intro _; reflexivity.
+      split. intros _; split; assumption.
+      intros _; reflexivity.
 Qed.
 
 Theorem n_numbers_in_col1 : forall n : nat,
@@ -491,7 +490,7 @@ Theorem ten_naturals_pyramid :
   (* Every number has a symbol — the partition is total *)
   (forall n : nat, sym_of n = F_s \/ sym_of n = I_s \/ sym_of n = N_s).
 Proof.
-  refine (conj _ (conj (conj _ (conj _ _)) (conj _ (conj _ (conj _ (conj _ _)))))).
+  refine (conj _ (conj _ (conj _ (conj _ (conj _ (conj _ (conj _ (conj _ _)))))))).
   - reflexivity.
   - reflexivity.
   - reflexivity.

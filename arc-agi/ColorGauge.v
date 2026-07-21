@@ -160,23 +160,16 @@ Definition gauge_action (sigma : ColorMap) (g : Grid) : Grid :=
   map (fun row => map (apply_color sigma) row) g.
 
 (** Gauge action is functorial: (σ₁ ∘ σ₂) · G = σ₁ · (σ₂ · G). *)
+(* GAP: build-repair — proof needs rework. As stated the cell-level equation
+   apply_color (compose_map σ1 σ2) c = apply_color σ1 (apply_color σ2 c) only
+   holds for c < n_colors (compose_map has n_colors entries; the nth-default
+   fallback diverges for out-of-range cells), so it is not provable for grids
+   over arbitrary nat cells without an added bound hypothesis. *)
 Lemma gauge_action_compose :
   forall (sigma1 sigma2 : ColorMap) (g : Grid),
   gauge_action (compose_map sigma1 sigma2) g =
   gauge_action sigma1 (gauge_action sigma2 g).
-Proof.
-  intros sigma1 sigma2 g.
-  unfold gauge_action, compose_map.
-  induction g as [| row rest IH].
-  - simpl. reflexivity.
-  - simpl. f_equal.
-    + induction row as [| cell rest_row IHr].
-      * simpl. reflexivity.
-      * simpl. f_equal.
-        -- unfold apply_color. reflexivity.
-        -- exact IHr.
-    + exact IH.
-Qed.
+Proof. Admitted.
 
 (** Identity gauge acts trivially. *)
 Lemma gauge_id_cell : forall (c : nat),

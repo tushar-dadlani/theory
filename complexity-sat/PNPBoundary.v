@@ -97,9 +97,13 @@ Definition is_verifiable (c : Computation) : Prop :=
     Non-verifiable computations sit BELOW (Cause zone). *)
 
 Definition comp_depth (c : Computation) (obs : Depth) : Depth :=
-  if is_verifiable c
-  then disc_point     (* depth 1 — maximally observable *)
-  else obs.           (* depth = observer — exactly at the boundary *)
+  (* verifiable (InP, or InNP with a certificate) sits at disc_point;
+     otherwise it sits at the observer boundary. Mirrors is_verifiable. *)
+  match c.(comp_class) with
+  | InP  => disc_point     (* depth 1 — maximally observable *)
+  | InNP => if c.(has_cert) then disc_point else obs
+  | _    => obs            (* depth = observer — exactly at the boundary *)
+  end.
 
 (* ================================================================ *)
 (** * II.  THEOREM 1 — P IS ALWAYS EFFECT-ZONE                     *)
@@ -248,7 +252,7 @@ Record SpectralInstance : Type := mkSI {
 
 (** S[D] = 0 iff solved. *)
 Definition spectral_solved (s : SpectralInstance) : Prop :=
-  s.(violation_count) = 0.
+  s.(violation_count) = 0%nat.
 
 (** Verification: check spectral_solved.
     This requires scanning constraint_count terms — O(n).
@@ -340,10 +344,9 @@ Qed.
 (** Model P vs NP as a kernel proposition in a base formal system. *)
 
 Definition pnp_base_system : FormalSystem := mkFS
-  (fun p => p = 0)               (* domain: only "trivial" prop is known *)
-  (fun p => p = 1)               (* kernel: "P vs NP" is prop #1        *)
-  (fun p H => match H with eq_refl => I end  (* kernel 1 ≠ domain *)
-              |> fun _ => False_rect _ (Nat.neq_0_1 (H : 0 = 0))).
+  (fun p => p = 0%nat \/ p = 1%nat)  (* domain: trivial prop #0 and P-vs-NP prop #1 *)
+  (fun p => p = 1%nat)               (* kernel: "P vs NP" is prop #1        *)
+  (fun p H => or_intror H).      (* kernel prop #1 is included in the domain *)
 
 (** Simpler approach: just show the tower ascension applies. *)
 
@@ -368,7 +371,7 @@ Proof.
   intros F0 p Hk.
   split.
   - exact (vanishing_unit F0 0 p Hk).
-  - apply limit_subsumes with (n := 1).
+  - apply limit_subsumes with (n := 1%nat).
     exact (vanishing_unit F0 0 p Hk).
 Qed.
 
@@ -385,7 +388,7 @@ Qed.
 
 Theorem PNP_SPECTRAL_BOUNDARY :
   (* 1. Verification is always in P and Effect zone *)
-  (forall s obs, in_effect_zone disc_point obs) /\
+  (forall (s : SpectralInstance) obs, in_effect_zone disc_point obs) /\
   (* 2. Solving without cert is not verifiable *)
   (~ is_verifiable solve_computation_without_cert) /\
   (* 3. Solving WITH cert is verifiable — jumps to Effect zone *)
@@ -397,12 +400,11 @@ Theorem PNP_SPECTRAL_BOUNDARY :
   (* 5. Limit: every proposition is decided — including P vs NP *)
   (forall F0 p, ~ (tower_limit F0).(kernel) p).
 Proof.
-  repeat split.
-  - intros s obs. exact (disc_always_effect obs).
-  - exact SOLVING_NOT_VERIFIABLE_WITHOUT_CERT.
-  - exact SOLVING_VERIFIABLE_WITH_CERT.
-  - exact vanishing_unit.
-  - exact limit_is_fixed_point.
+  split; [ intros s obs; exact (disc_always_effect obs) | ].
+  split; [ exact SOLVING_NOT_VERIFIABLE_WITHOUT_CERT | ].
+  split; [ exact SOLVING_VERIFIABLE_WITH_CERT | ].
+  split; [ exact vanishing_unit | ].
+  exact limit_is_fixed_point.
 Qed.
 
 Print Assumptions PNP_SPECTRAL_BOUNDARY.

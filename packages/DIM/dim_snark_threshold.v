@@ -24,6 +24,16 @@ Open Scope nat_scope.
 Parameter SNARKStatement : Type.
 Parameter SNARKProof     : Type.
 
+(** A threshold policy is a pair (t, keys): require at least [t] valid
+    signatures drawn from the key set [keys].  [fst] is the threshold,
+    [snd] is the authorized signer set. *)
+Definition ThresholdPolicy := (nat * list PublicKey)%type.
+
+(** An explicit multi-signature: a list of (signer, signature) pairs.
+    Contrasts with the SNARK proof, which hides the signer set — hence
+    [map fst] structurally reveals the signers of a MultiSig. *)
+Definition MultiSig := list (PublicKey * Signature).
+
 (* ════════════════════════════════════════════════════════
    Section 2 — Statement Construction
    ════════════════════════════════════════════════════════ *)

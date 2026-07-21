@@ -187,11 +187,10 @@ Theorem TOP_DOWN_DESCENT :
   (energy Yi + energy Xi + energy Mi + energy Sl +
    energy Oi + energy Hi + energy Mf = 9).
 Proof.
-  repeat split.
-  - reflexivity.
-  - intro s; destruct s; simpl; intro H;
-    try reflexivity; discriminate.
-  - reflexivity. - reflexivity. - reflexivity.
-  - reflexivity. - reflexivity.
-  - reflexivity.
+  split. { reflexivity. }
+  split. { intro s; destruct s; simpl; intro H;
+           try reflexivity; discriminate. }
+  split. { repeat split; reflexivity. }
+  split. { split; reflexivity. }
+  reflexivity.
 Qed.

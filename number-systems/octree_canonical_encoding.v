@@ -45,7 +45,9 @@ Theorem halving_is_info_bit : forall rank ib,
 Proof.
   intros rank ib Hib.
   unfold encode1D.
-  rewrite Nat.add_comm, Nat.mod_add; [apply Nat.mod_small; lia | lia].
+  replace (2 * rank + ib) with (ib + rank * 2) by lia.
+  rewrite Nat.mod_add by lia.
+  apply Nat.mod_small; lia.
 Qed.
 
 (* The rank = which level of the tree (depth along this axis) *)
@@ -54,7 +56,8 @@ Theorem rank_is_tree_depth : forall rank ib,
   encode1D rank ib / 2 = rank.
 Proof.
   intros rank ib Hib. unfold encode1D.
-  rewrite Nat.add_comm, Nat.div_add_l; [|lia].
+  replace (2 * rank + ib) with (ib + rank * 2) by lia.
+  rewrite Nat.div_add by lia.
   rewrite Nat.div_small; lia.
 Qed.
 

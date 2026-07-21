@@ -239,10 +239,9 @@ Theorem rayG_is_measurement :
   (* 4. The Map (measurement operator) is an involution on Ray_G *)
   (forall p : DiagPoint, map_op (map_op p) = p).
 Proof.
-  repeat split.
-  - reflexivity.
-  - intros a b. exists (a * a + b * b). reflexivity.
-  - reflexivity.
-  - reflexivity.
-  - intro p. apply map_involution.
+  split; [reflexivity | ].
+  split; [intros a b; exists (a * a + b * b); reflexivity | ].
+  split; [reflexivity | ].
+  split; [reflexivity | ].
+  intro p. apply map_involution.
 Qed.

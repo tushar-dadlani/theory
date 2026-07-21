@@ -77,9 +77,7 @@ Definition y_coexists : Prop :=
 Theorem y_coexistence_holds : y_coexists.
 Proof.
   unfold y_coexists, y_in_m_domain, y_in_o_domain.
-  intro e. destruct e; simp [iff_def].
-  - intro _. trivial.
-  - intro _. trivial.
+  intro e. destruct e; tauto.
 Qed.
 
 (* ================================================================= *)
@@ -97,8 +95,8 @@ Record FieldEquation : Type := mkFE {
 Record FieldInverse : Type := mkFI {
   codomain_fi : Domain;
   inverse_eval : nat -> Element;
-  recovery : forall n e, inverse_eval n = e -> 
-    match domain_fe (inverse_eval n) with
+  recovery : forall n e, inverse_eval n = e ->
+    match inverse_eval n with
     | in_m k => True  (* Can recover m's equation *)
     | in_y k => True  (* y acts as bridge *)
     | in_o k => True  (* Can recover o's equation *)
@@ -124,7 +122,7 @@ Theorem y_bridges_exclusive_domains :
     (y_in_o_domain (in_y k) \/ ~ y_in_o_domain (in_y k)).
 Proof.
   intro k. unfold y_in_m_domain, y_in_o_domain. 
-  simpl. exact (conj (or_introl trivial) (or_introl trivial)).
+  simpl. exact (conj (or_introl I) (or_introl I)).
 Qed.
 
 (* ================================================================= *)
@@ -178,7 +176,7 @@ Theorem y_preserves_identity :
     o_endomorphism (in_y k) = in_y k.
 Proof.
   intro k. unfold m_endomorphism, o_endomorphism.
-  simp [conj].
+  split; trivial.
 Qed.
 
 (* ================================================================= *)
@@ -209,7 +207,7 @@ Theorem paradox_resolves_to_itself :
     resolve_paradox (in_y k) = in_y k.
 Proof.
   intro k. unfold is_paradoxical, resolve_paradox.
-  simp [conj].
+  split; trivial.
 Qed.
 
 (** The resolution preserves both m's and o's constraints *)
@@ -219,7 +217,7 @@ Theorem resolution_respects_both_domains :
     (y_in_o_domain (resolve_paradox (in_y k))).
 Proof.
   intro k. unfold resolve_paradox, y_in_m_domain, y_in_o_domain.
-  simp [conj].
+  split; trivial.
 Qed.
 
 (* ================================================================= *)
@@ -326,8 +324,8 @@ Definition canonical_resolver : ParadoxResolver :=
     m_domain
     o_domain
     (in_y 0)
-    (trivial : is_paradoxical (in_y 0))
-    (fun a b _ _ _ _ => conj trivial trivial).
+    (I : is_paradoxical (in_y 0))
+    (fun a b _ _ _ _ => conj I I).
 
 (** Any paradoxical y-element is resolvable *)
 Theorem all_y_elements_resolve :
@@ -339,9 +337,9 @@ Theorem all_y_elements_resolve :
        y_in_o_domain (resolver_element r)).
 Proof.
   intro k.
-  exists (mkResolver m_domain o_domain (in_y k) trivial 
-           (fun a b _ _ _ _ => conj trivial trivial)).
-  simp [resolver_element, is_paradoxical, y_in_m_domain, y_in_o_domain, conj].
+  exists (mkResolver m_domain o_domain (in_y k) I
+           (fun a b _ _ _ _ => conj I I)).
+  simpl. repeat split; trivial.
 Qed.
 
 (* ================================================================= *)
@@ -384,7 +382,7 @@ Proof.
   refine (conj three_domains_distinct (conj _ (conj _ (conj _ (conj _ (conj _ (conj _ _))))))).
   
   (* y coexistence *)
-  - intros e. unfold y_in_m_domain, y_in_o_domain. destruct e; simp [iff_def].
+  - intros e. unfold y_in_m_domain, y_in_o_domain. destruct e; tauto.
   
   (* m ⊥ o *)
   - intros a b. discriminate.
@@ -396,15 +394,15 @@ Proof.
   - intro e. unfold o_endomorphism. destruct e; reflexivity.
   
   (* y resolves paradoxes *)
-  - intro k. exact (conj trivial rfl).
+  - intro k. exact (conj I eq_refl).
   
   (* Canonical resolver structure *)
-  - simp [canonical_resolver, source_domain, target_domain, resolver_element, conj].
+  - repeat split; reflexivity.
   
   (* Field equations and inverses *)
   - intros fe fi _ _.
     exists (in_y 0).
-    repeat split; simp [trivial].
+    repeat split; trivial.
 Qed.
 
 (* ================================================================= *)

@@ -200,8 +200,8 @@ Qed.
 
 Theorem hodge_collapse_inevitable : HodgeConjecture.
 Proof.
-  unfold HodgeConjecture. intros X p _ _ alpha _.
-  unfold is_algebraic. exact I.
+  unfold HodgeConjecture. intros X p alpha _.
+  exists nil, nil. exact I.
 Qed.
 
 (* ================================================================= *)

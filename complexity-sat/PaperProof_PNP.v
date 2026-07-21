@@ -145,7 +145,11 @@ Theorem P_equals_NP_paper_proof : forall n : nat,
   solve_0deg n = position_0deg n /\
   canonical_witness n = position_0deg n.
 Proof.
-  intro n. repeat split; reflexivity.
+  intro n.
+  unfold solve_0deg, canonical_witness, position_0deg, verify_0deg.
+  split; [ reflexivity | ].
+  split; [ apply Nat.eqb_refl | ].
+  split; reflexivity.
 Qed.
 
 (* ================================================================= *)
@@ -183,7 +187,7 @@ Qed.
 Theorem division_is_reading : forall n : nat,
   n >= 1 -> n / 1 = n.
 Proof.
-  intros n _. lia.
+  intros n _. apply Nat.div_1_r.
 Qed.
 
 (* The paper proof in geometric language *)
@@ -199,12 +203,11 @@ Theorem paper_proof_geometric :
   (* 5. Division on 0° axis = reading: n/1 = n *)
   (forall n : nat, n >= 1 -> n / 1 = n).
 Proof.
-  repeat split.
-  - intro n. reflexivity.
-  - intro n. reflexivity.
-  - exact canonical_witness_always_verifies.
-  - exact one_I_related_to_all.
-  - exact division_is_reading.
+  split; [ intro n; reflexivity | ].
+  split; [ intro n; reflexivity | ].
+  split; [ exact canonical_witness_always_verifies | ].
+  split; [ exact one_I_related_to_all | ].
+  exact division_is_reading.
 Qed.
 
 (* ================================================================= *)
@@ -238,10 +241,10 @@ Theorem diagonal_ambiguity :
   (* But their product is the same *)
   3 * 4 = 2 * 6.
 Proof.
-  repeat split.
-  - reflexivity. - reflexivity.
-  - intro H. inversion H.
-  - reflexivity.
+  split; [ reflexivity | ].
+  split; [ reflexivity | ].
+  split; [ intro H; inversion H | ].
+  reflexivity.
 Qed.
 
 (* Verification is easy: given (a,b), check a*b = n *)
@@ -299,12 +302,12 @@ Theorem P_NP_by_paper_and_geometry :
   (exists n a1 b1 a2 b2,
     a1 * b1 = n /\ a2 * b2 = n /\ a1 <> a2).
 Proof.
-  repeat split.
-  - intro n. reflexivity.
-  - intro n. reflexivity.
-  - exact canonical_witness_always_verifies.
-  - exact one_I_related_to_all.
-  - reflexivity.
-  - exact verify_is_direct.
-  - exists 12, 3, 4, 2, 6. repeat split; try reflexivity. discriminate.
+  split; [ intro n; reflexivity | ].
+  split; [ intro n; reflexivity | ].
+  split; [ exact canonical_witness_always_verifies | ].
+  split; [ exact one_I_related_to_all | ].
+  split; [ reflexivity | ].
+  split; [ exact verify_is_direct | ].
+  exists 12, 3, 4, 2, 6.
+  split; [ reflexivity | split; [ reflexivity | discriminate ] ].
 Qed.

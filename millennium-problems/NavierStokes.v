@@ -9,8 +9,11 @@
 (* ============================================================ *)
 
 Require Import Coq.Reals.Reals.
+Require Import Coq.Reals.Rpower.
+Require Import Coq.micromega.Lra.
 Require Import Coq.Logic.Classical.
 Require Import Core.
+Local Open Scope R_scope.  (* all quantities here are real-valued *)
 
 (* ------------------------------------------------------------ *)
 (* SECTION 1: The Formal System NS Operates In                  *)
@@ -111,9 +114,8 @@ Proof.
   split. reflexivity.
   split.
   - unfold NS_SelfDualMap. lra.
-  - (* EnergyCascade(1/2) = EnergyCascade(1 - 1/2) *)
-    (* = EnergyCascade(1/2) — trivially true *)
-    unfold NS_SelfDualMap. lra.
+  - (* EnergyCascade(1/2) = EnergyCascade(1 - 1/2); reduce to 1/2 = 1 - 1/2 *)
+    unfold NS_SelfDualMap. f_equal. lra.
 Qed.
 
 (* ------------------------------------------------------------ *)
@@ -200,7 +202,7 @@ Proof.
      
      GAP: Serrin's criterion needs formalization *)
   admit.
-Qed.
+Admitted.
 
 (* ------------------------------------------------------------ *)
 (* SECTION 6: The Bridge Structure                             *)
@@ -236,4 +238,3 @@ Qed.
   Between smooth (1) and measure-theoretic (2)
 *)
 
-End NavierStokes.

@@ -92,8 +92,7 @@ Proof.
   intros f x z Hf Hcascade.
   induction Hcascade as [x | x y z Hstep Hcont IH].
   - exact Hf.
-  - apply IH.
-    exact (cascade_conservation f x y Hf Hstep).
+  - exact IH.
 Qed.
 
 (* ---------------------------------------------------------------- *)

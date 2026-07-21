@@ -104,9 +104,9 @@ Theorem gap_sq_symmetric : forall a b,
 Proof.
   intros a b. unfold pos_gap_sq.
   destruct (Nat.leb_spec a b) as [Hab | Hab];
-  destruct (Nat.leb_spec b a) as [Hba | Hba]; try lia.
-  - assert (a = b) by lia. subst. reflexivity.
-  - f_equal; lia.
+  destruct (Nat.leb_spec b a) as [Hba | Hba];
+  try (assert (a = b) by lia; subst; reflexivity);
+  f_equal; lia.
 Qed.
 
 (* Zero gap iff same position — no conflict *)
@@ -189,7 +189,9 @@ Proof. reflexivity. Qed.
 (* The difference of squares is always odd (N-phase!) *)
 Theorem diff_sq_odd : forall i, (diff_sq i) mod 2 = 1.
 Proof.
-  intro i. rewrite diff_sq_formula. lia.
+  intro i. rewrite diff_sq_formula.
+  replace (4 * i + 1) with (1 + (2 * i) * 2) by lia.
+  rewrite Nat.Div0.mod_add. reflexivity.
 Qed.
 
 (* Perfect square iff it IS a perfect square *)
@@ -249,7 +251,7 @@ Proof.
   unfold recover_i_from_gap_sq.
   rewrite diff_sq_formula.
   (* (4i + 1 - 1) / 4 = 4i / 4 = i *)
-  assert (H : 4 * i + 1 - 1 = 4 * i) by lia.
+  assert (H : 4 * i + 1 - 1 = i * 4) by lia.
   rewrite H.
   apply Nat.div_mul. lia.
 Qed.
@@ -431,7 +433,7 @@ Theorem inverse_distance_closes_tower :
   (forall i, recover_i_from_gap_sq (inv_pythag_gap_sq i) = i).
 
 Proof.
-  repeat split.
+  split; [|split; [|split; [|split; [|split; [|split]]]]].
   - intro i. unfold encode_N, encode_I. lia.
   - exact phase_gap_sq_is_one.
   - exact diff_sq_formula.
@@ -534,12 +536,11 @@ Theorem INVERSE_DISTANCE_CLOSES_PVSNP :
     encode_I (recover_i_from_gap_sq (diff_sq i)) = encode_I i /\
     encode_N (recover_i_from_gap_sq (diff_sq i)) = encode_N i).
 Proof.
-  repeat split.
+  split; [|split; [|split; [|split]]].
   - exact perp_distance_is_unit.
   - exact equidistant_from_diagonal.
   - exact gap_is_gaussian_unit.
   - exact gap_sq_recovery.
-  - intro i. rewrite gap_sq_recovery. split; reflexivity.
   - intro i. rewrite gap_sq_recovery. split; reflexivity.
 Qed.
 

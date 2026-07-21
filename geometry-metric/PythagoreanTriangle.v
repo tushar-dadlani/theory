@@ -223,7 +223,8 @@ Theorem triple_345_minimal :
 Proof.
   intro H. destruct H as [a [b [c [Ha [Hb [Hc [Heq _]]]]]]].
   destruct c as [|[|[|[|[|c]]]]];
-  (destruct a as [|[|[|[|[|a]]]]]); lia.
+  destruct a as [|[|[|[|[|a]]]]];
+  destruct b as [|[|[|[|[|b]]]]]; lia.
 Qed.
 
 (* ================================================================= *)

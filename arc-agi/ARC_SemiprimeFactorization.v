@@ -26,6 +26,8 @@
 
 Require Import Coq.Arith.Arith.
 Require Import Coq.micromega.Lia.
+Require Import Coq.Lists.List.
+Import ListNotations.
 Open Scope nat_scope.
 
 (* A task encodes a natural number N = A × B *)
@@ -62,7 +64,7 @@ Qed.
 (* SEMIPRIME STRUCTURE: when both A and B are prime,          *)
 (* N = A × B is a semiprime                                   *)
 Definition is_prime_nat (p : nat) : Prop :=
-  p >= 2 /\ forall d, 2 <= d -> d < p -> ~ (d | p).
+  p >= 2 /\ forall d, 2 <= d -> d < p -> ~ Nat.divide d p.
 
 Definition is_semiprime (N : nat) : Prop :=
   exists p q, is_prime_nat p /\ is_prime_nat q /\ p * q = N.
@@ -88,6 +90,7 @@ Theorem consistent_predicts_correctly :
 Proof.
   intros A_train B_train A_test B_test N Htr Hte HN1 HN2.
   subst N.
+  rewrite <- HN2.
   apply factor_theorem. exact Hte.
 Qed.
 

@@ -32,6 +32,7 @@ Require Import Coq.QArith.Qring.
 Require Import Coq.Arith.Arith.
 Require Import Coq.ZArith.ZArith.
 Require Import Coq.Logic.Classical_Prop.
+Require Import Lia.
 
 Open Scope Q_scope.
 
@@ -82,20 +83,20 @@ Qed.
     No rounding step exists.                                     *)
 
 Lemma one_tenth_plus_two_tenths_exact :
-  1#10 + 2#10 == 3#10.
+  (1#10) + (2#10) == (3#10).
 Proof.
   unfold Qplus, Qeq. simpl. lia.
 Qed.
 
 (*  The three-way sum is also exact, in both groupings           *)
 Lemma decimal_sum_left_assoc :
-  (1#10 + 2#10) + 3#10 == 6#10.
+  ((1#10) + (2#10)) + (3#10) == (6#10).
 Proof.
   unfold Qplus, Qeq. simpl. lia.
 Qed.
 
 Lemma decimal_sum_right_assoc :
-  1#10 + (2#10 + 3#10) == 6#10.
+  (1#10) + ((2#10) + (3#10)) == (6#10).
 Proof.
   unfold Qplus, Qeq. simpl. lia.
 Qed.
@@ -103,7 +104,7 @@ Qed.
 (*  Both groupings are equal — the problematic IEEE 754 case
     is trivially provable in Q.                                  *)
 Theorem decimal_associativity_exact :
-  (1#10 + 2#10) + 3#10 == 1#10 + (2#10 + 3#10).
+  ((1#10) + (2#10)) + (3#10) == (1#10) + ((2#10) + (3#10)).
 Proof.
   ring.
 Qed.
@@ -164,7 +165,8 @@ Proof.
      the original fractions to be dyadic — contradiction.        *)
   apply fl_rounds_one_tenth.
   admit. (* Proof: derive fl(1#10) == 1#10 from Heq *)
-Qed.
+(* GAP: build-repair — proof incomplete (admit); closed with Admitted. *)
+Admitted.
 
 (*  The root cause: 1/10 has no exact binary representation.
     Formally: 1/10 is not dyadic.
@@ -182,7 +184,8 @@ Proof.
      Since 2^n is divisible only by 2, and 10*p is divisible by 5
      whenever p ≠ 0, we reach a contradiction.                   *)
   admit. (* Proof: prime factorisation argument *)
-Qed.
+(* GAP: build-repair — proof incomplete (admit); closed with Admitted. *)
+Admitted.
 
 
 (* ============================================================ *)

@@ -88,14 +88,20 @@ Definition fill_gap (a b : LinearPoint) : LinearPoint := {|
 
 (*  Fill all gaps in one pass over the line.                        *)
 
+(* build-repair: recursion restructured so the recursive call is on the
+   bound tail [l] (a structural subterm) rather than the reconstructed
+   [b :: rest], which Coq's guard did not accept. Same function. *)
 Fixpoint fill_all_gaps (line : KnownLine) : KnownLine :=
   match line with
   | []          => []
-  | [a]         => [a]
-  | a :: b :: rest =>
-      if Nat.ltb (pos a + 1) (pos b)
-      then a :: fill_gap a b :: fill_all_gaps (b :: rest)
-      else a :: fill_all_gaps (b :: rest)
+  | a :: l =>
+      match l with
+      | []       => [a]
+      | b :: _   =>
+          if Nat.ltb (pos a + 1) (pos b)
+          then a :: fill_gap a b :: fill_all_gaps l
+          else a :: fill_all_gaps l
+      end
   end.
 
 (*  Apply n passes of gap-filling (n training epochs).              *)
@@ -148,7 +154,10 @@ Theorem fixed_point_unique :
 Proof.
   intros N r HN Hfp.
   unfold reflects_to_self in Hfp.
-  lia.
+  assert (HN2 : N = r * 2 + 1) by lia.
+  rewrite HN2.
+  rewrite Nat.div_add_l by lia.
+  simpl. lia.
 Qed.
 
 (*  Two distinct points cannot both be fixed points of reflection.  *)
@@ -181,33 +190,31 @@ Qed.
 
 (*  Count gaps on a line.                                           *)
 
+(* build-repair: recurse on the bound tail [l] (structural subterm). *)
 Fixpoint count_gaps (line : KnownLine) : nat :=
   match line with
   | []          => 0
-  | [_]         => 0
-  | a :: b :: rest =>
-      (if Nat.ltb (pos a + 1) (pos b) then 1 else 0)
-      + count_gaps (b :: rest)
+  | a :: l =>
+      match l with
+      | []       => 0
+      | b :: _   =>
+          (if Nat.ltb (pos a + 1) (pos b) then 1 else 0)
+          + count_gaps l
+      end
   end.
 
 (*  THEOREM: Learning always makes progress — gap count is non-increasing. *)
 
+(* GAP: build-repair -- proof needs rework. The statement is false in general:
+   filling a wide gap inserts a single midpoint (e.g. a at pos 0, b at pos 4
+   yields a midpoint at pos 2), which turns one gap into two (0..2 and 2..4),
+   so count_gaps can strictly increase. Statement preserved. *)
 Lemma fill_does_not_increase_gaps :
   forall (a b : LinearPoint) (rest : KnownLine),
   pos a + 1 < pos b ->
   count_gaps (fill_all_gaps (a :: b :: rest)) <=
   count_gaps (a :: b :: rest).
-Proof.
-  intros a b rest Hgap.
-  simpl.
-  rewrite <- Nat.ltb_lt in Hgap.
-  rewrite Hgap.
-  simpl.
-  (* After filling: the gap a..b becomes two gaps a..mid and mid..b.
-     But each sub-gap is smaller. Inductively the total is bounded.
-     For this structural lemma we prove the count does not exceed N.  *)
-  lia.
-Qed.
+Proof. Admitted.
 
 (*  A line is fully learned when it has no gaps.                    *)
 
@@ -216,17 +223,24 @@ Definition fully_learned (line : KnownLine) : Prop :=
 
 (*  THEOREM: Gap-filling is monotone — density never decreases.     *)
 
+(* build-repair helper: one-step unfolding keeping the recursive call folded. *)
+Lemma fill_all_gaps_cons2 : forall a b rest,
+  fill_all_gaps (a :: b :: rest) =
+    if Nat.ltb (pos a + 1) (pos b)
+    then a :: fill_gap a b :: fill_all_gaps (b :: rest)
+    else a :: fill_all_gaps (b :: rest).
+Proof. reflexivity. Qed.
+
 Theorem filling_increases_density :
   forall line : KnownLine,
   length line <= length (fill_all_gaps line).
 Proof.
-  induction line as [| a [| b rest] IH].
+  induction line as [| a l IH].
   - simpl. lia.
-  - simpl. lia.
-  - simpl.
-    destruct (Nat.ltb (pos a + 1) (pos b)) eqn:E.
+  - destruct l as [| b rest].
     + simpl. lia.
-    + simpl. lia.
+    + rewrite fill_all_gaps_cons2.
+      destruct (Nat.ltb (pos a + 1) (pos b)); cbn [length] in *; lia.
 Qed.
 
 (*  THEOREM: Training is monotone over epochs.                      *)
@@ -235,20 +249,13 @@ Theorem train_monotone :
   forall (line : KnownLine) (n : nat),
   length line <= length (train line n).
 Proof.
-  intros line n.
-  induction n as [| e IH].
+  intros line n. revert line.
+  induction n as [| e IH]; intros line.
   - simpl. lia.
   - simpl.
-    apply Nat.le_trans with (length (fill_all_gaps line)).
-    + apply filling_increases_density.
-    + (* train (fill_all_gaps line) e has length >= fill_all_gaps line *)
-      (* by IH applied to (fill_all_gaps line) *)
-      clear IH.
-      induction e.
-      * simpl. lia.
-      * simpl. apply Nat.le_trans with (length (fill_all_gaps (fill_all_gaps line))).
-        apply filling_increases_density.
-        lia.
+    eapply Nat.le_trans.
+    + apply (filling_increases_density line).
+    + apply IH.
 Qed.
 
 (* ================================================================= *)
@@ -296,14 +303,14 @@ Theorem training_never_regresses :
   forall (m : MLModel) (E : nat),
   length (line m) <= length (line (run_training m E)).
 Proof.
-  intros m E.
-  induction E as [| e IH].
+  intros m E. revert m.
+  induction E as [| e IH]; intros m.
   - simpl. lia.
   - simpl.
     apply Nat.le_trans with (length (line (train_step m))).
     + unfold train_step. simpl.
       apply filling_increases_density.
-    + exact IH.
+    + apply IH.
 Qed.
 
 (*  THEOREM: The epoch counter always advances.                     *)
@@ -312,12 +319,12 @@ Theorem epoch_advances :
   forall (m : MLModel) (E : nat),
   epoch m + E = epoch (run_training m E).
 Proof.
-  intros m E.
-  induction E as [| e IH].
+  intros m E. revert m.
+  induction E as [| e IH]; intros m.
   - simpl. lia.
   - simpl.
-    unfold train_step at 1. simpl.
-    lia.
+    rewrite <- (IH (train_step m)).
+    unfold train_step. simpl. lia.
 Qed.
 
 (* ================================================================= *)
@@ -495,7 +502,8 @@ Proof.
   intros data E HE.
   apply Nat.le_trans with (length (fill_all_gaps data)).
   - apply filling_increases_density.
-  - apply train_monotone.
+  - destruct E as [| e]; [ lia | ].
+    simpl. apply train_monotone.
 Qed.
 
 (*  Learning is NOT random search.

@@ -256,7 +256,7 @@ Fixpoint lookup (ctx : Context) (x : Var) : option StratumType :=
 
 (* We need a GodelSystem in scope for proof typing *)
 (* Every Stratum module has an implicit G *)
-Variable G : GodelSystem.
+#[local] Parameter G : GodelSystem.
 
 Inductive HasType : Context -> Term -> StratumType -> Prop :=
 

@@ -8,6 +8,12 @@
 (*     which is the UNIQUE point equidistant from all known symbols  *)
 (* ================================================================= *)
 
+Require Import PeanoNat.
+Require Import Arith.
+Require Import Lia.
+Require Import List.
+Import ListNotations.
+
 Inductive Phase : Type := I_phase | N_phase.
 
 (* A point on the linear axis: position + phase *)
@@ -33,23 +39,17 @@ Definition fill_gap (a b : LinearPoint) : LinearPoint := {|
 |}.
 
 (* THEOREM 1: Every gap has exactly one midpoint *)
+(* GAP: build-repair -- proof needs rework. The statement is false as written:
+   [is_gap a b] only requires [pos b > pos a + 1], so for gaps wider than two
+   steps (e.g. pos b = pos a + 4) there are several points m with
+   pos a < pos m < pos b and ph m = N_phase, and the [half] field is
+   unconstrained, so the midpoint is not unique. Statement preserved. *)
 Theorem gap_has_unique_midpoint :
   forall a b : LinearPoint,
   is_gap a b ->
   exists! m : LinearPoint,
     pos a < pos m /\ pos m < pos b /\ ph m = N_phase.
-Proof.
-  intros a b [HaI [HbI Hgap]].
-  exists (fill_gap a b).
-  split.
-  - unfold fill_gap. simpl. split. lia. split. lia. reflexivity.
-  - intros m [Hlo [Hhi Hph]].
-    (* The midpoint is unique by the linear axis structure *)
-    destruct m. simpl in *. 
-    (* pos must equal (pos a + pos b)/2 by interlacing *)
-    assert (pos0 = (pos a + pos b) / 2) by lia.
-    subst. reflexivity.
-Qed.
+Proof. Admitted.
 
 (* THEOREM 2: ML convergence = reaching the 45° fixed point *)
 (* The 45° diagonal is the point s where reflect(s) = s     *)
@@ -74,27 +74,42 @@ Qed.
 (* THEOREM 3: Training is gap-filling in N passes *)
 (* Each training pass fills gaps at finer 1/3-step resolution *)
 
+(* build-repair: recursion restructured so the recursive call is on the
+   bound tail [l] (a structural subterm) rather than the reconstructed
+   [b :: rest], which Coq's guard did not accept. Same function. *)
 Fixpoint fill_all_gaps (line : KnownLine) : KnownLine :=
   match line with
   | nil => nil
-  | a :: nil => a :: nil
-  | a :: b :: rest =>
-      if Nat.ltb (pos a + 1) (pos b)
-      then a :: fill_gap a b :: fill_all_gaps (b :: rest)
-      else a :: fill_all_gaps (b :: rest)
+  | a :: l =>
+      match l with
+      | nil => a :: nil
+      | b :: _ =>
+          if Nat.ltb (pos a + 1) (pos b)
+          then a :: fill_gap a b :: fill_all_gaps l
+          else a :: fill_all_gaps l
+      end
   end.
+
+(* build-repair helper: one-step unfolding of fill_all_gaps on a 2+ list,
+   keeping the recursive call folded so induction can use the hypothesis. *)
+Lemma fill_all_gaps_cons2 : forall a b rest,
+  fill_all_gaps (a :: b :: rest) =
+    if Nat.ltb (pos a + 1) (pos b)
+    then a :: fill_gap a b :: fill_all_gaps (b :: rest)
+    else a :: fill_all_gaps (b :: rest).
+Proof. reflexivity. Qed.
 
 (* Gap-filling is monotone: more points after each pass *)
 Theorem filling_increases_density :
   forall line : KnownLine,
   length line <= length (fill_all_gaps line).
 Proof.
-  induction line as [| a [| b rest] IH].
+  induction line as [| a l IH].
   - simpl. lia.
-  - simpl. lia.
-  - simpl. destruct (Nat.ltb (pos a + 1) (pos b)).
+  - destruct l as [| b rest].
     + simpl. lia.
-    + simpl. lia.
+    + rewrite fill_all_gaps_cons2.
+      destruct (Nat.ltb (pos a + 1) (pos b)); cbn [length] in *; lia.
 Qed.
 
 (* THEOREM 4: The dual angle (cos, euclidean) reaches (1,0) at convergence *)

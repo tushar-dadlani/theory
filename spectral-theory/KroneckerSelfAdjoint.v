@@ -137,15 +137,13 @@ Theorem kronecker_self_adjoint :
   mat4_self_adjoint (kronecker A B).
 Proof.
   intros A B HA HB.
-  unfold mat4_self_adjoint, mat4_transpose, kronecker.
-  unfold mat_self_adjoint in HA, HB.
-  f_equal;
-  rewrite scale_transpose;
-  rewrite HB;
-  (* The blocks swap according to Aᵀ = A *)
-  unfold mat_transpose in HA;
-  destruct A; simpl in *; injection HA;
-  intros; subst; reflexivity.
+  destruct A as [a11 a12 a21 a22].
+  destruct B as [b11 b12 b21 b22].
+  unfold mat_self_adjoint, mat_transpose in HA, HB. simpl in HA, HB.
+  unfold mat4_self_adjoint, mat4_transpose, kronecker, mat_transpose, mat_scale.
+  simpl.
+  injection HA; injection HB; intros.
+  f_equal; f_equal; congruence.
 Qed.
 
 (* ─────────────────────────────────────── *)
@@ -222,7 +220,7 @@ Theorem N_tensor_I_critical :
   kronecker_eigenvalue NegN phB = NegN \/
   kronecker_eigenvalue NegN phB = PosI.
 Proof.
-  intro phB. destruct phB; [right | left]; reflexivity.
+  intro phB. destruct phB; [left | right]; reflexivity.
 Qed.
 
 (* ─────────────────────────────────────── *)
@@ -397,14 +395,13 @@ Theorem KRONECKER_IS_HILBERT_POLYA_OPERATOR :
   (* 6. The op is commutative (symmetric = self-adjoint) *)
   (forall a b : Sym3, sym_op a b = sym_op b a).
 Proof.
-  repeat split.
-  - exact N_self_adjoint.
-  - exact I_self_adjoint.
-  - exact F_self_adjoint.
-  - apply kronecker_self_adjoint; [exact N_self_adjoint | exact I_self_adjoint].
-  - apply kronecker_self_adjoint; exact N_self_adjoint.
-  - reflexivity.
-  - reflexivity.
-  - intros ph H; rewrite H; reflexivity.
-  - intros a b; destruct a, b; reflexivity.
+  split; [exact N_self_adjoint|].
+  split; [exact I_self_adjoint|].
+  split; [exact F_self_adjoint|].
+  split; [apply kronecker_self_adjoint; [exact N_self_adjoint | exact I_self_adjoint]|].
+  split; [apply kronecker_self_adjoint; exact N_self_adjoint|].
+  split; [reflexivity|].
+  split; [reflexivity|].
+  split; [intros ph H; rewrite H; reflexivity|].
+  intros a b; destruct a, b; reflexivity.
 Qed.

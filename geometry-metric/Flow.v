@@ -154,13 +154,7 @@ Proof.
   intros d Hlt.
   unfold hopf_vector_field, vf_eval.
   (* 0 < 1 - depth_val d  when  depth_val d < 1 *)
-  apply (Qplus_lt_l _ _ (depth_val d)).
-  rewrite Qplus_0_l.
-  rewrite Qplus_comm.
-  rewrite Qplus_assoc.
-  rewrite (Qplus_comm (-(depth_val d)) (depth_val d)).
-  rewrite Qplus_opp_r.
-  rewrite Qplus_0_l.
+  apply Qlt_minus_iff in Hlt.
   exact Hlt.
 Qed.
 

@@ -46,7 +46,8 @@ Proof.
   subst.
   (* In our universe, 0 is the OR symbol — it contributes nothing
      to AND (intersection). The intersection collapses. *)
-  exact HP.  (* vacuously: pred_empty x is never reached *)
+  (* Goal pred_empty 0 cannot be closed from HP : P 0 — the
+     statement is false, so the proof is intentionally abandoned. *)
 Abort.
 
 (** The clean version: zero predicate is order-minimal *)
@@ -56,7 +57,6 @@ Theorem pred_zero_is_degenerate :
   \/ pred_inter pred_zero P = pred_zero.
 Proof.
   intro P.
-  apply predicate_extensionality in pred_zero_inter_interval_is_empty.
   right.
   apply predicate_extensionality. intro x.
   unfold pred_inter, pred_zero, pred_empty. split.

@@ -85,12 +85,11 @@ Proof.
   intros p n Hp Hdiv.
   assert (Hmod : exists k, n = p * k).
   { exists (n / p).
-    rewrite <- Nat.div_exact; assumption. }
+    rewrite Nat.Div0.div_exact; assumption. }
   destruct Hmod as [k Hk].
   rewrite Hk.
-  ring_simplify.
-  rewrite Nat.mul_assoc.
-  apply Nat.mod_mul. exact Hp.
+  replace (p * k * (p * k)) with ((k * (p * k)) * p) by ring.
+  apply Nat.Div0.mod_mul.
 Qed.
 
 (* If p | n then p² | n² *)
@@ -101,14 +100,12 @@ Proof.
   intros p n Hp Hdiv.
   assert (Hmod : exists k, n = p * k).
   { exists (n / p).
-    rewrite <- Nat.div_exact; assumption. }
+    rewrite Nat.Div0.div_exact; assumption. }
   destruct Hmod as [k Hk].
   rewrite Hk.
-  ring_simplify.
-  (* (p*k)*(p*k) = p*p * (k*k) *)
-  replace ((p * k) * (p * k)) with ((p * p) * (k * k)) by ring.
-  apply Nat.mod_mul. 
-  apply Nat.mul_pos_pos; assumption.
+  (* (p*k)*(p*k) = (k*k) * (p*p) *)
+  replace (p * k * (p * k)) with ((k * k) * (p * p)) by ring.
+  apply Nat.Div0.mod_mul.
 Qed.
 
 (* ============================================================ *)
@@ -164,18 +161,11 @@ Theorem perfect_square_correct : forall n r : nat,
   r * r = n -> is_perfect_square n = true.
 Proof.
   intros n r Hr.
-  unfold is_perfect_square.
+  unfold is_perfect_square, isqrt.
   rewrite Nat.eqb_eq.
   (* isqrt n = r when r² = n *)
-  apply Nat.sqrt_spec in Hr.
-  - destruct Hr as [Hlo Hhi].
-    apply Nat.le_antisymm.
-    + (* isqrt n ≤ r *)
-      apply Nat.sqrt_le_mono. lia.
-    + (* r ≤ isqrt n *)  
-      apply Nat.sqrt_le_mono. lia.
-  - lia.
-Admitted.  (* Needs Nat.sqrt uniqueness — admitting for clarity *)
+  subst n. rewrite Nat.sqrt_square. reflexivity.
+Qed.
 
 (* The KEY: sqrt of a perfect square gives back the factor *)
 Theorem sqrt_perfect_square : forall p : nat,
@@ -207,10 +197,9 @@ Theorem square_factor_identity : forall p q : nat,
   (p * q) * (p * q) / (q * q) = p * p.
 Proof.
   intros p q Hp Hq.
-  rewrite <- Nat.div_mul_cancel_right.
-  - ring_simplify. reflexivity.
-  - apply Nat.mul_pos_pos; assumption.
-Admitted.  (* Requires careful div arithmetic *)
+  replace (p * q * (p * q)) with ((p * p) * (q * q)) by ring.
+  rewrite Nat.div_mul by nia. reflexivity.
+Qed.
 
 (* The factorization itself *)
 Theorem triadic_sqrt_factor : forall n p q : nat,
@@ -221,11 +210,9 @@ Theorem triadic_sqrt_factor : forall n p q : nat,
 Proof.
   intros n p q Hn Hp Hq.
   rewrite Hn.
-  rewrite <- semiprime_square_factors.
-  rewrite Nat.div_mul.
-  - apply sqrt_perfect_square.
-  - apply Nat.mul_pos_pos; lia.
-Admitted.
+  rewrite (square_factor_identity p q) by lia.
+  apply sqrt_perfect_square.
+Qed.
 
 (* The OTHER factor: n / p = q *)
 Theorem other_factor_correct : forall n p q : nat,
@@ -235,7 +222,7 @@ Proof.
   intros n p q Hn Hp.
   rewrite Hn.
   rewrite Nat.mul_comm.
-  apply Nat.div_mul. exact Hp.
+  apply Nat.div_mul. lia.
 Qed.
 
 (* ============================================================ *)
@@ -263,7 +250,7 @@ Theorem prime_mod3 : forall p : nat,
 Proof.
   intros p Hp Hprime.
   assert (Hmod : p mod 3 = 0 \/ p mod 3 = 1 \/ p mod 3 = 2).
-  { destruct (p mod 3) as [|[|[|]]]; lia. }
+  { pose proof (Nat.mod_upper_bound p 3 ltac:(lia)). lia. }
   destruct Hmod as [H0 | [H1 | H2]].
   - (* p mod 3 = 0 → 3 | p → p = 3 (prime) → contradiction *)
     exfalso.
@@ -280,26 +267,10 @@ Theorem prime_sq_mod3_is_1 : forall p : nat,
   p mod 3 = 1 \/ p mod 3 = 2 ->
   (p * p) mod 3 = 1.
 Proof.
-  intros p [H1 | H2].
-  - (* p = 3k + 1 *)
-    destruct (Nat.div_mod p 3) as [k Hk].
-    + lia.
-    + rewrite H1 in Hk.
-      rewrite Hk.
-      ring_simplify.
-      rewrite Nat.add_mod.
-      rewrite Nat.mul_mod.
-      lia.
-  - (* p = 3k + 2 *)
-    destruct (Nat.div_mod p 3) as [k Hk].
-    + lia.
-    + rewrite H2 in Hk.
-      rewrite Hk.
-      ring_simplify.
-      rewrite Nat.add_mod.
-      rewrite Nat.mul_mod.
-      lia.
-Admitted.  (* Modular arithmetic details; algebraically clear *)
+  intros p H.
+  rewrite Nat.Div0.mul_mod.
+  destruct H as [H1 | H2]; [ rewrite H1 | rewrite H2 ]; reflexivity.
+Qed.
 
 (* ============================================================ *)
 (* SECTION 7 — The Complete 3-Step Algorithm                   *)

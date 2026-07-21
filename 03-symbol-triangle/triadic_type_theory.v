@@ -29,6 +29,7 @@
 
 Require Import Coq.Logic.Classical_Prop.
 Require Import Coq.Logic.FunctionalExtensionality.
+Require Import Coq.Program.Equality.
 
 (* ============================================================ *)
 (* SECTION 1 — Triadic Phases for Types                        *)
@@ -164,7 +165,7 @@ Inductive TId (A : Type) : A -> A -> Type :=
 
 (* All three are inhabitants of Id(a,a) *)
 Theorem three_canonical_ids : forall (A : Type) (a : A),
-  TId A a a /\ TId A a a /\ TId A a a.
+  (TId A a a * TId A a a * TId A a a)%type.
 Proof.
   intros A a. repeat split.
   - exact (refl_I A a).
@@ -439,7 +440,7 @@ Theorem J_I : forall (A : Type) (a : A)
   P p.
 Proof.
   intros A a P HI p Hp.
-  destruct p; simpl in Hp; try discriminate.
+  dependent destruction p; simpl in Hp; try discriminate.
   exact HI.
 Qed.
 
@@ -452,7 +453,7 @@ Theorem J_N : forall (A : Type) (a : A)
   P p.
 Proof.
   intros A a P HN p Hp.
-  destruct p; simpl in Hp; try discriminate.
+  dependent destruction p; simpl in Hp; try discriminate.
   exact HN.
 Qed.
 
@@ -465,7 +466,7 @@ Theorem J_F : forall (A : Type) (a : A)
   P p.
 Proof.
   intros A a P HF p Hp.
-  destruct p; simpl in Hp; try discriminate.
+  dependent destruction p; simpl in Hp; try discriminate.
   exact HF.
 Qed.
 
@@ -565,8 +566,9 @@ Theorem cross_phase_identity_omega_phase :
     (triadic_univalence A (phi_equiv A)) = PhF.
 Proof.
   intro A.
-  pose (p := triadic_univalence A (phi_equiv A)).
-  destruct p; simpl; reflexivity.
+  set (p := triadic_univalence A (phi_equiv A)) in *.
+  clearbody p.
+  dependent destruction p.
 Qed.
 
 (* ============================================================ *)

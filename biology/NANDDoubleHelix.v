@@ -5,6 +5,7 @@
 (* ================================================================== *)
 
 Require Import Coq.Arith.Arith.
+Require Import Coq.micromega.Lia.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
 Import ListNotations.
@@ -159,15 +160,14 @@ Theorem all_ops_from_two_strands :
   (forall a b c k,
     fst (helix_full_adder (make_helix a k) (make_helix b k) c) = xorb (xorb a b) c).
 Proof.
-  repeat split.
-  - reflexivity.
-  - intros a b k. apply helix_nand_correct.
-  - intros a b k. apply helix_and_correct.
-  - reflexivity.
-  - intros a b k. apply helix_xor_correct.
-  - intros a b c k.
-    unfold helix_full_adder, helix_xor, helix_nand, make_helix. simpl.
-    destruct a, b, c; reflexivity.
+  split; [ intros a k; reflexivity | ].
+  split; [ intros a b k; apply helix_nand_correct | ].
+  split; [ intros a b k; apply helix_and_correct | ].
+  split; [ intros a b k; reflexivity | ].
+  split; [ intros a b k; apply helix_xor_correct | ].
+  intros a b c k.
+  unfold helix_full_adder, helix_xor, helix_nand, make_helix. simpl.
+  destruct a, b, c; reflexivity.
 Qed.
 
 (* PART 8 — MASTER THEOREM *)
@@ -183,13 +183,13 @@ Theorem double_helix_master :
   nand a a = negb a                          /\
   negb (negb a) = a.
 Proof.
-  intros a k. repeat split.
-  - apply f_strand_is_i_phase.
-  - apply n_strand_is_n_phase.
-  - reflexivity.
-  - reflexivity.
-  - apply strands_are_halfstep_apart.
-  - reflexivity.
-  - destruct a; reflexivity.
-  - apply Bool.negb_involutive.
+  intros a k.
+  split; [ apply f_strand_is_i_phase | ].
+  split; [ apply n_strand_is_n_phase | ].
+  split; [ reflexivity | ].
+  split; [ reflexivity | ].
+  split; [ apply strands_are_halfstep_apart | ].
+  split; [ reflexivity | ].
+  split; [ destruct a; reflexivity | ].
+  apply Bool.negb_involutive.
 Qed.

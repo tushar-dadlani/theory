@@ -517,9 +517,10 @@ Proof.
       (* Goal: (7^(n+2) - 6^(n+2)) + 3 * (2 * 6^(n+1)) = 7^(n+2) *)
       (* Simplify: need 6^(n+2) = 3 * (2 * 6^(n+1)) = 6 * 6^(n+1) = 6^(n+2). check. *)
       assert (H6le : pow 6 (S (S n)) <= pow 7 (S (S n))).
-      { unfold live_n, total_n in live_lt_total.
-        apply Nat.lt_le_incl. apply live_lt_total. lia. }
-      simpl. lia.
+      { apply Nat.lt_le_incl.
+        pose proof (live_lt_total (S (S n)) ltac:(lia)) as HL.
+        unfold live_n, total_n in HL. exact HL. }
+      simpl in H6le |- *. lia.
 Qed.
 
 (* ================================================================= *)
@@ -578,7 +579,7 @@ Theorem critical_line_is_one_third : forall n : nat,
   n >= 1 ->
   real_count n * 3 = live_n n.
 Proof.
-  exact distribution_balanced.
+  intros n Hn. rewrite Nat.mul_comm. apply distribution_balanced. exact Hn.
 Qed.
 
 (* ================================================================= *)
@@ -608,20 +609,17 @@ Theorem N_self_similar_rays :
   (* (7) Three-step structural collapse *)
   prism_dim_after 3 3 = 0.
 Proof.
-  refine (conj (conj _ (conj _ _))
-         (conj _ (conj _ (conj _ (conj _ (conj _ (conj _ _))))))).
-  - reflexivity.
-  - reflexivity.
-  - reflexivity.
-  - exact total_recurrence.
-  - exact live_recurrence.
-  - intros n Hn.
-    unfold zero_n.
-    assert (H := live_lt_total n Hn). lia.
-  - exact distribution_balanced.
-  - exact master_equation.
-  - exact critical_line_is_one_third.
-  - reflexivity.
+  split. { reflexivity. }
+  split. { reflexivity. }
+  split. { reflexivity. }
+  split. { exact total_recurrence. }
+  split. { exact live_recurrence. }
+  split. { intros n Hn. unfold zero_n.
+           assert (H := live_lt_total n Hn). lia. }
+  split. { exact critical_line_is_one_third. }
+  split. { exact master_equation. }
+  split. { exact critical_line_is_one_third. }
+  reflexivity.
 Qed.
 
 Print Assumptions N_self_similar_rays.

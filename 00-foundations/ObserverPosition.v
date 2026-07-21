@@ -51,7 +51,6 @@ Definition compose (a b : Sym7) : Sym7 :=
   | Map,   Map    => I_in
   | Map, I_in     => I_out | Map, N_in     => N_out
   | Map, I_out    => I_in  | Map, N_out    => N_in
-  | Map, F_out    => F_in
   | _,    _       => I_in
   end.
 
@@ -218,15 +217,13 @@ Theorem OBSERVER_POSITION :
   (* 7. Concrete cases *)
   (triple 2 2 5 = I_in) /\ (triple 2 2 0 = F_in).
 Proof.
-  repeat split.
-  - exact triple_domain_restricted.
-  - exact triple_never_N.
-  - exact F_body_absorbs_triple_R.
-  - exact triple_after_BC_resonance.
-  - exact triple_I_observer.
-  - exact gauge_binary.
-  - reflexivity.
-  - reflexivity.
+  split; [exact triple_domain_restricted|].
+  split; [exact triple_never_N|].
+  split; [exact F_body_absorbs_triple_R|].
+  split; [exact triple_after_BC_resonance|].
+  split; [exact triple_I_observer|].
+  split; [exact gauge_binary|].
+  split; reflexivity.
 Qed.
 
 Print Assumptions OBSERVER_POSITION.

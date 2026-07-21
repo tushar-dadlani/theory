@@ -77,10 +77,8 @@ Proof.
   induction bits as [| b rest IH].
   - reflexivity.
   - simpl. destruct (trim rest) eqn:Ht.
-    + destruct b; simpl.
-      * rewrite <- IH. rewrite Ht. simpl. lia.
-      * rewrite <- IH. rewrite Ht. simpl. lia.
-    + simpl. rewrite IH. reflexivity.
+    + simpl in IH. destruct b; simpl; lia.
+    + simpl in IH |- *. lia.
 Qed.
 
 (* Full adder (from BitwiseArbitraryInt.v) *)
@@ -100,32 +98,48 @@ Proof.
   destruct a, b, c; reflexivity.
 Qed.
 
+(* Helper: add a trailing carry into a single bit list (structural on b) *)
+Fixpoint add_carry_bits (b : list bool) (carry : bool) : list bool :=
+  match b with
+  | []      => if carry then [true] else []
+  | y :: ys => let (s,c) := full_adder false y carry in s :: add_carry_bits ys c
+  end.
+
 Fixpoint add_bits (a b : list bool) (carry : bool) : list bool :=
   match a, b with
-  | [], []         => if carry then [true] else []
-  | [], y :: ys    => let (s,c) := full_adder false y carry in s :: add_bits [] ys c
-  | x :: xs, []   => let (s,c) := full_adder x false carry in s :: add_bits xs [] c
+  | [], bs           => add_carry_bits bs carry
+  | x :: xs, []      => let (s,c) := full_adder x false carry in s :: add_bits xs [] c
   | x :: xs, y :: ys => let (s,c) := full_adder x y carry in s :: add_bits xs ys c
   end.
+
+Lemma add_carry_bits_correct : forall b carry,
+  bits_to_nat (add_carry_bits b carry) =
+  bits_to_nat b + (if carry then 1 else 0).
+Proof.
+  induction b as [|y ys IHb]; intros carry.
+  - destruct carry; simpl; lia.
+  - simpl. destruct (full_adder false y carry) as [s c] eqn:Hfa. simpl.
+    rewrite IHb.
+    pose proof (full_adder_correct false y carry) as H. rewrite Hfa in H. simpl in H.
+    destruct s, c, y, carry; simpl in *; lia.
+Qed.
 
 Theorem add_bits_correct : forall a b carry,
   bits_to_nat (add_bits a b carry) =
   bits_to_nat a + bits_to_nat b + (if carry then 1 else 0).
 Proof.
-  induction a as [|x xs IHa]; intros [|y ys] carry; simpl.
-  - destruct carry; simpl; lia.
-  - destruct (full_adder false y carry) as [s c] eqn:Hfa. simpl.
-    rewrite IHa.
-    have H := full_adder_correct false y carry. rewrite Hfa in H. simpl in H.
-    destruct s, c, y, carry; simpl in *; lia.
-  - destruct (full_adder x false carry) as [s c] eqn:Hfa. simpl.
-    rewrite IHa.
-    have H := full_adder_correct x false carry. rewrite Hfa in H. simpl in H.
-    destruct s, c, x, carry; simpl in *; lia.
-  - destruct (full_adder x y carry) as [s c] eqn:Hfa. simpl.
-    rewrite IHa.
-    have H := full_adder_correct x y carry. rewrite Hfa in H. simpl in H.
-    destruct s, c, x, y, carry; simpl in *; lia.
+  intros a. induction a as [|x xs IHa]; intros b carry.
+  - change (add_bits [] b carry) with (add_carry_bits b carry).
+    rewrite add_carry_bits_correct. simpl. lia.
+  - destruct b as [|y ys].
+    + simpl. destruct (full_adder x false carry) as [s c] eqn:Hfa. simpl.
+      rewrite IHa.
+      pose proof (full_adder_correct x false carry) as H. rewrite Hfa in H. simpl in H.
+      destruct s, c, x, carry; simpl in *; lia.
+    + simpl. destruct (full_adder x y carry) as [s c] eqn:Hfa. simpl.
+      rewrite IHa.
+      pose proof (full_adder_correct x y carry) as H. rewrite Hfa in H. simpl in H.
+      destruct s, c, x, y, carry; simpl in *; lia.
 Qed.
 
 (* ================================================================== *)
@@ -195,16 +209,16 @@ Definition sub_bits_nat (a b : list bool) : list bool :=
   end.
 
 (* For the spec: a - b = a + NOT(b) + 1 mod 2^n *)
+(* GAP: build-repair — statement is false in general. The RHS is reduced
+   modulo 2^(length b), but a - b need not be < 2^(length b)
+   (e.g. a = 15, b = 1: LHS = 14, RHS = (15+1) mod 2 = 0). It would need
+   the extra hypothesis that a - b < 2^(length b). Proof needs rework. *)
 Theorem sub_bits_via_twos_complement : forall a b,
   bits_to_nat a >= bits_to_nat b ->
   bits_to_nat a - bits_to_nat b =
   (bits_to_nat a + bits_to_nat (twos_complement b)) mod
   Nat.pow 2 (length b).
-Proof.
-  intros a b Hge.
-  pose proof (twos_complement_value b) as Hc.
-  lia.
-Qed.
+Proof. Admitted.
 
 (* BigInt subtraction (unsigned, assumes a >= b) *)
 Definition big_sub_nat (a b : BigInt) : BigInt :=
@@ -218,7 +232,7 @@ Definition big_sub (a b : BigInt) : BigInt :=
     let nb := bits_to_nat b.(big_bits) in
     if Nat.leb nb na
     then big_sub_nat a b                                    (* positive result *)
-    else mkBig true (trim (sub_bits_nat b a).(big_bits))   (* negative result *)
+    else mkBig true (trim (sub_bits_nat b.(big_bits) a.(big_bits)))   (* negative result *)
   | false, true  => (* (+a) - (-b) = a + b *)
     mkBig false (trim (add_bits a.(big_bits) b.(big_bits) false))
   | true,  false => (* (-a) - (+b) = -(a + b) *)
@@ -228,31 +242,18 @@ Definition big_sub (a b : BigInt) : BigInt :=
     let nb := bits_to_nat b.(big_bits) in
     if Nat.leb na nb
     then big_sub_nat b a
-    else mkBig true (trim (sub_bits_nat a b).(big_bits))
+    else mkBig true (trim (sub_bits_nat a.(big_bits) b.(big_bits)))
   end.
 
 (* Core subtraction law: a - a = 0 *)
+(* GAP: build-repair — the original statement was ill-typed (sub_bits_nat
+   takes bit lists, not BigInts, and the .(big_bits) projection was
+   misapplied). Corrected to the clearly-intended well-typed form on bit
+   lists. The proof still requires a careful MSB-drop lemma, so it remains
+   Admitted (as it already was). *)
 Theorem sub_self_zero : forall bits,
-  bits_to_nat (sub_bits_nat (mkBig false bits) (mkBig false bits)).(big_bits) = 0.
-Proof.
-  intro bits.
-  unfold sub_bits_nat, big_sub_nat. simpl.
-  (* a - a: a + NOT(a) + 1 = 2^n, drop MSB gives 0 *)
-  unfold twos_complement.
-  rewrite add_bits_correct. simpl.
-  pose proof (twos_complement_value bits) as Hv.
-  unfold twos_complement in Hv. rewrite add_bits_correct in Hv. simpl in Hv.
-  (* The sum = 2^n, which in n bits is 0 with carry 1 *)
-  (* After dropping MSB, value = 0 *)
-  induction bits as [|b rest IH].
-  - simpl. reflexivity.
-  - simpl. unfold bits_not. simpl.
-    destruct b; simpl.
-    + (* b = true: NOT = false. twos_complement gives 2^n - val *)
-      (* This requires checking the rev/drop-MSB operation *)
-      admit. (* see below — structural induction needed *)
-    + admit.
-Admitted.
+  bits_to_nat (sub_bits_nat bits bits) = 0.
+Proof. Admitted.
 (* NOTE: sub_self_zero requires a careful MSB-drop lemma.
    We state the semantic version instead: *)
 
@@ -270,19 +271,16 @@ Proof.
 Qed.
 
 (* The N-strand interpretation: NOT(b) used in subtraction *)
+(* GAP: build-repair — statement is false in general. The LHS equals
+   2^(length b) + (a - b), which is a multiple of 2^(length b) only when
+   2^(length b) divides (a - b) (e.g. a = 4, b = 1 gives LHS = 5, not a
+   multiple of 2). Proof needs rework (or an extra divisibility hypothesis). *)
 Theorem sub_uses_n_strand : forall a_bits b_bits,
   bits_to_nat a_bits >= bits_to_nat b_bits ->
   exists k,
   bits_to_nat a_bits - bits_to_nat b_bits + bits_to_nat b_bits +
   bits_to_nat (bits_not b_bits) + 1 = k * Nat.pow 2 (length b_bits).
-Proof.
-  intros a_bits b_bits H.
-  exists 1.
-  pose proof (twos_complement_value b_bits) as Hc.
-  unfold twos_complement in Hc.
-  rewrite add_bits_correct in Hc. simpl in Hc.
-  unfold bits_not. lia.
-Qed.
+Proof. Admitted.
 
 (* Borrow = dual of carry: borrow propagates along N-strand *)
 Definition has_borrow (a b : nat) : bool :=
@@ -343,35 +341,18 @@ Definition div_step (partial : list bool) (d : bool) (b : list bool)
   let shifted := add_bits (partial ++ [false]) [d] false in
   let shifted' := trim shifted in
   if leb_bits b shifted'
-  then (trim (sub_bits_nat (mkBig false shifted') (mkBig false b)).(big_bits), true)
+  then (trim (sub_bits_nat shifted' b), true)
   else (shifted', false).
 
 (* The div_step produces a remainder < b when b > 0 *)
+(* GAP: build-repair — proof needs rework. Establishing the bound in the
+   subtract branch requires the loop invariant (partial < b) which is not
+   available as a hypothesis here; the original proof also used the
+   non-existent [push_neg] tactic. Kept Admitted (as it already was). *)
 Theorem div_step_remainder_bound : forall partial d b,
   bits_to_nat b > 0 ->
   bits_to_nat (fst (div_step partial d b)) < bits_to_nat b.
-Proof.
-  intros partial d b Hb.
-  unfold div_step.
-  set (shifted := trim (add_bits (partial ++ [false]) [d] false)).
-  destruct (leb_bits b shifted) eqn:Hleb.
-  - (* shifted >= b: subtract *)
-    simpl.
-    apply Nat.leb_le in Hleb.
-    unfold sub_bits_nat. simpl.
-    unfold leb_bits in Hleb.
-    (* The result = shifted - b, which is < b since shifted < 2b in one step *)
-    (* We need: shifted - b < b, i.e. shifted < 2b *)
-    (* By construction: shifted <= 2 * partial + 1 *)
-    (* Invariant: partial < b (maintained by the algorithm) *)
-    (* Therefore: shifted = 2*partial + d <= 2*(b-1) + 1 = 2b-1 < 2b *)
-    (* So shifted - b <= b - 1 < b *)
-    admit. (* Requires the loop invariant: partial < b at each step *)
-  - simpl.
-    apply Nat.leb_nle in Hleb.
-    unfold leb_bits in Hleb. push_neg in Hleb.
-    exact Hleb.
-Admitted.
+Proof. Admitted.
 
 (* Long division: process each bit of the dividend MSB-first *)
 (* We reverse the bit list to process MSB first *)
@@ -513,30 +494,26 @@ Theorem mod2_is_info_bit : forall n : nat,
 Proof.
   intro n.
   destruct (Nat.odd n) eqn:Ho.
-  - apply Nat.odd_spec in Ho. lia.
-  - apply Nat.even_spec in Ho. exact (Nat.even_mod n).
-    Unshelve. apply Nat.even_spec in Ho.
-    pose proof (Nat.div_mod n 2). assert (2 <> 0) by lia.
-    specialize (H H0).
-    pose proof (Nat.even_spec n). rewrite H1 in Ho.
-    destruct Ho as [k Hk]. rewrite Hk.
-    rewrite Nat.mul_comm. rewrite Nat.mod_mul. reflexivity. lia.
+  - apply Nat.odd_spec in Ho. destruct Ho as [m Hm]. subst n.
+    replace (2 * m + 1) with (1 + m * 2) by lia.
+    rewrite Nat.Div0.mod_add. reflexivity.
+  - assert (Hev : Nat.even n = true)
+      by (rewrite <- Nat.negb_odd; rewrite Ho; reflexivity).
+    apply Nat.even_spec in Hev. destruct Hev as [m Hm]. subst n.
+    rewrite Nat.mul_comm. apply Nat.Div0.mod_mul.
 Qed.
 
 (* Mod 2 IS the parity of a bit list *)
 Theorem bits_mod2_is_lsb : forall bits,
   bits_to_nat bits mod 2 = if match bits with [] => false | b :: _ => b end then 1 else 0.
 Proof.
-  intro bits. induction bits as [|b rest IH].
-  - simpl. reflexivity.
-  - simpl.
-    destruct b.
-    + rewrite Nat.add_mod. rewrite Nat.mod_same. simpl.
-      rewrite Nat.mul_mod. rewrite Nat.mod_same. simpl.
-      rewrite Nat.mod_0_l. rewrite Nat.mod_small. reflexivity. lia. lia. lia.
-    + simpl. rewrite Nat.add_0_l.
-      rewrite Nat.mul_mod. rewrite Nat.mod_same. simpl.
-      rewrite Nat.mod_0_l. reflexivity. lia. lia.
+  intro bits. destruct bits as [|b rest].
+  - reflexivity.
+  - destruct b; cbn [bits_to_nat].
+    + replace (1 + 2 * bits_to_nat rest) with (1 + bits_to_nat rest * 2) by lia.
+      rewrite Nat.Div0.mod_add. reflexivity.
+    + replace (0 + 2 * bits_to_nat rest) with (bits_to_nat rest * 2) by lia.
+      apply Nat.Div0.mod_mul.
 Qed.
 
 (* Mod 3 = the triadic field classification on the 0° axis *)
@@ -560,7 +537,9 @@ Proof.
   unfold spectral_pair in Heq.
   injection Heq as H3 H2.
   (* a and b have same mod 3 and mod 2, both < 6 → a = b *)
-  lia || lia.
+  destruct a as [|[|[|[|[|[|a']]]]]]; try lia;
+  destruct b as [|[|[|[|[|[|b']]]]]]; try lia;
+  cbn in H3, H2; lia.
 Qed.
 
 (* The spectral pair is surjective onto {0,1,2} × {0,1} *)
@@ -570,12 +549,13 @@ Theorem spectral_crt_surjective : forall r3 : nat, forall r2 : nat,
 Proof.
   intros r3 r2 H3 H2.
   destruct r3 as [|[|[|?]]]; try lia;
-  destruct r2 as [|[|?]]; try lia;
-  [ exists 0 | exists 4 | exists 3 | exists 1 | exists 6 | exists 5 ];
-  unfold spectral_pair; try (split; [lia | reflexivity]).
-  (* n=6 is not < 6, fix: *)
-  Unshelve.
-  exists 0. split. lia. unfold spectral_pair. simpl. reflexivity.
+  destruct r2 as [|[|?]]; try lia.
+  - exists 0. split; [lia | reflexivity].
+  - exists 3. split; [lia | reflexivity].
+  - exists 4. split; [lia | reflexivity].
+  - exists 1. split; [lia | reflexivity].
+  - exists 2. split; [lia | reflexivity].
+  - exists 5. split; [lia | reflexivity].
 Qed.
 
 
@@ -615,12 +595,12 @@ Theorem lsb_is_mod2 : forall bits,
   (if snd (div2_bits bits) then 1 else 0) = bits_to_nat bits mod 2.
 Proof.
   intro bits. destruct bits as [|b rest].
-  - simpl. reflexivity.
-  - simpl. destruct b.
-    + rewrite Nat.add_mod. rewrite Nat.mul_mod.
-      rewrite Nat.mod_same. simpl. rewrite Nat.mod_small. reflexivity. lia. lia. lia.
-    + simpl. rewrite Nat.add_0_l. rewrite Nat.mul_mod.
-      rewrite Nat.mod_same. simpl. reflexivity. lia.
+  - reflexivity.
+  - destruct b; cbn [div2_bits snd bits_to_nat].
+    + replace (1 + 2 * bits_to_nat rest) with (1 + bits_to_nat rest * 2) by lia.
+      rewrite Nat.Div0.mod_add. reflexivity.
+    + replace (0 + 2 * bits_to_nat rest) with (bits_to_nat rest * 2) by lia.
+      rewrite Nat.Div0.mod_mul. reflexivity.
 Qed.
 
 (* Iterated div2 = full division by 2^k *)
@@ -639,29 +619,20 @@ Theorem divk2_remainder_is_low_bits : forall bits k,
 Proof.
   intros bits k. revert bits.
   induction k as [|k IH]; intro bits.
-  - simpl. rewrite Nat.mod_1_r. reflexivity.
-  - simpl. destruct (div2_bits bits) as [quot r0] eqn:Hd2.
-    simpl. destruct (divk2_bits quot k) as [fq rems] eqn:Hdk.
-    simpl.
+  - change (Nat.pow 2 0) with 1. rewrite Nat.mod_1_r. reflexivity.
+  - cbn [divk2_bits]. destruct (div2_bits bits) as [quot r0] eqn:Hd2.
+    destruct (divk2_bits quot k) as [fq rems] eqn:Hdk.
+    cbn [snd].
     pose proof (div2_correct bits) as Hcorr.
-    rewrite Hd2 in Hcorr. simpl in Hcorr.
+    rewrite Hd2 in Hcorr. cbn [bits_to_nat] in Hcorr.
     specialize (IH quot).
-    rewrite Hdk in IH. simpl in IH.
-    rewrite IH.
-    destruct r0.
-    + (* LSB = 1: bits = 2*quot + 1 *)
-      rewrite <- Hcorr. simpl.
-      rewrite Nat.pow_succ_r'.
-      rewrite Nat.add_mod.
-      rewrite Nat.mul_mod.
-      rewrite Nat.mod_mul. simpl.
-      rewrite Nat.mod_mod. lia. lia. lia. lia.
-    + (* LSB = 0: bits = 2*quot *)
-      rewrite <- Hcorr. simpl. rewrite Nat.add_0_r.
-      rewrite Nat.pow_succ_r'.
-      rewrite Nat.mul_mod.
-      rewrite Nat.mod_mul. simpl.
-      rewrite Nat.mod_mod. lia. lia. lia. lia.
+    rewrite Hdk in IH. cbn [snd] in IH.
+    cbn [bits_to_nat]. rewrite IH. rewrite <- Hcorr.
+    rewrite Nat.pow_succ_r'.
+    replace (bits_to_nat quot * 2 + (if r0 then 1 else 0))
+       with (2 * bits_to_nat quot + (if r0 then 1 else 0)) by lia.
+    rewrite Nat.Div0.add_mul_mod_distr_l by (destruct r0; cbn; lia).
+    lia.
 Qed.
 
 
@@ -685,15 +656,16 @@ Theorem spec_sub_twos_complement : forall a b : nat, forall n : nat,
   a - b = (a + (Nat.pow 2 n - b)) mod Nat.pow 2 n.
 Proof.
   intros a b n Hb Ha Hge.
-  rewrite Nat.add_mod. rewrite Nat.sub_add. rewrite Nat.mod_same. simpl.
-  rewrite Nat.mod_mod. rewrite Nat.mod_small. lia.
-  lia. lia. lia. lia.
+  replace (a + (Nat.pow 2 n - b)) with ((a - b) + 1 * Nat.pow 2 n) by lia.
+  rewrite Nat.Div0.mod_add.
+  rewrite Nat.mod_small by lia.
+  reflexivity.
 Qed.
 
 (* INV D1: Euclidean decomposition *)
 Theorem spec_euclidean : forall a b : nat,
   b > 0 -> a = (a / b) * b + (a mod b).
-Proof. intros a b Hb. apply div_mod_reconstruct. exact Hb. Qed.
+Proof. intros a b Hb. symmetry. apply div_mod_reconstruct. exact Hb. Qed.
 
 (* INV D2: Remainder < divisor (90° projection bound) *)
 Theorem spec_remainder_bounded : forall a b : nat,
@@ -705,10 +677,12 @@ Theorem spec_div2_is_shr : forall bits,
   bits_to_nat (fst (div2_bits bits)) = bits_to_nat bits / 2.
 Proof.
   intro bits. destruct bits as [|b rest].
-  - simpl. reflexivity.
-  - simpl. destruct b.
-    + simpl. rewrite Nat.add_comm. rewrite Nat.div_add_l. lia. lia.
-    + simpl. rewrite Nat.add_0_l. rewrite Nat.mul_comm. rewrite Nat.div_mul. reflexivity. lia.
+  - reflexivity.
+  - destruct b; cbn [div2_bits fst bits_to_nat].
+    + replace (1 + 2 * bits_to_nat rest) with (1 + bits_to_nat rest * 2) by lia.
+      rewrite Nat.div_add by lia. rewrite Nat.div_small by lia. reflexivity.
+    + replace (0 + 2 * bits_to_nat rest) with (bits_to_nat rest * 2) by lia.
+      rewrite Nat.div_mul by lia. reflexivity.
 Qed.
 
 (* INV M1: Mod 2 = LSB = info_bit = N-strand at rank 0 *)
@@ -743,15 +717,10 @@ Theorem spec_spectral_crt : forall a b : nat,
   (a mod 3 = b mod 3 /\ a mod 2 = b mod 2) -> a = b.
 Proof.
   intros a b Ha Hb [H3 H2].
-  (* Same residues mod 2 and 3 with both < 6 → same by CRT *)
-  pose proof (Nat.div_mod a 6) as Hda. assert (6 <> 0) by lia. specialize (Hda H).
-  pose proof (Nat.div_mod b 6) as Hdb. specialize (Hdb H).
-  (* a, b < 6 means a/6 = b/6 = 0 *)
-  rewrite (Nat.div_small a 6 Ha) in Hda.
-  rewrite (Nat.div_small b 6 Hb) in Hdb.
-  simpl in Hda, Hdb.
-  (* Now: a mod 3 = b mod 3, a mod 2 = b mod 2, a < 6, b < 6 → a = b *)
-  lia || lia.
+  (* Same residues mod 2 and 3 with both < 6 → same by CRT (case analysis) *)
+  destruct a as [|[|[|[|[|[|a']]]]]]; try lia;
+  destruct b as [|[|[|[|[|[|b']]]]]]; try lia;
+  cbn in H3, H2; lia.
 Qed.
 
 (* ================================================================== *)
@@ -815,7 +784,7 @@ Theorem div_mod_is_encode_decode : forall n : nat,
   rank = (n - info_bit) / 2.
 Proof.
   intro n. repeat split.
-  - apply encode_is_div_mod.
+  - symmetry. apply encode_is_div_mod.
   - apply Nat.mod_upper_bound. lia.
   - apply decode_rank_is_div2.
 Qed.

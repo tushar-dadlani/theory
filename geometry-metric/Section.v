@@ -73,8 +73,8 @@ Record Section := mkSection {
       the section value depends only on depth, not chart choice. *)
   sec_well_defined :
     forall (d : Depth) (i j : nat),
-      i < n_charts (ms_atlas (bundle_base sec_bundle)) ->
-      j < n_charts (ms_atlas (bundle_base sec_bundle)) ->
+      (i < n_charts (ms_atlas (bundle_base sec_bundle)))%nat ->
+      (j < n_charts (ms_atlas (bundle_base sec_bundle)))%nat ->
       in_chart (chart_at (ms_atlas (bundle_base sec_bundle)) i) d ->
       in_chart (chart_at (ms_atlas (bundle_base sec_bundle)) j) d ->
       sv_fiber (sec_eval d) = sv_fiber (sec_eval d);

@@ -217,20 +217,18 @@ Theorem THREE_PADIC_NECESSARY_AND_SUFFICIENT :
   (* THE 2-ADIC ABSORBS: Q_2 is the ground structure *)
   (forall s, adelic_op F_s s = F_s).
 Proof.
-  refine (conj _ (conj _ (conj _ (conj _ (conj _ (conj _
-          (conj _ (conj _ (conj _ (conj _ (conj _ _))))))))))))  .
-  - exact F_s_necessary.
-  - exact N_s_necessary.
-  - exact I_s_necessary.
-  - exact without_F_s_incomplete.
-  - exact without_N_s_incomplete.
-  - exact without_I_s_incomplete.
-  - exact field_covers_all.
-  - exact field_period_6.
-  - repeat split; reflexivity.
-  - exact diagonal_derives_from_axes.
-  - exact diagonal_is_fixed_point.
-  - intro s; destruct s; reflexivity.
+  split; [exact F_s_necessary |].
+  split; [exact N_s_necessary |].
+  split; [exact I_s_necessary |].
+  split; [exact without_F_s_incomplete |].
+  split; [exact without_N_s_incomplete |].
+  split; [exact without_I_s_incomplete |].
+  split; [exact field_covers_all |].
+  split; [exact field_period_6 |].
+  split; [repeat split; reflexivity |].
+  split; [exact diagonal_derives_from_axes |].
+  split; [exact diagonal_is_fixed_point |].
+  intro s; destruct s; reflexivity.
 Qed.
 
 Print Assumptions THREE_PADIC_NECESSARY_AND_SUFFICIENT.

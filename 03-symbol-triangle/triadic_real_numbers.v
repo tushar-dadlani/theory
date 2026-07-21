@@ -425,8 +425,8 @@ Theorem cross_phase_no_i_limit :
   ~ (forall n : nat, s n = TRealI L).
 Proof.
   intros s L [_ [m Hm]] Hall.
-  specialize (Hall m). rewrite Hall in Hm.
-  unfold seq_phase, treal_phase in Hm.
+  specialize (Hall m).
+  unfold seq_phase, treal_phase in Hm. rewrite Hall in Hm.
   discriminate.
 Qed.
 
@@ -461,10 +461,9 @@ Theorem omega_satisfies_all_axioms :
   treal_opp TRealF = TRealF /\          (* A2: self-inverse  *)
   treal_mul TRealF TRealF = TRealF.     (* A3: self-infinity *)
 Proof.
-  repeat split.
-  - apply omega_add_self.
-  - apply omega_opp_self.
-  - apply omega_mul_self.
+  split; [apply omega_add_self|].
+  split; [apply omega_opp_self|].
+  apply omega_mul_self.
 Qed.
 
 (* ============================================================ *)

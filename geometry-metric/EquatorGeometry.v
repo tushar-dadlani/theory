@@ -338,10 +338,10 @@ Proof.
   { change 2 with (INR 2). apply Rle_ge. apply le_INR. exact Hq. }
   assert (Hsum_pos : INR (sp_q s) + INR (sp_p s) > 0) by lra.
   split.
-  - apply Rlt_div_l. lra.
-    pose proof (Rabs_def1) as _. lra.
-  - apply Rlt_div_l. lra.
-    lra.
+  - apply (Rmult_lt_reg_r (INR (sp_q s) + INR (sp_p s))); [lra|].
+    unfold Rdiv. rewrite Rmult_assoc, Rinv_l by lra. rewrite Rmult_1_r. lra.
+  - apply (Rmult_lt_reg_r (INR (sp_q s) + INR (sp_p s))); [lra|].
+    unfold Rdiv. rewrite Rmult_assoc, Rinv_l by lra. rewrite Rmult_1_r. lra.
 Qed.
 
 (* ================================================================ *)

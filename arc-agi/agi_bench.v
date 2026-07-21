@@ -15,8 +15,10 @@ Inductive Nat : Type :=
   | Zero : MapOperator Nat -> Nat
   | Succ : Nat -> MapOperator Nat -> Nat.
 
-CoFixpoint zero_witness : MapOperator Nat :=
-  absorb Nat (Zero zero_witness) zero_witness.
+(* GAP: build-repair — original CoFixpoint is non-guarded (corecursive call
+   appears under the inductive constructor Zero, which the guard condition
+   rejects). Replaced with an Axiom of the same type as last resort. *)
+Axiom zero_witness : MapOperator Nat.
 
 Definition zero : Nat := Zero zero_witness.
 
@@ -151,20 +153,25 @@ Inductive Integer : Type :=
   | Neg  : Nat -> MapOperator Integer -> Integer
   | ZeroInt : MapOperator Integer -> Integer.
 
+(* GAP: build-repair — Integer and MapOperator Integer are mutually circular
+   with no closed inhabitant, so a base witness is provided as an axiom. *)
+Axiom int_witness : MapOperator Integer.
+
 (* The rational emerges from witness composition ratios *)
 (* A fraction is two witnesses in relation *)
 (* The hidden witness of division *)
 (* Is the map operator between numerator and denominator *)
 
-Record Rational : Type := mkRational
+(* GAP: build-repair — this record is recursive (ratio_op : MapOperator Rational),
+   which the Record keyword forbids; declared with Inductive as Rocq suggests. *)
+Inductive Rational : Type := mkRational
   { numerator   : Integer
   ; denominator : Integer
   ; ratio_op    : MapOperator Rational  (* the division witness *)
   ; nonzero     : denominator <> 
       ZeroInt (generative_witness Integer 
         (ZeroInt (generative_witness Integer
-          (ZeroInt (rep_witness                
-            (Token zero zero_witness))))))
+          (ZeroInt int_witness))))
   }.
 
 (* The discount rate is a rational *)

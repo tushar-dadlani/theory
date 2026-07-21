@@ -155,7 +155,7 @@ Proof.
   unfold prime_axis.
   destruct (Nat.eqb (p mod 3) 0);
   [left | destruct (Nat.eqb (p mod 2) 0)];
-  [reflexivity | right; left; reflexivity | right; right; reflexivity].
+  [reflexivity | right; right; reflexivity | right; left; reflexivity].
 Qed.
 
 (* ============================================================ *)
@@ -185,10 +185,10 @@ Proof.
   refine (conj _ (conj _ (conj _ (conj _ _)))).
   - intro p. unfold prime_axis.
     destruct (Nat.eqb (p mod 3) 0);
-    [left; reflexivity |
+    [right; right; reflexivity |
      destruct (Nat.eqb (p mod 2) 0);
-     [right; right; reflexivity | right; left; reflexivity]].
-  - exact local_is_field_residue.
+     [left; reflexivity | right; left; reflexivity]].
+  - intros n p Hp. apply local_is_field_residue. lia.
   - exact adele_is_diagonal.
   - exact adelic_period_6.
   - repeat split; reflexivity.

@@ -9,7 +9,11 @@
 (* ============================================================ *)
 
 Require Import Coq.Reals.Reals.
+Require Import Lra.
+Require Import String.
 Require Import Core.
+
+Open Scope R_scope.
 
 (* ------------------------------------------------------------ *)
 (* SECTION 1: Why P=NP is Ill-Posed in GHS                    *)
@@ -39,7 +43,7 @@ Parameter NP_verifies : NP_class -> Type -> Type -> Prop.
 (* Parameterized by t ∈ [0,1]   *)
 (* t=0 is P, t=1 is NP          *)
 Definition ComputationGeodesic : Type :=
-  { t : R | 0 <= t <= 1 }.
+  { t : R | (0 <= t <= 1)%R }.
 
 (* ------------------------------------------------------------ *)
 (* SECTION 2: The Duality Statement                             *)
@@ -217,5 +221,3 @@ Definition PNP_at_fixed_point : Prop :=
     — they should be visible as topological obstructions
       on the computation geodesic
 *)
-
-End PvsNP.

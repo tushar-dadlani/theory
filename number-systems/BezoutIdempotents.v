@@ -156,12 +156,9 @@ Proof.
   unfold e_p, n.
   pose proof p_at_least_2.
   pose proof q_at_least_2.
-  rewrite Nat.mul_comm.
+  rewrite (Nat.mul_comm p q).
   rewrite (mod_mod_divides (inv_Np_mod_p * N_p) q p) by lia.
   unfold N_p.
-  rewrite (Nat.mul_comm inv_Np_mod_p q).
-  rewrite <- Nat.mul_assoc.
-  rewrite Nat.mul_comm.
   apply Nat.Div0.mod_mul.
 Qed.
 
@@ -171,7 +168,7 @@ Proof.
   unfold e_q, n.
   pose proof p_at_least_2.
   pose proof q_at_least_2.
-  rewrite Nat.mul_comm.
+  rewrite (Nat.mul_comm p q).
   rewrite (mod_mod_divides (inv_Nq_mod_q * N_q) q p) by lia.
   exact inv_Nq_correct.
 Qed.
@@ -184,9 +181,6 @@ Proof.
   pose proof q_at_least_2.
   rewrite (mod_mod_divides (inv_Nq_mod_q * N_q) p q) by lia.
   unfold N_q.
-  rewrite (Nat.mul_comm inv_Nq_mod_q p).
-  rewrite <- Nat.mul_assoc.
-  rewrite Nat.mul_comm.
   apply Nat.Div0.mod_mul.
 Qed.
 
@@ -198,10 +192,9 @@ Proof.
   rewrite Nat.Div0.add_mod.
   rewrite e_p_mod_p.
   rewrite e_q_mod_p.
-  simpl. 
-  pose proof p_at_least_2. 
-  destruct p as [|[|p']]; try lia.
-  simpl. reflexivity.
+  pose proof p_at_least_2.
+  rewrite Nat.add_0_r.
+  apply Nat.mod_small. lia.
 Qed.
 
 Theorem idempotents_sum_to_one_mod_q :
@@ -210,10 +203,9 @@ Proof.
   rewrite Nat.Div0.add_mod.
   rewrite e_p_mod_q.
   rewrite e_q_mod_q.
-  simpl.
   pose proof q_at_least_2.
-  destruct q as [|[|q']]; try lia.
-  simpl. reflexivity.
+  rewrite Nat.add_0_l.
+  apply Nat.mod_small. lia.
 Qed.
 
 (* (d) Orthogonality: e_p · e_q ≡ 0 (mod n).
@@ -269,7 +261,7 @@ Proof.
   rewrite Nat.Div0.mul_mod.
   rewrite e_q_mod_p.
   rewrite Nat.mul_0_r.
-  simpl.
+  rewrite Nat.Div0.mod_0_l.
   rewrite Nat.mod_mod by lia.
   rewrite Nat.add_0_r.
   rewrite Nat.mod_mod by lia.
@@ -284,13 +276,14 @@ Proof.
   unfold crt_reconstruct.
   pose proof p_at_least_2.
   pose proof q_at_least_2.
-  rewrite Nat.mul_comm.
+  unfold n.
+  rewrite (Nat.mul_comm p q).
   rewrite (mod_mod_divides _ q p) by lia.
   rewrite Nat.Div0.add_mod.
   rewrite Nat.Div0.mul_mod.
   rewrite e_p_mod_q.
   rewrite Nat.mul_0_r.
-  simpl.
+  rewrite Nat.Div0.mod_0_l, Nat.add_0_l.
   rewrite Nat.Div0.mul_mod.
   rewrite e_q_mod_q.
   rewrite Nat.mul_1_r.

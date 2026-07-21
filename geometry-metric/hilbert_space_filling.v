@@ -12,6 +12,9 @@
 (*  Spectral gap = 1 (minimum eigenvalue, from nat structure)    *)
 (* ============================================================= *)
 
+From Stdlib Require Import PeanoNat.
+Require Import TowerConstruction.
+
 (* A formal system is "Hilbert-complete" when its kernel is empty.
    This is the symbolic analogue of: every Cauchy sequence converges. *)
 

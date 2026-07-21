@@ -215,6 +215,9 @@ Qed.
 
 Definition sym7_compose (a b : Sym7) : Sym7 :=
   match a, b with
+  (* Map sends domain to codomain (takes priority over identity/absorption) *)
+  | S7_Map, S7_I_in  => S7_I_out
+  | S7_Map, S7_F_in  => S7_F_out
   (* Identity absorbs *)
   | S7_I_in,  x => x
   | x, S7_I_in  => x
@@ -226,7 +229,6 @@ Definition sym7_compose (a b : Sym7) : Sym7 :=
   (* Map is involution: /∘/ = id_in *)
   | S7_Map,   S7_Map   => S7_I_in
   (* Map sends domain to codomain *)
-  | S7_Map, S7_I_in  => S7_I_out
   | S7_Map, S7_N_in  => S7_N_out
   (* Map sends codomain back to domain *)
   | S7_Map, S7_I_out => S7_I_in
@@ -310,7 +312,7 @@ Proof.
   - intro s. destruct s; reflexivity.
 
   (* 3. Domain ≠ codomain for every spoke *)
-  - intro s. apply domain_codomain_disjoint.
+  - intro s. apply not_eq_sym. apply domain_codomain_disjoint.
 
   (* 4. Observer at level 1 = depth 1/2, denominator = 2 *)
   - reflexivity.
@@ -392,7 +394,7 @@ Proof.
   - intro s. destruct s; auto.
 
   (* 7 symbols exhaustive *)
-  - intro s. destruct s; auto.
+  - intro s. destruct s; auto 10.
 
   (* Unfolding is total and Map sends domain to codomain *)
   - intro s. destruct s.

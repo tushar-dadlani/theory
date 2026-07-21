@@ -192,7 +192,7 @@ Theorem projection_is_lossy :
     project_diagonal a2 b2 = n.
 Proof.
   exists 12, 2, 6, 3, 4.
-  repeat split; reflexivity.
+  split; [ discriminate | split; reflexivity ].
 Qed.
 
 (* Verification on 0° axis: O(1) — just multiply *)
@@ -240,12 +240,12 @@ Theorem P_neq_NP_diagonal_separation :
       a1 <> a2 /\
       a1 * b1 = n /\ a2 * b2 = n).
 Proof.
-  repeat split.
+  split; [ | split ].
   - intros a b. reflexivity.
   - exists 5. split. lia.
     unfold gaussian_construct_cost, gaussian_verify_cost. lia.
   - exists 12, 2, 6, 3, 4.
-    repeat split; reflexivity.
+    split; [ discriminate | split; reflexivity ].
 Qed.
 
 (* ================================================================= *)
@@ -387,16 +387,15 @@ Theorem P_vs_NP_axis_dependent :
   (* Classical P vs NP is the 45° question *)
   P_eq_NP Axis45 = False.
 Proof.
-  repeat split.
-  - exact P_eq_NP_linear.
-  - intro n. reflexivity.
-  - reflexivity.
-  - intros a b. reflexivity.
-  - reflexivity.
-  - reflexivity.
-  - reflexivity.
-  - discriminate.
-  - reflexivity.
-  - split; reflexivity.
-  - reflexivity.
+  split; [ exact P_eq_NP_linear | ].
+  split; [ intro n; reflexivity | ].
+  split; [ reflexivity | ].
+  split; [ intros a b; reflexivity | ].
+  split; [ reflexivity | ].
+  split; [ reflexivity | ].
+  split; [ reflexivity | ].
+  split; [ discriminate | ].
+  split; [ reflexivity | ].
+  split; [ split; reflexivity | ].
+  reflexivity.
 Qed.

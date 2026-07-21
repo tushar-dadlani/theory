@@ -304,12 +304,11 @@ Theorem proof_order_necessary_and_complete :
   (1 # 2) == 1 - (1 # 2).
 
 Proof.
-  repeat split.
-  - discriminate.            (* P ≠ NP: gaussian_hard ≠ linear_hard *)
-  - exact RH_equals_half.    (* RH = 1/2: unique fixed point *)
-  - reflexivity.             (* BSD at 1/2 *)
-  - reflexivity.             (* Hodge at 1/2 *)
-  - reflexivity.             (* Navier-Stokes at 1/2 *)
-  - reflexivity.             (* Yang-Mills at 1/2 *)
-  - reflexivity.             (* 1/2 is self-consistent fixed point *)
+  split; [discriminate | ].            (* P ≠ NP: gaussian_hard ≠ linear_hard *)
+  split; [exact RH_equals_half | ].    (* RH = 1/2: unique fixed point *)
+  split; [reflexivity | ].             (* BSD at 1/2 *)
+  split; [reflexivity | ].             (* Hodge at 1/2 *)
+  split; [reflexivity | ].             (* Navier-Stokes at 1/2 *)
+  split; [reflexivity | ].             (* Yang-Mills at 1/2 *)
+  reflexivity.                         (* 1/2 is self-consistent fixed point *)
 Qed.

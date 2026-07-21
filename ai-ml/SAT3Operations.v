@@ -14,9 +14,16 @@
 
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
-Require Import Coq.Lists.List.
+Require Import Lia.
 Require Import Coq.QArith.QArith.
+Require Import Coq.QArith.Qminmax.
+Require Import Lra.
+Require Import Coq.Lists.List.
 Import ListNotations.
+(* build-repair: QArith opens Q_scope, but this file is over nat except for
+   the single Q-valued read_coordinate. Default to nat_scope and annotate the
+   Q spots with %Q. *)
+Open Scope nat_scope.
 
 (* ================================================================ *)
 (* SECTION 0 : Base types (from SAT3Computer.v)                     *)
@@ -80,7 +87,7 @@ Axiom locate_invariant :
 (* locate_invariant takes exactly one reading *)
 Axiom locate_one_reading :
   forall (ns : NodeSet) (H : Satisfiable ns),
-    exists (steps : nat), steps = 1.
+    exists (steps : nat), steps = 1%nat.
 
 (* locate_invariant is the minimum element *)
 (* Every other satisfying assignment contains it *)
@@ -102,14 +109,14 @@ Definition read_coordinate (ns : NodeSet) : GCoord :=
   (* = 1 / (1 + constraint_density)                     *)
   (* constraint_density = |clauses| / |variables|       *)
   (* High density → deeper in tower → lower coordinate  *)
-  1.   (* placeholder: concrete computation in Rust *)
+  1%Q.   (* placeholder: concrete computation in Rust *)
 
 Lemma read_coordinate_in_range :
   forall (ns : NodeSet),
-    0 <= read_coordinate ns /\ read_coordinate ns <= 1.
+    (0 <= read_coordinate ns)%Q /\ (read_coordinate ns <= 1)%Q.
 Proof.
   intro ns. unfold read_coordinate.
-  split; lra.
+  split; unfold Qle; simpl; lia.
 Qed.
 
 (* --- find_boundary --- *)
@@ -171,13 +178,15 @@ Axiom detect_cause_zone_linear :
 
 Definition MerkleHash := nat.  (* simplified *)
 
-Fixpoint clause_hash (c : Clause) : MerkleHash :=
-  var_of (c_lit1 c) + var_of (c_lit2 c) * 31 + var_of (c_lit3 c) * 961.
+(* build-repair: nat arithmetic annotated with %nat since QArith's Q_scope
+   is the ambient scope; also [clause_hash] is not recursive, so Definition. *)
+Definition clause_hash (c : Clause) : MerkleHash :=
+  (var_of (c_lit1 c) + var_of (c_lit2 c) * 31 + var_of (c_lit3 c) * 961)%nat.
 
 Fixpoint merkle_root (ns : NodeSet) : MerkleHash :=
   match ns with
-  | []      => 0
-  | c :: cs => clause_hash c + merkle_root cs * 1000003
+  | []      => 0%nat
+  | c :: cs => (clause_hash c + merkle_root cs * 1000003)%nat
   end.
 
 (* Merkle root is unique: different graphs have different roots *)
@@ -280,6 +289,24 @@ Definition subst_clause (n m : nat) (c : Clause) : Clause :=
 Definition substitute (n m : nat) (ns : NodeSet) : NodeSet :=
   map (subst_clause n m) ns.
 
+(* build-repair helpers: substitution commutes with evaluation, so the
+   original [apply (H ...)] (which left an un-unifiable eval_clause) goes
+   through after rewriting with these. *)
+Lemma subst_literal_eval : forall (n m : nat) (a : Assignment) (l : Literal),
+  eval_lit a (subst_literal n m l) =
+  eval_lit (fun k => if k =? n then a m else a k) l.
+Proof.
+  intros n m a l. destruct l as [k | k]; simpl; destruct (k =? n); reflexivity.
+Qed.
+
+Lemma subst_clause_eval : forall (n m : nat) (a : Assignment) (c : Clause),
+  eval_clause a (subst_clause n m c) =
+  eval_clause (fun k => if k =? n then a m else a k) c.
+Proof.
+  intros n m a c. unfold eval_clause, subst_clause; simpl.
+  rewrite !subst_literal_eval. reflexivity.
+Qed.
+
 (* Substitution is a graph homomorphism *)
 Theorem substitute_homomorphism :
   forall (ns : NodeSet) (n m : nat) (a : Assignment),
@@ -289,11 +316,13 @@ Proof.
   intros ns n m a.
   split.
   - intros H c Hc.
+    rewrite <- subst_clause_eval.
     apply (H (subst_clause n m c)).
     apply in_map. exact Hc.
   - intros H c Hc.
     apply in_map_iff in Hc as [c' [Heq Hc']].
     rewrite <- Heq.
+    rewrite subst_clause_eval.
     apply H. exact Hc'.
 Qed.
 
@@ -307,30 +336,16 @@ Definition forced_literal (ns : NodeSet) (l : Literal) : Prop :=
     c_lit1 c = l \/ c_lit2 c = l \/ c_lit3 c = l.
 
 (* Forced literals are part of every satisfying assignment *)
+(* GAP: build-repair -- proof needs rework (was already Admitted; the tactic
+   script also hard-errored). The empty-node-set case is not provable: with
+   ns = [], forced_literal [] l holds vacuously while the satisfying
+   assignment a is arbitrary, so eval_lit a l need not be true. Statement
+   preserved. *)
 Theorem forced_literal_in_invariant :
   forall (ns : NodeSet) (l : Literal) (H : Satisfiable ns),
     forced_literal ns l ->
     eval_lit (proj1_sig (locate_invariant ns H)) l = true.
-Proof.
-  intros ns l H Hforced.
-  destruct (locate_invariant ns H) as [a Ha].
-  simpl.
-  (* l is forced: it appears in every clause              *)
-  (* The invariant satisfies every clause                 *)
-  (* Therefore l must be true in the invariant            *)
-  destruct ns as [| c cs].
-  - simpl in Hforced. (* No clauses: vacuously true *)
-    unfold eval_lit. destruct l; simpl.
-    + reflexivity.    (* Pos: a 0 = true by convention *)
-    + admit.
-  - pose proof (Ha c (or_introl eq_refl)) as Hc.
-    pose proof (Hforced c (or_introl eq_refl)) as [Hl | [Hl | Hl]];
-    rewrite <- Hl in Hc;
-    apply orb_true_iff in Hc as [H1 | H1];
-    try (apply orb_true_iff in H1 as [H2 | H2]);
-    try exact H1; try exact H2; try exact Hc.
-    admit.
-Admitted.
+Proof. Admitted.
 
 (* --- resolution --- *)
 (* The core inference step. *)
@@ -338,38 +353,41 @@ Admitted.
 (* Eliminates variable B. *)
 (* This is the GHS move as a graph operation. *)
 
-Definition resolvent (c1 c2 : Clause) (n : nat) : option Clause :=
-  (* Check if c1 contains Pos n and c2 contains Neg n *)
-  let has_pos := (var_of (c_lit1 c1) =? n && matches_pos (c_lit1 c1)) ||
-                 (var_of (c_lit2 c1) =? n && matches_pos (c_lit2 c1)) ||
-                 (var_of (c_lit3 c1) =? n && matches_pos (c_lit3 c1)) in
-  let has_neg := (var_of (c_lit1 c2) =? n && matches_neg (c_lit1 c2)) ||
-                 (var_of (c_lit2 c2) =? n && matches_neg (c_lit2 c2)) ||
-                 (var_of (c_lit3 c2) =? n && matches_neg (c_lit3 c2)) in
-  if has_pos && has_neg
-  then Some (mkClause
-    (first_non_n c1 n)
-    (first_non_n c2 n)
-    (second_non_n c1 n))   (* simplified: takes first two non-n lits *)
-  else None
+(* build-repair: these helpers were declared via an invalid [where ... and]
+   clause on the Definition (that syntax is for notations, not functions).
+   They are plain non-recursive definitions, moved ahead of resolvent. *)
+Definition matches_pos (l : Literal) : bool :=
+  match l with Pos _ => true | Neg _ => false end.
 
-where matches_pos (l : Literal) : bool :=
-  match l with Pos _ => true | Neg _ => false end
+Definition matches_neg (l : Literal) : bool :=
+  match l with Neg _ => true | Pos _ => false end.
 
-and matches_neg (l : Literal) : bool :=
-  match l with Neg _ => true | Pos _ => false end
-
-and first_non_n (c : Clause) (n : nat) : Literal :=
+Definition first_non_n (c : Clause) (n : nat) : Literal :=
   if negb (var_of (c_lit1 c) =? n) then c_lit1 c
   else if negb (var_of (c_lit2 c) =? n) then c_lit2 c
-  else c_lit3 c
+  else c_lit3 c.
 
-and second_non_n (c : Clause) (n : nat) : Literal :=
+Definition second_non_n (c : Clause) (n : nat) : Literal :=
   if negb (var_of (c_lit1 c) =? n) &&
      negb (var_of (c_lit2 c) =? n) then c_lit2 c
   else if negb (var_of (c_lit2 c) =? n) &&
           negb (var_of (c_lit3 c) =? n) then c_lit3 c
   else c_lit1 c.
+
+Definition resolvent (c1 c2 : Clause) (n : nat) : option Clause :=
+  (* Check if c1 contains Pos n and c2 contains Neg n *)
+  let has_pos := ((var_of (c_lit1 c1) =? n) && matches_pos (c_lit1 c1)) ||
+                 ((var_of (c_lit2 c1) =? n) && matches_pos (c_lit2 c1)) ||
+                 ((var_of (c_lit3 c1) =? n) && matches_pos (c_lit3 c1)) in
+  let has_neg := ((var_of (c_lit1 c2) =? n) && matches_neg (c_lit1 c2)) ||
+                 ((var_of (c_lit2 c2) =? n) && matches_neg (c_lit2 c2)) ||
+                 ((var_of (c_lit3 c2) =? n) && matches_neg (c_lit3 c2)) in
+  if has_pos && has_neg
+  then Some (mkClause
+    (first_non_n c1 n)
+    (first_non_n c2 n)
+    (second_non_n c1 n))   (* simplified: takes first two non-n lits *)
+  else None.
 
 (* Resolution is sound: the resolvent is implied by both parents *)
 Theorem resolution_sound :
@@ -432,16 +450,21 @@ Qed.
 (* One satisfying assignment covers at least one graph. *)
 (* Disjunction. O(n+m). *)
 
+(* build-repair: [in_dec] needs a sumbool decider, but a boolean-valued
+   lambda was supplied. Expressed with a boolean clause equality and
+   [existsb], preserving the intended membership test. *)
+Definition clause_eqb (x y : Clause) : bool :=
+  match x, y with
+  | mkClause l1 l2 l3, mkClause l1' l2' l3' =>
+      andb (andb (Nat.eqb (var_of l1) (var_of l1'))
+                 (Nat.eqb (var_of l2) (var_of l2')))
+           (Nat.eqb (var_of l3) (var_of l3'))
+  end.
+
 Definition union_ns (ns1 ns2 : NodeSet) : NodeSet :=
   (* Union: clauses from ns1 that are also in ns2 *)
   (* = constraints both graphs agree on *)
-  filter (fun c => if in_dec (fun x y =>
-    match x, y with
-    | mkClause l1 l2 l3, mkClause l1' l2' l3' =>
-        andb (andb (Nat.eqb (var_of l1) (var_of l1'))
-                   (Nat.eqb (var_of l2) (var_of l2')))
-             (Nat.eqb (var_of l3) (var_of l3'))
-    end = true) c ns2 then true else false) ns1.
+  filter (fun c => existsb (clause_eqb c) ns2) ns1.
 
 Theorem union_satisfiable :
   forall (ns1 ns2 : NodeSet),
@@ -496,8 +519,27 @@ Theorem feedback_monotone :
 Proof.
   intro s. unfold feedback_step. simpl.
   destruct (fs_dist s =? 0) eqn:H.
-  - apply Nat.eqb_eq in H. omega.
-  - omega.
+  - apply Nat.eqb_eq in H. lia.
+  - lia.
+Qed.
+
+(* build-repair helpers: one feedback step drops the distance by one
+   (truncated), so n iterations drop it by n. *)
+Lemma fs_dist_step : forall (x : FeedbackState),
+  fs_dist (feedback_step x) = fs_dist x - 1.
+Proof.
+  intro x. unfold feedback_step; simpl.
+  destruct (fs_dist x =? 0) eqn:E.
+  - apply Nat.eqb_eq in E. lia.
+  - lia.
+Qed.
+
+Lemma fs_dist_iter : forall (n : nat) (s : FeedbackState),
+  fs_dist (Nat.iter n feedback_step s) = fs_dist s - n.
+Proof.
+  induction n as [| n IH]; intro s.
+  - simpl. lia.
+  - rewrite Nat.iter_succ. rewrite fs_dist_step. rewrite IH. lia.
 Qed.
 
 (* Convergence in at most d steps *)
@@ -509,14 +551,9 @@ Theorem feedback_converges :
 Proof.
   intro s.
   exists (fs_dist s).
-  split; [omega |].
-  induction (fs_dist s) as [| d IH].
-  - reflexivity.
-  - simpl. unfold feedback_step. simpl.
-    destruct (d =? 0) eqn:H.
-    + apply Nat.eqb_eq in H. rewrite H. reflexivity.
-    + simpl. admit.
-Admitted.
+  split; [lia |].
+  rewrite fs_dist_iter. lia.
+Qed.
 
 (* ================================================================ *)
 (* SECTION 4 : The operation algebra                                *)
@@ -536,9 +573,7 @@ Proof.
   - reflexivity.
   - (* c does not match itself — contradiction *)
     exfalso.
-    apply andb_true_iff in H as [H12 H3].
-    apply andb_true_iff in H12 as [H1 H2].
-    apply Nat.eqb_neq in H1. apply H1. reflexivity.
+    rewrite !Nat.eqb_refl in H. simpl in H. discriminate.
 Qed.
 
 (* intersect is commutative up to satisfiability *)
@@ -647,27 +682,17 @@ Definition detect_cause_zone_english (ns : NodeSet) : bool :=
     eval_clause (fun _ => true) c) ns).
 
 (* Cause zone detection is formally correct *)
+(* GAP: build-repair -- proof needs rework (was already Admitted; the script
+   also referenced a nonexistent lemma [existsb_false]). The statement is
+   false: [detect_cause_zone_english] flags a set when every clause is false
+   under the all-true assignment, but an all-negative clause such as
+   [Neg 0 ∨ Neg 0 ∨ Neg 0] is such a clause and is still satisfiable
+   (set the variable to false). Statement preserved. *)
 Theorem cause_zone_detection_correct :
   forall (ns : NodeSet),
     detect_cause_zone_english ns = true ->
     ~ Satisfiable ns.
-Proof.
-  intros ns H Hsat.
-  unfold detect_cause_zone_english in H.
-  destruct (length ns =? 0) eqn:Hlen.
-  - discriminate.
-  - apply negb_true_iff in H.
-    apply existsb_false in H.
-    destruct Hsat as [a Ha].
-    destruct ns as [| c cs].
-    + simpl in Hlen. discriminate.
-    + pose proof (Ha c (or_introl eq_refl)) as Hc.
-      pose proof (H c (or_introl eq_refl)) as Hc'.
-      (* eval_clause (fun _ => true) c = false *)
-      (* But Ha says eval_clause a c = true *)
-      (* Contradiction since true assignment satisfies any satisfiable clause *)
-      admit.
-Admitted.
+Proof. Admitted.
 
 (* 4. derive_minimum_move_english *)
 (* Invariant → one sentence. Proved minimal. *)

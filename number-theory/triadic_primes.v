@@ -34,6 +34,7 @@ Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Logic.Classical_Prop.
 Require Import Coq.Arith.PeanoNat.
+Require Import Lia.
 
 (* ============================================================ *)
 (* SECTION 1 — Triadic Numbers                                 *)
@@ -143,17 +144,20 @@ Proof.
     destruct H as [HF | [k Hk]].
     + rewrite Ha in HF. discriminate.
     + exists (tval k).
-      unfold tmul in Hk.
-      rewrite Ha in Hk.
-      destruct (tph k) eqn:Ek;
-      rewrite Hk in Hb; simpl in Hb;
-      try discriminate;
-      injection Hk; intro Hv; exact Hv.
+      assert (Hval : tval b = tval (tmul a k)) by (rewrite Hk; reflexivity).
+      assert (Hph  : tph b  = tph  (tmul a k)) by (rewrite Hk; reflexivity).
+      unfold tmul, tn_omega in Hval, Hph.
+      rewrite Ha in Hval, Hph.
+      destruct (tph k) eqn:Ek; simpl in Hval, Hph.
+      * exact Hval.
+      * exact Hval.
+      * rewrite Hb in Hph. discriminate.
   - intros [k Hk].
     unfold tdivides. right.
     exists (mkTNum k PhI).
+    destruct b as [tvb tpb]. simpl in Hb, Hk.
     unfold tmul. rewrite Ha. simpl.
-    destruct b. simpl in Hb. rewrite Hb. simpl. rewrite Hk. reflexivity.
+    rewrite Hb, Hk. reflexivity.
 Qed.
 
 (* N-number divides I-number via N-divisor (N × N = I) *)
@@ -166,17 +170,20 @@ Proof.
     destruct H as [HF | [k Hk]].
     + rewrite Ha in HF. discriminate.
     + exists k.
-      unfold tmul in Hk.
-      rewrite Ha in Hk.
-      destruct (tph k) eqn:Ek.
-      * rewrite Hk in Hb. simpl in Hb. discriminate.
-      * split. exact Ek.
-        injection Hk. intro Hv. exact Hv.
-      * rewrite Hk in Hb. simpl in Hb. discriminate.
+      assert (Hval : tval b = tval (tmul a k)) by (rewrite Hk; reflexivity).
+      assert (Hph  : tph b  = tph  (tmul a k)) by (rewrite Hk; reflexivity).
+      unfold tmul, tn_omega in Hval, Hph.
+      rewrite Ha in Hval, Hph.
+      destruct (tph k) eqn:Ek; simpl in Hval, Hph.
+      * rewrite Hb in Hph. discriminate.
+      * split; [reflexivity | exact Hval].
+      * rewrite Hb in Hph. discriminate.
   - intros [k [Hk Hv]].
     unfold tdivides. right.
-    exists k. unfold tmul. rewrite Ha, Hk. simpl.
-    destruct b. simpl in *. rewrite Hv. reflexivity.
+    exists k.
+    destruct b as [tvb tpb]. simpl in Hb, Hv.
+    unfold tmul. rewrite Ha, Hk. simpl.
+    rewrite Hv, Hb. reflexivity.
 Qed.
 
 (* ============================================================ *)
@@ -235,46 +242,42 @@ Theorem i_prime_2_is_prime : t_prime i_prime_2.
 Proof.
   unfold t_prime, i_prime_2. simpl.
   unfold nat_prime. split.
-  - omega.
+  - lia.
   - intros d Hd [k Hk].
     destruct d.
-    + omega.
+    + lia.
     + destruct d.
       * left. reflexivity.
       * destruct d.
-        -- right. simpl in Hk. omega.
-        -- exfalso. simpl in Hk. omega.
+        -- right. simpl in Hk. nia.
+        -- exfalso. destruct k; simpl in Hk; nia.
 Qed.
 
 (* n_prime_2 is prime (same value, different phase) *)
 Theorem n_prime_2_is_prime : t_prime n_prime_2.
 Proof.
   unfold t_prime, n_prime_2. simpl.
-  exact (proj2 (conj (le_refl 2)
-    (fun d Hd => proj2 (i_prime_2_is_prime) d Hd))).
-  Restart.
-  unfold t_prime, n_prime_2. simpl.
   unfold nat_prime. split.
-  - omega.
+  - lia.
   - intros d Hd [k Hk].
-    destruct d; [omega | destruct d; [left; reflexivity |
-    destruct d; [right; simpl in Hk; omega |
-    exfalso; simpl in Hk; omega]]].
+    destruct d; [lia | destruct d; [left; reflexivity |
+    destruct d; [right; simpl in Hk; nia |
+    exfalso; destruct k; simpl in Hk; nia]]].
 Qed.
 
 (* i_prime_3 is prime *)
 Theorem i_prime_3_is_prime : t_prime i_prime_3.
 Proof.
   unfold t_prime, i_prime_3. simpl.
-  unfold nat_prime. split. omega.
+  unfold nat_prime. split. lia.
   intros d Hd [k Hk].
-  destruct d; [omega |
+  destruct d; [lia |
   destruct d; [left; reflexivity |
   destruct d; [|
-  destruct d; [right; simpl in Hk; omega |
-  exfalso; simpl in Hk; omega]]]].
+  destruct d; [right; simpl in Hk; nia |
+  exfalso; destruct k; simpl in Hk; nia]]]].
   exfalso. simpl in Hk.
-  destruct k; simpl in Hk; omega.
+  destruct k; simpl in Hk; nia.
 Qed.
 
 (* I-prime and N-prime with same value are DISTINCT primes *)
@@ -284,8 +287,7 @@ Theorem i_n_prime_distinct : forall n : nat,
   mkTNum n PhI <> mkTNum n PhN.
 Proof.
   intros n _ _.
-  intro H. injection H. intros Hph _.
-  discriminate.
+  intro H. discriminate H.
 Qed.
 
 (* For every classical prime p, there are TWO triadic primes:
@@ -295,10 +297,10 @@ Theorem two_triadic_primes_per_classical : forall n : nat,
   t_prime (mkTNum n PhI) /\ t_prime (mkTNum n PhN) /\
   mkTNum n PhI <> mkTNum n PhN.
 Proof.
-  intros n Hn. repeat split.
+  intros n Hn. split; [| split].
   - unfold t_prime. simpl. exact Hn.
   - unfold t_prime. simpl. exact Hn.
-  - intro H. injection H. intros Hph _. discriminate.
+  - intro H. discriminate H.
 Qed.
 
 (* ============================================================ *)
@@ -343,7 +345,7 @@ Theorem two_factorizations_use_different_primes :
   i_prime_2 <> n_prime_2.
 Proof.
   unfold i_prime_2, n_prime_2.
-  intro H. injection H. intros Hph _. discriminate.
+  intro H. discriminate H.
 Qed.
 
 (* FTA FAILS: 4_I has two distinct prime factorizations *)
@@ -356,14 +358,13 @@ Theorem fta_fails :
     p1 <> q1.
 Proof.
   exists i_four, i_prime_2, i_prime_2, n_prime_2, n_prime_2.
-  repeat split.
-  - apply i_prime_2_is_prime.
-  - apply i_prime_2_is_prime.
-  - apply n_prime_2_is_prime.
-  - apply n_prime_2_is_prime.
-  - apply i_factorization_of_4.
-  - apply n_factorization_of_4.
-  - apply two_factorizations_use_different_primes.
+  split; [apply i_prime_2_is_prime |].
+  split; [apply i_prime_2_is_prime |].
+  split; [apply n_prime_2_is_prime |].
+  split; [apply n_prime_2_is_prime |].
+  split; [apply i_factorization_of_4 |].
+  split; [apply n_factorization_of_4 |].
+  apply two_factorizations_use_different_primes.
 Qed.
 
 (* ============================================================ *)
@@ -441,19 +442,19 @@ Proof. unfold sp_species, sp_6_II. simpl. reflexivity. Qed.
 
 (* ---- EXAMPLE 2: NN-semiprime 6_I = 2_N × 3_N ---- *)
 (*  Note: same VALUE as sp_6_II but different prime factors! *)
-Definition n_prime_3 : TNum := mkTNum 3 PhN.
+(*  (n_prime_3 is defined above)                             *)
 
 Theorem n_prime_3_is_prime : t_prime n_prime_3.
 Proof.
   unfold t_prime, n_prime_3. simpl.
-  unfold nat_prime. split. omega.
+  unfold nat_prime. split. lia.
   intros d Hd [k Hk].
-  destruct d; [omega |
+  destruct d; [lia |
   destruct d; [left; reflexivity |
   destruct d; [|
-  destruct d; [right; simpl in Hk; omega |
-  exfalso; simpl in Hk; omega]]]].
-  exfalso. simpl in Hk. destruct k; simpl in Hk; omega.
+  destruct d; [right; simpl in Hk; nia |
+  exfalso; destruct k; simpl in Hk; nia]]]].
+  exfalso. simpl in Hk. destruct k; simpl in Hk; nia.
 Qed.
 
 Theorem nn_gives_i_phase : tmul n_prime_2 n_prime_3 = mkTNum 6 PhI.
@@ -575,11 +576,17 @@ Theorem i_semiprime_dual_factorization :
 Proof.
   intros n Hn.
   exists i_prime_2, i_prime_2, n_prime_2, n_prime_2.
-  repeat split; try reflexivity.
-  - apply i_prime_2_is_prime.
-  - apply i_prime_2_is_prime.
-  - apply n_prime_2_is_prime.
-  - apply n_prime_2_is_prime.
+  split; [apply i_prime_2_is_prime |].
+  split; [reflexivity |].
+  split; [apply i_prime_2_is_prime |].
+  split; [reflexivity |].
+  split; [apply n_prime_2_is_prime |].
+  split; [reflexivity |].
+  split; [apply n_prime_2_is_prime |].
+  split; [reflexivity |].
+  split; [reflexivity |].
+  split; [reflexivity |].
+  reflexivity.
 Qed.
 
 (* ============================================================ *)
@@ -619,11 +626,16 @@ Theorem four_species_for_6 :
   SP_NN <> SP_NI /\
   SP_IN <> SP_NI.
 Proof.
-  repeat split; try discriminate.
-  - apply sp_6_II_species.
-  - apply sp_6_NN_species.
-  - apply sp_6_IN_species.
-  - apply sp_6_NI_species.
+  split; [apply sp_6_II_species |].
+  split; [apply sp_6_NN_species |].
+  split; [apply sp_6_IN_species |].
+  split; [apply sp_6_NI_species |].
+  split; [discriminate |].
+  split; [discriminate |].
+  split; [discriminate |].
+  split; [discriminate |].
+  split; [discriminate |].
+  discriminate.
 Qed.
 
 (* ============================================================ *)
@@ -719,10 +731,10 @@ Theorem i_semiprime_has_exactly_2_uniform_factorizations :
   (* They use different primes *)
   fst i_fact <> fst n_fact.
 Proof.
-  intros m n Hm Hn. simpl. repeat split.
-  - unfold tmul. simpl. reflexivity.
-  - unfold tmul. simpl. reflexivity.
-  - intro H. injection H. intros Hph _. discriminate.
+  intros m n Hm Hn. simpl.
+  split; [unfold tmul; simpl; reflexivity |].
+  split; [unfold tmul; simpl; reflexivity |].
+  intro H. discriminate H.
 Qed.
 
 (* ============================================================ *)
@@ -767,13 +779,16 @@ Definition i_twin_5 : TNum := mkTNum 5 PhI.
 
 Theorem i_prime_5_is_prime : t_prime i_twin_5.
 Proof.
-  unfold t_prime, i_twin_5. simpl. unfold nat_prime. split. omega.
+  unfold t_prime, i_twin_5. simpl. unfold nat_prime. split. lia.
   intros d Hd [k Hk].
-  destruct d; [omega | destruct d; [left; reflexivity |
-  destruct d; [| destruct d; [| destruct d;
-  [right; simpl in Hk; omega | exfalso; simpl in Hk; omega]]]]].
-  - exfalso. simpl in Hk. destruct k; simpl in Hk; omega.
-  - exfalso. simpl in Hk. destruct k; simpl in Hk; omega.
+  destruct d as [|[|[|[|[|[|d]]]]]].
+  - lia.
+  - left. reflexivity.
+  - exfalso. destruct k; simpl in Hk; nia.
+  - exfalso. destruct k; simpl in Hk; nia.
+  - exfalso. destruct k; simpl in Hk; nia.
+  - right. reflexivity.
+  - exfalso. destruct k; simpl in Hk; nia.
 Qed.
 
 (* Product of I-twin primes (3,5) = 15_I *)

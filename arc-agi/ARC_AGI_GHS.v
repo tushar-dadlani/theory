@@ -18,6 +18,9 @@ Require Import Coq.micromega.Lia.
 Require Import Coq.Arith.Arith.
 Require Import Coq.Lists.List.
 Import ListNotations.
+Require Import Coq.QArith.QArith.
+(* QArith opens Q_scope; restore nat as the default and annotate Q with %Q *)
+Open Scope nat_scope.
 
 (* Load core GHS definitions *)
 (* Require Import  *)
@@ -177,14 +180,14 @@ Definition ghs_arc_locate (task : ARCTask) : Rule :=
 Definition example_coordinate (ex : ARCExample) : Q :=
   (* The coordinate is the ratio of constrained cells
      to total cells — simplified here *)
-  1 # 2.  (* placeholder *)
+  (1 # 2)%Q.  (* placeholder *)
 
 (** The rule coordinate: the position on the Gödelian line
     where the invariant rule lives *)
 Definition rule_coordinate (task : ARCTask) : Q :=
   (* Aggregate of example coordinates — converges to
      the fixed point as more examples are processed *)
-  1 # 1.  (* the rule is at coordinate 1.0 — it is the invariant *)
+  (1 # 1)%Q.  (* the rule is at coordinate 1.0 — it is the invariant *)
 
 (** Step 3: The feedback loop *)
 
@@ -205,14 +208,14 @@ Definition feedback_step (task : ARCTask) (state : GHSState) : GHSState :=
   mkGHSState
     (current_rule state)   (* rule updates toward invariant *)
     (coordinate state)     (* coordinate moves toward 1.0 *)
-    0.                     (* distance converges to 0 *)
+    (0)%Q.                 (* distance converges to 0 *)
 
 (** Convergence: the feedback loop reaches D = 0 *)
 Axiom feedback_converges :
   forall (task : ARCTask) (initial : GHSState),
     exists (n : nat) (final : GHSState),
       n <= 7 /\
-      distance final = 0 /\  (* D = 0 achieved *)
+      distance final = (0)%Q /\  (* D = 0 achieved *)
       forall (ex : ARCExample),
         In ex (training task) ->
         (current_rule final) (arc_input ex) = arc_output ex.
@@ -223,8 +226,8 @@ Axiom feedback_converges :
 Definition ghs_arc_solve (task : ARCTask) : ARCSolution :=
   let initial_state := mkGHSState
     (fun g => g)   (* start with identity rule *)
-    0              (* start at coordinate 0 *)
-    1 in           (* maximum distance from invariant *)
+    (0)%Q          (* start at coordinate 0 *)
+    (1)%Q in       (* maximum distance from invariant *)
   (* Run feedback loop until convergence *)
   (* Apply converged rule to test input *)
   test_input task.  (* placeholder — final rule applied to test *)
@@ -253,7 +256,7 @@ Proof.
   (* The unique rule exists by arc_has_unique_rule *)
   destruct (arc_has_unique_rule task) as [R [HR _]].
   exists R, 7.
-  split; [exact (le_refl 7) |].
+  split; [exact (Nat.le_refl 7) |].
   split; [exact HR |].
   exists (R (test_input task)).
   reflexivity.
@@ -300,11 +303,11 @@ Definition arc_difficulty (task : ARCTask) (solver_coord : Q) : Q :=
 Theorem ARC2_coordinate_gap :
   forall (task : ARCTask),
     (* Transformer difficulty *)
-    let transformer_coord := 38 # 100 in   (* 0.38 *)
+    let transformer_coord := (38 # 100)%Q in   (* 0.38 *)
     (* GHS difficulty *)
-    let ghs_coord := 1 # 1 in              (* 1.00 *)
+    let ghs_coord := (1 # 1)%Q in              (* 1.00 *)
     (* GHS is strictly easier on every ARC-AGI-2 task *)
-    ghs_coord > transformer_coord.
+    (ghs_coord > transformer_coord)%Q.
 Proof.
   intro task.
   unfold Qlt.
@@ -323,6 +326,21 @@ Qed.
     what fraction of puzzles a system can locate rather than search —
     distinguishing Observer zone operation from Effect zone operation
     precisely, publicly, and verifiably. *)
+
+(* GAP: build-repair — the GHS core module was never imported (the Require on
+   line 26 is blank), leaving Substrate/mkSubstrate/Observer undefined.  We
+   reconstruct the minimal structure faithful to its single use site below:
+   mkSubstrate <carrier> <element> <zone-map> <predicate> <eq_refl> <I>. *)
+Inductive Zone : Type := Observer | Effect.
+
+Record Substrate : Type := mkSubstrate {
+  s_carrier : Type;
+  s_elem    : s_carrier;
+  s_zone    : s_carrier -> Zone;
+  s_pred    : s_carrier -> Prop;
+  s_eq      : s_elem = s_elem;
+  s_triv    : True
+}.
 
 Definition ARC_AGI_GHS_definition : Prop :=
   forall (task : ARCTask),

@@ -13,6 +13,8 @@
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.micromega.Lia.
+Require Import Coq.Lists.List.
+Import ListNotations.
 
 (* ============================================================ *)
 (* SECTION 1 — THE CORE FUNCTION                               *)
@@ -80,24 +82,12 @@ Definition is_prime_via_f (p : nat) : Prop :=
   p >= 2 /\ fst (f p) = p.
 
 (* For primes, least_prime_divisor returns the prime itself *)
+(* GAP: build-repair — proof needs rework *)
 Lemma prime_lpd : forall p : nat,
   p >= 2 ->
   (forall d, 2 <= d -> d < p -> p mod d <> 0) ->
   least_prime_divisor p = p.
-Proof.
-  intros p Hp Hprime.
-  unfold least_prime_divisor.
-  induction p.
-  - lia.
-  - simpl. destruct (Nat.leb (2 * 2) (S p)) eqn:H4.
-    + destruct (Nat.eqb (S p mod 2) 0) eqn:Hdiv.
-      * exfalso. apply (Hprime 2). lia. lia.
-        apply Nat.eqb_eq. exact Hdiv.
-      * admit. (* requires inductive argument on fuel *)
-    + apply Nat.leb_gt in H4.
-      (* S p < 4, so p ∈ {2,3} — both prime *)
-      reflexivity.
-Admitted.
+Proof. Admitted.
 
 (* ============================================================ *)
 (* SECTION 3 — ALGEBRAIC PROPERTIES                            *)
@@ -127,21 +117,11 @@ Admitted.
 (* ============================================================ *)
 
 (* Projection property *)
+(* GAP: build-repair — proof needs rework *)
 Theorem f_projection : forall n : nat,
   n >= 2 ->
   fst (f n) * snd (f n) = n.
-Proof.
-  intros n Hn. unfold f. simpl.
-  unfold least_prime_divisor.
-  destruct (least_div_from n 2 n) eqn:Hd.
-  - (* d = 0: impossible for n ≥ 2 *)
-    exfalso.
-    induction n; simpl in *; lia.
-  - simpl. apply Nat.div_exact.
-    + lia.
-    + (* n mod (S n0) = 0 from least_div_from correctness *)
-      admit.
-Admitted.
+Proof. Admitted.
 
 (* Minimality: fst(f n) ≤ snd(f n) for n ≥ 4 *)
 Theorem f_minimality : forall n : nat,
@@ -162,7 +142,7 @@ Theorem f_ordered : forall n : nat,
 Proof.
   intros n Hn.
   assert (H := f_minimality n Hn).
-  assert (Hprod := f_projection n (by lia)).
+  assert (Hprod := f_projection n ltac:(lia)).
   (* fst * fst ≤ n = fst * snd → fst ≤ snd *)
   admit.
 Admitted.
@@ -220,22 +200,22 @@ Definition in_image_f (p q : nat) : Prop :=
 
 (* f(4) = (2,2): a perfect square semiprime *)
 Example f_4 : f 4 = (2, 2).
-Proof. unfold f, least_prime_divisor. simpl. reflexivity. Qed.
+Proof. vm_compute. reflexivity. Qed.
 
 (* f(6) = (2,3) *)
 Example f_6 : f 6 = (2, 3).
-Proof. unfold f, least_prime_divisor. simpl. reflexivity. Qed.
+Proof. vm_compute. reflexivity. Qed.
 
 (* f(15) = (3,5) *)
 Example f_15 : f 15 = (3, 5).
-Proof. unfold f, least_prime_divisor. simpl. reflexivity. Qed.
+Proof. vm_compute. reflexivity. Qed.
 
 (* f(p) = (p,1) for prime p *)
 Example f_7 : f 7 = (7, 1).
-Proof. unfold f, least_prime_divisor. simpl. reflexivity. Qed.
+Proof. vm_compute. reflexivity. Qed.
 
 Example f_13 : f 13 = (13, 1).
-Proof. unfold f, least_prime_divisor. simpl. reflexivity. Qed.
+Proof. vm_compute. reflexivity. Qed.
 
 (* ============================================================ *)
 (* SECTION 5 — THE FUNCTION AS A DIAGRAM                       *)
@@ -315,13 +295,13 @@ Fixpoint full_factor (n fuel : nat) : list nat :=
 
 (* For a semiprime, full_factor returns exactly 2 primes *)
 Example full_factor_15 : full_factor 15 15 = [3; 5].
-Proof. unfold full_factor, least_prime_divisor. simpl. reflexivity. Qed.
+Proof. vm_compute. reflexivity. Qed.
 
 Example full_factor_77 : full_factor 77 77 = [7; 11].
-Proof. unfold full_factor, least_prime_divisor. simpl. reflexivity. Qed.
+Proof. vm_compute. reflexivity. Qed.
 
 Example full_factor_30 : full_factor 30 30 = [2; 3; 5].
-Proof. unfold full_factor, least_prime_divisor. simpl. reflexivity. Qed.
+Proof. vm_compute. reflexivity. Qed.
 
 (* ============================================================ *)
 (* SECTION 7 — RELATIONSHIP TO CLASSICAL NUMBER THEORY         *)
@@ -371,14 +351,14 @@ Fixpoint liouville (n fuel : nat) : bool :=
 
 (* For semiprimes: Liouville = +1 (even number of factors) *)
 Example liouville_15 : liouville 15 15 = true.
-Proof. unfold liouville, least_prime_divisor. simpl. reflexivity. Qed.
+Proof. vm_compute. reflexivity. Qed.
 
 Example liouville_77 : liouville 77 77 = true.
-Proof. unfold liouville, least_prime_divisor. simpl. reflexivity. Qed.
+Proof. vm_compute. reflexivity. Qed.
 
 (* For primes: Liouville = -1 *)
 Example liouville_7 : liouville 7 7 = false.
-Proof. unfold liouville, least_prime_divisor. simpl. reflexivity. Qed.
+Proof. vm_compute. reflexivity. Qed.
 
 (* THE KEY THEOREM:                                            *)
 (* Triadic phase of product = Liouville function              *)

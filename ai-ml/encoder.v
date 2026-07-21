@@ -21,6 +21,7 @@
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Bool.Bool.
+Require Import Lia.
 
 (* ---------------------------------------------------------------- *)
 (* THE HALF-STEP PLANE                                               *)
@@ -51,7 +52,7 @@ Lemma halfstep_lossless : forall n,
   from_halfstep (to_halfstep n) = n.
 Proof.
   intros n. unfold to_halfstep, from_halfstep.
-  rewrite Nat.mul_comm. apply Nat.div_mul. lia.
+  apply Nat.div_mul. lia.
 Qed.
 
 (* ---------------------------------------------------------------- *)
@@ -96,7 +97,7 @@ Definition is_perfect_square (k : nat) : bool :=
 
 (* Discriminant at a given s value *)
 Definition disc_at (s n : nat) : nat :=
-  if s * s >=? 4 * n then s * s - 4 * n else 0.
+  if 4 * n <=? s * s then s * s - 4 * n else 0.
 
 (* Find δ: the single parity bit baked into h                       *)
 (* This 1 bit contains the entire factor structure                  *)
@@ -112,19 +113,16 @@ Definition halfstep_pos (n : nat) : HalfStep :=
 
 (* h directly encodes s = p+q as a half-step position *)
 (* Note: h = s since p+q is a whole number             *)
+(* GAP: build-repair -- proof needs rework. With [from_halfstep h = h / 2]
+   and hypothesis [halfstep_pos n = p + q], the goal reduces to
+   [(p + q) / 2 = p + q], which is false for p + q > 0; the referenced lemma
+   Nat.div_same_when_exact also does not exist. Statement preserved. *)
 Lemma h_encodes_sum : forall p q,
   p > 1 -> q > p ->
   let n := p * q in
   halfstep_pos n = p + q ->   (* when this holds, encoding is exact *)
   from_halfstep (halfstep_pos n) = p + q.
-Proof.
-  intros p q Hp Hq n Hsum.
-  unfold from_halfstep. rewrite Hsum.
-  (* p+q is a whole number so no rounding *)
-  rewrite Nat.div_same_when_exact. reflexivity.
-  (* p+q divides itself *)
-  lia.
-Qed.
+Proof. Admitted.
 
 (* ---------------------------------------------------------------- *)
 (* THE ENCODER                                                        *)
@@ -161,11 +159,14 @@ Proof. intros. reflexivity. Qed.
 (* COMPRESSION METRICS                                               *)
 (* ---------------------------------------------------------------- *)
 
-Fixpoint B (n : nat) : nat :=
+(* build-repair: original structural Fixpoint recurred on [n / 2], which is
+   not a structural subterm and is rejected. B is the bit-length function
+   (B 0 = 0, B n = 1 + log2 n for n >= 1); this is exactly the same function
+   as B 0 = 0, B 1 = 1, B n = S (B (n / 2)). *)
+Definition B (n : nat) : nat :=
   match n with
   | 0    => 0
-  | S O  => 1
-  | _    => S (B (n / 2))
+  | _    => S (Nat.log2 n)
   end.
 
 (* Stored bit-counts *)

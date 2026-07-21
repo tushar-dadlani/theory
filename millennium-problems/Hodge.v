@@ -9,8 +9,11 @@
 (* ============================================================ *)
 
 Require Import Coq.Reals.Reals.
+Require Import Coq.QArith.QArith.
+Require Import Coq.micromega.Lra.
 Require Import Coq.Logic.Classical.
 Require Import Core.
+Local Open Scope nat_scope.  (* QArith opens Q_scope; this file is nat-indexed *)
 
 (* ------------------------------------------------------------ *)
 (* SECTION 1: Why Hodge Lives at Order 0.5                     *)
@@ -28,7 +31,7 @@ Require Import Core.
 (* The self-dual midpoint between topology and algebra        *)
 (* ------------------------------------------------------------ *)
 
-Definition Hodge_Order : Order := 1/2.
+Definition Hodge_Order : Order := (1/2)%R.
 
 (* A complex projective algebraic variety *)
 (* GAP: proper formalization requires algebraic geometry       *)
@@ -148,11 +151,11 @@ Definition HodgeConjecture : Prop :=
 
 (* The Hodge geodesic *)
 Definition Hodge_SelfDualMap : R -> R :=
-  fun t => 1 - t.
+  fun t => (1 - t)%R.
 
 (* Hodge classes live at t=0.5 *)
 Lemma hodge_classes_at_midpoint :
-  Hodge_SelfDualMap (1/2) = 1/2.
+  Hodge_SelfDualMap (1/2)%R = (1/2)%R.
 Proof.
   unfold Hodge_SelfDualMap. lra.
 Qed.
@@ -248,5 +251,3 @@ Axiom hodge_topology_interpolates :
   Order of the gap: 0.5
   Between discrete/algebraic (0) and continuous (1)
 *)
-
-End Hodge.

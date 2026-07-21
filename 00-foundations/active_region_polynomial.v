@@ -24,12 +24,14 @@ Require Import Rfunctions.
 Require Import List.
 Require Import Bool.
 Require Import Arith.
-Require Import Arith.Log2.
 Require Import Lra.
 Require Import Classical.
 
 Open Scope R_scope.
 Import ListNotations.
+(* Module-local assumptions are declared with Variable/Hypothesis; this is
+   intentional, so silence the (fatal-by-default) outside-section warning. *)
+Set Warnings "-declaration-outside-section".
 
 (* ================================================================== *)
 (* Shared definitions                                                  *)
@@ -42,15 +44,17 @@ Lemma phi_r_gt_1 : phi_r > 1.
 Proof.
   unfold phi_r.
   assert (sqrt 5 > 2).
-  { apply Rlt_le_trans with (sqrt 4).
-    rewrite sqrt_square; lra.
-    apply sqrt_le_sqrt; lra. }
+  { replace 2 with (sqrt 4).
+    - apply sqrt_lt_1; lra.
+    - replace 4 with (2*2) by lra. rewrite sqrt_square; lra. }
   lra.
 Qed.
 
 Lemma log_phi_pos : 0 < log_phi.
 Proof.
-  unfold log_phi. apply ln_pos. apply phi_r_gt_1.
+  unfold log_phi. rewrite <- ln_1. apply ln_increasing.
+  - lra.
+  - pose proof phi_r_gt_1 as H. unfold phi_r in H. lra.
 Qed.
 
 (* log_phi / ln 2 ≈ 0.694 — the key exponent *)
@@ -66,7 +70,8 @@ Admitted.
 Lemma phi_exponent_pos : 0 < phi_exponent.
 Proof.
   unfold phi_exponent. apply Rdiv_lt_0_compat.
-  apply log_phi_pos. apply ln_pos. lra.
+  - apply log_phi_pos.
+  - pose proof ln_lt_2. lra.
 Qed.
 
 (* ================================================================== *)
@@ -189,12 +194,13 @@ Module ConcentrationApproach.
     Rpower phi_r (ln (INR n) / log_phi) = INR n.
   Proof.
     intros n Hn.
-    unfold log_phi.
-    rewrite Rdiv_def.
-    rewrite Rpower_mult.
-    rewrite Rpower_ln.
-    - reflexivity.
-    - apply phi_r_gt_1.
+    assert (Hphi: log_phi = ln phi_r) by (unfold log_phi, phi_r; reflexivity).
+    assert (Hpos: 0 < INR n) by (apply lt_0_INR; assumption).
+    assert (Hlp: log_phi > 0) by apply log_phi_pos.
+    unfold Rpower. rewrite Hphi.
+    replace (ln (INR n) / ln phi_r * ln phi_r) with (ln (INR n)).
+    - rewrite exp_ln; [reflexivity | exact Hpos].
+    - field. rewrite <- Hphi. apply Rgt_not_eq. exact Hlp.
   Qed.
 
   (* [PROVEN] At k = log_φ(n): base_factor_k = base_factor_0^n *)
@@ -355,16 +361,16 @@ Module PathApproach.
           else None
         else
           (* Recursive case: split range in half *)
-          let mid := (lo + hi) / 2 in
+          let mid := ((lo + hi) / 2)%nat in
           if has_T3_in_range n lo mid
           then find_T3_recursive n lo mid fuel'
-          else if has_T3_in_range n (mid+1) hi
-               then find_T3_recursive n (mid+1) hi fuel'
+          else if has_T3_in_range n (mid+1)%nat hi
+               then find_T3_recursive n (mid+1)%nat hi fuel'
                else None  (* no T3 in range *)
     end.
 
   (* [PROVEN] Algorithm terminates in log2(2^n) = n depth *)
-  Lemma algorithm_depth : forall n,
+  Lemma algorithm_depth : forall n : nat,
     (* Starting range [0, 2^n - 1], fuel = n *)
     (* Algorithm terminates in n recursive calls *)
     True.
@@ -549,7 +555,7 @@ Module CorrectReformulation.
   Variable transform : nat -> (nat -> bool) -> (nat -> bool).
   (* transform n phi = phi' with n+1 variables *)
 
-  Variable transform_correct : forall n phi,
+  Variable transform_correct : forall (n : nat) (phi : nat -> bool),
     (* phi' sat iff phi sat *)
     True.
 
@@ -652,7 +658,7 @@ Module WhatTheAttemptReveals.
 
   (* kappa*_0 is the connectivity threshold *)
   Axiom connectivity_threshold :
-    forall phi n alpha,
+    forall (phi : nat -> bool) (n : nat) (alpha : R),
     (* alpha = clause density of phi *)
     (* Below kappa*_0: solution space is connected *)
     (* Above kappa*_0: solution space fragments *)

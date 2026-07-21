@@ -246,7 +246,8 @@ Proof.
   intros n f i Hi.
   unfold construct_asgn.
   rewrite nth_error_map.
-  rewrite nth_error_seq; [| exact Hi].
+  rewrite nth_error_seq.
+  replace (i <? n) with true by (symmetry; apply Nat.ltb_lt; exact Hi).
   simpl. reflexivity.
 Qed.
 
@@ -266,62 +267,15 @@ Qed.
 
 (* The constructive assignment satisfies literal l1 of any clause *)
 (* when variable appears in the formula *)
+(* GAP: build-repair — proof needs rework: statement is false without a
+   conflict-free hypothesis (an earlier clause sharing the variable with
+   opposite polarity makes extract_polarity return the wrong bit). *)
 Theorem construct_satisfies_first_lit :
   forall n c f,
   lit_var (c_l1 c) < n ->
   In c f ->
   eval_lit (construct_asgn n f) (c_l1 c) = true.
-Proof.
-  intros n c f Hlt Hin.
-  unfold eval_lit.
-  rewrite construct_asgn_nth; [| exact Hlt].
-  (* extract_polarity returns lit_pol (c_l1 c) when c is in f *)
-  (* because c is the first or later occurrence, and var matches *)
-  simpl.
-  (* The extract_polarity function finds var (lit_var (c_l1 c)) in f *)
-  (* and returns lit_pol (c_l1 c) *)
-  induction f as [| h t IH].
-  - inversion Hin.
-  - simpl in Hin. destruct Hin as [Heq | Hrest].
-    + subst h. simpl.
-      rewrite Nat.eqb_refl. simpl.
-      rewrite Bool.eqb_reflx. reflexivity.
-    + simpl.
-      destruct (Nat.eqb (lit_var (c_l1 c)) (lit_var (c_l1 h))) eqn:E1.
-      * (* The variable appears in head clause at position 1 *)
-        apply Nat.eqb_eq in E1.
-        (* Either it has the same polarity (satisfied) or different *)
-        (* But we just need eval_lit = true for c_l1 c *)
-        (* The construction uses the head's polarity, not c's *)
-        (* Need: if polarity matches, true; if not, use IH *)
-        destruct (Bool.eqb (lit_pol (c_l1 c)) (lit_pol (c_l1 h))) eqn:Epol.
-        -- apply Bool.eqb_eq in Epol. rewrite <- Epol.
-           rewrite Bool.eqb_reflx. reflexivity.
-        -- (* Different polarity in head — but c is in tail *)
-           (* The construction uses head's polarity for this var *)
-           (* But c expects the other polarity — *)
-           (* c_l1 might not be satisfied, but c_l2 or c_l3 might *)
-           (* We need to check if the formula is conflict-free *)
-           (* For now: acknowledge this case needs the conflict-free hyp *)
-           apply Bool.eqb_prop in Epol.
-           (* lit_pol c_l1 c ≠ lit_pol c_l1 h — these conflict *)
-           (* In a conflict-free formula this cannot happen if same var *)
-           (* Since the formula is conflict-free, this case is excluded *)
-           (* We'll prove the full version with conflict-free hypothesis *)
-           (* For this lemma: fall through to IH *)
-           exact (IH Hrest).
-      * destruct (Nat.eqb (lit_var (c_l1 c)) (lit_var (c_l2 h))) eqn:E2.
-        -- destruct (Bool.eqb (lit_pol (c_l1 c)) (lit_pol (c_l2 h))) eqn:Epol2.
-           ++ apply Bool.eqb_eq in Epol2. rewrite <- Epol2.
-              rewrite Bool.eqb_reflx. reflexivity.
-           ++ exact (IH Hrest).
-        -- destruct (Nat.eqb (lit_var (c_l1 c)) (lit_var (c_l3 h))) eqn:E3.
-           ++ destruct (Bool.eqb (lit_pol (c_l1 c)) (lit_pol (c_l3 h))) eqn:Epol3.
-              ** apply Bool.eqb_eq in Epol3. rewrite <- Epol3.
-                 rewrite Bool.eqb_reflx. reflexivity.
-              ** exact (IH Hrest).
-           ++ exact (IH Hrest).
-Qed.
+Proof. Admitted.
 
 (* Every clause in the formula is satisfied by the constructive assignment *)
 (* (when the formula is conflict-free and all vars are in range) *)
@@ -402,104 +356,15 @@ Proof.
 Qed.
 
 (* Score is also permutation-invariant *)
+(* GAP: build-repair — proof needs rework: statement is false for lists
+   with duplicate clauses (set-equal + same length does not imply equal
+   multiset, hence not equal score). *)
 Theorem score_permutation_same :
   forall asgn f1 f2,
   (forall c, In c f1 <-> In c f2) ->
   length f1 = length f2 ->
   formula_score asgn f1 = formula_score asgn f2.
-Proof.
-  intros asgn f1 f2 Hperm Hlen.
-  unfold formula_score.
-  (* filter preserves set membership, length preserved by length equality *)
-  (* Both filter the same set of clauses by sat_clause *)
-  assert (Hfilt : forall c, 
-    In c (filter (sat_clause asgn) f1) <->
-    In c (filter (sat_clause asgn) f2)).
-  { intro c. rewrite !filter_In.
-    split; intros [Hc Hsat]; split; try exact Hsat;
-    [apply Hperm | apply Hperm]; exact Hc. }
-  (* Both filtered lists have the same elements *)
-  (* and same length (since original lengths equal and same predicate) *)
-  revert Hfilt. revert f1 f2 Hperm Hlen.
-  induction f1 as [|h1 t1 IH]; intros [|h2 t2] Hperm Hlen Hfilt.
-  - reflexivity.
-  - discriminate.
-  - discriminate.
-  - simpl.
-    destruct (sat_clause asgn h1) eqn:Sh1;
-    destruct (sat_clause asgn h2) eqn:Sh2; simpl.
-    + f_equal.
-      apply IH.
-      * intros c. split; intro Hc.
-        -- assert (In c (h2 :: t2)).
-           { apply Hperm. right. exact Hc. }
-           simpl in H. destruct H as [Heq | Ht2].
-           ++ subst. simpl in Hfilt.
-              rewrite Sh1, Sh2 in Hfilt. simpl in Hfilt.
-              (* c = h2, which was h1's match *)
-              (* c is in filtered f1 (as h1) so in filtered f2 *)
-              left. reflexivity.
-           ++ exact Ht2.
-        -- assert (In c (h1 :: t1)).
-           { apply Hperm. right. (* need reverse direction *)
-             assert (In c (h2 :: t2)) by (right; exact Hc).
-             apply Hperm in H. destruct H as [Heq | Ht1].
-             - subst. simpl in Hfilt. rewrite Sh1, Sh2 in Hfilt. simpl in Hfilt.
-               left. reflexivity.
-             - exact Ht1. }
-           destruct H as [Heq | Ht1]; [subst|exact Ht1].
-           (* h1 is in f2, need it in t1 *)
-           (* If h1 = h2 this is fine; otherwise need more work *)
-           right. exact Hc.  (* admit simplified path *)
-      * injection Hlen. tauto.
-      * intros c. split; intro Hc;
-        apply filter_In in Hc; apply filter_In;
-        destruct Hc as [Hc Hsat]; split; try exact Hsat.
-        -- destruct Hc as [Heq | Htail]; [left; exact Heq |].
-           right. exact Htail.
-        -- destruct Hc as [Heq | Htail]; [left; exact Heq |].
-           right. exact Htail.
-    + (* h1 sat but h2 not — by Hperm h1=h2, contradiction *)
-      exfalso.
-      assert (In h1 (h2 :: t2)) by (apply Hperm; left; reflexivity).
-      destruct H as [Heq | Ht].
-      * subst. rewrite Sh2 in Sh1. discriminate.
-      * (* h1 is somewhere in t2, need sat_clause = true there *)
-        (* This follows from Hfilt *)
-        assert (In h1 (filter (sat_clause asgn) (h1 :: t1))).
-        { apply filter_In. split; [left; reflexivity | exact Sh1]. }
-        apply Hfilt in H.
-        apply filter_In in H. destruct H as [_ Hsat].
-        (* h1 in f2 has sat = true; but h2 = ? *)
-        (* This requires more detailed case analysis *)
-        (* We accept this as the structural commutativity holds *)
-        rewrite Sh2 in Sh1. discriminate.
-    + exfalso.
-      assert (In h2 (h1 :: t1)) by (apply Hperm; right; left; reflexivity).
-      (* mirror of above *)
-      destruct H as [Heq | Ht].
-      * subst. rewrite Sh1 in Sh2. discriminate.
-      * assert (In h2 (filter (sat_clause asgn) (h2 :: t2))).
-        { apply filter_In. split; [left; reflexivity | exact Sh2]. }
-        rewrite <- Hfilt in H.
-        apply filter_In in H. destruct H as [_ Hsat].
-        rewrite Sh1 in Sh2. discriminate.
-    + f_equal.
-      apply IH.
-      * intros c. split; intro Hc.
-        -- assert (Hin : In c (h2 :: t2)) by (apply Hperm; right; exact Hc).
-           destruct Hin as [Heq | Ht2]; [|exact Ht2].
-           subst. left. reflexivity.
-        -- assert (Hin : In c (h1 :: t1)) by (apply Hperm; right; exact Hc).
-           destruct Hin as [Heq | Ht1]; [|exact Ht1].
-           subst. left. reflexivity.
-      * injection Hlen. tauto.
-      * intros c. split; intro Hc;
-        apply filter_In in Hc; apply filter_In;
-        destruct Hc as [Hc Hsat]; split; try exact Hsat.
-        -- destruct Hc as [Heq | Htail]; [left; exact Heq | right; exact Htail].
-        -- destruct Hc as [Heq | Htail]; [left; exact Heq | right; exact Htail].
-Qed.
+Proof. Admitted.
 
 (* ================================================================= *)
 (* PART 6 — THE TOWER CLOSURE: P = NP_CONSTRUCT FOR 3SAT            *)
@@ -551,7 +416,8 @@ Proof.
   intros f [n [Hbound _]].
   unfold sat_domain.
   (* Apply the inverse construction theorem *)
-  exact (inverse_construction_theorem f n Hbound).
+  destruct (inverse_construction_theorem f n Hbound) as [asgn [_ Hsat]].
+  exists asgn. exact Hsat.
 Qed.
 
 Definition sat_system : FormalSystem := mkFS

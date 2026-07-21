@@ -22,9 +22,15 @@
 
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
+Require Import Lia.
 Require Import Coq.Lists.List.
 Require Import Coq.QArith.QArith.
+Require Import Coq.Logic.ClassicalEpsilon.
 Import ListNotations.
+(* build-repair: QArith opens Q_scope, which made bare numeric literals and
+   comparisons default to Q even though this file is entirely over nat.
+   Re-open nat_scope so literals like [1], [7], [8] are nat as intended. *)
+Open Scope nat_scope.
 
 (* ================================================================ *)
 (* SECTION 1 : The primitive operations                             *)
@@ -145,13 +151,16 @@ Definition locate (ns : NodeSet) (H : exists a, satisfies a ns)
     : Invariant ns :=
   (* The Observer locates the satisfying assignment directly *)
   (* This is the GHS move: find the minimum element *)
-  epsilon (inhabits := _) (fun I => True).
+  (* build-repair: the bare [epsilon (inhabits := _) ...] did not elaborate;
+     [constructive_indefinite_description] extracts the witnessing invariant
+     { a | satisfies a ns } directly from H. *)
+  constructive_indefinite_description _ H.
 
 (* LOCATE is one step — this is the core property *)
 Axiom locate_one_step :
   forall (ns : NodeSet) (H : exists a, satisfies a ns),
     exists (steps : nat),
-      steps = 1.
+      steps = 1%nat.
 
 (* LOCATE is deterministic: same node set = same invariant *)
 Axiom locate_deterministic :
@@ -275,7 +284,7 @@ Proof.
   intros n d.
   unfold total_complexity, locate_complexity, derive_complexity.
   pose proof (d_bounded d).
-  omega.
+  lia.
 Qed.
 
 (* Complexity is independent of input size *)
@@ -296,7 +305,7 @@ Proof.
   intros ns H.
   exists 8.
   split.
-  - exact (le_refl 8).
+  - lia.
   - exists (locate ns H). reflexivity.
 Qed.
 
@@ -421,7 +430,7 @@ Theorem sat3_not_turing :
 Proof.
   intros TM C.
   exists 2, 1.
-  split; [omega | reflexivity].
+  split; [lia | reflexivity].
 Qed.
 
 
@@ -466,7 +475,7 @@ Theorem sat3_not_quantum :
     sat3_steps = 1 /\
     quantum_steps > 1.
 Proof.
-  exists 1, 2. split; [reflexivity | omega].
+  exists 1, 2. split; [reflexivity | lia].
 Qed.
 
 
@@ -501,40 +510,35 @@ Lemma feedback_monotone :
 Proof.
   intro s. unfold feedback_step. simpl.
   destruct (current_dist s =? 0) eqn:H.
-  - apply Nat.eqb_eq in H. rewrite H. omega.
-  - omega.
+  - apply Nat.eqb_eq in H. rewrite H. lia.
+  - lia.
 Qed.
 
 (* The system converges in at most d steps *)
+(* GAP: build-repair -- proof needs rework. The statement is false as written.
+   [is_converged] is an independent record field; after k >= 1 steps it equals
+   [current_dist (iter (k-1)) =? 0], which becomes true only at k = d + 1,
+   exceeding the claimed bound n <= current_dist s (and the n = 0 case reads the
+   arbitrary starting field). The bound would need to be current_dist s + 1.
+   Statement preserved. *)
 Theorem feedback_converges :
   forall (s : FeedbackState),
     exists (n : nat),
       n <= current_dist s /\
       is_converged (Nat.iter n feedback_step s) = true.
-Proof.
-  intro s.
-  induction (current_dist s) as [| d IH].
-  - exists 0. split; [omega |].
-    unfold feedback_step. simpl.
-    reflexivity.
-  - exists (S d). split; [omega |].
-    simpl. unfold feedback_step. simpl.
-    induction d; simpl; reflexivity.
-Qed.
+Proof. Admitted.
 
 (* D = 0 once reached is permanent *)
+(* GAP: build-repair -- proof needs rework. The statement is false: the
+   [is_converged] field is independent of [current_dist], yet
+   [is_converged (feedback_step s)] is defined as [current_dist s =? 0]. For
+   s = mkFeedbackState ns 5 true the hypothesis holds but the conclusion is
+   false. Statement preserved. *)
 Theorem d_zero_permanent :
   forall (s : FeedbackState),
     is_converged s = true ->
     is_converged (feedback_step s) = true.
-Proof.
-  intros s Hs.
-  unfold feedback_step. simpl.
-  unfold is_converged in Hs.
-  destruct (current_dist s =? 0) eqn:H.
-  - simpl. reflexivity.
-  - rewrite Hs in H. discriminate.
-Qed.
+Proof. Admitted.
 
 
 (* ================================================================ *)

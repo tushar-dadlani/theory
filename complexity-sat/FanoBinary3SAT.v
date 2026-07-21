@@ -111,7 +111,7 @@ Theorem all_nonzero_satisfied :
   v <> (false, false, false) ->
   sat_pos_clause v = true.
 Proof.
-  intros [[|] [|] [|]] H; try reflexivity.
+  intros [[[|] [|]] [|]] H; try reflexivity.
   exfalso. apply H. reflexivity.
 Qed.
 
@@ -335,7 +335,7 @@ Theorem zero_iff_unsatisfied : forall v : BVec3,
   sat_pos_clause v = false <-> v = zero_vec.
 Proof.
   intro v. split.
-  - intro H. destruct v as [[|] [|] [|]]; simpl in H;
+  - intro H. destruct v as [[[|] [|]] [|]]; simpl in H;
     try discriminate; reflexivity.
   - intro H. rewrite H. reflexivity.
 Qed.
@@ -400,7 +400,7 @@ Theorem clause_satisfies_all_others :
   v <> (negb p1, negb p2, negb p3) ->
   clause_sat3 v p1 p2 p3 = true.
 Proof.
-  intros [[|] [|] [|]] [|] [|] [|] H;
+  intros [[[|] [|]] [|]] [|] [|] [|] H;
   try reflexivity; exfalso; apply H; reflexivity.
 Qed.
 

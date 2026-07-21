@@ -124,10 +124,10 @@ Theorem phase_flip_involutive : forall alpha : TComplex,
 Proof.
   intros alpha H.
   destruct H as [HI | HN].
-  - unfold phase_flip_tc. rewrite HI. simpl. 
-    destruct alpha. simpl. rewrite HI. reflexivity.
+  - unfold phase_flip_tc. rewrite HI. simpl.
+    destruct alpha. simpl in HI. rewrite HI. reflexivity.
   - unfold phase_flip_tc. rewrite HN. simpl.
-    destruct alpha. simpl. rewrite HN. reflexivity.
+    destruct alpha. simpl in HN. rewrite HN. reflexivity.
 Qed.
 
 (* For every I-root, there exists a corresponding N-root *)
@@ -438,9 +438,10 @@ Theorem preimage_space_doubled :
   (* Different hash phases *)
   tc_phase (H_triadic m_I) <> tc_phase (H_triadic m_N).
 Proof.
-  intro m. simpl. repeat split.
-  - (* same value *) reflexivity.
-  - (* different phase *) discriminate.
+  intro m. simpl.
+  split; [ (* same value *) reflexivity | ].
+  split; [ (* different phase *) discriminate | ].
+  split.
   - (* same hash value *)
     unfold H_triadic, tencode_I, tencode_N, tencode. simpl. reflexivity.
   - (* different hash phase *)
@@ -497,9 +498,10 @@ Theorem checksum_certifies_both_phases :
   (* They are related by the phase flip *)
   phase_flip_tc h_I = h_N.
 Proof.
-  intro m. simpl. repeat split.
-  - unfold H_triadic, tencode_I, tencode_N, tencode. simpl. reflexivity.
-  - unfold H_triadic, tencode_I, tencode_N, tencode. simpl. discriminate.
+  intro m. simpl.
+  split; [ unfold H_triadic, tencode_I, tencode_N, tencode; simpl; reflexivity | ].
+  split; [ unfold H_triadic, tencode_I, tencode_N, tencode; simpl; discriminate | ].
+  split.
   - unfold tencode_I, tencode_N, tencode. simpl. reflexivity.
   - unfold phase_flip_tc, H_triadic, tencode_I, tencode_N, tencode.
     simpl. reflexivity.

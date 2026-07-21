@@ -28,8 +28,13 @@ From Stdlib Require Import Bool.
 Require Import dim_types.
 Require Import dim_crypto.
 Require Import dim_capability.
+Import ListNotations.
 Open Scope list_scope.
 Open Scope nat_scope.
+
+(* Default inhabitant of the opaque [Data] type, used only as the
+   (never-reached) default argument of [nth] in the statements below. *)
+Parameter default_data : Data.
 
 (* ════════════════════════════════════════════════════════
    Security level parameters
@@ -67,12 +72,12 @@ Lemma birthday_bound_list :
   forall (xs : list Data),
     (forall i j : nat,
       i < length xs -> j < length xs -> i <> j ->
-      H (nth i xs (hd (hd [] []) [])) <>
-      H (nth j xs (hd (hd [] []) []))) ->
+      H (nth i xs (default_data)) <>
+      H (nth j xs (default_data))) ->
     (forall i j : nat,
       i < length xs -> j < length xs -> i <> j ->
-      nth i xs (hd (hd [] []) []) <>
-      nth j xs (hd (hd [] []) [])).
+      nth i xs (default_data) <>
+      nth j xs (default_data)).
 Proof.
   intros xs Hdist i j Hi Hj Hij Heq.
   apply (Hdist i j Hi Hj Hij).
@@ -134,7 +139,7 @@ Theorem length_ext_structurally_safe :
   forall (r : Receipt),
     receipt_valid r ->
     Verify (r_operator r)
-           (hash_receipt (r_input r) (r_output r) (r_chain r))
+           (hash_receipt (r_input r) (r_output r) (r_function r) (r_chain r))
            (r_sig r) = true.
 Proof.
   intros r Hvalid.
@@ -159,13 +164,13 @@ Theorem sign_covers_hash :
   forall (r : Receipt),
     receipt_valid r ->
     exists (m : Hash),
-      m = hash_receipt (r_input r) (r_output r) (r_chain r) /\
+      m = hash_receipt (r_input r) (r_output r) (r_function r) (r_chain r) /\
       Verify (r_operator r) m (r_sig r) = true.
 Proof.
   intros r Hvalid.
   unfold receipt_valid in Hvalid.
   destruct Hvalid as [Hverify _].
-  exists (hash_receipt (r_input r) (r_output r) (r_chain r)).
+  exists (hash_receipt (r_input r) (r_output r) (r_function r) (r_chain r)).
   split.
   - reflexivity.
   - exact Hverify.

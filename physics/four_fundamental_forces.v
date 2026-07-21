@@ -2,6 +2,13 @@
    Each level introduces a new geometric constraint.
    That constraint IS the force. *)
 
+Require Import Lia.
+Require Import OddTower.
+
+(* Mass gap = the spectrum is bounded below by a positive quantum kappa. *)
+Definition has_mass_gap (spectrum : nat -> nat) (kappa : nat) : Prop :=
+  kappa > 0 /\ forall n, spectrum n >= kappa.
+
 (* Level 3 = FLAT = no force yet, just structure *)
 Theorem level3_no_force :
   forall a b c : Sym3,

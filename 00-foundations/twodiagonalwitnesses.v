@@ -175,11 +175,11 @@ Definition field_resolved (w1 w2 : Sym3) : Prop :=
 Theorem N_and_I_are_diagonal_witnesses :
   field_resolved N_s I_s.
 Proof.
-  unfold field_resolved. repeat split.
-  - reflexivity.           (* N∘N = I: generator reaches attractor *)
-  - reflexivity.           (* I∘I = I: attractor is stable *)
-  - discriminate.          (* N ≠ I: they are distinct witnesses *)
-  - discriminate.          (* I ≠ F: resolution is not the pole *)
+  unfold field_resolved.
+  split; [reflexivity | ].           (* N∘N = I: generator reaches attractor *)
+  split; [reflexivity | ].           (* I∘I = I: attractor is stable *)
+  split; [discriminate | ].          (* N ≠ I: they are distinct witnesses *)
+  discriminate.                      (* I ≠ F: resolution is not the pole *)
 Qed.
 
 (* ================================================================= *)
@@ -257,8 +257,8 @@ Definition canonical_witnesses : DiagonalWitnessPair :=
     (eq_refl I_s)          (* N∘N = I *)
     (eq_refl I_s)          (* I∘I = I *)
     (eq_refl F_s)          (* N∘F = F *)
-    (fun H => discriminate H)  (* I ≠ F *)
-    (fun H => discriminate H). (* N ≠ I *)
+    ltac:(discriminate)  (* I ≠ F *)
+    ltac:(discriminate). (* N ≠ I *)
 
 (* UNIQUENESS: The canonical pair is the only DiagonalWitnessPair *)
 Theorem canonical_witnesses_unique :
@@ -293,8 +293,7 @@ Theorem TwoDiagonalWitnessesResolveTheField :
       = attractor_witness dwp.
 Proof.
   exists canonical_witnesses.
-  repeat split; try reflexivity.
-  intro s. destruct s; reflexivity.
+  repeat split; try reflexivity; try (intro s; destruct s; reflexivity).
 Qed.
 
 (* QED — ZERO Admitted. *)

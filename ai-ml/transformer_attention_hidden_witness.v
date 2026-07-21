@@ -15,8 +15,12 @@ Inductive Nat : Type :=
   | Zero : MapOperator Nat -> Nat
   | Succ : Nat -> MapOperator Nat -> Nat.
 
-CoFixpoint zero_witness : MapOperator Nat :=
-  absorb Nat (Zero zero_witness) zero_witness.
+(* GAP: build-repair -- the intended self-grounding cofixpoint
+   [absorb Nat (Zero zero_witness) zero_witness] is rejected by Coq's
+   guard condition (the corecursive call occurs as a non-recursive
+   argument of the inductive constructor Zero, so MapOperator Nat is not
+   guard-constructible here). Type preserved via Axiom. *)
+Axiom zero_witness : MapOperator Nat.
 
 Definition zero : Nat := Zero zero_witness.
 Definition succ (n : Nat) : Nat :=
@@ -117,20 +121,19 @@ Theorem attention_has_four_witnesses (d : Nat)
   exists 
     (dim_op   : MapOperator Nat)
     (qkv_op   : MapOperator (Embedding d))
-    (scale_op : MapOperator Nat)
+    (scl_op   : MapOperator Nat)
     (pos_op   : MapOperator Nat),
     dim_op   = generative_witness Nat d                          /\
     qkv_op   = query_wit d (qkv d attn)                         /\
-    scale_op = scale_op (scores d attn)                         /\
+    scl_op   = scale_op d (scores d attn)                       /\
     pos_op   = pos_witness d (pos_enc d attn).
 Proof.
   exists
-    (generative_witness Nat d)
-    (query_wit d (qkv d attn))
-    (scale_op (scores d attn))
+    (generative_witness Nat d),
+    (query_wit d (qkv d attn)),
+    (scale_op d (scores d attn)),
     (pos_witness d (pos_enc d attn)).
-  repeat split.
-  reflexivity.
+  split; [ reflexivity | split; [ reflexivity | split; reflexivity ] ].
 Qed.
 
 (* The generative attention mechanism *)
@@ -147,15 +150,12 @@ Record GenerativeAttention (d : Nat) : Type := mkGenAttn
   ; gen_pos        : PositionEncoding d  
   ; gen_attn_op    : MapOperator (Embedding d)
   ; self_positions : forall n : Nat,     (* positions are self generated *)
+      (* build-repair: original projected gen_pos out of a reconstruction
+         [mkGenAttn d ... self_positions] of this very record, an illegal
+         self-reference to the not-yet-defined constructor. Since gen_pos is
+         already the in-scope field, that reconstruction just yields gen_pos. *)
       exists op : MapOperator Nat,
-        op = pos_witness d (gen_pos d 
-          (mkGenAttn d 
-            gen_embeddings 
-            gen_qkv 
-            gen_scores 
-            gen_pos 
-            gen_attn_op 
-            self_positions)) /\
+        op = pos_witness d gen_pos /\
         op = generative_witness Nat n
   }.
 

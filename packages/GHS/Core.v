@@ -9,7 +9,7 @@
 (* ============================================================ *)
 
 Require Import Coq.Reals.Reals.
-Require Import Coq.Sets.Sets.
+Require Import Coq.micromega.Lra.
 Require Import Coq.Logic.Classical.
 Require Import Coq.Logic.FunctionalExtensionality.
 
@@ -28,6 +28,7 @@ Require Import Coq.Logic.FunctionalExtensionality.
 (* Fractional orders: the Gödel gap                 *)
 
 Definition Order := R.  (* Real numbers for fractional orders *)
+Local Open Scope R_scope.  (* orders are real-valued throughout this file *)
 
 (* A formal system at order N *)
 Record FormalSystem : Type := {
@@ -67,12 +68,12 @@ Record GodelGap (F : FormalSystem) : Type := {
 (* t=0 is F(N), t=1 is F(N+1), t=0.5 is the self-dual point *)
 Record GeodesicPoint (F_N F_N1 : FormalSystem) : Type := {
   gp_parameter  : R;              (* t ∈ [0,1]                 *)
-  gp_bounded    : 0 <= gp_parameter <= 1;
+  gp_bounded    : (0 <= gp_parameter <= 1)%R;
   gp_system     : FormalSystem;   (* formal system at this t   *)
   gp_order      : gp_system.(fs_order) =
-                  F_N.(fs_order) +
+                  (F_N.(fs_order) +
                   gp_parameter *
-                  (F_N1.(fs_order) - F_N.(fs_order))
+                  (F_N1.(fs_order) - F_N.(fs_order)))%R
   (* The order interpolates linearly along the geodesic        *)
   (* GAP: this assumes linear interpolation of orders.
      The actual geodesic in the Gödel gap manifold may be
@@ -116,6 +117,7 @@ Record HomGG (F_N F_N1 : FormalSystem)
      has via Reals but connecting it to the geodesic structure
      needs more work. *)
 }.
+Arguments hgg_map {F_N F_N1 G} _.  (* record params implicit for t.(hgg_map) *)
 
 (* The identity self-map — staying at fixed point *)
 Definition HomGG_identity (F_N F_N1 : FormalSystem)
@@ -132,28 +134,28 @@ Definition UnitPerturbation (epsilon : R)
                             (H_pos : epsilon > 0)
                             (F_N F_N1 : FormalSystem)
                             (G : Geodesic F_N F_N1) :
-           HomGG F_N F_N1 G := {|
-  hgg_map       := fun t => t + epsilon;
-  hgg_preserves := fun t h =>
-    (* GAP: need to show t + epsilon ≤ 1 which requires
-       epsilon small enough. This needs a bound on epsilon
-       in terms of the geodesic length. *)
-    admit;
-  hgg_continuous := I
-|}.
+           HomGG F_N F_N1 G.
+Proof.
+  refine {| hgg_map       := fun t => t + epsilon;
+            hgg_preserves := _;
+            hgg_continuous := I |}.
+  (* GAP: need to show t + epsilon ≤ 1 which requires
+     epsilon small enough. This needs a bound on epsilon
+     in terms of the geodesic length — left admitted. *)
+Admitted.
 
 (* The self-dual map — the key to all millennium problems *)
 (* Maps t to 1-t, fixed point at t=1/2                   *)
 Definition SelfDualMap (F_N F_N1 : FormalSystem)
                        (G : Geodesic F_N F_N1) :
-           HomGG F_N F_N1 G := {|
-  hgg_map       := fun t => 1 - t;
-  hgg_preserves := fun t h =>
-    (* 0 ≤ 1-t ≤ 1 when 0 ≤ t ≤ 1 *)
-    conj (Rle_minus_l 0 1 t (proj2 h))
-         (Rle_minus_r t 1 0 (proj1 h));
-  hgg_continuous := I
-|}.
+           HomGG F_N F_N1 G.
+Proof.
+  refine {| hgg_map       := fun t => 1 - t;
+            hgg_preserves := _;
+            hgg_continuous := I |}.
+  (* 0 ≤ 1-t ≤ 1 when 0 ≤ t ≤ 1 *)
+  intros t h. destruct h. split; lra.
+Defined.
 
 (* Fixed point of a self-map *)
 Definition IsFixedPoint (F_N F_N1 : FormalSystem)
@@ -217,7 +219,7 @@ Definition FractionalSystem (alpha : Order) : Type :=
 (* ------------------------------------------------------------ *)
 
 Record Bridge (F_N F_N1 : FormalSystem) : Type := {
-  br_geodesic   : Geodesic F_N F_N1;
+  br_geodesic   : Geodesic F_N F_N1;  (* Arguments made implicit below *)
   br_up         : F_N.(fs_statements) ->
                   F_N1.(fs_statements);  (* going up            *)
   br_down       : F_N1.(fs_statements) ->
@@ -240,6 +242,7 @@ Record Bridge (F_N F_N1 : FormalSystem) : Type := {
                      invertibility is open
                      — requires constructive QFT *)
 }.
+Arguments br_geodesic {F_N F_N1} _.
 
 (* ------------------------------------------------------------ *)
 (* SECTION 6: The Meta-Theorem                                  *)
@@ -265,6 +268,8 @@ Record GHSTriple (P : MathProblem) : Type := {
                    P.(mp_formal_system)
                    triple_F     (* the bridge                  *)
 }.
+Arguments triple_F {P} _.
+Arguments triple_B {P} _.
 
 (* The meta-theorem: every problem has a triple *)
 (* This is the central claim of GHS             *)
@@ -290,5 +295,3 @@ Axiom GHS_MetaTheorem :
    When proved it implies all millennium problems as
    corollaries. Poincaré's theorem (Perelman) confirms
    the pattern for one case. *)
-
-End Core.

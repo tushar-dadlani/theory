@@ -21,6 +21,7 @@
 (* ================================================================= *)
 
 From Coq Require Import Arith Bool Lists.List.
+From Coq Require Import Lia.
 Import ListNotations.
 Open Scope nat_scope.
 
@@ -308,15 +309,12 @@ Theorem inst6_UNSAT :
   sat_formula asgn inst6_formula = false.
 Proof.
   intros asgn Hlen.
+  destruct asgn as [|v t]; simpl in Hlen; [lia|].
   unfold sat_formula, inst6_formula.
   simpl.
   unfold sat_clause, eval_lit.
-  destruct (nth_error asgn 0) as [v|] eqn:Hv.
-  - simpl. destruct v; simpl; reflexivity.
-  - (* nth_error = None contradicts length >= 1 *)
-    exfalso.
-    destruct asgn as [|h t]; simpl in Hlen; [lia|].
-    simpl in Hv. discriminate.
+  simpl.
+  destruct v; reflexivity.
 Qed.
 
 (* The N-kernel witness: for any assignment, at least one clause is in kernel *)
@@ -406,7 +404,7 @@ Qed.
 (*                                                                    *)
 (*    Instance 6: the two clauses require z and z̄ = z* simultaneously*)
 (*                (x₀=T and x₀=F). No Gaussian integer satisfies    *)
-(*                both Re(z)>0 and Re(z*) <0 at once. UNSAT.        *)
+(*                both Re(z)>0 and Re(z-star) <0 at once. UNSAT.   *)
 (* ================================================================= *)
 
 Print all_instances_correct.

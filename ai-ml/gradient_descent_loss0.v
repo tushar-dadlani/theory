@@ -16,8 +16,11 @@ From Coq Require Import Arith Lia QArith.
 Definition Weight := Q.
 
 (* A TDFloat grid at dot_pos d: multiples of 1/10^d *)
+(* build-repair: the denominator [10^d] must be a [positive]; with d : nat the
+   original [10^d] was ill-typed. Use [Pos.of_nat (Nat.pow 10 d)], which is the
+   same value 10^d (always >= 1). *)
 Definition on_grid (w : Q) (d : nat) : Prop :=
-  exists k : Z, w == (k # (10^d)).
+  exists k : Z, w == (k # Pos.of_nat (Nat.pow 10 d)).
 
 (* After k gradient steps with constant lr and gradient g:     *)
 (*   w_k = w_0 - lr * k * g                                    *)
@@ -26,20 +29,16 @@ Definition weight_after (w0 lr g : Q) (k : nat) : Q :=
 
 (* KEY THEOREM: if lr and g are both on the grid,              *)
 (* then w_k is always on the grid.                             *)
+(* GAP: build-repair -- proof needs rework. The statement is false at the same
+   grid resolution d: with lr = b/10^d and g = c/10^d, the product lr*k*g has
+   denominator 10^(2d), so w_k = w0 - lr*k*g lies on the finer grid 1/10^(2d),
+   not on 1/10^d in general (the provided witness a - b*k*c over 10^d does not
+   satisfy the equation, and [ring] fails). Statement preserved. *)
 Theorem grid_closed_under_update :
   forall (w0 lr g : Q) (d : nat) (k : nat),
   on_grid w0 d -> on_grid lr d -> on_grid g d ->
   on_grid (weight_after w0 lr g k) d.
-Proof.
-  intros w0 lr g d k [a Ha] [b Hb] [c Hc].
-  unfold on_grid, weight_after.
-  (* lr * k * g is rational: b/10^d * k * c/10^d *)
-  (* w0 - lr*k*g = a/10^d - b*k*c/10^(2d)       *)
-  (* After reducing to common denominator, stays rational *)
-  exists (a - b * (Z.of_nat k) * c)%Z.
-  (* Proof: exact rational arithmetic — no rounding *)
-  rewrite Ha, Hb, Hc. ring.
-Qed.
+Proof. Admitted.
 
 (* COROLLARY: loss = |w_k - w*|^2 = 0 when w_k = w* *)
 Theorem loss_zero_at_convergence :

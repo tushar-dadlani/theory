@@ -126,20 +126,18 @@ Proof.
     rewrite Nat.sub_add in Heq by lia.
     rewrite Heq.
     rewrite Nat.add_0_l.
-    apply Nat.mod_mod. lia.
+    reflexivity.
   - intro Hne_div. intro Hae.
     apply Hne_div.
-    (* a mod q = b mod q means q divides a - b *)
-    rewrite (Nat.div_mod a q) in Hae by lia.
-    rewrite (Nat.div_mod b q) in Hae by lia.
-    rewrite Hae in *.
-    (* a - b = q*(a/q) + (b mod q) - q*(b/q) - (b mod q)
-            = q * (a/q - b/q) when a >= b *)
-    rewrite Nat.add_sub_swap by lia.
-    rewrite (Nat.add_comm (q * (b/q)) _).
-    rewrite Nat.add_sub.
-    rewrite <- Nat.mul_sub_distr_l.
-    apply Nat.Div0.mod_mul.
+    (* a mod q = b mod q with a >= b means q divides a - b *)
+    pose proof (Nat.Div0.div_mod a q) as Da.
+    pose proof (Nat.Div0.div_mod b q) as Db.
+    apply Nat.Lcm0.mod_divide.
+    exists (a / q - b / q).
+    rewrite Nat.mul_sub_distr_r.
+    rewrite (Nat.mul_comm (a / q) q).
+    rewrite (Nat.mul_comm (b / q) q).
+    lia.
 Qed.
 
 (* ================================================================ *)
@@ -189,58 +187,26 @@ Proof.
       * apply Nat.leb_le in E.
         (* b - a; a mod q = b mod q; q | (b - a) *)
         assert (Hsub: (b - a) mod q = 0).
-        { (* rewrite via subtraction *)
-          replace b with ((b - a) + a) by lia.
-          rewrite Nat.add_mod in Heq by lia.
-          rewrite Nat.add_mod_idemp_r in Heq by lia.
-          symmetry in Heq.
-          (* a mod q = ((b - a) + a) mod q *)
-          rewrite (Nat.add_mod (b - a) a q) in Heq by lia.
-          (* So a mod q = ((b-a) mod q + a mod q) mod q *)
-          (* Hence (b-a) mod q must be 0 (mod q) *)
-          assert (H1: (b - a) mod q + a mod q = a mod q
-                      \/ (b - a) mod q + a mod q = q + a mod q).
-          { (* easy modular reasoning: either (b-a)%q + a%q < q or it's >= q *)
-            destruct (Nat.lt_ge_cases ((b-a) mod q + a mod q) q).
-            - left. rewrite Nat.mod_small in Heq by exact H. lia.
-            - right.
-              assert (H_aq : a mod q < q) by (apply Nat.mod_upper_bound; lia).
-              assert (H_baq : (b - a) mod q < q) by (apply Nat.mod_upper_bound; lia).
-              (* (b-a)%q + a%q < 2q; if it's >= q then minus q lands back in [0,q) *)
-              assert (H_lt2: (b - a) mod q + a mod q < 2 * q) by lia.
-              (* mod q of x in [q, 2q) is x - q *)
-              assert (H_modq: ((b - a) mod q + a mod q) mod q =
-                              (b - a) mod q + a mod q - q).
-              { rewrite Nat.mod_eq by lia.
-                assert (H_div: ((b - a) mod q + a mod q) / q = 1).
-                { apply Nat.div_unique_exact with (((b - a) mod q + a mod q) - q); lia. }
-                lia. }
-              rewrite H_modq in Heq. lia. }
-          destruct H1 as [H1 | H1].
-          - lia.
-          - lia. }
+        { apply Nat.Lcm0.mod_divide.
+          exists (b / q - a / q).
+          pose proof (Nat.Div0.div_mod a q) as Da.
+          pose proof (Nat.Div0.div_mod b q) as Db.
+          rewrite Nat.mul_sub_distr_r.
+          rewrite (Nat.mul_comm (b / q) q).
+          rewrite (Nat.mul_comm (a / q) q).
+          lia. }
         exact Hsub.
       * apply Nat.leb_nle in E.
         (* a > b, so we use a - b *)
         assert (Hsub: (a - b) mod q = 0).
-        { (* symmetric to above *)
-          replace a with ((a - b) + b) by lia.
-          rewrite Nat.add_mod in Heq by lia.
-          rewrite Nat.add_mod_idemp_r in Heq by lia.
-          rewrite Nat.mod_mod in Heq by lia.
-          (* Same argument *)
-          destruct (Nat.lt_ge_cases ((a-b) mod q + b mod q) q).
-          - rewrite Nat.mod_small in Heq by exact H. lia.
-          - assert (H_bq : b mod q < q) by (apply Nat.mod_upper_bound; lia).
-            assert (H_abq : (a - b) mod q < q) by (apply Nat.mod_upper_bound; lia).
-            assert (H_lt2: (a - b) mod q + b mod q < 2 * q) by lia.
-            assert (H_modq: ((a - b) mod q + b mod q) mod q =
-                            (a - b) mod q + b mod q - q).
-            { rewrite Nat.mod_eq by lia.
-              assert (H_div: ((a - b) mod q + b mod q) / q = 1).
-              { apply Nat.div_unique_exact with (((a - b) mod q + b mod q) - q); lia. }
-              lia. }
-            rewrite H_modq in Heq. lia. }
+        { apply Nat.Lcm0.mod_divide.
+          exists (a / q - b / q).
+          pose proof (Nat.Div0.div_mod a q) as Da.
+          pose proof (Nat.Div0.div_mod b q) as Db.
+          rewrite Nat.mul_sub_distr_r.
+          rewrite (Nat.mul_comm (a / q) q).
+          rewrite (Nat.mul_comm (b / q) q).
+          lia. }
         exact Hsub.
     + apply IH; auto.
 Qed.
@@ -278,7 +244,7 @@ Definition composed_predicts (M q : nat) (L : Learner) (T : Truth) (x : nat)
    matches L's prediction exactly *)
 Theorem composition_preserves_M : forall M q L T x,
   M > 0 ->
-  (composed_predicts M q L T x).1 = apply_at M L x.
+  fst (composed_predicts M q L T x) = apply_at M L x.
 Proof.
   intros M q L T x HM. unfold composed_predicts. reflexivity.
 Qed.
@@ -286,7 +252,7 @@ Qed.
 (* SEPARATION: for any problematic alias (a, b) in the gap, the
    q-residues of T(a) and T(b) are DIFFERENT — so the composed
    learner stores them in different cells *)
-Theorem composition_separates_gap_truths : forall q a b T,
+Theorem composition_separates_gap_truths : forall q a b (T : Truth),
   q > 1 ->
   T a <> T b ->
   (T a - T b) mod q <> 0 \/ (T b - T a) mod q <> 0 ->
@@ -294,94 +260,22 @@ Theorem composition_separates_gap_truths : forall q a b T,
 Proof.
   intros q a b T Hq Hne Hdiff.
   intro Heq.
-  destruct (Nat.le_ge_cases (T a) (T b)) as [Hle | Hge].
-  - assert (Hsub: T b - T a > 0) by lia.
-    destruct Hdiff as [H1 | H2].
-    + (* T a >= T b case but we have T a <= T b, so T a - T b = 0 *)
-      assert (T a - T b = 0) by lia.
-      rewrite H in H1. simpl in H1. apply H1. apply Nat.Div0.mod_0_l.
-    + (* T b - T a > 0; if mod q = 0, q divides T b - T a *)
-      apply H2. clear H2.
-      replace (T b) with ((T b - T a) + T a) by lia.
-      rewrite Nat.add_mod by lia.
-      rewrite Heq.
-      assert ((T b - T a) mod q + T a mod q = T a mod q
-              \/ (T b - T a) mod q + T a mod q = q + T a mod q).
-      { destruct (Nat.lt_ge_cases ((T b - T a) mod q + T a mod q) q).
-        - left.
-          rewrite Nat.add_mod_idemp_r in Heq by lia.
-          rewrite Nat.mod_small in Heq by exact H.
-          lia.
-        - right.
-          assert (H1: T a mod q < q) by (apply Nat.mod_upper_bound; lia).
-          assert (H2: (T b - T a) mod q < q) by (apply Nat.mod_upper_bound; lia).
-          assert (Hlt2: (T b - T a) mod q + T a mod q < 2*q) by lia.
-          assert (Hmod: ((T b - T a) mod q + T a mod q) mod q =
-                        (T b - T a) mod q + T a mod q - q).
-          { rewrite Nat.mod_eq by lia.
-            assert (Hdv: ((T b - T a) mod q + T a mod q) / q = 1).
-            { apply Nat.div_unique_exact with
-              (((T b - T a) mod q + T a mod q) - q); lia. }
-            lia. }
-          rewrite Nat.add_mod_idemp_r in Heq by lia.
-          rewrite Hmod in Heq. lia. }
-      destruct H as [H | H]; lia.
-  - (* symmetric case *)
-    assert (Hsub: T a - T b > 0) by lia.
-    destruct Hdiff as [H1 | H2].
-    + apply H1.
-      replace (T a) with ((T a - T b) + T b) by lia.
-      rewrite Nat.add_mod by lia.
-      assert (Heq' : T b mod q = T a mod q) by (symmetry; exact Heq).
-      rewrite Heq'.
-      assert ((T a - T b) mod q + T a mod q = T a mod q
-              \/ (T a - T b) mod q + T a mod q = q + T a mod q).
-      { destruct (Nat.lt_ge_cases ((T a - T b) mod q + T a mod q) q).
-        - left.
-          rewrite Nat.add_mod_idemp_r by lia.
-          rewrite Nat.mod_small by exact H.
-          (* Need: (T a - T b) mod q + T a mod q = T a mod q
-             i.e. (T a - T b) mod q = 0 — that's our goal *)
-          (* Actually we want the disjunction; if we have it, we're done *)
-          reflexivity.
-        - right. 
-          assert (H1': T a mod q < q) by (apply Nat.mod_upper_bound; lia).
-          assert (H2': (T a - T b) mod q < q) by (apply Nat.mod_upper_bound; lia).
-          assert (Hlt2: (T a - T b) mod q + T a mod q < 2*q) by lia.
-          rewrite Nat.add_mod_idemp_r by lia.
-          assert (Hmod: ((T a - T b) mod q + T a mod q) mod q =
-                        (T a - T b) mod q + T a mod q - q).
-          { rewrite Nat.mod_eq by lia.
-            assert (Hdv: ((T a - T b) mod q + T a mod q) / q = 1).
-            { apply Nat.div_unique_exact with
-              (((T a - T b) mod q + T a mod q) - q); lia. }
-            lia. }
-          rewrite Hmod. lia. }
-      destruct H as [H | H].
-      * (* sum = T a mod q means (T a - T b) mod q = 0 — which is goal? *)
-        (* Wait, we're trying to prove (T a - T b) mod q = 0 *)
-        (* The Heq says T a mod q = T b mod q; we expanded T a as (T a - T b) + T b *)
-        (* and want to conclude (T a - T b) mod q = 0 *)
-        (* From H: (T a - T b) mod q + T a mod q = T a mod q *)
-        (* This gives (T a - T b) mod q = 0, contradicting H1 *)
-        (* But we already used H1 = (T a - T b) mod q <> 0 *)
-        (* So this case is impossible — but the goal is just (T a - T b) mod q = 0 *)
-        (* which contradicts H1, so we get a contradiction directly *)
-        (* Actually we're inside `apply H1` so we're trying to PROVE
-           (T a - T b) mod q = 0.  Let's give it. *)
-        rewrite Nat.mod_small by lia.
-        (* The sum equals T a mod q means the new term is 0 *)
-        lia.
-      * (* sum = q + T a mod q *)
-        (* Goal: (T a - T b) mod q = 0 *)
-        (* But sum = q + T a mod q means (T a - T b) mod q = q,
-           which is impossible since (T a - T b) mod q < q. Contradiction. *)
-        assert (Hcontra: (T a - T b) mod q < q) by (apply Nat.mod_upper_bound; lia).
-        lia.
-    + (* mirror of H2 case: T b - T a *)
-      apply H2.
-      assert (T b - T a = 0) by lia.
-      rewrite H. simpl. apply Nat.Div0.mod_0_l.
+  (* If two numbers agree mod q, their difference is divisible by q. *)
+  assert (Hkey : forall x y, x mod q = y mod q -> (x - y) mod q = 0).
+  { intros x y Hxy.
+    destruct (Nat.le_gt_cases x y) as [Hle | Hgt].
+    - replace (x - y) with 0 by lia. apply Nat.Div0.mod_0_l.
+    - apply Nat.Lcm0.mod_divide.
+      exists (x / q - y / q).
+      pose proof (Nat.Div0.div_mod x q) as Dx.
+      pose proof (Nat.Div0.div_mod y q) as Dy.
+      rewrite Nat.mul_sub_distr_r.
+      rewrite (Nat.mul_comm (x / q) q).
+      rewrite (Nat.mul_comm (y / q) q).
+      lia. }
+  destruct Hdiff as [Hd | Hd].
+  - apply Hd. apply Hkey. exact Heq.
+  - apply Hd. apply Hkey. symmetry. exact Heq.
 Qed.
 
 (* ================================================================ *)
@@ -401,7 +295,7 @@ Theorem GAP_SYNTHESIS_IS_CRT :
   (* (3) Composition preserves the original learner's predictions *)
   (forall M q L T x,
      M > 0 ->
-     (composed_predicts M q L T x).1 = apply_at M L x).
+     fst (composed_predicts M q L T x) = apply_at M L x).
 Proof.
   split; [|split;[|split]].
   - exact aliases_sym.

@@ -21,11 +21,18 @@
 From Stdlib Require Import List.
 From Stdlib Require Import Nat.
 From Stdlib Require Import Arith.
+From Stdlib Require Import Lia.
 Require Import dim_types.
 Require Import dim_crypto.
 Require Import dim_capability.
+Import ListNotations.
 Open Scope list_scope.
 Open Scope nat_scope.
+
+(* Default inhabitants of the opaque key/signature types, used only as
+   the (never-reached) default argument of [hd] in statements below. *)
+Parameter default_pubkey : PublicKey.
+Parameter default_sig    : Signature.
 
 (* ════════════════════════════════════════════════════════
    Cost functions
@@ -135,9 +142,9 @@ Theorem chain_length_bounded :
     ch <> [] ->
     chain_depth_decreasing ch ->
     length ch <= del_max_depth (hd (mkDelegation
-        (hd (hd [] []) [])
-        (hd (hd [] []) [])
-        [] 0 (hd (hd [] []) []))
+        default_pubkey
+        default_pubkey
+        [] 0 default_sig)
       ch) + 1.
 Proof.
   intros ch Hne Hdec.
@@ -145,7 +152,7 @@ Proof.
   - contradiction.
   - simpl.
     destruct rest as [| d2 rest2].
-    + simpl. apply Nat.le_add_r.
+    + simpl. apply Nat.le_add_l.
     + simpl in Hdec.
       destruct Hdec as [Hlt Hrest].
       simpl.
@@ -154,16 +161,8 @@ Proof.
       specialize (IH Hrest_ne Hrest).
       simpl in IH.
       (* del_max_depth d2 < del_max_depth d1, so
-         length(d2::rest2) <= d2.depth + 1 <= d1.depth *)
-      apply Nat.le_succ_l in Hlt.
-      apply (Nat.le_trans _ (del_max_depth d + 1)).
-      * apply Nat.le_succ_l.
-        apply (Nat.le_trans _ (del_max_depth d2 + 1)).
-        -- exact IH.
-        -- apply Nat.add_le_add_right.
-           apply Nat.lt_le_incl.
-           exact Hlt.
-      * apply Nat.le_refl.
+         length(d2::rest2) <= d2.depth + 1 <= d1.depth + 1 *)
+      lia.
 Qed.
 
 (* ════════════════════════════════════════════════════════
@@ -201,11 +200,11 @@ Proof.
   - intros Hshrink d_first d_last Hfirst Hlast _.
     destruct rest as [| d2 rest2].
     + simpl in Hfirst, Hlast.
-      rewrite <- Hfirst, <- Hlast.
+      rewrite Hfirst, Hlast.
       apply cap_subset_refl.
     + simpl in Hshrink.
       destruct Hshrink as [Hd_d2 Hrest].
-      simpl in Hfirst. rewrite <- Hfirst.
+      simpl in Hfirst. rewrite Hfirst.
       simpl in Hlast.
       apply cap_subset_trans with (B := del_caps d2).
       * apply IH.
@@ -235,5 +234,5 @@ Proof.
   intros ch Hvalid d_first d_last Hfirst Hlast Hne.
   unfold chain_valid in Hvalid.
   destruct Hvalid as [_ [_ [Hshrink _]]].
-  apply caps_never_grow; assumption.
+  apply caps_never_grow with (ch := ch); assumption.
 Qed.

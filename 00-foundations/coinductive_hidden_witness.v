@@ -31,6 +31,12 @@ Definition minimize (A : Type) (s : Symbol A) : MapOperator A :=
   | mark _ x op => op
   end.
 
+(* One-step unfolding helper for the co-inductive map operator *)
+Definition unfold_op (A : Type) (m : MapOperator A) : MapOperator A :=
+  match m with absorb _ a b => absorb A a b end.
+Lemma unfold_op_eq : forall (A : Type) (m : MapOperator A), m = unfold_op A m.
+Proof. intros A m. destruct m. reflexivity. Qed.
+
 (* The absorption theorem *)
 (* The map operator absorbs its own witness at every step *)
 (* This is the co-inductive proof obligation *)
@@ -39,7 +45,9 @@ Theorem map_absorbs_witness (A : Type) (x : A) :
     op = absorb A x op.
 Proof.
   exists (generative_witness A x).
-  reflexivity.
+  transitivity (unfold_op A (generative_witness A x)).
+  - apply unfold_op_eq.
+  - cbn. reflexivity.
 Qed.
 
 End GenerativeWitness.

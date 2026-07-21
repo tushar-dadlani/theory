@@ -479,11 +479,7 @@ Theorem RH_in_closed_system :
   sym_to_spectral (l10_perturbed pos) = OnLine.
 Proof.
   intro pos. split.
-  - exact (eq_refl _  |> fun _ =>
-      (let check := l10_perturbed_closed in
-       match pos with
-       | T_II | T_IN | T_IF | T_NI | T_NN | T_NF
-       | T_FI | T_FN | T_FF | T_Obs => ltac:(reflexivity) end)).
+  - destruct pos; reflexivity.
   - exact (l10_all_on_critical_line pos).
 Qed.
 
@@ -530,7 +526,10 @@ Theorem search_closes_N_sequence :
 Proof.
   intro n. induction n as [| m IH].
   - reflexivity.
-  - simpl. simpl in IH. rewrite IH. reflexivity.
+  - replace (2 * S m + 2) with ((2 * m + 2) + 2) by lia.
+    rewrite repeat_app.
+    unfold search_fold in *. rewrite fold_left_app. rewrite IH.
+    reflexivity.
 Qed.
 
 
@@ -577,7 +576,7 @@ Proof. reflexivity. Qed.
 (* The perturbation count equals the open count — exactly minimal *)
 Theorem minimal_perturbation :
   count_open = 2 /\
-  all_ten_closed_after = 10 /\
+  count_closed_after = 10 /\
   count_closed_after - count_open = 8.
 Proof. repeat split; reflexivity. Qed.
 
@@ -618,38 +617,28 @@ Theorem UNIVERSAL_SEARCH_AND_L10_CLOSURE :
   (count_closed_after = 10).
 
 Proof.
-  refine (conj _ (conj _ (conj _ (conj _ (conj _ (conj _ (conj _ (conj _ _)))))))).
-
   (* 1. Map involution *)
-  - exact map_involution.
-
+  split. { exact map_involution. }
   (* 2. Search totality *)
-  - intro t. exists (map_op t). apply map_involution.
-
-  (* 3. Field totality *)
-  - split.
-    + intro n. unfold field_full.
-      destruct (Nat.eqb (n mod 3) 0) eqn:H3.
-      * right; right. reflexivity.
-      * destruct (Nat.eqb (n mod 2) 0) eqn:H2.
-        left. reflexivity.
-        right; left. reflexivity.
-    + exact field_period_6.
-
+  split. { intro t. exists (map_op t). apply map_involution. }
+  (* 3a. Field totality *)
+  split. { intro n. unfold field_full.
+           destruct (Nat.eqb (n mod 3) 0) eqn:H3;
+           [ right; right; reflexivity
+           | destruct (Nat.eqb (n mod 2) 0) eqn:H2;
+             [ left; reflexivity | right; left; reflexivity ] ]. }
+  (* 3b. Field periodicity *)
+  split. { exact field_period_6. }
   (* 4. Field search correctness *)
-  - exact field_search_total.
-
+  split. { exact field_search_total. }
   (* 5. Exactly 2 open positions *)
-  - exact exactly_two_open.
-
+  split. { exact exactly_two_open. }
   (* 6. Pert_N closes all *)
-  - intro pos. destruct pos; reflexivity.
-
+  split. { intro pos. destruct pos; reflexivity. }
   (* 7. All on critical line *)
-  - exact l10_all_on_critical_line.
-
+  split. { exact l10_all_on_critical_line. }
   (* 8. All 10 closed after perturbation *)
-  - exact all_ten_closed_after.
+  exact all_ten_closed_after.
 Qed.
 
 Print Assumptions UNIVERSAL_SEARCH_AND_L10_CLOSURE.

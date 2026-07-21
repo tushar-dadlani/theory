@@ -18,6 +18,7 @@ Require Import dim_types.
 Require Import dim_crypto.
 Require Import dim_capability.
 Require Import dim_complexity.
+Import ListNotations.
 Open Scope list_scope.
 
 (* ════════════════════════════════════════════════════════
@@ -41,7 +42,7 @@ Theorem receipt_unforgeable :
     receipt_valid r ->
     ~ KeyPair kpub kpriv ->
     Verify kpub
-           (hash_receipt (r_input r) (r_output r) (r_chain r))
+           (hash_receipt (r_input r) (r_output r) (r_function r) (r_chain r))
            s
     = false.
 Proof.
@@ -68,11 +69,11 @@ Proof.
   - intros Hshrink d_first d_last Hfirst Hlast _.
     destruct rest as [| d2 rest2].
     + simpl in Hfirst, Hlast.
-      rewrite <- Hfirst, <- Hlast.
+      rewrite Hfirst, Hlast.
       apply cap_subset_refl.
     + simpl in Hshrink.
       destruct Hshrink as [Hd_d2 Hrest].
-      simpl in Hfirst. rewrite <- Hfirst.
+      simpl in Hfirst. rewrite Hfirst.
       simpl in Hlast.
       apply cap_subset_trans with (B := del_caps d2).
       * apply IH.
@@ -108,14 +109,13 @@ Lemma chain_compose :
     ReceiptChain x z.
 Proof.
   intros x y z Hxy Hyz.
+  revert z Hyz.
   induction Hxy as
     [ x' y' r Hr_in Hr_out Hv
-    | x' y' z' r Hv Hr_in Hr_out Hrest IH ].
-  - apply RC_step with (y := y').
-    + exact Hv. + exact Hr_in. + exact Hr_out. + exact Hyz.
-  - apply RC_step with (y := y').
-    + exact Hv. + exact Hr_in. + exact Hr_out.
-    + apply IH. exact Hyz.
+    | x' y' z' r Hv Hr_in Hr_out Hrest IH ]; intros z Hyz.
+  - apply RC_step with (y := y') (r := r); assumption.
+  - apply RC_step with (y := y') (r := r); try assumption.
+    apply IH. exact Hyz.
 Qed.
 
 (* ════════════════════════════════════════════════════════
@@ -172,7 +172,7 @@ Proof.
   - (* Inductive case: prepend one receipt to existing chain *)
     destruct IH as [n_rest IH_bound].
     exists (verify_receipt_cost r + n_rest).
-    apply VCB_step.
+    apply VCB_step with (y := y').
     exact IH_bound.
 Qed.
 
@@ -185,10 +185,10 @@ Corollary verification_cost_linear :
 Proof.
   intros x y n Hbound.
   induction Hbound as [x' y' r | x' y' z' r n' Htail IH].
-  - unfold verify_receipt_cost, cost_verify. simpl. apply Nat.le_refl.
+  - unfold verify_receipt_cost, cost_verify. simpl. apply le_n_S. apply Nat.le_0_l.
   - apply (Nat.le_trans 1 (verify_receipt_cost r + n')).
     + apply (Nat.le_trans 1 (verify_receipt_cost r)).
-      * unfold verify_receipt_cost, cost_verify. simpl. apply Nat.le_refl.
+      * unfold verify_receipt_cost, cost_verify. simpl. apply le_n_S. apply Nat.le_0_l.
       * apply Nat.le_add_r.
     + apply Nat.le_refl.
 Qed.
@@ -208,7 +208,7 @@ Theorem full_delegation_safety :
       cap_subset (del_caps d_last) (del_caps d_first).
 Proof.
   intros ch Hvalid d_first d_last Hfirst Hlast Hne.
-  apply chain_valid_implies_cap_containment; assumption.
+  apply chain_valid_implies_cap_containment with (ch := ch); assumption.
 Qed.
 
 (* ════════════════════════════════════════════════════════

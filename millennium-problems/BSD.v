@@ -9,6 +9,7 @@
 (* ============================================================ *)
 
 Require Import Coq.Reals.Reals.
+Require Import Lra.
 Require Import Coq.Logic.Classical.
 Require Import Core.
 Require Import RiemannHypothesis.
@@ -28,7 +29,7 @@ Require Import RiemannHypothesis.
 Record EllipticCurve : Type := {
   ec_a : R;   (* coefficient a in y² = x³ + ax + b *)
   ec_b : R;   (* coefficient b *)
-  ec_nonsingular : 4 * ec_a^3 + 27 * ec_b^2 <> 0
+  ec_nonsingular : (4 * ec_a^3 + 27 * ec_b^2 <> 0)%R
   (* GAP: proper formalization needs:
      — projective coordinates
      — group law on rational points
@@ -63,14 +64,19 @@ Parameter VanishingOrder : EllipticCurve -> nat.
 (* BSD is RH on the elliptic curve geodesic                   *)
 (* ------------------------------------------------------------ *)
 
+(* The RH self-dual map *)
+(* L(s) is symmetric around the critical line s=1/2 *)
+Definition RH_SelfDualMap : R -> R :=
+  fun s => (1 - s)%R.
+
 (* The BSD self-dual map *)
 (* L(E,s) is symmetric around s=1, not s=1/2 *)
 Definition BSD_SelfDualMap : R -> R :=
-  fun s => 2 - s.
+  fun s => (2 - s)%R.
 
 (* s=1 is the fixed point of s -> 2-s *)
 Lemma BSD_fixed_point :
-  BSD_SelfDualMap 1 = 1.
+  (BSD_SelfDualMap 1 = 1)%R.
 Proof.
   unfold BSD_SelfDualMap. lra.
 Qed.
@@ -79,7 +85,7 @@ Qed.
 (* L(E,s) ~ L(E, 2-s) (up to known factor) *)
 Axiom BSD_FunctionalEquation :
   forall (E : EllipticCurve) (re im : R),
-  LFunction E re im = LFunction E (2 - re) im.
+  LFunction E re im = LFunction E (2 - re)%R im.
   (* GAP: actual functional equation involves:
      — conductor N of E
      — root number ε = ±1
@@ -91,7 +97,7 @@ Axiom BSD_FunctionalEquation :
 Lemma BSD_is_shifted_RH :
   forall s : R,
   BSD_SelfDualMap s = s <->
-  RH_SelfDualMap (s - 1/2) = (s - 1/2).
+  (RH_SelfDualMap (s - 1/2) = (s - 1/2))%R.
 Proof.
   intro s.
   unfold BSD_SelfDualMap, RH_SelfDualMap.
@@ -141,11 +147,11 @@ Definition BSD_GHS_Statement : Prop :=
 
 (* The bridge between RH and BSD geodesics *)
 Definition RH_to_BSD_shift : R -> R :=
-  fun s => s + 1/2.
+  fun s => (s + 1/2)%R.
 
 (* The shift maps RH critical line to BSD critical point *)
 Lemma RH_line_maps_to_BSD_point :
-  RH_to_BSD_shift (1/2) = 1.
+  (RH_to_BSD_shift (1/2) = 1)%R.
 Proof.
   unfold RH_to_BSD_shift. lra.
 Qed.
@@ -166,7 +172,7 @@ Theorem BSD_from_GHS :
   (* IF the L-function zeros are fixed points *)
   (* of the BSD self-dual map *)
   (forall (E : EllipticCurve) (re im : R),
-   LFunction E re im = 0 ->
+   (LFunction E re im = 0)%R ->
    BSD_SelfDualMap re = re) ->
   (* AND the rank counts fixed point multiplicity *)
   (forall (E : EllipticCurve),
@@ -230,5 +236,3 @@ Axiom Kolyvagin :
   Order of the gap: 0.5
   Same as RH — they are the same problem at heart.
 *)
-
-End BSD.

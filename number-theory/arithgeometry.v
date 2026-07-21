@@ -39,6 +39,15 @@ Proof.
   - exists Fold.   split; [discriminate | reflexivity].
 Qed.
 
+(* The two-symbol type and its law (same structure as MetaOp/meta_law) *)
+Inductive Sym2 : Type := Zero : Sym2 | One : Sym2.
+
+Definition the_law (a b : Sym2) : Sym2 :=
+  match a, b with
+  | Zero, Zero => One  | One,  One  => Zero
+  | Zero, One  => Zero | One,  Zero => Zero
+  end.
+
 (* The deep identity: Sym2 and MetaOp are the same type *)
 Definition sym2_to_meta (s : Sym2) : MetaOp :=
   match s with

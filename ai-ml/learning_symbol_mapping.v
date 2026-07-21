@@ -17,6 +17,7 @@
 (* ================================================================= *)
 
 Require Import Coq.Arith.Arith.
+Require Import Lia.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
 Import ListNotations.
@@ -122,7 +123,7 @@ Section LearnSymbolMapping.
   Proof.
     intros rank u v Hne.
     unfold encode_learned, learned_bit.
-    rewrite same_in_U_diff; [reflexivity | exact Hne].
+    rewrite same_in_U_diff; [ lia | exact Hne].
   Qed.
 
   (* ================================================================ *)
@@ -140,7 +141,7 @@ Section LearnSymbolMapping.
     intros rank u v Hne.
     rewrite learned_same_is_halfstep.
     unfold encode_learned, learned_bit.
-    rewrite same_in_U_diff; [| exact Hne].
+    rewrite same_in_U_diff; [| exact (not_eq_sym Hne)].
     simpl. lia.
   Qed.
 
@@ -170,18 +171,24 @@ Section LearnSymbolMapping.
   (*    U-learning IS Sym2-encoding, up to alphabet name.             *)
   (* ================================================================ *)
 
+  (* GAP: build-repair -- proof needs rework. The original statement was
+     ill-typed: it applied [same_in_U] (defined on the section's abstract [U])
+     to [a b : Sym2]. The Sym2-level sameness [same_Sym2] is used so the
+     statement is well-formed. It is nonetheless false: [relational_info_bit]
+     is [the_law a b], which is 1 only for (Zero,Zero) and 0 for (One,One),
+     so it does not coincide with sameness at (One,One). *)
+  Definition same_Sym2 (a b : Sym2) : bool :=
+    match a, b with
+    | Zero, Zero => true
+    | One,  One  => true
+    | _, _       => false
+    end.
+
   Theorem learned_consistent_with_sym2 :
     forall rank : nat, forall a b : Sym2,
     encode_relational rank a b =
-    2 * rank + (if same_in_U a b then 1 else 0).
-  Proof.
-    intros rank a b.
-    unfold encode_relational, relational_info_bit.
-    unfold same_in_U.
-    destruct (eq_dec a b) as [Heq | Hne].
-    - subst. destruct b; reflexivity.
-    - destruct a, b; try contradiction; reflexivity.
-  Qed.
+    2 * rank + (if same_Sym2 a b then 1 else 0).
+  Proof. Admitted.
 
 End LearnSymbolMapping.
 

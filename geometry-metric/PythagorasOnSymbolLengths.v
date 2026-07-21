@@ -184,7 +184,8 @@ Theorem infer_all_from_two_counts :
   (* 13 is prime — the Gaussian diagonal is irreducible *)
   (13 >= 2 /\ forall a b : nat, 13 = a * b -> a = 1 \/ b = 1).
 Proof.
-  simpl. repeat split.
+  simpl.
+  split; [|split; [|split; [|split; [|split]]]].
   - reflexivity.
   - reflexivity.
   - reflexivity.
@@ -365,18 +366,8 @@ Theorem master_pythagoras_on_symbol_lengths :
   + (count_diag * count_diag) * (count_diag * count_diag)
   = count_ring * count_ring.
 Proof.
-  repeat split.
-  - reflexivity.
-  - reflexivity.
-  - reflexivity.
-  - reflexivity.
-  - reflexivity.
-  - reflexivity.
-  - unfold is_pythagorean. reflexivity.
-  - reflexivity.
-  - intros h H. destruct h as [|[|[|[|[|[|h]]]]]]; lia.
-  - reflexivity.
-  - reflexivity.
-  - reflexivity.
-  - reflexivity.
+  repeat split;
+    try reflexivity;
+    try (unfold is_pythagorean; reflexivity);
+    try (intros h H; destruct h as [|[|[|[|[|[|h]]]]]]; lia).
 Qed.

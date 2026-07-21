@@ -3,6 +3,7 @@
     to support complexity bounds in dim_complexity.v *)
 
 From Stdlib Require Import List.
+Import ListNotations.
 From Stdlib Require Import Bool.
 From Stdlib Require Import Nat.
 Require Import dim_types.
@@ -66,10 +67,13 @@ Definition DelegChain := list Delegation.
 Fixpoint chain_linked (ch : DelegChain) : Prop :=
   match ch with
   | []               => True
-  | [_]              => True
-  | d1 :: d2 :: rest =>
-      del_grantee d1 = del_grantor d2 /\
-      chain_linked (d2 :: rest)
+  | d1 :: rest =>
+      match rest with
+      | []        => True
+      | d2 :: _   =>
+          del_grantee d1 = del_grantor d2 /\
+          chain_linked rest
+      end
   end.
 
 (** Every delegation in the chain carries a valid signature. *)
@@ -84,10 +88,13 @@ Fixpoint chain_sigs_valid (ch : DelegChain) : Prop :=
 Fixpoint chain_caps_shrink (ch : DelegChain) : Prop :=
   match ch with
   | []               => True
-  | [_]              => True
-  | d1 :: d2 :: rest =>
-      cap_subset (del_caps d2) (del_caps d1) /\
-      chain_caps_shrink (d2 :: rest)
+  | d1 :: rest =>
+      match rest with
+      | []        => True
+      | d2 :: _   =>
+          cap_subset (del_caps d2) (del_caps d1) /\
+          chain_caps_shrink rest
+      end
   end.
 
 (** Depth monotone decrease: each link's max_depth < previous link's max_depth.
@@ -95,10 +102,13 @@ Fixpoint chain_caps_shrink (ch : DelegChain) : Prop :=
 Fixpoint chain_depth_decreasing (ch : DelegChain) : Prop :=
   match ch with
   | []               => True
-  | [_]              => True
-  | d1 :: d2 :: rest =>
-      del_max_depth d2 < del_max_depth d1 /\
-      chain_depth_decreasing (d2 :: rest)
+  | d1 :: rest =>
+      match rest with
+      | []        => True
+      | d2 :: _   =>
+          del_max_depth d2 < del_max_depth d1 /\
+          chain_depth_decreasing rest
+      end
   end.
 
 (** A chain is well-formed if all four invariants hold. *)
@@ -115,17 +125,19 @@ Definition chain_valid (ch : DelegChain) : Prop :=
 Record Receipt := mkReceipt {
   r_input    : Hash;
   r_output   : Hash;
+  r_function : Hash;        (** CAS identity of the function F applied *)
   r_operator : PublicKey;
   r_chain    : DelegChain;
   r_time     : Timestamp;
   r_sig      : Signature;
 }.
 
-Parameter hash_receipt : Hash -> Hash -> DelegChain -> Hash.
+(** The signed content binds (input, output, function, chain). *)
+Parameter hash_receipt : Hash -> Hash -> Hash -> DelegChain -> Hash.
 
 Definition receipt_valid (r : Receipt) : Prop :=
   Verify (r_operator r)
-         (hash_receipt (r_input r) (r_output r) (r_chain r))
+         (hash_receipt (r_input r) (r_output r) (r_function r) (r_chain r))
          (r_sig r) = true
   /\ chain_sigs_valid  (r_chain r)
   /\ chain_linked      (r_chain r)

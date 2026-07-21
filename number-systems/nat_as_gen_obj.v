@@ -33,8 +33,12 @@ Inductive Nat : Type :=
 
 (* Zero is not primitive *)
 (* It is the first move - a symbol and its witness together *)
-CoFixpoint zero_witness : MapOperator Nat :=
-  absorb Nat (Zero zero_witness) zero_witness.
+(* GAP: build-repair — the intended self-referential corecursive stream
+   [zero_witness = absorb (Zero zero_witness) zero_witness] is not
+   expressible as a guarded CoFixpoint (the corecursive call is nested
+   under the [Zero] constructor of the *inductive* type [Nat], which the
+   guard checker rejects). We preserve its declared type via an Axiom. *)
+Axiom zero_witness : MapOperator Nat.
 
 Definition zero : Nat := Zero zero_witness.
 

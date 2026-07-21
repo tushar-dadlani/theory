@@ -32,10 +32,11 @@
 
 Require Import Coq.Arith.Arith.
 Require Import Coq.Logic.Classical_Prop.
+Require Import Lia.
 
 (* Load the abstract encoding theory from the same directory.
    Requires: coqc encoding_any_symbol.v  before this file.      *)
-Load "encoding_any_symbol".
+Require Import encoding_any_symbol.
 
 
 (* ==== Step 1: The two kinds of TDFloat number ================ *)

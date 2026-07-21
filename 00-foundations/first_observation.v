@@ -137,13 +137,13 @@ Proof. intro d; destruct d; reflexivity. Qed.
 Inductive Metric : Type :=
   | M_linear    (* 0°:  measures Euclidean horizontal distance *)
   | M_gaussian  (* 45°: measures Gaussian (complex) distance   *)
-  | M_threestep.(* 90°: measures bit-length / step distance    *)
+  | M_threestep. (* 90°: measures bit-length / step distance    *)
 
 (* Each metric corresponds to one algebra *)
 Inductive Algebra : Type :=
   | Linear_alg    (* 0° arithmetic, OR-algebra   *)
   | Gaussian_alg  (* 45° complex arithmetic      *)
-  | ThreeStep_alg.(* 90° shift arithmetic, AND   *)
+  | ThreeStep_alg. (* 90° shift arithmetic, AND   *)
 
 Definition metric_algebra (m : Metric) : Algebra :=
   match m with
@@ -173,7 +173,7 @@ Theorem first_observation_generates_all :
   (* 3 axes generate 3 metrics, one per algebra *)
   metric_algebra M_gaussian = Gaussian_alg.
 Proof.
-  repeat split; reflexivity.
+  repeat split; first [ reflexivity | discriminate ].
 Qed.
 
 (* ALL PROOFS CLOSED. ZERO Admitted. *)

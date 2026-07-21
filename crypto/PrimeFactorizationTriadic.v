@@ -58,8 +58,10 @@
     ALL PROOFS CLOSED. ZERO Admitted.
 *)
 
-From Coq Require Import Arith Lia PeanoNat.
+From Coq Require Import Arith Lia PeanoNat ZArith.
 Open Scope nat_scope.
+(* signed integers (Eisenstein/Gaussian norms use subtraction) *)
+Definition int := Z.
 
 (* ================================================================= *)
 (* PART 1 — FIELD CLASSIFICATION OF PRIMES                           *)
@@ -85,7 +87,7 @@ Theorem prime_gt3_is_N_class : forall p,
 Proof.
   intros p Hp H3 H2.
   unfold field_class.
-  rewrite Nat.eqb_neq in H3. rewrite H3.
+  apply Nat.eqb_neq in H3. rewrite H3.
   rewrite H2. reflexivity.
 Qed.
 
@@ -111,7 +113,7 @@ Proof. intro a. lia. Qed.
 Theorem one_fixed : is_fixed_point 1.
 Proof.
   unfold is_fixed_point. intros a b H.
-  left. nia.
+  left. apply Nat.eq_mul_1 in H. apply H.
 Qed.
 
 (* ================================================================= *)
@@ -131,7 +133,7 @@ Proof. unfold gaussian_norm. simpl. reflexivity. Qed.
 
 (* The Eisenstein norm: N(a,b) = a² - ab + b² *)
 Definition eisenstein_norm (a b : int) : int :=
-  a*a - a*b + b*b.
+  (a*a - a*b + b*b)%Z.
 
 (* We work in nat; use signed version as a check *)
 (* For p=7 ≡ 1(3): 7 = (3-ω)(3-ω̄) in Z[ω].
@@ -181,8 +183,8 @@ Theorem F_prime_absorption : forall n : nat,
 Proof.
   intros n H.
   rewrite Nat.gcd_comm.
-  apply Nat.gcd_divide_l_iff.
-  exact H.
+  apply Nat.divide_gcd_iff.
+  apply Nat.mod_divide; [ lia | exact H ].
 Qed.
 
 (* I-class prime (p=2): self-stable diagonal *)
@@ -200,24 +202,12 @@ Proof. reflexivity. Qed.
 (*  For n=p (prime): gcd(2^(2^k)+1, p) is either 1 or p.        *)
 (*  If it's p: the algorithm returns (p, 1). That IS the answer. *)
 
+(* GAP: build-repair — proof needs rework *)
 Theorem prime_gcd_trivial : forall p k : nat,
   p >= 2 ->
   (Nat.gcd (Nat.pow 2 k + 1) p = 1) \/
   (Nat.gcd (Nat.pow 2 k + 1) p = p).
-Proof.
-  intros p k Hp.
-  pose proof (Nat.gcd_divide_r (Nat.pow 2 k + 1) p) as Hr.
-  destruct Hr as [d Hd].
-  (* gcd divides p, so gcd = 1 or gcd = p (if p is prime) *)
-  (* This holds for prime p: divisors of p are 1 and p *)
-  (* We state this as: Nat.gcd divides p *)
-  pose proof (Nat.gcd_pos_of_pos_l (Nat.pow 2 k + 1) p ltac:(lia)) as Hpos.
-  (* The gcd divides p and is positive *)
-  right.
-  (* For a prime p: every divisor is either 1 or p *)
-  (* This requires a primality hypothesis which we encode abstractly *)
-  admit.
-Admitted.  (* Requires Nat.Prime from Coq stdlib — stated here for clarity *)
+Proof. Admitted.  (* Requires Nat.Prime from Coq stdlib — stated here for clarity *)
 
 (* ================================================================= *)
 (* PART 5 — THE MASTER THEOREM: PRIME STRUCTURE                      *)
@@ -251,16 +241,16 @@ Theorem prime_structure_master :
   (forall p, p > 3 -> p mod 3 <> 0 -> p mod 2 = 1 ->
              field_class p = 2).
 Proof.
-  repeat split.
-  - intro p. unfold field_class.
+  split.
+  { intro p. unfold field_class.
     destruct (Nat.eqb (p mod 3) 0); auto.
-    destruct (Nat.eqb (p mod 2) 0); auto.
-  - reflexivity.
-  - reflexivity.
-  - unfold gaussian_norm. simpl. reflexivity.
-  - simpl. reflexivity.
-  - exact F_prime_absorption.
-  - exact prime_gt3_is_N_class.
+    destruct (Nat.eqb (p mod 2) 0); auto. }
+  split; [ reflexivity | ].
+  split; [ reflexivity | ].
+  split; [ unfold gaussian_norm; simpl; reflexivity | ].
+  split; [ simpl; reflexivity | ].
+  split; [ exact F_prime_absorption | ].
+  exact prime_gt3_is_N_class.
 Qed.
 
 Print Assumptions prime_structure_master.

@@ -158,7 +158,7 @@ Proof.
   { induction votes as [|v rest IH].
     - reflexivity.
     - inversion Hall as [|? ? Hv Hrest]. subst.
-      simpl. rewrite Nat.eqb_refl.
+      simpl. rewrite Nat.eqb_refl. simpl.
       f_equal. apply IH. exact Hrest. }
   (* And find_modal finds n (since it's in candidates with max count) *)
   (* The proof that find_modal returns n requires more work, but the

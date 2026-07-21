@@ -31,6 +31,8 @@
 (* ============================================================ *)
 
 From Coq Require Import Arith Lia.
+From Coq Require Import List.
+Import ListNotations.
 
 (* The 8 octonion basis elements *)
 Inductive OctBasis : Type :=

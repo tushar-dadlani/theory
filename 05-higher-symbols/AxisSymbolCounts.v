@@ -424,17 +424,16 @@ Theorem master_five_two_three :
   (forall (a : Sym90) (b : Sym45),
     proj_90_to_0 a <> proj_45_to_0 b).
 Proof.
-  repeat split.
-  - reflexivity.              (* count_0  = 5 *)
-  - reflexivity.              (* count_45 = 2 *)
-  - reflexivity.              (* count_90 = 3 *)
-  - exact count_0_prime.
-  - exact count_45_prime.
-  - exact count_90_prime.
-  - reflexivity.              (* 5 = 3 + 2 *)
-  - lia.                      (* 2 < 3 *)
-  - lia.                      (* 3 < 5 *)
-  - reflexivity.              (* 5 × 2 × 3 = 30 *)
-  - exact sym0_partition.
-  - exact proj_images_disjoint.
+  split; [reflexivity|].              (* count_0  = 5 *)
+  split; [reflexivity|].              (* count_45 = 2 *)
+  split; [reflexivity|].              (* count_90 = 3 *)
+  split; [exact count_0_prime|].
+  split; [exact count_45_prime|].
+  split; [exact count_90_prime|].
+  split; [reflexivity|].              (* 5 = 3 + 2 *)
+  split; [unfold count_0, count_45, count_90; lia|].   (* 2 < 3 *)
+  split; [unfold count_0, count_45, count_90; lia|].   (* 3 < 5 *)
+  split; [reflexivity|].              (* 5 × 2 × 3 = 30 *)
+  split; [exact sym0_partition|].
+  exact proj_images_disjoint.
 Qed.

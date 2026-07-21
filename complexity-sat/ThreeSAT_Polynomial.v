@@ -86,12 +86,9 @@ Theorem encode_decode_var : forall i b,
   decode_var (encode_var i b) = b.
 Proof.
   intros i b. unfold decode_var, encode_var.
-  destruct b; simpl.
-  - rewrite Nat.even_add. rewrite Nat.even_mul. simpl. reflexivity.
-  - rewrite Nat.odd_spec.
-    rewrite Nat.add_comm.
-    apply Nat.odd_add_one.
-    rewrite Nat.even_mul. simpl. apply Nat.even_0.
+  destruct b.
+  - rewrite Nat.add_0_r, Nat.even_mul. reflexivity.
+  - rewrite Nat.even_add, Nat.even_mul. reflexivity.
 Qed.
 
 (* An assignment is a list of booleans, one per variable *)
@@ -282,45 +279,9 @@ Theorem formula_with_distinct_vars_is_sat :
   exists (asgn : Assignment),
     length asgn = n /\
     sat_formula asgn f = true.
-Proof.
-  intros f n Hdist Hbound.
-  (* Construct the greedy assignment: *)
-  (* For each variable, look at which polarity satisfies more clauses *)
-  (* The all-true assignment satisfies all positive literals *)
-  exists (repeat true n).
-  split.
-  - apply repeat_length.
-  - unfold sat_formula.
-    apply forallb_forall.
-    intros c Hc.
-    (* Get the distinctness for this clause *)
-    rewrite Forall_forall in Hdist, Hbound.
-    specialize (Hdist c Hc).
-    specialize (Hbound c Hc).
-    destruct Hdist as [D12 [D23 D13]].
-    destruct Hbound as [B1 [B2 B3]].
-    (* The all-true assignment satisfies any clause with a positive literal *)
-    (* Or we can set variables to their required polarity *)
-    unfold sat_clause, eval_lit.
-    rewrite (nth_error_nth' (repeat true n) (lit_var (c_lit1 c)) true).
-    + simpl. destruct (lit_pol (c_lit1 c)); simpl.
-      * rewrite Bool.eqb_reflx. simpl. reflexivity.
-      * (* The first literal is false but we have others *)
-        rewrite (nth_error_nth' (repeat true n) (lit_var (c_lit2 c)) true).
-        ** destruct (lit_pol (c_lit2 c)); simpl.
-           *** rewrite Bool.eqb_reflx. simpl.
-               rewrite orb_true_r. reflexivity.
-           *** rewrite (nth_error_nth' (repeat true n) (lit_var (c_lit3 c)) true).
-               **** destruct (lit_pol (c_lit3 c)); simpl.
-                    ***** rewrite Bool.eqb_reflx. simpl.
-                          rewrite orb_true_r. reflexivity.
-                    ***** (* All negative — but with repeat true, none satisfied *)
-                          (* Need the existence proof differently *)
-                          admit.
-               **** rewrite repeat_length. exact B3.
-        ** rewrite repeat_length. exact B2.
-    + rewrite repeat_length. exact B1.
-Admitted.
+(* GAP: build-repair — proof needs rework (statement not provable:
+   an all-negative clause is unsatisfiable by the all-true assignment) *)
+Proof. Admitted.
 
 (* ================================================================= *)
 (* PART 5 — THE STRUCTURAL THEOREM                                  *)
@@ -412,11 +373,11 @@ Theorem sat_3SAT_polynomial_on_0deg :
   (forall c f, max_score (c :: f) = 1 + max_score f).
 
 Proof.
-  repeat split.
-  - exact encode_decode_var.
-  - intros f1 f2 asgn. exact (score_is_linear f1 f2 asgn).
-  - intros f asgn. exact (score_lives_on_0deg f asgn).
-  - exact distinct_vars_clause_satisfiable.
-  - reflexivity.
-  - intros c f. unfold max_score. simpl. reflexivity.
+  split; [ exact encode_decode_var | ].
+  split; [ intros f1 f2 asgn; exact (score_is_linear f1 f2 asgn) | ].
+  split; [ intros f asgn; exact (score_lives_on_0deg f asgn) | ].
+  split; [ intros c asgn _ _ _ _ H1; unfold sat_clause, eval_lit;
+           rewrite H1; simpl; rewrite Bool.eqb_reflx; reflexivity | ].
+  split; [ reflexivity | ].
+  intros c f. unfold max_score. simpl. reflexivity.
 Qed.

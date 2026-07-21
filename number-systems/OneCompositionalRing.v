@@ -140,23 +140,17 @@ Proof.
      r mod p = (a - qn) mod p = a mod p since p divides qn *)
   assert (Hmod : forall a, (a mod n) mod p = a mod p).
   { intro a.
-    rewrite (Nat.div_mod a n) at 2.
-    - rewrite Nat.add_comm.
-      rewrite Nat.Div0.add_mod.
-      rewrite Hk.
-      rewrite Nat.Div0.mul_mod_distr_l.
-      replace (k * p * (a / n) mod p) with 0. simpl.
-      rewrite Nat.mod_mod by lia.
-      reflexivity.
-      symmetry.
-      rewrite Nat.mul_assoc.
-      rewrite (Nat.mul_comm (k * p) (a / n)).
-      rewrite <- Nat.mul_assoc.
-      apply Nat.Div0.mod_mul.
-    - subst n. assert (p >= 1) by lia. assert (q >= 1) by (pose proof q_prime; lia).
-      assert (r >= 1) by (pose proof r_prime; lia). nia. }
+    replace n with (p * k) by (rewrite Hk; ring).
+    rewrite Nat.Div0.mod_mul_r.
+    rewrite Nat.Div0.add_mod.
+    rewrite (Nat.mul_comm p ((a / p) mod k)).
+    rewrite Nat.Div0.mod_mul.
+    rewrite Nat.add_0_r.
+    rewrite !Nat.Div0.mod_mod.
+    reflexivity. }
   rewrite Hmod.
   rewrite Nat.Div0.add_mod.
+  rewrite !Hmod.
   reflexivity.
 Qed.
 
@@ -172,20 +166,14 @@ Proof.
   destruct Hqn as [k Hk].
   assert (Hmod : forall a, (a mod n) mod q = a mod q).
   { intro a.
-    rewrite (Nat.div_mod a n) at 2.
-    - rewrite Nat.add_comm.
-      rewrite Nat.Div0.add_mod.
-      rewrite Hk.
-      rewrite Nat.Div0.mul_mod_distr_l.
-      replace (k * q * (a / n) mod q) with 0. simpl.
-      rewrite Nat.mod_mod by lia.
-      reflexivity.
-      symmetry.
-      rewrite Nat.mul_assoc.
-      rewrite (Nat.mul_comm (k * q) (a / n)).
-      rewrite <- Nat.mul_assoc.
-      apply Nat.Div0.mod_mul.
-    - subst n. pose proof p_prime. pose proof q_prime. pose proof r_prime. nia. }
+    replace n with (q * k) by (rewrite Hk; ring).
+    rewrite Nat.Div0.mod_mul_r.
+    rewrite Nat.Div0.add_mod.
+    rewrite (Nat.mul_comm q ((a / q) mod k)).
+    rewrite Nat.Div0.mod_mul.
+    rewrite Nat.add_0_r.
+    rewrite !Nat.Div0.mod_mod.
+    reflexivity. }
   rewrite Hmod.
   rewrite Nat.Div0.add_mod.
   reflexivity.
@@ -202,20 +190,14 @@ Proof.
   destruct Hrn as [k Hk].
   assert (Hmod : forall a, (a mod n) mod r = a mod r).
   { intro a.
-    rewrite (Nat.div_mod a n) at 2.
-    - rewrite Nat.add_comm.
-      rewrite Nat.Div0.add_mod.
-      rewrite Hk.
-      rewrite Nat.Div0.mul_mod_distr_l.
-      replace (k * r * (a / n) mod r) with 0. simpl.
-      rewrite Nat.mod_mod by lia.
-      reflexivity.
-      symmetry.
-      rewrite Nat.mul_assoc.
-      rewrite (Nat.mul_comm (k * r) (a / n)).
-      rewrite <- Nat.mul_assoc.
-      apply Nat.Div0.mod_mul.
-    - subst n. pose proof p_prime. pose proof q_prime. pose proof r_prime. nia. }
+    replace n with (r * k) by (rewrite Hk; ring).
+    rewrite Nat.Div0.mod_mul_r.
+    rewrite Nat.Div0.add_mod.
+    rewrite (Nat.mul_comm r ((a / r) mod k)).
+    rewrite Nat.Div0.mod_mul.
+    rewrite Nat.add_0_r.
+    rewrite !Nat.Div0.mod_mod.
+    reflexivity. }
   rewrite Hmod.
   rewrite Nat.Div0.add_mod.
   reflexivity.

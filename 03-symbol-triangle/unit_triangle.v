@@ -39,6 +39,8 @@
    ========================================================================= *)
 
 Require Import Coq.Arith.Arith.
+Require Import Coq.micromega.Lia.
+Require Import Coq.micromega.Lra.
 Require Import Coq.ZArith.ZArith.
 Require Import Coq.ZArith.Znumtheory.
 Require Import Coq.QArith.QArith.
@@ -108,9 +110,11 @@ Proof.
   (* 5 is prime *)
   apply prime_intro.
   - lia.
-  - intros n Hn1 Hn2.
-    (* only divisors of 5 in range [2,4] would be 2,3,4 — none divide 5 *)
-    destruct n as [|[|[|[|n]]]]; try lia; try (intro H; inversion H).
+  - intros n [Hn1 Hn2].
+    (* n in [1,4]; each is coprime to 5 by computation of gcd *)
+    unfold rel_prime.
+    assert (Hcase : (n = 1 \/ n = 2 \/ n = 3 \/ n = 4)%Z) by lia.
+    destruct Hcase as [ -> | [ -> | [ -> | -> ] ] ]; apply Zgcd_is_gcd.
 Qed.
 
 (** The Gauss-Wantzel theorem (stated, not proved here —
@@ -124,15 +128,15 @@ Definition constructible_polygon (n : nat) : Prop :=
     (* Each index gives a known Fermat prime *)
     Forall is_fermat_prime fermat_indices /\
     (* n = 2^k * product of selected Fermat primes *)
-    n = two_pow k *
-        fold_right (fun i acc => fermat_number i * acc) 1 fermat_indices.
+    (n = two_pow k *
+        fold_right (fun i acc => fermat_number i * acc) 1 fermat_indices)%nat.
 
 (** The five known Fermat prime polygons are constructible *)
 Lemma triangle_constructible : constructible_polygon 3.
 Proof.
   unfold constructible_polygon.
-  exists 0, [0].   (* n = 2^0 * F_0 = 1 * 3 = 3 *)
-  repeat split.
+  exists 0%nat, [0%nat].   (* n = 2^0 * F_0 = 1 * 3 = 3 *)
+  split; [| split].
   - constructor. intro H. inversion H. constructor.
   - constructor. apply F0_prime. constructor.
   - reflexivity.
@@ -141,8 +145,8 @@ Qed.
 Lemma pentagon_constructible : constructible_polygon 5.
 Proof.
   unfold constructible_polygon.
-  exists 0, [1].   (* n = 2^0 * F_1 = 1 * 5 = 5 *)
-  repeat split.
+  exists 0%nat, [1%nat].   (* n = 2^0 * F_1 = 1 * 5 = 5 *)
+  split; [| split].
   - constructor. intro H. inversion H. constructor.
   - constructor. apply F1_prime. constructor.
   - reflexivity.
@@ -151,39 +155,20 @@ Qed.
 Lemma heptadecagon_constructible : constructible_polygon 17.
 Proof.
   unfold constructible_polygon.
-  exists 0, [2].   (* n = 2^0 * F_2 = 1 * 17 = 17 *)
-  repeat split.
+  exists 0%nat, [2%nat].   (* n = 2^0 * F_2 = 1 * 17 = 17 *)
+  split; [| split].
   - constructor. intro H. inversion H. constructor.
   - constructor.
     unfold is_fermat_prime, fermat_number. simpl.
     (* 17 is prime — checked by computation *)
     admit. (* compute; reflexivity — needs prime_17 lemma *)
+    constructor.
   - reflexivity.
 Admitted.
 
 (** A non-Fermat polygon — the 7-gon is NOT constructible *)
 Lemma heptagon_not_constructible : ~ constructible_polygon 7.
-Proof.
-  intro H.
-  destruct H as [k [fidx [HNoDup [HFermat Hn]]]].
-  (* 7 cannot be written as 2^k * product of Fermat primes
-     because 7 is not a Fermat number and has no Fermat prime factors.
-     Fermat primes are 3,5,17,257,65537,...
-     7 = 7, which is prime but not Fermat. *)
-  (* The product of known Fermat primes with powers of 2 never yields 7 *)
-  revert Hn. simpl.
-  (* By case analysis on k and fidx *)
-  induction k; simpl in *.
-  - destruct fidx as [|f0 rest].
-    + simpl. intro. lia.
-    + inversion HFermat as [|_ Hf0 Hrest]; subst.
-      unfold is_fermat_prime in Hf0.
-      (* f0 ∈ {0,1,2,3,4,...} and fermat_number f0 * ... = 7 *)
-      (* fermat_number 0 = 3, 3 ∤ 7; fermat_number 1 = 5, 5 ∤ 7 *)
-      (* so no valid decomposition *)
-      admit.
-  - intro Hn. lia. (* 2^(k+1) ≥ 2 and product ≥ 1, but careful with exact value *)
-Admitted.
+Proof. Admitted.
 
 End FermatPrimes.
 
@@ -216,8 +201,8 @@ Inductive in_sqrt_tower : nat -> R -> Prop :=
 Lemma sqrt2_in_tower : in_sqrt_tower 1 (sqrt 2).
 Proof.
   apply tower_sqrt.
-  - apply tower_rat with (q := 2#1).
-    reflexivity.
+  - replace 2 with (Q2R (2#1)) by (unfold Q2R; simpl; lra).
+    apply tower_rat.
   - lra.
 Qed.
 
@@ -225,7 +210,8 @@ Qed.
 Lemma sqrt3_in_tower : in_sqrt_tower 1 (sqrt 3).
 Proof.
   apply tower_sqrt.
-  - apply tower_rat with (q := 3#1). reflexivity.
+  - replace 3 with (Q2R (3#1)) by (unfold Q2R; simpl; lra).
+    apply tower_rat.
   - lra.
 Qed.
 
@@ -237,11 +223,14 @@ Proof.
   unfold phi.
   apply tower_mul.
   - apply tower_add.
-    + apply tower_rat with (q := 1#1). reflexivity.
+    + replace 1 with (Q2R (1#1)) by (unfold Q2R; simpl; lra).
+      apply tower_rat.
     + apply tower_sqrt.
-      * apply tower_rat with (q := 5#1). reflexivity.
+      * replace 5 with (Q2R (5#1)) by (unfold Q2R; simpl; lra).
+        apply tower_rat.
       * lra.
-  - apply tower_rat with (q := 1#2). reflexivity.
+  - replace (/2) with (Q2R (1#2)) by (unfold Q2R; simpl; lra).
+    apply tower_rat.
 Qed.
 
 (** The 17-gon: cos(2π/17) lives at tower depth 4.
@@ -267,24 +256,7 @@ Admitted.
     lives in the tower at depth exactly 2^k *)
 Lemma fermat_polygon_cos_in_tower : forall (k : nat),
     in_sqrt_tower (two_pow k) (cos (2 * PI / INR (fermat_number k))).
-Proof.
-  intro k.
-  (* For k=0: cos(2π/3) = -1/2, depth 0 (rational) *)
-  (* For k=1: cos(2π/5) involves φ, depth 1             *)
-  (* For k=2: cos(2π/17), depth 4 = 2^2                 *)
-  (* For k=j: depth 2^j follows from the field theory    *)
-  (* The pattern: each Fermat prime doubles the tower depth
-     because [Q(ζ_{F_k}) : Q] = F_k - 1 = 2^(2^k)
-     and the tower is a chain of quadratic extensions.    *)
-  induction k.
-  - (* cos(2π/3) = -1/2 ∈ ℚ, tower depth 1 = 2^0 *)
-    simpl.
-    apply tower_rat with (q := -1#2).
-    (* cos(2π/3) = -1/2 *)
-    admit. (* trigonometric computation *)
-  - (* Inductive step: F_{k+1} polygon needs 2^(k+1) levels *)
-    admit. (* Requires cyclotomic field theory *)
-Admitted.
+Proof. Admitted.
 
 (** Non-Fermat polygons escape the tower at their side count:
     cos(2π/7) is NOT in any finite sqrt tower.
@@ -325,24 +297,7 @@ Definition fermat_perimeter (k : nat) : R :=
 (** Each term is constructible — it lives in the quadratic tower *)
 Lemma fermat_perimeter_in_tower : forall k : nat,
     in_sqrt_tower (two_pow k) (fermat_perimeter k).
-Proof.
-  intro k.
-  unfold fermat_perimeter, polygon_perimeter.
-  (* 2 * F_k * sin(π/F_k)
-     sin(π/F_k) = sin(π/F_k)
-     We need sin(π/F_k) ∈ tower(2^k).
-     sin(π/F_k) = Im(e^{iπ/F_k}) and is related to cos(2π/F_k)
-     by sin²+cos²=1, so sin(π/F_k) ∈ tower(2^k + 1) at worst.
-     Since F_k is constructible, sin(π/F_k) ∈ tower(2^k). *)
-  apply tower_mul.
-  apply tower_mul.
-  - apply tower_rat with (q := 2#1). reflexivity.
-  - apply tower_rat with (q := inject_Z (Z.of_nat (fermat_number k))).
-    rewrite Q2R_inject_Z. reflexivity.
-  - (* sin(π/F_k) ∈ tower(2^k) *)
-    (* Follows from fermat_polygon_cos_in_tower and sin²+cos²=1 *)
-    admit.
-Admitted.
+Proof. Admitted.
 
 (** The sequence is strictly increasing *)
 Lemma fermat_perimeter_increasing : forall k : nat,
@@ -366,8 +321,8 @@ Proof.
     + apply Rmult_lt_0_compat. lra.
       apply lt_0_INR.
       unfold fermat_number. lia.
-    + apply sin_lt.
-      apply Rdiv_lt_0_compat. exact PI_pos.
+    + apply sin_lt_x.
+      apply Rdiv_lt_0_compat. exact PI_RGT_0.
       apply lt_0_INR. unfold fermat_number. lia.
   - assert (H : INR (fermat_number k) <> 0).
     { apply not_0_INR. unfold fermat_number. lia. }
@@ -382,6 +337,7 @@ Definition fermat_gap (k : nat) : R :=
 Lemma fermat_gap_pos : forall k : nat, 0 < fermat_gap k.
 Proof.
   intro k. unfold fermat_gap.
+  pose proof (fermat_perimeter_lt_2pi k).
   lra. (* follows from fermat_perimeter_lt_2pi *)
 Qed.
 
@@ -389,6 +345,7 @@ Lemma fermat_gap_decreasing : forall k : nat,
     fermat_gap (S k) < fermat_gap k.
 Proof.
   intro k. unfold fermat_gap.
+  pose proof (fermat_perimeter_increasing k).
   lra. (* follows from fermat_perimeter_increasing *)
 Qed.
 

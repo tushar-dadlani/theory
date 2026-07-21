@@ -102,12 +102,12 @@ Record MetricWalk : Type := mkMW {
 
 Definition canonical_metric_walk : MetricWalk :=
   mkMW N_s I_s N_s I_s I_s
-    (fun H => discriminate H)   (* N ≠ I: fields distinct   *)
-    (fun H => discriminate H)   (* N ≠ I: witnesses differ  *)
+    ltac:(discriminate)         (* N ≠ I: fields distinct   *)
+    ltac:(discriminate)         (* N ≠ I: witnesses differ  *)
     (eq_refl)                   (* walk = N∘N               *)
     (eq_refl)                   (* N∘N = I = W₂             *)
     (eq_refl)                   (* I∘I = I: W₂ stable       *)
-    (fun H => discriminate H).  (* N∘N ≠ N: W₁ mobile       *)
+    ltac:(discriminate).        (* N∘N ≠ N: W₁ mobile       *)
 
 Theorem METRIC_WALK :
   mw_walk canonical_metric_walk = mw_witness2 canonical_metric_walk.

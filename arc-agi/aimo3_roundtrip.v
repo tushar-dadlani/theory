@@ -35,6 +35,8 @@
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Bool.Bool.
+Require Import Lia.
+Require Import Program.
 
 (* ============================================================ *)
 (* SECTION 1 — THE ENCODING (from encoding_any_symbol.v)       *)
@@ -57,7 +59,10 @@ Theorem encode_injective :
   r1 = r2 /\ i1 = i2.
 Proof.
   intros r1 r2 i1 i2 Hi1 Hi2 Heq.
-  unfold encode_sym in Heq. split; lia.
+  unfold encode_sym in Heq.
+  rewrite (Nat.mod_small i1 2) in Heq by lia.
+  rewrite (Nat.mod_small i2 2) in Heq by lia.
+  split; lia.
 Qed.
 
 (* T2a: decode_rank inverts encode on rank *)
@@ -67,7 +72,9 @@ Theorem decode_encode_rank :
 Proof.
   intros rank ib Hib.
   unfold decode_rank, encode_sym.
-  rewrite Nat.add_comm, Nat.div_add_l; lia.
+  rewrite (Nat.mod_small ib 2) by lia.
+  rewrite Nat.mul_comm, Nat.div_add_l by lia.
+  rewrite (Nat.div_small ib 2) by lia. lia.
 Qed.
 
 (* T2b: decode_info inverts encode on info *)
@@ -77,8 +84,9 @@ Theorem decode_encode_info :
 Proof.
   intros rank ib Hib.
   unfold decode_info, encode_sym.
-  rewrite Nat.add_comm, Nat.mod_add;
-  [apply Nat.mod_small; lia | lia].
+  rewrite (Nat.mod_small ib 2) by lia.
+  rewrite Nat.add_comm, Nat.mul_comm, Nat.mod_add by lia.
+  apply Nat.mod_small; lia.
 Qed.
 
 (* T3: encode inverts decode (surjection on even/odd split) *)
@@ -88,9 +96,9 @@ Theorem encode_decode :
 Proof.
   intro h.
   unfold encode_sym, decode_rank, decode_info.
-  rewrite Nat.mod_le_upper; try lia.
+  rewrite Nat.Div0.mod_mod.
   (* 2 * (h / 2) + h mod 2 = h *)
-  apply Nat.div_mod_eq.
+  symmetry. apply Nat.div_mod_eq.
 Qed.
 
 (* PERFECT ROUNDTRIP: encode then decode = identity *)
@@ -191,11 +199,18 @@ Definition pos_axis (h : HalfPos) : Axis :=
   | _ => Axis_3
   end.
 
-Fixpoint bit_length (n : nat) : nat :=
+(* GAP: build-repair — recursion is on n'/2, not structural; declared as a
+   Program Fixpoint with a decreasing measure. Same computational meaning. *)
+Program Fixpoint bit_length (n : nat) {measure n} : nat :=
   match n with
   | 0    => 0
   | S n' => 1 + bit_length (n' / 2)
   end.
+Next Obligation.
+  change (n' / 2 < S n').
+  assert (H: n' / 2 <= n') by (apply Nat.Div0.div_le_upper_bound; lia).
+  lia.
+Qed.
 
 Record GeoCertificate := mkCert {
   cert_gap       : nat;
@@ -256,12 +271,12 @@ Theorem full_roundtrip :
     (cert_gap cert)
     (cert_sign cert) = a.
 Proof.
-  intros p a. simpl. repeat split.
+  intros p a. cbv zeta. repeat split.
   - apply cert_determines_A.
   - apply cert_determines_P.
-  - rewrite cert_determines_A.
+  - rewrite (cert_determines_A p a).
     apply cert_determines_P.
-  - rewrite cert_determines_P.
+  - rewrite (cert_determines_P p a).
     apply cert_determines_A.
 Qed.
 
@@ -306,6 +321,18 @@ Qed.
 Definition parity_diff (p a : HalfPos) : nat :=
   (p mod 2 + a mod 2) mod 2.
 
+(* helper: parity of a difference equals parity of the sum of parities *)
+Lemma parity_sub_helper : forall x y : nat,
+  y <= x -> (y mod 2 + x mod 2) mod 2 = (x - y) mod 2.
+Proof.
+  intros x y H.
+  rewrite <- Nat.Div0.add_mod.
+  assert (E: (x - y) mod 2 = (y + x) mod 2).
+  { replace (y + x) with ((x - y) + y * 2) by lia.
+    rewrite Nat.Div0.mod_add. reflexivity. }
+  rewrite E. reflexivity.
+Qed.
+
 Theorem cert_captures_parity :
   forall p a : HalfPos,
   parity_diff p a = (cert_gap (make_cert p a)) mod 2.
@@ -313,8 +340,23 @@ Proof.
   intros p a.
   unfold parity_diff, make_cert, gap, gap_sign. simpl.
   destruct (Nat.leb p a) eqn:Hle.
-  - apply Nat.leb_le in Hle. lia.
-  - apply Nat.leb_gt in Hle. lia.
+  - apply Nat.leb_le in Hle. apply parity_sub_helper; exact Hle.
+  - apply Nat.leb_gt in Hle.
+    rewrite Nat.add_comm. apply parity_sub_helper; lia.
+Qed.
+
+(* helper: parity of a difference is even iff the two have equal parity *)
+Lemma even_sub_parity : forall x y : nat,
+  y <= x -> (Nat.even (x - y) = true <-> y mod 2 = x mod 2).
+Proof.
+  intros x y Hle.
+  pose proof (Nat.div_mod_eq x 2).
+  pose proof (Nat.div_mod_eq y 2).
+  pose proof (Nat.mod_upper_bound x 2 ltac:(lia)).
+  pose proof (Nat.mod_upper_bound y 2 ltac:(lia)).
+  split.
+  - intro He. apply Nat.even_spec in He. destruct He as [m Hm]. lia.
+  - intro He. apply Nat.even_spec. exists (x / 2 - y / 2). lia.
 Qed.
 
 (* Even gap = same parity (both even or both odd positions) *)
@@ -325,17 +367,10 @@ Theorem even_gap_same_parity :
 Proof.
   intros p a.
   unfold make_cert, gap, gap_sign. simpl.
-  split.
-  - intro H.
-    apply Nat.even_spec in H.
-    destruct (Nat.leb p a) eqn:Hle.
-    + apply Nat.leb_le in Hle. lia.
-    + apply Nat.leb_gt in Hle. lia.
-  - intro H.
-    apply Nat.even_spec.
-    destruct (Nat.leb p a) eqn:Hle.
-    + apply Nat.leb_le in Hle. lia.
-    + apply Nat.leb_gt in Hle. lia.
+  destruct (Nat.leb p a) eqn:Hle.
+  - apply Nat.leb_le in Hle. apply even_sub_parity; exact Hle.
+  - apply Nat.leb_gt in Hle.
+    rewrite even_sub_parity by lia. split; intro H; symmetry; exact H.
 Qed.
 
 (* ============================================================ *)
@@ -467,8 +502,8 @@ Theorem information_preserved :
   decode_rank recovered_A = decode_rank a /\
   decode_info recovered_A = decode_info a.
 Proof.
-  intros p a. simpl.
-  rewrite cert_determines_A.
+  intros p a. cbv zeta.
+  rewrite (cert_determines_A p a).
   split; reflexivity.
 Qed.
 
@@ -479,8 +514,8 @@ Theorem information_preserved_reverse :
   decode_rank recovered_P = decode_rank p /\
   decode_info recovered_P = decode_info p.
 Proof.
-  intros p a. simpl.
-  rewrite cert_determines_P.
+  intros p a. cbv zeta.
+  rewrite (cert_determines_P p a).
   split; reflexivity.
 Qed.
 

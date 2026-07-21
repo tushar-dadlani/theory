@@ -166,9 +166,9 @@ Proof.
   destruct (Nat.eqb p 0) eqn:H0.
   - apply Nat.eqb_eq in H0. lia.
   - destruct (Nat.leb p N) eqn:HN.
-    + apply existsb_exists. exists p. split.
-      * exact Hin.
-      * apply Nat.eqb_refl.
+    + assert (Hex : existsb (Nat.eqb p) filled = true).
+      { apply existsb_exists. exists p. split; [ exact Hin | apply Nat.eqb_refl ]. }
+      rewrite Hex. reflexivity.
     + apply Nat.leb_nle in HN. lia.
 Qed.
 
@@ -220,7 +220,7 @@ Theorem NQ_LEARNING_MODEL_IS_COMPLETE :
   (* 5. Convergence is ℕ-equality, not ℝ-distance *)
   (forall v : QVec, q_converged v v).
 Proof.
-  repeat split.
+  split; [| split; [| split; [| split ]]].
   - intro m. destruct (nqm_depth m) eqn:H.
     unfold nqm_depth, obs_depth in H.
     injection H. intros. lia.

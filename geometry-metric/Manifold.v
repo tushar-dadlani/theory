@@ -59,7 +59,7 @@ Record Atlas := mkAtlas {
 (** An atlas covers the manifold if every valid depth is in some chart. *)
 Definition atlas_covers (A : Atlas) : Prop :=
   forall (d : Depth),
-    exists i, i < n_charts A /\ in_chart (chart_at A i) d.
+    exists i, (i < n_charts A)%nat /\ in_chart (chart_at A i) d.
 
 (* ================================================================== *)
 (* III. TRANSITION MAPS                                                *)
@@ -135,10 +135,10 @@ Definition chart_discPoint : Chart :=
 
 Definition tower_chart (i : nat) : Chart :=
   match i with
-  | 0 => chart_wholeS3
-  | 1 => chart_gaugeCirc
-  | 2 => chart_cliffordT
-  | 3 => chart_discPoint
+  | 0%nat => chart_wholeS3
+  | 1%nat => chart_gaugeCirc
+  | 2%nat => chart_cliffordT
+  | 3%nat => chart_discPoint
   | _ => chart_discPoint  (* default *)
   end.
 
@@ -208,7 +208,7 @@ Definition tower_manifold : ManifoldStructure :=
 
 Theorem observer_is_coordinate :
   forall (t : Triple),
-    ms_dim tower_manifold = 1.
+    ms_dim tower_manifold = 1%nat.
 Proof.
   intro t. reflexivity.
 Qed.

@@ -21,6 +21,7 @@
 From Stdlib Require Import Bool.
 From Stdlib Require Import List.
 From Stdlib Require Import Arith.
+From Stdlib Require Import Lia.
 Import ListNotations.
 
 (* ================================================================== *)
@@ -1664,7 +1665,7 @@ Proof. reflexivity. Qed.
     The user speaks the formal language without assistance. *)
 
 Theorem bridge_erases_at_order4 :
-  forall (o : nat), compute_order o = Order4 ->
+  forall (o : TeachingState), compute_order o = Order4 ->
     True. (* Bridge display = none; proven by CSS rule *)
 Proof.
   intros. exact I.

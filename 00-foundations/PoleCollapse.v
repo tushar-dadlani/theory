@@ -161,18 +161,9 @@ Theorem gd_iterate_monotone :
     gd_iterate eta r (S n) <= gd_iterate eta r n.
 Proof.
   intros eta r n Hr Heta.
-  induction n as [| k IH].
-  - simpl. unfold gd_step, loss_grad.
-    destruct Heta as [Heta_pos _].
-    nra.
-  - remember (gd_iterate eta r (S k)) as rk1.
-    remember (gd_iterate eta r k)     as rk.
-    simpl in *. subst.
-    unfold gd_step at 1. unfold loss_grad.
-    assert (Hrk1_nn : gd_iterate eta r (S k) >= 0).
-    { apply gd_iterate_nonneg; assumption. }
-    destruct Heta as [Heta_pos _].
-    nra.
+  assert (Hnn : gd_iterate eta r n >= 0) by (apply gd_iterate_nonneg; assumption).
+  destruct Heta as [Heta_pos Heta_half].
+  simpl. unfold gd_step, loss_grad. nra.
 Qed.
 
 (* THE POLE-COLLAPSE THEOREM (discrete version).
@@ -314,14 +305,16 @@ Proof.
   assert (Hr_inside : 0 < r < 1).
   { unfold r. split.
     - apply sqrt_lt_R0. lra.
-    - rewrite <- sqrt_1. apply sqrt_lt_1; lra. }
+    - apply Rlt_le_trans with (sqrt 1).
+      + apply sqrt_lt_1; lra.
+      + rewrite sqrt_1. lra. }
   exists r. split; [exact Hr_inside |].
   unfold hyp_line_element, mod_sq, r.
   rewrite sqrt_def by lra.
   (* now goal: 2 / (1 - (1 - delta)) > M, i.e. 2/delta > M *)
   replace (1 - (1 - delta)) with delta by ring.
   unfold delta.
-  rewrite Rinv_inv.
+  replace (2 / / (M + 2)) with (2 * (M + 2)) by (field; lra).
   (* goal: 2 * (M + 2) > M *)
   lra.
 Qed.

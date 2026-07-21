@@ -373,7 +373,7 @@ Proof.
   unfold Rdiv.
   apply Rmult_lt_0_compat.
   - (* Numerator: b*c + a*b - 2*a*c = 2 when b=a+1, c=a+2 *)
-    subst b c. ring_simplify. lra.
+    rewrite Hbc, Hab. ring_simplify. lra.
   - apply Rinv_0_lt_compat.
     apply Rmult_lt_0_compat; [apply Rmult_lt_0_compat |]; lra.
 Qed.
@@ -404,17 +404,19 @@ Proof.
   (* curvature = 2 / (a * b * c) *)
   assert (Habc : a * b * c > 0) by (apply pos_product_3; lra).
   assert (Hcurv : / c - 2 * / b + / a = 2 / (a * b * c)).
-  { field. lra. }
+  { rewrite Hbc, Hab. field. repeat split; lra. }
   rewrite Hcurv.
   (* 2/(a*b*c) < 2/a since b*c > 1 *)
+  assert (Hb1 : b > 1) by (rewrite Hab; lra).
+  assert (Hc1 : c > 1) by (rewrite Hbc; lra).
   assert (Hbc_gt1 : b * c > 1).
-  { apply Rlt_gt. apply Rlt_le_trans with (1 * 1); [lra |].
-    apply Rmult_le_compat; lra. }
+  { nra. }
   apply Rlt_le_trans with (2 / a).
   - unfold Rdiv. apply Rmult_lt_compat_l; [lra |].
     apply Rinv_lt_contravar.
     + apply Rmult_lt_0_compat; [exact Ha |]. lra.
-    + rewrite <- (Rmult_1_r a) at 1. apply Rmult_lt_compat_l; lra.
+    + rewrite <- (Rmult_1_r a) at 1. rewrite Rmult_assoc.
+      apply Rmult_lt_compat_l; lra.
   - (* 2/a = 2 * (1/a) <= 2 * (1/m) < 2 * (eps/2) = eps *)
     unfold Rdiv. rewrite Rmult_comm.
     assert (H1a : / a <= / INR m).

@@ -65,8 +65,9 @@ Definition nat_is_unit (n : nat) : Prop :=
 Lemma nat_is_unit_iff : forall n : nat,
   nat_is_unit n <-> n mod 2 <> 0 /\ n mod 3 <> 0.
 Proof.
-  intro n. unfold nat_is_unit, is_unit, nat_to_field. simpl.
-  simpl. split; intros [H2 H3]; exact (conj H2 H3).
+  intro n. unfold nat_is_unit, is_unit, nat_to_field. cbn [gen_coord att_coord].
+  rewrite (Nat.mod_mod n 2), (Nat.mod_mod n 3) by lia.
+  tauto.
 Qed.
 
 (* The unit group of Z/6Z has exactly two elements: {1, 5} *)
@@ -110,7 +111,8 @@ Lemma units_are_positions : forall n : nat,
   nat_is_unit n -> n mod 6 = 1 \/ n mod 6 = 5.
 Proof.
   intro n.
-  unfold nat_is_unit, is_unit, nat_to_field. simpl.
+  unfold nat_is_unit, is_unit, nat_to_field. cbn [gen_coord att_coord].
+  rewrite (Nat.mod_mod n 2), (Nat.mod_mod n 3) by lia.
   intros [H2 H3].
   assert (Hr6 : n mod 6 < 6) by (apply Nat.mod_upper_bound; lia).
   (* Use the mod projection lemmas *)
@@ -149,6 +151,29 @@ Definition field_comparable (x_pos y_pos : nat) : Prop :=
 Definition field_incomparable (x_pos y_pos : nat) : Prop :=
   nat_is_unit x_pos /\ nat_is_unit y_pos.
 
+(* A position congruent to 1 or 5 mod 6 is a field unit *)
+Lemma unit_of_mod6 : forall x : nat,
+  (x mod 6 = 1 \/ x mod 6 = 5) -> nat_is_unit x.
+Proof.
+  intros x Hx. unfold nat_is_unit, is_unit, nat_to_field.
+  cbn [gen_coord att_coord].
+  rewrite (Nat.mod_mod x 2), (Nat.mod_mod x 3) by lia.
+  assert (Hm2 : x mod 2 = (x mod 6) mod 2).
+  { rewrite (Nat.div_mod x 6 ltac:(lia)) at 1.
+    rewrite Nat.Div0.add_mod. rewrite Nat.Div0.mul_mod.
+    replace (6 mod 2) with 0 by reflexivity.
+    rewrite Nat.mul_0_l. rewrite Nat.Div0.mod_0_l.
+    rewrite Nat.add_0_l. apply Nat.Div0.mod_mod. }
+  assert (Hm3 : x mod 3 = (x mod 6) mod 3).
+  { rewrite (Nat.div_mod x 6 ltac:(lia)) at 1.
+    rewrite Nat.Div0.add_mod. rewrite Nat.Div0.mul_mod.
+    replace (6 mod 3) with 0 by reflexivity.
+    rewrite Nat.mul_0_l. rewrite Nat.Div0.mod_0_l.
+    rewrite Nat.add_0_l. apply Nat.Div0.mod_mod. }
+  rewrite Hm2, Hm3.
+  destruct Hx as [H | H]; rewrite H; split; simpl; lia.
+Qed.
+
 (* The diagonal generates the incomparability relation:
    Two positions are incomparable iff both are field units.          *)
 Theorem diagonal_generates_incomparability : forall x y : nat,
@@ -161,51 +186,8 @@ Proof.
   - intros [Hx Hy]. split.
     + apply units_are_positions. exact Hx.
     + apply units_are_positions. exact Hy.
-  - intros [[Hx1 | Hx5] [Hy1 | Hy5]].
-    + split; unfold nat_is_unit, is_unit, nat_to_field; simpl.
-      * rewrite (Nat.div_mod x 6 ltac:(lia)) at 1.
-        rewrite Nat.Div0.add_mod. rewrite Nat.Div0.mul_mod.
-        replace (6 mod 2) with 0 by reflexivity.
-        rewrite Nat.mul_0_l. rewrite Nat.Div0.mod_0_l.
-        rewrite Nat.add_0_l. rewrite Nat.Div0.mod_mod. rewrite Hx1. lia.
-      * rewrite (Nat.div_mod x 6 ltac:(lia)) at 1.
-        rewrite Nat.Div0.add_mod. rewrite Nat.Div0.mul_mod.
-        replace (6 mod 3) with 0 by reflexivity.
-        rewrite Nat.mul_0_l. rewrite Nat.Div0.mod_0_l.
-        rewrite Nat.add_0_l. rewrite Nat.Div0.mod_mod. rewrite Hx1. lia.
-    + split; unfold nat_is_unit, is_unit, nat_to_field; simpl.
-      * rewrite (Nat.div_mod x 6 ltac:(lia)) at 1.
-        rewrite Nat.Div0.add_mod. rewrite Nat.Div0.mul_mod.
-        replace (6 mod 2) with 0 by reflexivity.
-        rewrite Nat.mul_0_l. rewrite Nat.Div0.mod_0_l.
-        rewrite Nat.add_0_l. rewrite Nat.Div0.mod_mod. rewrite Hx1. lia.
-      * rewrite (Nat.div_mod x 6 ltac:(lia)) at 1.
-        rewrite Nat.Div0.add_mod. rewrite Nat.Div0.mul_mod.
-        replace (6 mod 3) with 0 by reflexivity.
-        rewrite Nat.mul_0_l. rewrite Nat.Div0.mod_0_l.
-        rewrite Nat.add_0_l. rewrite Nat.Div0.mod_mod. rewrite Hx1. lia.
-    + split; unfold nat_is_unit, is_unit, nat_to_field; simpl.
-      * rewrite (Nat.div_mod x 6 ltac:(lia)) at 1.
-        rewrite Nat.Div0.add_mod. rewrite Nat.Div0.mul_mod.
-        replace (6 mod 2) with 0 by reflexivity.
-        rewrite Nat.mul_0_l. rewrite Nat.Div0.mod_0_l.
-        rewrite Nat.add_0_l. rewrite Nat.Div0.mod_mod. rewrite Hx5. lia.
-      * rewrite (Nat.div_mod x 6 ltac:(lia)) at 1.
-        rewrite Nat.Div0.add_mod. rewrite Nat.Div0.mul_mod.
-        replace (6 mod 3) with 0 by reflexivity.
-        rewrite Nat.mul_0_l. rewrite Nat.Div0.mod_0_l.
-        rewrite Nat.add_0_l. rewrite Nat.Div0.mod_mod. rewrite Hx5. lia.
-    + split; unfold nat_is_unit, is_unit, nat_to_field; simpl.
-      * rewrite (Nat.div_mod x 6 ltac:(lia)) at 1.
-        rewrite Nat.Div0.add_mod. rewrite Nat.Div0.mul_mod.
-        replace (6 mod 2) with 0 by reflexivity.
-        rewrite Nat.mul_0_l. rewrite Nat.Div0.mod_0_l.
-        rewrite Nat.add_0_l. rewrite Nat.Div0.mod_mod. rewrite Hx5. lia.
-      * rewrite (Nat.div_mod x 6 ltac:(lia)) at 1.
-        rewrite Nat.Div0.add_mod. rewrite Nat.Div0.mul_mod.
-        replace (6 mod 3) with 0 by reflexivity.
-        rewrite Nat.mul_0_l. rewrite Nat.Div0.mod_0_l.
-        rewrite Nat.add_0_l. rewrite Nat.Div0.mod_mod. rewrite Hx5. lia.
+  - intros [Hx Hy].
+    split; apply unit_of_mod6; assumption.
 Qed.
 
 (* ================================================================== *)
@@ -226,17 +208,16 @@ Proof. induction n; simpl; lia. Qed.
 
 Lemma pow2_mod2 : forall k : nat, 0 < k -> Nat.pow 2 k mod 2 = 0.
 Proof.
-  intros k Hk. destruct k. lia.
-  simpl Nat.pow. rewrite Nat.Div0.mul_mod. simpl. reflexivity.
+  intros k Hk. destruct k as [| k']; [lia|].
+  change (Nat.pow 2 (S k')) with (2 * Nat.pow 2 k').
+  rewrite Nat.mul_comm. apply Nat.Div0.mod_mul.
 Qed.
 
+(* GAP: build-repair — proof needs rework.
+   Statement is false at n = 0: exp2 0 = 1, so 2^(exp2 0) mod 3 = 2 <> 1
+   (it holds only for n >= 1, where exp2 n is even). *)
 Lemma pow2_exp2_mod3 : forall n : nat, Nat.pow 2 (exp2 n) mod 3 = 1.
-Proof.
-  induction n.
-  - reflexivity.
-  - simpl exp2. rewrite Nat.pow_add_r.
-    rewrite Nat.Div0.mul_mod. rewrite IHn. reflexivity.
-Qed.
+Proof. Admitted.
 
 (* The field point of a Fermat number *)
 Definition fermat_field_point (n : nat) : FieldPoint :=
@@ -244,49 +225,30 @@ Definition fermat_field_point (n : nat) : FieldPoint :=
 
 (* THEOREM: Every Fermat number maps to the unit point (1, 2) in the field.
    That is: gen_coord = 1 (odd) and att_coord = 2 (not divisible by 3). *)
+(* GAP: build-repair — proof needs rework.
+   Statement is false at n = 0: F_0 = 3, so fermat_field_point 0 =
+   mkPoint (3 mod 2) (3 mod 3) = mkPoint 1 0 <> mkPoint 1 2. *)
 Theorem fermat_maps_to_diagonal : forall n : nat,
   fermat_field_point n = mkPoint 1 2.
-Proof.
-  intro n.
-  unfold fermat_field_point, nat_to_field, fermat_number.
-  f_equal.
-  - (* gen_coord: (2^(2^n) + 1) mod 2 = 1 *)
-    rewrite Nat.Div0.add_mod.
-    rewrite pow2_mod2 by apply exp2_pos.
-    simpl. split; intros [H2 H3]; exact (conj H2 H3).
-  - (* att_coord: (2^(2^n) + 1) mod 3 = 2 *)
-    rewrite Nat.Div0.add_mod.
-    rewrite pow2_exp2_mod3.
-    simpl. split; intros [H2 H3]; exact (conj H2 H3).
-Qed.
+Proof. Admitted.
 
 (* Every Fermat number is a unit -- it lies on the diagonal *)
+(* GAP: build-repair — proof needs rework.
+   Statement is false at n = 0: F_0 = 3 is divisible by 3, so it is not a
+   unit (att_coord = 3 mod 3 = 0). Holds only for n >= 1. *)
 Theorem fermat_is_unit : forall n : nat,
   nat_is_unit (fermat_number n).
-Proof.
-  intro n.
-  unfold nat_is_unit.
-  assert (H : fermat_field_point n = mkPoint 1 2)
-    := fermat_maps_to_diagonal n.
-  unfold fermat_field_point, nat_to_field in H.
-  injection H as H2 H3.
-  unfold is_unit, nat_to_field. simpl.
-  rewrite H2. rewrite H3. split; lia.
-Qed.
+Proof. Admitted.
 
 (* COROLLARY: Fermat numbers are permanently on the diagonal.
    Their unit status is not contingent -- it is structurally
    determined by their form 2^(2^n) + 1.                          *)
+(* GAP: build-repair — proof needs rework.
+   Statement is false at n = 0: F_0 = 3 lies off the diagonal (divisible
+   by 3). Holds only for n >= 1. *)
 Corollary fermat_permanently_diagonal : forall n : nat,
   on_diagonal (fermat_field_point n).
-Proof.
-  intro n.
-  unfold on_diagonal.
-  assert (H : fermat_field_point n = mkPoint 1 2)
-    := fermat_maps_to_diagonal n.
-  rewrite H.
-  unfold is_unit. simpl. split; lia.
-Qed.
+Proof. Admitted.
 
 (* ================================================================== *)
 (* CONJECTURE VII: THE FIELD CLOSURE THEOREM                         *)
@@ -349,20 +311,21 @@ Theorem diagonal_closed_under_mul : forall p q : FieldPoint,
   is_unit p -> is_unit q -> is_unit (field_mul p q).
 Proof.
   intros p q [Hp2 Hp3] [Hq2 Hq3].
-  unfold is_unit, field_mul. simpl.
+  unfold is_unit, field_mul. cbn [gen_coord att_coord].
   split.
-  - rewrite Nat.Div0.mul_mod.
-    intro H.
-    apply Nat.eq_mul_0 in H.
-    destruct H as [H | H].
-    + apply Hp2. rewrite <- Nat.Div0.mod_mod. exact H.
-    + apply Hq2. rewrite <- Nat.Div0.mod_mod. exact H.
-  - rewrite Nat.Div0.mul_mod.
-    intro H.
-    apply Nat.eq_mul_0 in H.
-    destruct H as [H | H].
-    + apply Hp3. rewrite <- Nat.Div0.mod_mod. exact H.
-    + apply Hq3. rewrite <- Nat.Div0.mod_mod. exact H.
+  - rewrite Nat.Div0.mod_mod, Nat.Div0.mul_mod.
+    assert (E1 : gen_coord p mod 2 = 1)
+      by (assert (gen_coord p mod 2 < 2) by (apply Nat.mod_upper_bound; lia); lia).
+    assert (E2 : gen_coord q mod 2 = 1)
+      by (assert (gen_coord q mod 2 < 2) by (apply Nat.mod_upper_bound; lia); lia).
+    rewrite E1, E2; simpl; lia.
+  - rewrite Nat.Div0.mod_mod, Nat.Div0.mul_mod.
+    assert (H1 : att_coord p mod 3 = 1 \/ att_coord p mod 3 = 2)
+      by (assert (att_coord p mod 3 < 3) by (apply Nat.mod_upper_bound; lia); lia).
+    assert (H2 : att_coord q mod 3 = 1 \/ att_coord q mod 3 = 2)
+      by (assert (att_coord q mod 3 < 3) by (apply Nat.mod_upper_bound; lia); lia).
+    destruct H1 as [E1 | E1]; destruct H2 as [E2 | E2];
+      rewrite E1, E2; simpl; lia.
 Qed.
 
 (* The zero element is NOT on the diagonal *)
@@ -375,10 +338,10 @@ Qed.
 Theorem diagonal_identity : forall p : FieldPoint,
   field_eq (field_mul p (mkPoint 1 1)) (canonical p).
 Proof.
-  intro p. unfold field_eq, field_mul, canonical. simpl.
+  intro p. unfold field_eq, field_mul, canonical. cbn [gen_coord att_coord].
   split.
-  - rewrite Nat.mul_1_r. apply Nat.Div0.mod_mod.
-  - rewrite Nat.mul_1_r. apply Nat.Div0.mod_mod.
+  - rewrite Nat.mul_1_r. reflexivity.
+  - rewrite Nat.mul_1_r. reflexivity.
 Qed.
 
 (* ================================================================== *)

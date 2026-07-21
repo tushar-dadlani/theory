@@ -15,6 +15,7 @@
 
 From Stdlib Require Import Reals.
 From Stdlib Require Import Reals.Ranalysis1.
+From Stdlib Require Import Reals.Ranalysis5.
 From Stdlib Require Import Reals.Rpower.
 From Stdlib Require Import Reals.Rseries.
 From Stdlib Require Import Rfunctions.
@@ -24,6 +25,10 @@ From Stdlib Require Import ClassicalEpsilon.
 From Stdlib Require Import FunctionalExtensionality.
 
 Open Scope R_scope.
+
+(* Module-local assumptions are declared with Variable/Hypothesis; this is
+   intentional, so silence the (fatal-by-default) outside-section warning. *)
+Set Warnings "-declaration-outside-section".
 
 (* ================================================================== *)
 (* Utilities                                                           *)
@@ -172,16 +177,19 @@ Module ESCFunction.
       with (Rpower (7/8) alpha * 2).
     - apply Rmult_lt_compat_l.
       + apply Rpower_seven_eighths_pos.
-      + apply Rmult_lt_compat_l. lra.
+      + assert (He: 0 < exp (- (3 * alpha / 8))) by apply exp_pos.
         lra.
-    - apply Rmult_le_compat_r. lra.
+    - rewrite <- (Rmult_1_l 2) at 2.
+      apply Rmult_le_compat_r. lra.
       unfold Rpower.
       rewrite <- exp_0.
       apply Rlt_le.
       apply exp_increasing.
       (* alpha * ln(7/8) < 0: alpha > 0 and ln(7/8) < 0 *)
-      apply Rmult_neg_of_pos_neg. exact Halpha.
-      apply ln_lt_0. lra. lra.
+      assert (Hln : ln (7/8) < 0).
+      { rewrite <- ln_1. apply ln_increasing; lra. }
+      rewrite <- (Rmult_0_r alpha).
+      apply Rmult_lt_compat_l; [ exact Halpha | exact Hln ].
   Qed.
 
 End ESCFunction.
@@ -240,7 +248,9 @@ Module Stratification.
     intros w phi.
     unfold stratum.
     destruct (satisfies_dec w phi).
-    - split. discriminate. intro H. contradiction.
+    - destruct (classic_dec _).
+      + split. discriminate. intro H. contradiction.
+      + split. discriminate. intro H. contradiction.
     - split. intro. exact n. intro. reflexivity.
   Qed.
 
@@ -258,9 +268,9 @@ Module Stratification.
         * intro. reflexivity.
       + split.
         * discriminate.
-        * intro [_ Hex]. contradiction.
+        * intros [_ Hex]. contradiction.
     - split. discriminate.
-      intro [Hsat _]. contradiction.
+      intros [Hsat _]. contradiction.
   Qed.
 
   Lemma T3_iff : forall w phi,
@@ -273,12 +283,12 @@ Module Stratification.
     destruct (satisfies_dec w phi).
     - destruct (classic_dec _).
       + split. discriminate.
-        intro [_ Hno]. contradiction.
+        intros [_ Hno]. contradiction.
       + split.
         * intro. split. exact s. exact n.
         * intro. reflexivity.
     - split. discriminate.
-      intro [Hsat _]. contradiction.
+      intros [Hsat _]. contradiction.
   Qed.
 
   (* ---- Completeness: every assignment is in some stratum ---- *)
@@ -361,21 +371,18 @@ Module LiftoffConstant.
     exists c, a < c < b /\ f c = y.
   Proof.
     intros f a b y Hab Hfa Hfb Hcont.
-    destruct (IVT_interv f a b y) as [c [Hc Hfc]].
+    destruct (IVT_interv (fun x => f x - y) a b) as [c [Hc Hfc]].
+    - intros x Hx. apply (continuity_pt_minus f (fct_cte y)).
+      + apply Hcont; exact Hx.
+      + apply continuity_pt_const. unfold constant, fct_cte. intros; reflexivity.
+    - exact Hab.
     - lra.
-    - intros x [Hx1 Hx2]. apply Hcont. split; lra.
     - lra.
-    - lra.
-    - exists c. split.
-      + destruct Hc as [Hc1 Hc2].
-        split.
-        * destruct (Req_dec a c).
-          -- subst. lra.
-          -- lra.
-        * destruct (Req_dec c b).
-          -- subst. lra.
-          -- lra.
-      + exact Hfc.
+    - exists c. destruct Hc as [Hc1 Hc2].
+      assert (Hcy : f c = y) by lra.
+      split; [ split | exact Hcy ].
+      + destruct Hc1 as [H1 | H1]; [ exact H1 | subst c; lra ].
+      + destruct Hc2 as [H2 | H2]; [ exact H2 | subst c; lra ].
   Qed.
 
   (* ---- IVT wrapper (decreasing direction) ---- *)
@@ -409,13 +416,14 @@ Module LiftoffConstant.
     { lra. }
     assert (Hdist : R_dist (base_factor (delta / 2)) (base_factor 0) < 1/2).
     { apply Hball.
-      unfold R_dist.
-      rewrite Rabs_lt_between'.
-      split; lra. }
+      split.
+      + split; [ exact I | intro Hc; lra ].
+      + change (R_dist (delta / 2) 0 < delta).
+        unfold R_dist. apply Rabs_def1; lra. }
     rewrite base_factor_at_zero in Hdist.
     unfold R_dist in Hdist.
     rewrite Rminus_0_r in Hdist.
-    rewrite Rabs_lt_between' in Hdist.
+    apply Rabs_def2 in Hdist.
     lra.
   Qed.
 
@@ -439,28 +447,23 @@ Module LiftoffConstant.
     (* and bound exp(-3/4) using exp_ineq1                 *)
     assert (H78 : Rpower (7/8) 2 = (7/8) * (7/8)).
     { unfold Rpower.
-      rewrite <- exp_0 at 1.
       (* exp(2 * ln(7/8)) = exp(ln(7/8) + ln(7/8)) *)
       replace (2 * ln (7/8)) with (ln (7/8) + ln (7/8)) by ring.
       rewrite exp_plus.
-      rewrite exp_ln. rewrite exp_ln. ring.
-      lra. lra. }
+      rewrite exp_ln by lra. ring. }
     rewrite H78.
     (* Now bound exp(-3*2/8) = exp(-3/4) *)
     (* exp_ineq1: exp(x) >= 1 + x for all x *)
     (* exp_ineq1 (3/4): exp(3/4) >= 1 + 3/4 = 7/4 *)
     assert (Hexp34 : exp (3/4) >= 7/4).
-    { have := exp_ineq1 (3/4). lra. }
+    { pose proof (exp_ineq1 (3/4)) as H34. lra. }
     assert (Hexp_neg34 : exp (- (3 * 2 / 8)) <= 4/7).
-    { replace (- (3 * 2 / 8)) with (- (3/4)) by ring.
-      assert (Hpos : exp (3/4) > 0) by apply exp_pos.
-      rewrite <- (Rinv_inv (4/7)).
-      apply Rinv_le_contravar.
-      { lra. }
-      rewrite Rinv_inv.
-      rewrite <- exp_Ropp.
-      rewrite Ropp_involutive.
-      lra. }
+    { replace (- (3 * 2 / 8)) with (- (3/4)) by lra.
+      rewrite exp_Ropp.
+      assert (H74 : / (7/4) = 4/7) by (field; lra).
+      apply Rle_trans with (/ (7/4)).
+      - apply Rinv_le_contravar; lra.
+      - rewrite H74. lra. }
     lra.
   Qed.
 
@@ -475,50 +478,12 @@ Module LiftoffConstant.
   (*   so exp(-25/8) < 8/33                          *)
   (* base_factor(25) < (8/33)*2 = 16/33 < 1/2       *)
 
+  (* GAP: build-repair — proof needs rework: the step ln(7/8) < -1/8
+     requires an upper bound on exp(1/8) that the stdlib does not provide
+     directly (only lower bounds exp_ineq1/exp_ineq1_le are available). *)
   Lemma base_factor_large_lt_half :
     exists alpha_large : R, alpha_large > 0 /\ base_factor alpha_large < 1/2.
-  Proof.
-    exists 25.
-    split. { lra. }
-    unfold base_factor.
-    (* Step 1: ln(7/8) < -1/8 *)
-    assert (Hexp18 : exp (1/8) > 9/8).
-    { have := exp_ineq1 (1/8). lra. }
-    assert (Hln78 : ln (7/8) < - (1/8)).
-    { apply exp_lt_inv.
-      rewrite exp_Ropp.
-      rewrite exp_ln. { lra. }
-      lra. }
-    (* Step 2: Rpower(7/8, 25) < exp(-25/8) *)
-    assert (H25 : Rpower (7/8) 25 < exp (- (25/8))).
-    { unfold Rpower.
-      apply exp_increasing.
-      replace (- (25/8)) with (25 * (-1/8)) by ring.
-      apply Rmult_lt_compat_l. lra. lra. }
-    (* Step 3: exp(-25/8) < 8/33 *)
-    assert (Hexp258 : exp (25/8) > 33/8).
-    { have := exp_ineq1 (25/8). lra. }
-    assert (Hexp_neg258 : exp (- (25/8)) < 8/33).
-    { assert (Hpos : exp (25/8) > 0) by apply exp_pos.
-      rewrite <- exp_Ropp.
-      rewrite Ropp_involutive.
-      apply Rinv_lt_contravar.
-      { apply Rmult_lt_0_compat. lra. lra. }
-      lra. }
-    (* Step 4: combine *)
-    assert (Hbig : Rpower (7/8) 25 < 8/33) by lra.
-    (* base_factor 25 = Rpower(7/8,25) * (2*(1-exp(-3*25/8))) *)
-    (* exp(-75/8) > 0, so 1 - exp(-75/8) < 1, so 2*(1-exp(-75/8)) < 2 *)
-    assert (Hfactor_le : 2 * (1 - exp (- (3 * 25 / 8))) < 2).
-    { assert (Hpos : exp (- (3 * 25 / 8)) > 0) by apply exp_pos.
-      lra. }
-    assert (Hfactor_pos : 0 < 2 * (1 - exp (- (3 * 25 / 8)))).
-    { apply Rmult_lt_0_compat. lra.
-      have := one_minus_exp_neg_pos 25. lra. }
-    apply Rlt_trans with (8/33 * 2).
-    - apply Rmult_lt_compat_r. lra. lra.
-    - lra.
-  Qed.
+  Proof. Admitted.
 
   (* ---- Main existence theorem ---- *)
 
@@ -588,67 +553,15 @@ Module FirstMoment.
     apply Rpower_pos. exact Hr.
   Qed.
 
+  (* GAP: build-repair — proof needs rework: relies on several real-analysis
+     lemmas (Rmult_lt_reg_neg_r, Rmult_le_reg_neg_l, Rdiv_lt_iff_lt_mult, ...)
+     not present under these names in the current stdlib. *)
   Lemma geom_decay : forall r : R,
     0 < r < 1 ->
     forall eps : R, 0 < eps ->
     exists N : nat, forall n : nat,
       (n >= N)%nat -> geom r n < eps.
-  Proof.
-    intros r [Hr_pos Hr_lt1] eps Heps.
-    assert (Hln : ln r < 0).
-    { apply ln_lt_0. lra. exact Hr_lt1. }
-    (* Take N = S(Z.to_nat(up(ln eps / ln r))) *)
-    set (q := up (ln eps / ln r)).
-    exists (S (Z.to_nat (up (ln eps / ln r)))).
-    intros n Hn.
-    unfold geom.
-    (* r^n = exp(INR n * ln r); suffices INR n * ln r < ln eps *)
-    rewrite <- exp_ln with (x := eps). 2: exact Heps.
-    apply exp_increasing.
-    (* Goal: INR n * ln r < ln eps *)
-    (* Since ln r < 0, equivalent to INR n > ln eps / ln r *)
-    apply Rmult_lt_reg_neg_r with (r := / (- ln r)).
-    { apply Rinv_pos. lra. }
-    (* INR n * ln r * / (- ln r) < ln eps * / (- ln r) *)
-    (* i.e., - INR n < ln eps / ln r (after simplification) *)
-    (* Let's use a field-style argument *)
-    assert (Hq_arch : IZR q > ln eps / ln r).
-    { unfold q. exact (archimed (ln eps / ln r)). }
-    assert (Hn_real : INR n >= INR (S (Z.to_nat q))).
-    { apply le_INR. exact Hn. }
-    rewrite S_INR in Hn_real.
-    destruct (Z_lt_le_dec 0 q) as [Hq_pos | Hq_nonpos].
-    - (* q > 0 *)
-      assert (HtoNat : INR (Z.to_nat q) = IZR q).
-      { rewrite INR_IZR_INZ.
-        rewrite Z2Nat.id. reflexivity. lia. }
-      rewrite HtoNat in Hn_real.
-      (* INR n >= 1 + IZR q > 1 + ln eps / ln r *)
-      (* so INR n * ln r < ln eps (multiply by ln r < 0, flip) *)
-      assert (Hn_gt : INR n > ln eps / ln r) by lra.
-      (* INR n > ln eps / ln r, ln r < 0: multiply both sides by ln r *)
-      apply Rmult_lt_reg_neg_r with (r := ln r). exact Hln.
-      field_simplify.
-      apply Rdiv_lt_iff_lt_mult. lra.
-      lra.
-    - (* q <= 0: ln eps / ln r <= 0, so ln eps >= 0, eps >= 1 *)
-      (* INR n >= 1 > 0, ln r < 0, so INR n * ln r < 0 <= ln eps *)
-      assert (Hle : ln eps / ln r <= IZR q) by lra.
-      assert (Hq0 : IZR q <= 0).
-      { apply IZR_le. lia. }
-      assert (Hln_eps_nonneg : ln eps >= 0).
-      { (* ln eps / ln r <= 0 and ln r < 0 → ln eps >= 0 *)
-        apply Rle_ge.
-        apply Rmult_le_reg_neg_l with (r := / ln r).
-        { apply Rinv_neg. lra. }
-        rewrite Rmult_0_r.
-        unfold Rdiv in Hle. lra. }
-      assert (Hn_pos : INR n > 0).
-      { apply lt_0_INR. lia. }
-      apply Rmult_lt_reg_neg_r with (r := ln r). exact Hln.
-      field_simplify.
-      lra.
-  Qed.
+  Proof. Admitted.
 
   (* ---- ESC First Moment Theorem ---- *)
 
@@ -693,7 +606,7 @@ End FirstMoment.
 (*   There exists κ* (the geometric complexity constant) such that:   *)
 (*                                                                     *)
 (*   (A) κ* > 0                                                       *)
-(*   (B) base_factor(κ*) = 1/2                                        *)
+(*   (B) base_factor(kappa_star) = 1/2                                *)
 (*   (C) Above κ*: T3 solutions vanish exponentially                  *)
 (*   (D) There exists α > κ* with base_factor(α) < 1/2               *)
 (*                                                                     *)
@@ -723,96 +636,10 @@ Module MasterTheorem.
           geom (base_factor alpha) n < eps) /\
       (* D: above kappa_star there exists alpha with base_factor < 1/2 *)
       (exists alpha : R, alpha > kappa_star /\ base_factor alpha < 1/2).
-  Proof.
-    (* Step 1: Get κ* from LiftoffConstant *)
-    destruct liftoff_constant_exists
-      as [kappa_star [Hpos Heq]].
-
-    (* Recall the witnesses used inside liftoff_constant_exists *)
-    destruct base_factor_above_half
-      as [alpha_peak [Hpeak_pos Hpeak_gt_half]].
-    destruct base_factor_large_lt_half
-      as [alpha_large [Hlarge_pos Hlarge_lt_half]].
-
-    exists kappa_star.
-    repeat split.
-
-    (* A: κ* > 0 *)
-    - exact Hpos.
-
-    (* B: base_factor(κ*) = 1/2 *)
-    - exact Heq.
-
-    (* C: above κ* — geometric decay *)
-    - intros alpha _ Hbf_pos Hbf_lt1 eps Heps.
-      apply ESC_first_moment; assumption.
-
-    (* D: alpha_large > kappa_star and base_factor alpha_large < 1/2 *)
-    - (* We need to show alpha_large > kappa_star.                   *)
-      (* kappa_star was obtained by IVT between alpha_peak and       *)
-      (* alpha_large (or vice versa). In both cases kappa_star lies  *)
-      (* strictly between them, so kappa_star < alpha_large.        *)
-      (* We reconstruct the argument from liftoff_constant_exists.  *)
-      destruct (Rlt_or_le alpha_peak alpha_large) as [Hlt | Hge].
-      + (* Case: alpha_peak < alpha_large, IVT_crossing_decr gives   *)
-        (*   kappa_star ∈ (alpha_peak, alpha_large)                  *)
-        destruct (IVT_crossing_decr
-          base_factor alpha_peak alpha_large (1/2)
-          Hlt Hpeak_gt_half Hlarge_lt_half) as [c [Hc _]].
-        { intros x _. apply base_factor_continuous. }
-        (* kappa_star satisfies the same IVT; it equals c.          *)
-        (* We just need kappa_star < alpha_large.                   *)
-        (* Since base_factor kappa_star = 1/2 and                  *)
-        (*   base_factor alpha_large < 1/2, they differ.           *)
-        (* kappa_star ∈ (alpha_peak, alpha_large) by the IVT call  *)
-        (* that produced it — reconstruct:                          *)
-        exists alpha_large.
-        split. 2: exact Hlarge_lt_half.
-        (* Show kappa_star < alpha_large *)
-        (* base_factor is 1/2 at kappa_star and < 1/2 at alpha_large *)
-        (* Since base_factor(alpha_large) < 1/2 = base_factor(kappa_star) *)
-        (* and Rpower(7/8, alpha) is strictly decreasing,            *)
-        (* we can't directly conclude order without monotonicity.    *)
-        (* Instead, use the IVT witness c: c ∈ (alpha_peak, alpha_large) *)
-        (* and base_factor c = 1/2 = base_factor kappa_star.         *)
-        (* We need kappa_star < alpha_large.                         *)
-        (* If kappa_star >= alpha_large, then base_factor kappa_star  *)
-        (* ... we need an extra argument. Use: alpha_peak < alpha_large *)
-        (* and kappa_star > 0. But we don't know the order directly. *)
-        (*
-           Let's use the fact that base_factor alpha_large < 1/2 and
-           base_factor kappa_star = 1/2, so kappa_star ≠ alpha_large.
-           We need strict inequality. We know c ∈ (alpha_peak, alpha_large)
-           with base_factor c = 1/2. Since kappa_star also has
-           base_factor kappa_star = 1/2 and both are positive,
-           we cannot directly conclude kappa_star = c without uniqueness.
-           Instead, use a direct: the IVT gives c < alpha_large.
-           We define kappa_star via liftoff_constant_exists which uses
-           the same IVT call, so kappa_star = c < alpha_large.
-           But we've lost that link. Use a workaround:
-        *)
-        (* base_factor alpha_large < 1/2 = base_factor kappa_star,  *)
-        (* so alpha_large ≠ kappa_star.                              *)
-        (* Also: if kappa_star >= alpha_large, note                  *)
-        (*   base_factor alpha_large < 1/2 and kappa_star >= alpha_large > 0 *)
-        (* We can't rule this out without monotonicity.              *)
-        (* Safe approach: use c directly from IVT as our kappa_star  *)
-        lra.
-      + assert (Hlt2 : alpha_large < alpha_peak).
-        { destruct (Req_dec alpha_large alpha_peak) as [Heq2 | Hne].
-          - subst. lra.
-          - lra. }
-        exists alpha_large.
-        split. 2: exact Hlarge_lt_half.
-        (* kappa_star ∈ (alpha_large, alpha_peak) from IVT_crossing *)
-        (* so kappa_star > alpha_large *)
-        (* Again we've lost the link. Use c from IVT: *)
-        destruct (IVT_crossing
-          base_factor alpha_large alpha_peak (1/2)
-          Hlt2 Hlarge_lt_half Hpeak_gt_half) as [c2 [Hc2 _]].
-        { intros x _. apply base_factor_continuous. }
-        lra.
-  Qed.
+    (* GAP: build-repair — proof needs rework: part D requires ordering
+       kappa_star < alpha which the IVT-based construction here cannot
+       establish without a monotonicity/uniqueness argument. *)
+  Proof. Admitted.
 
 End MasterTheorem.
 

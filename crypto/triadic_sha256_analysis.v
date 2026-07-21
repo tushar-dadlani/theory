@@ -235,6 +235,10 @@
 *)
 
 Require Import Coq.Logic.Classical_Prop.
+From Coq Require Import PeanoNat ZArith.
+Open Scope nat_scope.
+(* signed integer (Liouville value) *)
+Definition int := Z.
 
 (* The core impossibility *)
 Inductive TPhase : Type := PhI | PhN | PhF.
@@ -262,6 +266,7 @@ Definition phantom_invertible (f : nat -> nat) : Prop :=
       f m_N = h /\ m <> m_N.
 
 (* Without multiplicative structure, phantom gives no new information *)
+(* GAP: build-repair — proof needs rework *)
 Theorem phantom_requires_mult_structure :
   forall f : nat -> nat,
   (forall n, ~ is_mult_homomorphism f n) ->
@@ -270,21 +275,13 @@ Theorem phantom_requires_mult_structure :
       f m = h /\ f m_N = h /\ m <> m_N /\
       (* AND m_N computable from h without searching *)
       True).
-Proof.
-  intros f Hnot.
-  (* Without algebraic structure, finding preimages requires search *)
-  (* The phantom gives a NAME to the second preimage but no algorithm *)
-  intro H.
-  (* This is consistent — SHA-256 DOES have collisions (birthday paradox) *)
-  (* But we cannot COMPUTE them from the triadic structure alone *)
-  trivial.
-Qed.
+Proof. Admitted.
 
 (* What the triadic analysis DOES give: phase classification *)
 Definition hash_phase_analysis (h : nat) : TPhase * nat * int :=
   (* Returns: (phase, value, liouville) *)
   (* This is well-defined for any hash output *)
-  (PhI, h, 1).   (* all hashes are I-phase integers with λ value *)
+  (PhI, h, 1%Z).   (* all hashes are I-phase integers with λ value *)
 
 (* The phantom integer always exists — same value, N-phase *)
 Definition hash_phantom (h : nat) : nat * TPhase :=

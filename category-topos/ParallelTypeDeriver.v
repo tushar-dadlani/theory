@@ -60,7 +60,11 @@ Theorem unicode_roundtrip : forall cp : nat,
   position_to_rank (unicode_position cp) = cp.
 Proof.
   intro cp. unfold position_to_rank, unicode_position, unicode_info_bit.
-  destruct (Nat.eqb (cp mod 2) 0); simpl; lia.
+  destruct (Nat.eqb (cp mod 2) 0).
+  - replace (2 * cp + 0) with (cp * 2 + 0) by lia.
+    rewrite Nat.div_add_l by lia. simpl. lia.
+  - replace (2 * cp + 1) with (cp * 2 + 1) by lia.
+    rewrite Nat.div_add_l by lia. simpl. lia.
 Qed.
 
 (* ================================================================= *)

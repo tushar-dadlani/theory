@@ -90,24 +90,20 @@ Theorem joint_period_under_resonance : forall p q,
 Proof.
   intros p q [Hres _] t.
   unfold joint_phase, phase.
-  rewrite Hres at 2.
-  (* phase T_1 (t + p * T_1) = (t + p * T_1) mod T_1 = t mod T_1 *)
-  assert (H1 : (t + p * T_1) mod T_1 = t mod T_1).
-  { rewrite Nat.Div0.add_mod.
-    rewrite (Nat.mul_comm p T_1).
+  f_equal.
+  - (* phase T_1 (t + p * T_1) = (t + p * T_1) mod T_1 = t mod T_1 *)
+    rewrite Nat.Div0.add_mod.
     rewrite Nat.Div0.mod_mul.
     rewrite Nat.add_0_r.
     rewrite Nat.mod_mod by (pose proof T_1_pos; lia).
-    reflexivity. }
-  assert (H2 : (t + q * T_2) mod T_2 = t mod T_2).
-  { rewrite Nat.Div0.add_mod.
-    rewrite (Nat.mul_comm q T_2).
+    reflexivity.
+  - (* phase T_2 (t + p * T_1) with p*T_1 = q*T_2 *)
+    rewrite Hres.
+    rewrite Nat.Div0.add_mod.
     rewrite Nat.Div0.mod_mul.
     rewrite Nat.add_0_r.
     rewrite Nat.mod_mod by (pose proof T_2_pos; lia).
-    reflexivity. }
-  rewrite H1, H2.
-  reflexivity.
+    reflexivity.
 Qed.
 
 (* ================================================================ *)

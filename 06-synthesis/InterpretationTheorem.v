@@ -461,14 +461,13 @@ Theorem master_interpretation_theorem :
   (* The Pythagorean structure is preserved *)
   3 * 3 + 4 * 4 = 5 * 5.
 Proof.
-  repeat split.
-  - reflexivity.
-  - intro s. destruct s; reflexivity.
-  - intro s. destruct s; reflexivity.
-  - reflexivity.
-  - reflexivity.
-  - reflexivity.
-  - reflexivity.
-  - intros A x. apply negb_involutive.
-  - reflexivity.
+  split; [ reflexivity | ].
+  split; [ intro s; destruct s; reflexivity | ].
+  split; [ intro s; destruct s; reflexivity | ].
+  split; [ reflexivity | ].
+  split; [ reflexivity | ].
+  split; [ reflexivity | ].
+  split; [ reflexivity | ].
+  split; [ intros A x; apply negb_involutive | ].
+  reflexivity.
 Qed.

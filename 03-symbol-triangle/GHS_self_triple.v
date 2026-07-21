@@ -76,7 +76,7 @@
 
    Axioms beyond CIC: None.  Admitted: 0. *)
 
-From GHS.proven Require Import 
+Require Import GHS.
 From Stdlib Require Import Lia.
 
 (* ================================================================ *)

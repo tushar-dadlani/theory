@@ -31,6 +31,7 @@
 Require Import Coq.Lists.List.
 Require Import Coq.Logic.Classical_Prop.
 Require Import Coq.Arith.Arith.
+Require Import Lia.
 Import ListNotations.
 
 (* ================================================================ *)
@@ -178,13 +179,13 @@ Proof.
   destruct (product_has_unknown_kernel (init_product i)) eqn:Hp;
   destruct (tech_has_unknown_kernel    (init_technology i)) eqn:Ht.
   - left.  auto.
-  - right. intro H. destruct H as [_ [_ H]]. rewrite Ht in H. discriminate.
-  - right. intro H. destruct H as [_ [H _]]. rewrite Hp in H. discriminate.
-  - right. intro H. destruct H as [_ [H _]]. rewrite Hp in H. discriminate.
-  - right. intro H. destruct H as [H _].     rewrite Hc in H. discriminate.
-  - right. intro H. destruct H as [H _].     rewrite Hc in H. discriminate.
-  - right. intro H. destruct H as [H _].     rewrite Hc in H. discriminate.
-  - right. intro H. destruct H as [H _].     rewrite Hc in H. discriminate.
+  - right. intro H. destruct H as [HA [HB HC]]. discriminate.
+  - right. intro H. destruct H as [HA [HB HC]]. discriminate.
+  - right. intro H. destruct H as [HA [HB HC]]. discriminate.
+  - right. intro H. destruct H as [HA [HB HC]]. discriminate.
+  - right. intro H. destruct H as [HA [HB HC]]. discriminate.
+  - right. intro H. destruct H as [HA [HB HC]]. discriminate.
+  - right. intro H. destruct H as [HA [HB HC]]. discriminate.
 Qed.
 
 (* ================================================================ *)
@@ -199,28 +200,11 @@ Qed.
 (* [ZONE: EFFECT]                                                    *)
 (* ================================================================ *)
 
+(* GAP: build-repair — proof needs rework *)
 Theorem well_formed_decidable :
   forall (i : InitFile),
     well_formed i \/ ~ well_formed i.
-Proof.
-  intro i.
-  unfold well_formed.
-  destruct (reference_consistency_decidable i) as [Hr | Hr];
-  destruct (kernel_honesty_decidable i) as [Hk | Hk].
-  - (* Both hold — check remaining two *)
-    destruct (ids_distinct i) eqn:Hd.
-    + (* ids_distinct *)
-      destruct (le_dec 2 (company_axiom_count (init_company i))) as [Ha | Ha].
-      * left. exact (conj Hr (conj (admit) (conj Hk Ha))).
-        (* ids_distinct as Prop requires more work — admitted *)
-      * right. intro H. destruct H as [_ [_ [_ H]]]. exact (Ha H).
-    + right. intro H. destruct H as [_ [H _]].
-      (* ids_distinct as bool would be cleaner — see note below *)
-      admit.
-  - right. intro H. destruct H as [_ [_ [H _]]]. exact (Hk H).
-  - right. intro H. destruct H as [H _]. exact (Hr H).
-  - right. intro H. destruct H as [H _]. exact (Hr H).
-Admitted.
+Proof. Admitted.
 
 (* [NOTE ON ADMITS]
    ids_distinct is a Prop over natural number inequalities.

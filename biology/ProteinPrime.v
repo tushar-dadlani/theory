@@ -164,19 +164,13 @@ Proof. intros a b c; destruct a, b, c; reflexivity. Qed.
 Theorem left_right_fold_equiv : forall (seq : ProteinSeq),
   fold_left triadic_op seq I_s = fold_right triadic_op I_s seq.
 Proof.
-  induction seq as [| h t IH].
-  - reflexivity.
-  - simpl.
-    rewrite <- IH.
-    (* fold_left (h::t) = fold_left t starting from (I op h) = h *)
-    (* fold_right (h::t) = h op (fold_right t) *)
-    (* These are equal by associativity *)
-    clear IH.
-    induction t as [| x xs IHt].
-    + simpl. destruct h; reflexivity.
-    + simpl. simpl in IHt.
-      rewrite <- flat_fold_unique.
-      rewrite IHt. reflexivity.
+  intro seq.
+  assert (Haux : forall l a,
+    fold_left triadic_op l a = triadic_op a (fold_right triadic_op I_s l)).
+  { clear seq. induction l as [| x xs IH]; intro a.
+    - simpl. destruct a; reflexivity.
+    - simpl. rewrite IH. rewrite level3_flat. reflexivity. }
+  rewrite Haux. reflexivity.
 Qed.
 
 (* ════════════════════════════════════════════════════════════════════ *)
@@ -221,10 +215,10 @@ Proof. unfold is_stable_fold, protein_reduce. simpl. reflexivity. Qed.
 (* N, N is a prime: cannot split into two stable halves *)
 Theorem NN_is_prime : is_protein_prime [N_s; N_s].
 Proof.
-  unfold is_protein_prime. repeat split.
-  - simpl. lia.
-  - apply NN_is_stable.
-  - intros s1 s2 Happ Hl1 Hl2 [Hs1 Hs2].
+  unfold is_protein_prime.
+  split; [ simpl; lia | ].
+  split; [ apply NN_is_stable | ].
+  intros s1 s2 Happ Hl1 Hl2 [Hs1 Hs2].
     (* The only splits of [N;N] with both non-empty are: *)
     (* s1=[N], s2=[N] *)
     destruct s1 as [|a [|b rest]].
@@ -238,10 +232,11 @@ Proof.
     + (* s1 has length ≥ 2 but [N;N] has length 2, so s2 is empty *)
       simpl in Happ.
       injection Happ as _ _ Hrest.
-      destruct rest; simpl in Hl2.
-      * (* s2 is empty *) rewrite app_nil_r in Happ.
-        simpl in Hl2. lia.
-      * simpl in Hl2. lia.
+      destruct rest as [|r rs].
+      * (* rest = [] forces s2 = [] *)
+        simpl in Hrest. subst s2. simpl in Hl2. lia.
+      * (* rest = r :: rs makes rest ++ s2 nonempty, contradiction *)
+        discriminate Hrest.
 Qed.
 
 (* ════════════════════════════════════════════════════════════════════ *)
@@ -263,14 +258,14 @@ Qed.
 (*  The fold is UNIQUE and COMPUTABLE from the sequence alone.         *)
 (* ════════════════════════════════════════════════════════════════════ *)
 
-Definition count_sym (s : Sym3) (seq : ProteinSeq) : nat :=
-  length (filter (fun x => if Sym3_eq x s then true else false) seq).
-
 Definition Sym3_eq (a b : Sym3) : bool :=
   match a, b with
   | I_s, I_s => true | N_s, N_s => true | F_s, F_s => true
   | _, _ => false
   end.
+
+Definition count_sym (s : Sym3) (seq : ProteinSeq) : nat :=
+  length (filter (fun x => if Sym3_eq x s then true else false) seq).
 
 (* The CRT fold condition: both residues are zero *)
 Definition crt_fold_condition (seq : ProteinSeq) : Prop :=
@@ -291,29 +286,7 @@ Theorem crt_condition_implies_stable :
   n mod 3 = 0 -> n mod 2 = 0 ->
   (* A sequence of n N_s symbols reduces to I_s *)
   protein_reduce (repeat N_s n) = I_s.
-Proof.
-  intros seq _ n H3 H2.
-  (* n is divisible by both 2 and 3, so divisible by 6 *)
-  induction n using (fun n => Nat.strong_rec_on n).
-  destruct n as [|[|n]].
-  - (* n = 0 *) reflexivity.
-  - (* n = 1: 1 mod 2 = 1 ≠ 0 *) simpl in H2. discriminate.
-  - (* n ≥ 2: use the fact that N∘N = I, recurse *)
-    assert (Hmod2 : n mod 2 = 0).
-    { have : (S (S n)) mod 2 = 0 := H2.
-      rewrite Nat.add_mod in this by lia. simpl in this.
-      rewrite Nat.mod_mod in this by lia. exact this. }
-    assert (Hmod3 : n mod 3 = n mod 3) := eq_refl _.
-    unfold protein_reduce. simpl.
-    (* fold_left on [N;N;...] with start I:
-       I op N = N, N op N = I, I op N = N, ... *)
-    (* The key: pairs of N cancel *)
-    unfold protein_reduce in H.
-    apply H; try lia; assumption.
-Admitted. (* The induction over lists requires more bookkeeping *)
-           (* but the algebraic content is: N∘N = I, so n N's *)
-           (* with n even reduces to I, and n div 6 means      *)
-           (* the F-triples also cancel. QED.                  *)
+Proof. Admitted.
 
 (* ════════════════════════════════════════════════════════════════════ *)
 (* PART 7 — FOLDING COMPLEXITY IN FLAT SPACE                           *)
@@ -532,15 +505,13 @@ Theorem PROTEIN_PRIME_THEOREM :
   (* Codon degeneracy is the CRT period *)
   (64 / 20 = 3).
 Proof.
-  repeat split.
-  - apply left_right_fold_equiv.
-  - intro seq. exists (length seq). split; reflexivity.
-  - apply extend_with_prime_preserves_fold.
-  - reflexivity.
-  - reflexivity.
-  - reflexivity.
-  - lia.
-  - reflexivity.
+  split; [ apply left_right_fold_equiv | ].
+  split; [ intro seq; exists (length seq); split; reflexivity | ].
+  split; [ apply extend_with_prime_preserves_fold | ].
+  split; [ split; [ reflexivity | split; reflexivity ] | ].
+  split; [ reflexivity | ].
+  split; [ lia | ].
+  reflexivity.
 Qed.
 
 Print Assumptions PROTEIN_PRIME_THEOREM.

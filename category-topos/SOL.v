@@ -296,7 +296,7 @@ Definition transition_kernel_size (obs_t : ObservedTransition) (n_states n_actio
 
 (** Adding a new observation strictly reduces the transition kernel. *)
 Axiom observe_reduces_kernel :
-  forall obs_t s a next n_states n_actions,
+  forall obs_t s a (next : StateIndex) n_states n_actions,
     obs_t s a = None ->
     transition_kernel_size obs_t n_states n_actions > 0 ->
     (* After adding (s, a) -> next, kernel shrinks by at least 1 *)
@@ -328,9 +328,11 @@ Theorem sol_incomplete_is_informative :
     sys.(ds_kernel_size) > 0.
 Proof.
   intros sys H.
-  apply sys.(ds_complete_iff) in H.
+  destruct sys.(ds_complete_iff) as [_ Hbwd].
   (* Complete <-> kernel_size = 0, so Incomplete -> kernel_size > 0 *)
-  lia.
+  destruct (ds_kernel_size sys) eqn:E.
+  - specialize (Hbwd eq_refl). rewrite Hbwd in H. discriminate.
+  - lia.
 Qed.
 
 Theorem sol_composition_helps :

@@ -266,14 +266,16 @@ Qed.
 
 (** Even phase: for each EvenMulti entry, compute hull outline positions.
     For this proof, we parameterize over an abstract hull function. *)
-Variable hull_positions : forall {n m : nat},
+(* GAP: build-repair — Variable outside a section is now an error in Rocq 9.1;
+   converted to Parameter (the global form Coq says it behaves as). *)
+Parameter hull_positions : forall {n m : nat},
   list (Pos n m) ->  (* seed positions *)
   list (Pos n m).   (* hull outline positions *)
 
 (** Odd phase: for each OddMulti entry, compute hull positions.
     For SingleSeed entries, compute shadow positions given the already-placed
     even colors (the PositionedSeq from the previous step). *)
-Variable shadow_positions : forall {n m : nat},
+Parameter shadow_positions : forall {n m : nat},
   Pos n m ->         (* single seed position *)
   list (Pos n m) ->  (* positions of paired color's cells *)
   list (Pos n m).   (* shadow positions *)

@@ -62,9 +62,9 @@ Theorem pos1_can_be_filled : forall N : nat,
   N >= 1 ->
   pos_classifier 1 N [1] = OTrue.
 Proof.
-  intros N HN. unfold pos_classifier. simpl.
+  intros N HN. unfold pos_classifier.
   destruct (Nat.leb 1 N) eqn:H.
-  - reflexivity.
+  - simpl. reflexivity.
   - apply Nat.leb_nle in H. lia.
 Qed.
 
@@ -124,7 +124,7 @@ Qed.
 *)
 
 Theorem close_01_at_depth1 : forall N : nat, forall f : list nat,
-  pos_classifier_tower 0 N 1 f = OTrue /  pos_classifier_tower 1 N 1 f = OTrue.
+  pos_classifier_tower 0 N 1 f = OTrue /\ pos_classifier_tower 1 N 1 f = OTrue.
 Proof.
   intros N f. split; apply tower_closes_positions; lia.
 Qed.

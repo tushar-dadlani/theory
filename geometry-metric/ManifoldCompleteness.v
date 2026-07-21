@@ -300,13 +300,11 @@ Theorem EPISTEMIC_COMPLETENESS :
   (forall p, ~ (tower_limit F0).(kernel) p).
 Proof.
   intro F0.
-  split.
+  split; [|split; [|split]].
   - (* Classification total *)
     intros d obs. exact (CLASSIFY_TOTAL d obs).
-  split.
   - (* Ascension *)
     exact (vanishing_unit F0).
-  split.
   - (* Kernel shrinks *)
     intros n p Hk.
     exact (proj2 (TOWER_ASCENSION F0 n p Hk)).

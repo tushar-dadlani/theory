@@ -142,7 +142,9 @@ Theorem adelic_encoding_injective : forall n m,
   n = m.
 Proof.
   intros n m Hn Hm Heq.
-  unfold adelic_encode in Heq. inversion Heq as [[H3 H2]].
+  unfold adelic_encode in Heq.
+  assert (H3 : n mod 3 = m mod 3) by congruence.
+  assert (H2 : n mod 2 = m mod 2) by congruence.
   rewrite <- (adelic_decode_encode_id n Hn).
   rewrite <- (adelic_decode_encode_id m Hm).
   rewrite H3, H2. reflexivity.

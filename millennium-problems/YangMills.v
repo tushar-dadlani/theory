@@ -8,6 +8,7 @@
 (* ============================================================ *)
 
 Require Import Coq.Reals.Reals.
+Require Import Lra.
 Require Import Core.
 
 (* ------------------------------------------------------------ *)
@@ -39,14 +40,14 @@ Axiom self_dual_action :
   forall (A : GaugeField),
   IsSelfDual A ->
   YangMillsAction A =
-  8 * PI * PI * IZR (Z.abs (TopologicalCharge A)).
+  (8 * PI * PI * IZR (Z.abs (TopologicalCharge A)))%R.
 
 (* Non-trivial self-dual fields have positive action *)
 Lemma self_dual_positive_action :
   forall (A : GaugeField),
   IsSelfDual A ->
   TopologicalCharge A <> 0%Z ->
-  YangMillsAction A > 0.
+  (YangMillsAction A > 0)%R.
 Proof.
   intros A H_sd H_nontrivial.
   rewrite self_dual_action by assumption.
@@ -54,8 +55,8 @@ Proof.
   apply Rmult_gt_0_compat.
   apply Rmult_gt_0_compat.
   lra.
-  exact PI_pos.
-  exact PI_pos.
+  exact PI_RGT_0.
+  exact PI_RGT_0.
   (* |k| > 0 when k ≠ 0 *)
   apply IZR_lt.
   apply Z.abs_pos.
@@ -65,17 +66,17 @@ Qed.
 (* The classical mass gap IS the minimum action *)
 (* This collapses directly from the fixed point structure *)
 Definition ClassicalMassGap : R :=
-  8 * PI * PI.  (* Minimum for |k| = 1 *)
+  (8 * PI * PI)%R.  (* Minimum for |k| = 1 *)
 
 Lemma classical_gap_is_positive :
-  ClassicalMassGap > 0.
+  (ClassicalMassGap > 0)%R.
 Proof.
   unfold ClassicalMassGap.
   apply Rmult_gt_0_compat.
   apply Rmult_gt_0_compat.
   lra.
-  exact PI_pos.
-  exact PI_pos.
+  exact PI_RGT_0.
+  exact PI_RGT_0.
 Qed.
 
 (* ------------------------------------------------------------ *)
@@ -95,10 +96,10 @@ Parameter IsVacuum : QuantumState -> Prop.
 (* The quantum Yang-Mills mass gap *)
 Definition QuantumMassGap : Prop :=
   exists (Delta : R),
-  Delta > 0 /\
+  (Delta > 0)%R /\
   forall (psi : QuantumState),
   ~ IsVacuum psi ->
-  QuantumEnergy psi >= Delta.
+  (QuantumEnergy psi >= Delta)%R.
 
 (* The GHS bridge from classical to quantum *)
 (* This is the missing piece *)
@@ -165,5 +166,3 @@ Qed.
   The quantum part requires Order N+1 formal system
   — constructive QFT — which doesn't exist in Coq yet.
 *)
-
-End YangMills.

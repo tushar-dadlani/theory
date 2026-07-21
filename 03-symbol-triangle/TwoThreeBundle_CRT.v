@@ -26,6 +26,8 @@
 
 Require Import Coq.Arith.Arith.
 Require Import micromega.Lia.
+Require Import List.
+Import ListNotations.
 Open Scope nat_scope.
 
 Inductive Bit  : Type := B0 | B1.
@@ -64,7 +66,8 @@ Theorem only_zero_on_diagonal :
   on_diagonal g -> crt_class g = 0.
 Proof.
   intro g.
-  destruct g as [[|] [|[]]]; simpl; unfold on_diagonal, crt_class; simpl;
+  destruct g as [b s]; destruct b; destruct s;
+  simpl; unfold on_diagonal, crt_class; simpl;
   intro H; try lia; reflexivity.
 Qed.
 
@@ -89,7 +92,7 @@ Theorem TWO_THREE_BUNDLE_IS_CRT :
   crt_class (mkGH B0 I_s) = 0 /\
   4 + 3 = 7.
 Proof.
-  repeat split; reflexivity.
+  repeat split; first [ reflexivity | lia ].
 Qed.
 
 Print Assumptions TWO_THREE_BUNDLE_IS_CRT.

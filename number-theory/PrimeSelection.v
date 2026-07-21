@@ -153,28 +153,30 @@ Proof.
     nia.
 Qed.
 
+(* Taking one more element never decreases the product of a list
+   of positive numbers *)
+Lemma take_n_product_monotone : forall k xs,
+  (forall x, In x xs -> 1 <= x) ->
+  list_product (take_n k xs) <= list_product (take_n (S k) xs).
+Proof.
+  intro k. induction k as [| k IH]; intros xs Hpos.
+  - destruct xs as [|x xs']; simpl; [lia|].
+    assert (1 <= x) by (apply Hpos; left; reflexivity). nia.
+  - destruct xs as [|x xs']; simpl; [lia|].
+    assert (Hx : 1 <= x) by (apply Hpos; left; reflexivity).
+    assert (Hrest : list_product (take_n k xs')
+                    <= list_product (take_n (S k) xs'))
+      by (apply IH; intros y Hy; apply Hpos; right; exact Hy).
+    apply Nat.mul_le_mono_l. exact Hrest.
+Qed.
+
 (* Capacity grows as we add primes from first_primes *)
 Theorem prime_product_monotone : forall k,
   modulus_first_k k <= modulus_first_k (S k).
 Proof.
-  intro k.
-  unfold modulus_first_k.
-  induction k as [| k IH].
-  - simpl. lia.
-  - destruct (nth_error first_primes (S k)) eqn:E.
-    + (* there is a next prime *)
-      simpl. simpl in IH.
-      destruct first_primes as [|p1 rest]; [discriminate|].
-      destruct rest as [|p2 rest2]; [destruct k; simpl; lia|].
-      simpl. simpl in IH.
-      destruct k as [|k'].
-      * simpl. nia.
-      * (* general case: structural induction on k' bounded by list size *)
-        nia.
-    + (* no next prime — both sides equal *)
-      simpl. simpl in IH.
-      destruct first_primes; simpl; try lia.
-      destruct l; simpl; lia.
+  intro k. unfold modulus_first_k. apply take_n_product_monotone.
+  intros x Hx. simpl in Hx.
+  repeat destruct Hx as [Hx|Hx]; try (subst; lia); try contradiction.
 Qed.
 
 (* ================================================================ *)
@@ -212,10 +214,29 @@ Proof.
   destruct (Nat.leb y 30)      eqn:E4; [apply Nat.leb_le in E4; simpl; lia |].
   destruct (Nat.leb y 210)     eqn:E5; [apply Nat.leb_le in E5; simpl; lia |].
   destruct (Nat.leb y 2310)    eqn:E6; [apply Nat.leb_le in E6; simpl; lia |].
-  destruct (Nat.leb y 30030)   eqn:E7; [apply Nat.leb_le in E7; simpl; lia |].
-  destruct (Nat.leb y 510510)  eqn:E8; [apply Nat.leb_le in E8; simpl; lia |].
-  simpl. lia.
+  destruct (Nat.leb y 30030)   eqn:E7;
+    [apply Nat.leb_le in E7;
+     assert (list_product (take_n 6 first_primes) = 30030)
+       by (vm_compute; reflexivity); lia |].
+  destruct (Nat.leb y 510510)  eqn:E8;
+    [apply Nat.leb_le in E8;
+     assert (list_product (take_n 7 first_primes) = 510510)
+       by (vm_compute; reflexivity); lia |].
+  cbn [list_product take_n first_primes].
+  change (2 * (3 * (5 * (7 * (11 * (13 * (17 * (19 * 1)))))))) with 9699690.
+  lia.
 Qed.
+
+(* Case-split a value across all k_min thresholds (nested, 9 regions) *)
+Ltac kmin_chain y :=
+  destruct (Nat.leb y 1) eqn:?;
+  [|destruct (Nat.leb y 2) eqn:?;
+  [|destruct (Nat.leb y 6) eqn:?;
+  [|destruct (Nat.leb y 30) eqn:?;
+  [|destruct (Nat.leb y 210) eqn:?;
+  [|destruct (Nat.leb y 2310) eqn:?;
+  [|destruct (Nat.leb y 30030) eqn:?;
+  [|destruct (Nat.leb y 510510) eqn:?]]]]]]].
 
 (* k_min is monotone: bigger codomain needs at least as many primes *)
 Theorem k_min_monotone : forall y1 y2,
@@ -224,41 +245,13 @@ Theorem k_min_monotone : forall y1 y2,
 Proof.
   intros y1 y2 H.
   unfold k_min.
-  destruct (Nat.leb y2 1) eqn:E2_1.
-  - apply Nat.leb_le in E2_1.
-    assert (y1 <= 1) by lia. apply Nat.leb_le in H0. rewrite H0. lia.
-  - destruct (Nat.leb y1 1) eqn:E1_1; [apply Nat.leb_le in E1_1; lia|].
-    destruct (Nat.leb y2 2) eqn:E2_2.
-    + apply Nat.leb_le in E2_2.
-      assert (y1 <= 2) by lia. apply Nat.leb_le in H0. rewrite H0.
-      destruct (Nat.leb y1 1); lia.
-    + destruct (Nat.leb y1 2) eqn:E1_2; [apply Nat.leb_le in E1_2; lia|].
-      destruct (Nat.leb y2 6) eqn:E2_3.
-      * apply Nat.leb_le in E2_3.
-        assert (y1 <= 6) by lia. apply Nat.leb_le in H0. rewrite H0.
-        destruct (Nat.leb y1 1); destruct (Nat.leb y1 2); lia.
-      * destruct (Nat.leb y1 6); [lia|].
-        destruct (Nat.leb y2 30) eqn:E2_4.
-        -- apply Nat.leb_le in E2_4.
-           assert (y1 <= 30) by lia. apply Nat.leb_le in H0. rewrite H0.
-           repeat match goal with
-           | |- context [Nat.leb y1 ?n] => destruct (Nat.leb y1 n); try lia
-           end.
-        -- destruct (Nat.leb y1 30); [lia|].
-           destruct (Nat.leb y2 210) eqn:E2_5.
-           ++ apply Nat.leb_le in E2_5.
-              assert (y1 <= 210) by lia. apply Nat.leb_le in H0. rewrite H0.
-              repeat match goal with
-              | |- context [Nat.leb y1 ?n] => destruct (Nat.leb y1 n); try lia
-              end.
-           ++ destruct (Nat.leb y1 210); [lia|].
-              destruct (Nat.leb y2 2310); [destruct (Nat.leb y1 2310); lia|].
-              destruct (Nat.leb y1 2310); [lia|].
-              destruct (Nat.leb y2 30030); [destruct (Nat.leb y1 30030); lia|].
-              destruct (Nat.leb y1 30030); [lia|].
-              destruct (Nat.leb y2 510510); [destruct (Nat.leb y1 510510); lia|].
-              destruct (Nat.leb y1 510510); lia.
+  kmin_chain y2; kmin_chain y1;
+  repeat match goal with
+  | HB : Nat.leb _ _ = true  |- _ => apply Nat.leb_le in HB
+  | HB : Nat.leb _ _ = false |- _ => apply Nat.leb_gt in HB
+  end; lia.
 Qed.
+
 
 (* ================================================================ *)
 (*  PART 4 — MINIMALITY: k_min IS THE SMALLEST                      *)
@@ -274,30 +267,13 @@ Theorem k_min_tight : forall y,
   (k_min y >= 1 -> modulus_first_k (k_min y - 1) < y \/ modulus_first_k 0 < y).
 Proof.
   intros y Hy_lo Hy_hi.
-  unfold k_min.
-  destruct (Nat.leb y 1)       eqn:E1; [apply Nat.leb_le in E1; lia|].
-  destruct (Nat.leb y 2)       eqn:E2.
-  - split; [lia|]. intros _. left. simpl. lia.
-  - destruct (Nat.leb y 6)     eqn:E3.
-    + apply Nat.leb_le in E3. apply Nat.leb_nle in E2.
-      split; [lia|]. intros _. left. simpl. lia.
-    + destruct (Nat.leb y 30)  eqn:E4.
-      * apply Nat.leb_le in E4. apply Nat.leb_nle in E3.
-        split; [lia|]. intros _. left. simpl. lia.
-      * destruct (Nat.leb y 210) eqn:E5.
-        -- apply Nat.leb_le in E5. apply Nat.leb_nle in E4.
-           split; [lia|]. intros _. left. simpl. lia.
-        -- destruct (Nat.leb y 2310) eqn:E6.
-           ++ apply Nat.leb_le in E6. apply Nat.leb_nle in E5.
-              split; [lia|]. intros _. left. simpl. lia.
-           ++ destruct (Nat.leb y 30030) eqn:E7.
-              ** apply Nat.leb_le in E7. apply Nat.leb_nle in E6.
-                 split; [lia|]. intros _. left. simpl. lia.
-              ** destruct (Nat.leb y 510510) eqn:E8.
-                 --- apply Nat.leb_le in E8. apply Nat.leb_nle in E7.
-                     split; [lia|]. intros _. left. simpl. lia.
-                 --- apply Nat.leb_nle in E8.
-                     split; [lia|]. intros _. left. simpl. lia.
+  split.
+  - unfold k_min. kmin_chain y;
+    repeat match goal with
+    | HB : Nat.leb _ _ = true  |- _ => apply Nat.leb_le in HB
+    | HB : Nat.leb _ _ = false |- _ => apply Nat.leb_gt in HB
+    end; lia.
+  - intros _. right. unfold modulus_first_k. simpl. lia.
 Qed.
 
 (* ================================================================ *)
@@ -342,10 +318,11 @@ Theorem empty_data_no_information : forall p,
   prime_is_informative empty_data p = false.
 Proof.
   intros p Hp.
-  unfold prime_is_informative.
-  apply existsb_nth.
-  intros xr Hxr.
-  unfold y_residues_given. simpl. reflexivity.
+  unfold prime_is_informative, empty_data.
+  destruct (existsb (fun xr => Nat.eqb (length (y_residues_given [] p xr)) 1)
+                    (seq 0 p)) eqn:E; [exfalso | reflexivity].
+  apply existsb_exists in E. destruct E as [xr [_ Hf]].
+  unfold y_residues_given in Hf. simpl in Hf. discriminate.
 Qed.
 
 (* Single-point data: the relevant prime IS informative (length-1 cell) *)
@@ -392,7 +369,7 @@ Theorem selector_capacity_sufficient : forall D max_k,
 Proof.
   intros D max_k Hy Hmax.
   unfold select_primes.
-  rewrite Nat.min_l by exact Hmax.
+  rewrite Nat.min_r by exact Hmax.
   apply k_min_capacity. exact Hy.
 Qed.
 

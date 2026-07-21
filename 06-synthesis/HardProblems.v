@@ -29,11 +29,16 @@
      Admitted: 0
      Depends on: theories/proven/Triple.v, Coq.Reals.Reals *)
 
-Require Import Triple.
+Require Import GHS.
 Require Import Arith.
 Require Import Lia.
 Require Import Reals.
 Require Import Lra.
+
+(* Zone predicates relative to a substrate S : nat -> Prop.
+   in_effect n = n is inside S; in_cause n = n is outside S. *)
+Definition in_effect (S : nat -> Prop) (n : nat) : Prop := S n.
+Definition in_cause  (S : nat -> Prop) (n : nat) : Prop := ~ S n.
 
 (* ================================================================ *)
 (* PART I: THE PATTERN                                               *)

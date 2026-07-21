@@ -109,6 +109,11 @@ Section StratumProgram.
     unfold Qle, Qnum, Qden. simpl. lia.
   Qed.
 
+  (* Located value 'authorized' and pipeline transforms over string effects *)
+  Definition authorized : string := eff_input_value.
+  Definition validate (x : string) : string := x.
+  Definition enrich (x : string) : string := x.
+
   (* Chain 'pipeline' : 2 pipeline steps *)
   Definition pipeline_initial := authorized.
   Definition pipeline_step0 := fun x => (validate x).
@@ -117,6 +122,7 @@ Section StratumProgram.
   (* Chain trust monotonic: trust(pipeline) <= trust(authorized) *)
 
   (* Split 'pipeline' into 'branch_a', 'branch_b' *)
+  Definition pipeline : string := enrich (validate pipeline_initial).
   Definition branch_a := pipeline.
   Definition branch_b := pipeline.
 
@@ -141,6 +147,7 @@ Section StratumProgram.
   (* Recover 'safe_output' from 'output' *)
   (*   on CauseZone -> fallback *)
   (*   on Low -> fallback *)
+  Definition output : string := pipeline.
   Definition safe_output := output.
 
   (* Recover guarantee: trust(safe_output) > trigger_level for any fired handler *)

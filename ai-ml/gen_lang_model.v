@@ -15,8 +15,12 @@ Inductive Nat : Type :=
   | Zero : MapOperator Nat -> Nat
   | Succ : Nat -> MapOperator Nat -> Nat.
 
-CoFixpoint zero_witness : MapOperator Nat :=
-  absorb Nat (Zero zero_witness) zero_witness.
+(* GAP: build-repair -- the intended self-grounding cofixpoint
+   [absorb Nat (Zero zero_witness) zero_witness] is rejected by Coq's
+   guard condition (the corecursive call occurs as a non-recursive
+   argument of the inductive constructor Zero, so MapOperator Nat is not
+   guard-constructible here). Type preserved via Axiom. *)
+Axiom zero_witness : MapOperator Nat.
 
 Definition zero : Nat := Zero zero_witness.
 Definition succ (n : Nat) : Nat :=
@@ -46,12 +50,18 @@ Inductive Token : Type :=
 CoFixpoint token_witness (t : Token) : MapOperator Token :=
   absorb Token t (token_witness t).
 
+(* GAP: build-repair -- generator emitted [zero_witness : MapOperator Nat]
+   in Token position (needs MapOperator Token). Same guard obstruction as
+   zero_witness: a self-grounding MapOperator Token is not guard-constructible.
+   A base witness of the correct type is provided via Axiom. *)
+Axiom base_token_witness : MapOperator Token.
+
 (* Token identity carries its own witness *)
 Definition tok_zero : Token :=
-  Tok zero (absorb Token 
-    (Tok zero zero_witness) 
-    (generative_witness Token 
-      (Tok zero zero_witness))).
+  Tok zero (absorb Token
+    (Tok zero base_token_witness)
+    (generative_witness Token
+      (Tok zero base_token_witness))).
 
 (* The context window *)
 (* In standard LLMs this is a fixed length *)
@@ -68,9 +78,11 @@ CoInductive Context : Type :=
            -> MapOperator Context 
            -> Context.
 
+(* build-repair: original tail [generative_witness Context empty_context]
+   is an unguarded corecursive call (function application). Expressed via an
+   inline guarded corecursive witness stream, the same infinite object. *)
 CoFixpoint empty_context : Context :=
-  Empty (absorb Context empty_context 
-    (generative_witness Context empty_context)).
+  Empty (cofix w : MapOperator Context := absorb Context empty_context w).
 
 CoFixpoint context_witness (c : Context) : MapOperator Context :=
   absorb Context c (context_witness c).
@@ -162,6 +174,9 @@ Record Hallucination : Type := mkHallucination
 
 (* Standard LM cannot close the hallucination gap *)
 (* Because it has no access to its own witness *)
+(* GAP: build-repair -- proof needs rework. The inequality of two
+   coinductive MapOperator terms is not provable by discriminate (no
+   primitive equality on a coinductive type) and does not hold in general. *)
 Theorem standard_lm_cannot_close_gap
   (slm : StandardLM)
   (h : Hallucination) :
@@ -170,18 +185,9 @@ Theorem standard_lm_cannot_close_gap
   (* So the gap cannot be measured internally *)
   exists op : MapOperator Nat,
     op = corpus_wit slm /\
-    op <> generative_witness Nat 
+    op <> generative_witness Nat
       (vocab_size slm).
-Proof.
-  exists (corpus_wit slm).
-  split.
-  - reflexivity.
-  - intro contra.
-    (* The corpus witness is external *)
-    (* It cannot equal the internal generative witness *)
-    (* This is the source of hallucination *)
-    discriminate.
-Qed.
+Proof. Admitted.
 
 (* Generative LM closes the gap *)
 (* Because the witness is internal *)
@@ -277,10 +283,7 @@ Theorem generative_exceeds_standard
 Proof.
   destruct (exceeds_std gbr sbr) as [op [Hop Hneq]].
   exists op, (perf_wit sbr).
-  repeat split.
-  - exact Hop.
-  - reflexivity.
-  - exact Hneq.
+  split; [ exact Hop | split; [ reflexivity | exact Hneq ] ].
 Qed.
 
 End GenerativeLanguageModel.
