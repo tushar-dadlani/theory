@@ -6,7 +6,9 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `StandingWaveSpectrum.v` closes the loop: on the observer square F₂², it builds the amplitude signal directly from `StandingWave.v`'s own `fwd_*`/`inf_*` counts (proving it equals (−1, 0, 0, +1)), shows the apex reflection negates it (a −1-eigenvector), and concludes — both structurally via the shift theorem and by computation — that its Walsh spectrum is `(0, −2, −2, 0)`: exactly zero on the node frequencies and carrying all its weight on the antinodes. StandingWave's hand-counted table is thus the eigen-spectrum of a real Fourier transform.
 
-**18 proof file(s):**
+`WalshHadamardHilbert.v` lifts the whole picture into a genuine (finite, 4-dimensional) real Hilbert space: it equips the signal space with the inner product ⟨f,g⟩ = Σ f g and proves it positive-definite, that the Hadamard operator is self-adjoint and satisfies Parseval (⟨Hf,Hg⟩ = 4⟨f,g⟩), that the normalized transform `Ur = ½H` is a real unitary involution (⟨Ur f, Ur g⟩ = ⟨f,g⟩, Ur² = I), that the apex reflection is a self-adjoint involution with orthogonal ±1 eigenspaces (nodes ⊥ antinodes), and that the standing-wave amplitude is a −1-eigenvector of norm²=2 preserved by `Ur`. Uses only the standard Coq `Reals` axioms; no custom axioms, no `admit`. (The infinite-dimensional ℓ²/L² lift the Hilbert–Pólya program needs is a much larger, analysis-library undertaking.)
+
+**19 proof file(s):**
 
 - `DiracDiagonal.v`
 - `DiracOnCategory.v`
@@ -26,3 +28,4 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 - `StandingWaveSpectrum.v`
 - `TriadicSpectral.v`
 - `WalshHadamard.v`
+- `WalshHadamardHilbert.v`
