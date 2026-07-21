@@ -16,10 +16,13 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `LandauerBound.v` is the genuine `kT ln 2` — the information/thermodynamics accounting of the same erasure. It defines the Bernoulli (Shannon) entropy `Hb` and proves, as pure theorems, that a fair bit has entropy `ln 2` (`Hb (1/2) = ln 2`), a deterministic bit has entropy 0, and so erasing a fair bit drops entropy by exactly `ln 2`. With `k, T > 0` as section variables (no physical constant added to the base), the model's minimum dissipated heat `k·T·ΔH` for that erasure is exactly `k·T·ln 2`, strictly positive; the inequality form takes the second law (`Q ≥ kT·ΔS`) as an *explicit hypothesis*, not an axiom, and yields `Q ≥ kT ln 2`. So the `ln 2` is proved and the `kT` is the carried physical conversion. This is the textbook Landauer floor for the one bit of information in the involution residue. Standard classical-`Reals` axioms only; no `admit`.
 
+`BitDensity.v` builds the **bit density of states** and its symmetry about ½. On the n-bit cube a state's energy is its Hamming weight, and the number of states at energy `k` is the binomial `C(n,k)`. It proves (pure nat, axiom-free) that this density is **symmetric under the complement involution `k → n−k`** (`dos_symmetric`: `C(n,k)=C(n,n−k)`), that the complement is an involution whose fixed point is the half-weight `n/2`, and that the 3-bit density is the row `[1;3;3;1]` (summing to `2³`, matching `MassGap.excite`'s multiplicities). This is the discrete shadow of the critical line: the bit density is organized by the same complement/functional-equation involution about ½ as zeta's `s → 1−s`. **Honest scope:** an *analogy*, not a theorem about actual zeta zeros — the repo has no real zeta function, no zero-counting `N(T)~(T/2π)ln(T/2π)`, and no GUE spacing; only the shared symmetry-about-½ is formalized. Axiom-free ("Closed under the global context").
+
 `WalshHadamardHilbert.v` lifts the whole picture into a genuine (finite, 4-dimensional) real Hilbert space: it equips the signal space with the inner product ⟨f,g⟩ = Σ f g and proves it positive-definite, that the Hadamard operator is self-adjoint and satisfies Parseval (⟨Hf,Hg⟩ = 4⟨f,g⟩), that the normalized transform `Ur = ½H` is a real unitary involution (⟨Ur f, Ur g⟩ = ⟨f,g⟩, Ur² = I), that the apex reflection is a self-adjoint involution with orthogonal ±1 eigenspaces (nodes ⊥ antinodes), and that the standing-wave amplitude is a −1-eigenvector of norm²=2 preserved by `Ur`. Uses only the standard Coq `Reals` axioms; no custom axioms, no `admit`. (The infinite-dimensional ℓ²/L² lift the Hilbert–Pólya program needs is a much larger, analysis-library undertaking.)
 
-**24 proof file(s):**
+**25 proof file(s):**
 
+- `BitDensity.v`
 - `DiracDiagonal.v`
 - `DiracOnCategory.v`
 - `EigenSystem.v`
