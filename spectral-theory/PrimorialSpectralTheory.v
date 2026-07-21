@@ -151,6 +151,133 @@ Proof.
   reflexivity.
 Qed.
 
+(* ================================================================ *)
+(*  PART 1b — CORRECTNESS OF THE PRIME GENERATOR                    *)
+(* ================================================================ *)
+
+(* Mathematical primality: n >= 2 with no divisor strictly between   *)
+(* 1 and n. *)
+Definition prime_spec (n : nat) : Prop :=
+  2 <= n /\ forall m, 2 <= m -> m < n -> n mod m <> 0.
+
+(* has_divisor n d is EXACTLY "some m in [2..d] divides n". *)
+Lemma has_divisor_correct : forall d n,
+  has_divisor n d = true <-> (exists m, 2 <= m /\ m <= d /\ n mod m = 0).
+Proof.
+  intros d; induction d as [|d' IH]; intro n.
+  - simpl; split; [ discriminate | intros [m [? [? _]]]; lia ].
+  - destruct d' as [|d''].
+    + simpl; split; [ discriminate | intros [m [? [? _]]]; lia ].
+    + cbn [has_divisor]; rewrite Bool.orb_true_iff, Nat.eqb_eq; split.
+      * intros [Hd | Hrec].
+        -- exists (S (S d'')); repeat split; [ lia | lia | exact Hd ].
+        -- apply IH in Hrec; destruct Hrec as [m [Hm2 [Hle Hmod]]].
+           exists m; repeat split; [ lia | lia | exact Hmod ].
+      * intros [m [Hm2 [Hle Hmod]]].
+        destruct (Nat.eq_dec m (S (S d''))) as [->|Hne].
+        -- left; exact Hmod.
+        -- right; apply IH; exists m; repeat split; [ lia | lia | exact Hmod ].
+Qed.
+
+(* THE PRIMALITY TEST IS CORRECT (axiom-free). *)
+Theorem is_prime_spec : forall n, is_prime n = true <-> prime_spec n.
+Proof.
+  intro n; destruct n as [|[|k]].
+  - split; [ discriminate | intros [H _]; lia ].
+  - split; [ discriminate | intros [H _]; lia ].
+  - unfold is_prime, prime_spec; rewrite Bool.negb_true_iff; split.
+    + intro Hf; split; [ lia | ].
+      intros m Hm2 Hmlt Hmod.
+      assert (Ht : has_divisor (S (S k)) (S (S k) - 1) = true).
+      { apply has_divisor_correct; exists m; repeat split; [ lia | lia | exact Hmod ]. }
+      rewrite Hf in Ht; discriminate.
+    + intros [_ Hall].
+      destruct (has_divisor (S (S k)) (S (S k) - 1)) eqn:E; [ | reflexivity ].
+      apply has_divisor_correct in E; destruct E as [m [Hm2 [Hle Hmod]]].
+      exfalso; apply (Hall m); [ lia | lia | exact Hmod ].
+Qed.
+
+(* next_prime_from returns the LEAST prime >= cand, whenever a prime   *)
+(* lies in the search window [cand, cand+fuel) (axiom-free). *)
+Lemma next_prime_from_least : forall fuel cand,
+  (exists p, cand <= p /\ p < cand + fuel /\ is_prime p = true) ->
+  is_prime (next_prime_from cand fuel) = true
+  /\ cand <= next_prime_from cand fuel
+  /\ (forall q, cand <= q -> q < next_prime_from cand fuel -> is_prime q = false).
+Proof.
+  induction fuel as [|f IH]; intros cand [p [Hlo [Hhi Hp]]].
+  - lia.
+  - cbn [next_prime_from]; destruct (is_prime cand) eqn:Ec.
+    + repeat split; [ exact Ec | lia | intros q Hq1 Hq2; lia ].
+    + assert (Hwin : exists p', S cand <= p' /\ p' < S cand + f /\ is_prime p' = true).
+      { exists p; repeat split; [ | lia | exact Hp ].
+        destruct (Nat.eq_dec p cand) as [->|Hpc];
+          [ rewrite Ec in Hp; discriminate | lia ]. }
+      destruct (IH (S cand) Hwin) as [Hpr [Hge Hmin]].
+      repeat split.
+      * exact Hpr.
+      * lia.
+      * intros q Hq1 Hq2.
+        destruct (Nat.eq_dec q cand) as [->|Hqc]; [ exact Ec | apply Hmin; lia ].
+Qed.
+
+Theorem next_prime_gt : forall n, n < next_prime n.
+Proof. intro n; pose proof (next_prime_lb n); lia. Qed.
+
+(* ------------------------------------------------------------------ *)
+(*  The single classical input: BERTRAND'S POSTULATE.                 *)
+(*  It is a true theorem but is NOT in the Coq/Rocq standard library   *)
+(*  (proving it is a sizeable development).  Everything ABOVE is       *)
+(*  axiom-free; only the *unconditional* primality of the generator    *)
+(*  (just below) rests on it, and none of the primorial/spectral       *)
+(*  results in this file use it.                                       *)
+(* ------------------------------------------------------------------ *)
+Axiom bertrand_postulate :
+  forall n, 1 <= n -> exists p, n < p /\ p <= 2 * n /\ is_prime p = true.
+
+(* next_prime always lands on a prime. *)
+Theorem next_prime_is_prime : forall n, is_prime (next_prime n) = true.
+Proof.
+  intro n; destruct n as [|n'].
+  - reflexivity.
+  - assert (Hwin : exists p, S (S n') <= p /\ p < S (S n') + S (S n') /\ is_prime p = true).
+    { destruct (bertrand_postulate (S n') ltac:(lia)) as [p [Hlo [Hhi Hp]]].
+      exists p; repeat split; [ lia | lia | exact Hp ]. }
+    unfold next_prime; exact (proj1 (next_prime_from_least _ _ Hwin)).
+Qed.
+
+(* ... and it is the LEAST prime above n. *)
+Theorem next_prime_least : forall n q,
+  n < q -> q < next_prime n -> is_prime q = false.
+Proof.
+  intro n; destruct n as [|n']; intros q Hq1 Hq2.
+  - assert (E0 : next_prime 0 = 2) by (vm_compute; reflexivity).
+    rewrite E0 in Hq2; assert (q = 1) by lia; subst; reflexivity.
+  - assert (Hwin : exists p, S (S n') <= p /\ p < S (S n') + S (S n') /\ is_prime p = true).
+    { destruct (bertrand_postulate (S n') ltac:(lia)) as [p [Hlo [Hhi Hp]]].
+      exists p; repeat split; [ lia | lia | exact Hp ]. }
+    pose proof (proj2 (proj2 (next_prime_from_least _ _ Hwin))) as Hmin.
+    unfold next_prime in Hq2; apply Hmin; lia.
+Qed.
+
+(* Every kth_prime is genuinely prime. *)
+Theorem kth_prime_is_prime : forall k, is_prime (kth_prime k) = true.
+Proof.
+  intro k; destruct k as [|k'].
+  - reflexivity.
+  - change (kth_prime (S k')) with (next_prime (kth_prime k'));
+    apply next_prime_is_prime.
+Qed.
+
+Corollary kth_prime_prime_spec : forall k, prime_spec (kth_prime k).
+Proof. intro k; apply is_prime_spec, kth_prime_is_prime. Qed.
+
+(* Documentation: is_prime / next_prime_from specs are axiom-free;    *)
+(* only the generator's unconditional primality uses Bertrand.        *)
+Print Assumptions is_prime_spec.
+Print Assumptions next_prime_from_least.
+Print Assumptions kth_prime_is_prime.
+
 (* The primorial number n_k = product of the first k+1 primes *)
 Fixpoint primorial (k : nat) : nat :=
   match k with
