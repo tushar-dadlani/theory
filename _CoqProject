@@ -421,3 +421,4 @@ spectral-theory/SpectralTripleRH.v
 spectral-theory/StandingWave.v
 spectral-theory/TriadicSpectral.v
 spectral-theory/WalshHadamard.v
+spectral-theory/StandingWaveSpectrum.v
