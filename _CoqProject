@@ -430,3 +430,4 @@ spectral-theory/Landauer.v
 spectral-theory/LandauerBound.v
 spectral-theory/BitDensity.v
 spectral-theory/BitCountContrast.v
+spectral-theory/WalshHadamardHilbertQ.v

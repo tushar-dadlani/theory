@@ -20,9 +20,11 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `BitCountContrast.v` formalizes the growth-class contrast between the bit count and the zeta zero count. The cumulative bit count `N_bit(n,E) = Σ_{k≤E} C(n,k)` (integrated density of states) is proven monotone, **saturating** (constant once `E ≥ n`), hence **bounded** by the total `N_bit n n = 2ⁿ` and therefore **not unbounded** — so it cannot equal any unbounded counting function, and cannot even match linear growth. The Riemann zero count obeys Riemann–von Mangoldt `N(T) ~ (T/2π)ln(T/2π)`, which is unbounded and superlinear. So the two live in **different growth classes**: the bit count is eventually constant; the zeta count grows without bound. Honest negative result — we formalize the boundedness contrast (pure nat, axiom-free), not the analytic `N(T)` (which isn't in the repo); the mismatch theorem takes "unbounded g" as its premise, which the zeta count provably satisfies (infinitely many zeros).
 
+`WalshHadamardHilbertQ.v` is the **rational (ℚ) pilot** for dropping the Reals axioms. It re-proves the entire `WalshHadamardHilbert` development — positive-definite inner product, self-adjoint `WHq`, Parseval (`⟨WHq f, WHq g⟩ = 4⟨f,g⟩`), the unitary involution `Uq = ½WHq`, the self-adjoint apex reflection, and orthogonal ±1 eigenspaces — over `QArith` instead of `Reals`. Every constant in the construction is rational (`±1, ½, ¼, 2, 4`), so `Print Assumptions` reports **"Closed under the global context"**: no `ClassicalDedekindReals`, no `functional_extensionality`, no axioms at all. The ℚ tax is that equality is `Qeq` (`==`); the one subtlety is keeping the `½` rational constant away from `cbn` (the ½-normalized lemmas are proved via `WHq` scaling lemmas + `ring`). This is the template for re-basing the rest of the chain off ℝ.
+
 `WalshHadamardHilbert.v` lifts the whole picture into a genuine (finite, 4-dimensional) real Hilbert space: it equips the signal space with the inner product ⟨f,g⟩ = Σ f g and proves it positive-definite, that the Hadamard operator is self-adjoint and satisfies Parseval (⟨Hf,Hg⟩ = 4⟨f,g⟩), that the normalized transform `Ur = ½H` is a real unitary involution (⟨Ur f, Ur g⟩ = ⟨f,g⟩, Ur² = I), that the apex reflection is a self-adjoint involution with orthogonal ±1 eigenspaces (nodes ⊥ antinodes), and that the standing-wave amplitude is a −1-eigenvector of norm²=2 preserved by `Ur`. Uses only the standard Coq `Reals` axioms; no custom axioms, no `admit`. (The infinite-dimensional ℓ²/L² lift the Hilbert–Pólya program needs is a much larger, analysis-library undertaking.)
 
-**26 proof file(s):**
+**27 proof file(s):**
 
 - `BitCountContrast.v`
 - `BitDensity.v`
@@ -50,3 +52,4 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 - `TriadicSpectral.v`
 - `WalshHadamard.v`
 - `WalshHadamardHilbert.v`
+- `WalshHadamardHilbertQ.v`
