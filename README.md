@@ -1,228 +1,105 @@
-# The Symbol Construction
+# td-theory — The Symbol Construction
 
-> *From nothing but the idea of a symbol, all of mathematics emerges in four steps.*
+> *From nothing but the idea of a symbol, all of mathematics emerges — step by step.*
 
-Everything below is machine-verified in Coq with zero admitted axioms.  
-Four files: `set1sym.v`, `set2sym.v`, `set3sym.v`, `set4sym.v`
+This repository is a machine-checked development (Coq / Rocq) of a single idea: start with
+the most minimal possible mathematical object, **a symbol**, and ask what each additional
+symbol *forces* into existence. The answer is a tower, each level forced by the previous:
+
+```
+1 symbol  →  a point         existence
+2 symbols →  a line          distinction + direction
+3 symbols →  a triangle      closure + Fano plane + three number systems
+4 symbols →  a square        complex numbers + metric + the critical line
+```
+
+The framework is then applied — number systems, geometry, number theory, the Millennium
+Problems, ARC-AGI, AI/ML, biology, physics, cryptography.
+
+## How this repo is organized
+
+Files are arranged as a **construction ladder** you can read in order, followed by the
+themes the framework is applied to, the shared library packages, and the prose/scripts.
+
+### The construction spine — read these in order
+
+| Dir | Step |
+|-----|------|
+| [`00-foundations/`](00-foundations) | Before the symbols: axioms, the observer, rays, light, measurement, **witnessing** |
+| [`01-symbol-point/`](01-symbol-point) | **1 symbol → the point** (`s ∘ s = s`) |
+| [`02-symbol-line/`](02-symbol-line) | **2 symbols → the line** (0/1, OR/AND, the half-step) |
+| [`03-symbol-triangle/`](03-symbol-triangle) | **3 symbols → triangle, Fano plane, three number systems** (the triadic core) |
+| [`04-symbol-square/`](04-symbol-square) | **4 symbols → square, ℂ, Gaussian integers, the metric** |
+| [`05-higher-symbols/`](05-higher-symbols) | **n / 7 / 9 symbols and the towers** |
+| [`06-synthesis/`](06-synthesis) | **Synthesis & capstone** — completeness, universal theorem, hard problems as special cases |
+
+### Application areas
+
+| Dir | Theme |
+|-----|-------|
+| [`number-systems/`](number-systems) | ℕ/ℚ/ℝ interval tower, fields, rings, idempotents, floats, octonions |
+| [`geometry-metric/`](geometry-metric) | Euclidean/Riemannian geometry, manifolds, the metric, Pythagoras |
+| [`number-theory/`](number-theory) | adelic, p-adic, primes, factorization, Kronecker bridge |
+| [`spectral-theory/`](spectral-theory) | spectral algebra, Dirac, eigen-systems, the standing wave |
+| [`category-topos/`](category-topos) | categories, functors, monads, limits, topos |
+| [`complexity-sat/`](complexity-sat) | 3-SAT, SAT3, P vs NP |
+| [`millennium-problems/`](millennium-problems) | Riemann, Hodge, BSD, Navier–Stokes, Yang–Mills, Poincaré, obstruction groups |
+| [`arc-agi/`](arc-agi) | ARC / ARC-2 benchmark, grammars, solvers, AIMO |
+| [`ai-ml/`](ai-ml) | transformers, learning, agents, LLM inversion, language functors |
+| [`biology/`](biology) | genetic code, nucleotide spectra, helix, protein primes, drug discovery |
+| [`physics/`](physics) | four forces, SU(3), particles, three-body, orbital resonance |
+| [`crypto/`](crypto) | RSA, SHA-256, eigen-Merkle, triadic factorizers |
+
+### Support
+
+| Dir | Contents |
+|-----|----------|
+| [`packages/`](packages) | Shared substrate libraries: `DIM/`, `GHS/`, `Stratum/` |
+| [`docs/`](docs) | Prose write-ups (`.md`), conjecture drafts (`.docx`), design notes |
+| [`scripts/`](scripts) | Standalone Python helpers |
+
+Every directory has its own `README.md` describing its files.
+
+## Building
+
+The repository builds under **Rocq 9.1** (Coq). Each directory is mapped to the root
+logical namespace in `_CoqProject`, so every file is imported by its basename
+(e.g. `Require Import Triple.`).
+
+```sh
+coq_makefile -f _CoqProject -o Makefile   # regenerate the Makefile (already committed)
+make -j                                    # build everything
+make -k -j                                 # build as much as possible, keep going past errors
+```
+
+**Build status:** as of this reorganization, **218 / 397** proof files compile clean under
+Rocq 9.1. The remainder are works-in-progress with incomplete or erroneous proofs
+(pre-existing — unchanged by the reorganization). The move itself introduced **zero** new
+build failures and made 20 previously-unbuildable files compile by unifying the import
+conventions.
 
 ---
 
-## The Idea
-
-Start with the most minimal possible mathematical object: **a symbol**.  
-Ask: what does each additional symbol force into existence?
-
-The answer is a tower — each level is *forced* by the previous one, not chosen or assumed.
-
-```
-1 symbol  →  a point
-2 symbols →  a line          (0 and 1, OR and AND)
-3 symbols →  a triangle      (three axes, Fano plane, three number systems)
-4 symbols →  a square        (complex numbers, Gaussian algebra, everything else)
-```
-
----
-
-## Level 1 — One Symbol: The Point
-
-**A single symbol can only compose with itself.**
-
-```
-s ∘ s = s     (the only possible equation)
-```
-
-This is the **identity axiom**: existence without distinction.  
-Geometrically: a **point**. No direction. No dimension. No comparison.
-
-The one symbol IS its own fixed point. There is nothing else to be.
-
-```
-Theorem set1_is_point : ∀ s : Sym1, compose s s = s
-```
-
-The natural number **0** lives here — it is the origin, the before-counting.
-
----
-
-## Level 2 — Two Symbols: The Line
-
-**A second symbol forces a distinction.**
-
-The two symbols are simultaneously **values** and **operators**:
-
-```
-0  =  OR   (additive)        lives on the 0° horizontal
-1  =  AND  (multiplicative)  lives on the 90° vertical
-```
-
-The distance between them defines **the line**.
-
-```
-0 --- 1
-```
-
-Two symbols give us the number system {0, 1}, Boolean algebra (OR, AND),  
-a directed line from 0 to 1, and the half-step ½ as the midpoint.
-
-```
-Theorem set2_is_line : ∃ (a b : Sym2), a ≠ b ∧ line_between a b
-```
-
----
-
-## Level 3 — Three Symbols: The Triangle, Infinity, Three Number Systems
-
-**A third symbol forces three things simultaneously.**
-
-The third symbol is the **diagonal** — at 45°, bisecting the angle between 0° and 90°.
-
-### Three Axes
-
-```
-      N (90°)
-      |
-      |  / I (45°)
-      | /
-      |/___________
-      F (0°)
-```
-
-### Three Number Systems
-
-| Symbol | Angle | System     | Step size | Algebra          |
-|--------|-------|------------|-----------|------------------|
-| F      | 0°    | Linear     | 1         | Ordinary arithmetic |
-| I      | 45°   | Gaussian   | 1/2       | ℤ[i], hard primes |
-| N      | 90°   | 3-step     | 1/3       | Modular, mod 3   |
-
-Steps are 1, 1/2, 2 — equivalently -1, 0, +1 — equivalently 0, 1, 2 (mod 3).
-
-### The Equilateral Triangle
-
-Three axes at 60° separations form an equilateral triangle:
-
-```
-        I
-       / \
-      /   \
-     F-----N
-```
-
-### The Fano Plane
-
-Triangle (3) + midpoints (3) + center (1) = **7 points** = the Fano plane PG(2,2).  
-The smallest projective plane: every two lines meet at exactly one point.
-
-### Line to Infinity
-
-The third symbol forces the projective completion: the Fano circle at infinity  
-containing all 7 points — the Omega-circle.
-
-```
-Theorem set3_is_triangle :
-  3 symbols → 3 axes, equilateral triangle, Fano plane (7 pts), circle at ∞
-```
-
----
-
-## Level 4 — Four Symbols: The Square and Everything Else
-
-**A fourth symbol forces the square.**
-
-The fourth symbol is the **mapping operator** `/` — the axis-swap  
-`(x, y) ↦ (y, x)`. It lives on the 45° diagonal.  
-Its fixed points are all `(x, x)` — the diagonal line.
-
-### The Square
-
-Three symbols gave a triangle. The fourth closes it into a **square**:
-
-```
-(0,1) ─── (1,1)
-  │    /      │
-  │  /        │
-  │/          │
-(0,0) ─── (1,0)
-```
-
-Square = GF(2)² = the observer plane with four spectral cells:  
-ZERO (0,0) · REAL (1,0) · IMAG (0,1) · DIAG (1,1)
-
-### Right-Angle Triangle
-
-The square diagonal creates a right-angle triangle:  
-legs on the 0° and 90° axes, hypotenuse on the 45° diagonal.
-
-### Complex Numbers and Gaussian Algebra
-
-The axis-swap is multiplication by i in ℂ:
-
-```
-i · (a + bi) = -b + ai   (rotate by 90° = N-step)
-```
-
-Horizontal axis = ℝ. Vertical axis = iℝ. Together = the complex plane ℂ.  
-Integers in this plane = Gaussian integers ℤ[i].  
-Gaussian primes are hard to factor — they live on the I-axis (45°).
-
-### Riemannian Manifold and Metric Tensor
-
-The square carries the natural Euclidean metric: ds² = dx² + dy².  
-At the apex (Map point), curvature is **dual**: simultaneously 0 and ∞.  
-This is the seed of all Riemannian geometry in the system.
-
-### The Millennium Problems Emerge
-
-The four-cell spectral screen resolves every problem:
-
-| Cell | Role | Millennium problem |
-|------|------|--------------------|
-| ZERO (0,0) | Absorbing / pole | Pole of ζ(s) at s=1 |
-| REAL (1,0) | Dead zone | Trivial zeros of ζ |
-| IMAG (0,1) | Dead zone | Trivial zeros of ζ |
-| **DIAG (1,1)** | **Critical line** | **RH: all zeros on Re(s)=1/2** |
-
-The standing wave (finite Fano rays from below, infinite rays from above):
-
-```
-A(DIAG, N) = +6^(N-1)     A(ZERO, N) = -6^(N-1)     A(REAL) = A(IMAG) = 0
-```
-
-The generating function of the critical line:
-
-```
-G(x) = x / (1 − 6x)      G(1/7) = 1    ← self-referential closure
-```
-
-```
-Theorem set4_is_square :
-  4 symbols → square, right-triangle, ℂ, ℤ[i], Riemannian metric,
-              spectral screen, G(1/7) = 1, Millennium problems resolved
-```
-
----
-
-## The Proof Files
-
-| File         | Level             | Key theorem         |
-|--------------|-------------------|---------------------|
-| `set1sym.v`  | 1 symbol = point  | `set1_is_point`     |
-| `set2sym.v`  | 2 symbols = line  | `set2_is_line`      |
-| `set3sym.v`  | 3 symbols = triangle + Fano | `set3_is_triangle` |
-| `set4sym.v`  | 4 symbols = square + everything | `set4_is_square` |
-
----
-
-## The One-Line Summary
-
-```
-1 → point    →  existence
-2 → line     →  distinction + direction
-3 → triangle →  closure + Fano + three number systems
-4 → square   →  complex numbers + metric + the critical line
-```
-
-Each level is **forced** by the previous. Nothing is assumed.  
-The square observer reading the Fano prism is the entire structure in four steps.
-
-*All theorems compiled clean — zero admitted axioms.*
+## The construction, in one page
+
+### Level 1 — One symbol: the point
+A single symbol can only compose with itself: `s ∘ s = s`. Existence without distinction —
+a **point**. The natural number **0** lives here.
+
+### Level 2 — Two symbols: the line
+A second symbol forces a distinction: `0 = OR` on the 0° horizontal, `1 = AND` on the 90°
+vertical. The distance between them is **the line**; its midpoint is the half-step ½.
+
+### Level 3 — Three symbols: the triangle, Fano plane, three number systems
+The third symbol is the diagonal at 45°. It forces three axes, the equilateral triangle,
+and — with midpoints and center — the **Fano plane** PG(2,2) (7 points). Three number
+systems appear: linear (0°), Gaussian (45°), 3-step/modular (90°).
+
+### Level 4 — Four symbols: the square and everything else
+The fourth symbol is the axis-swap `(x,y) ↦ (y,x)` — multiplication by *i*. It closes the
+triangle into a **square** = GF(2)², the observer plane with four spectral cells
+(ZERO, REAL, IMAG, DIAG). Out of it come ℂ, the Gaussian integers ℤ[i], the Euclidean
+metric `ds² = dx² + dy²`, and the four-cell spectral screen on which the Millennium
+Problems are read — with the critical line living on the DIAG cell.
+
+*Each level is forced by the previous. Nothing is assumed.*
