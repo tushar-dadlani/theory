@@ -63,34 +63,93 @@ Open Scope nat_scope.
 (*  PART 1 — PRIMORIAL RINGS AS A SEQUENCE                          *)
 (* ================================================================ *)
 
-(* A simple primality predicate; we model it abstractly to keep this
-   file self-contained.  The constructive content matches sieving. *)
-Parameter is_prime : nat -> bool.
+(* A REAL, computable primality test by trial division.             *)
+(* has_divisor n d = true iff some m in [2..d] divides n.            *)
+Fixpoint has_divisor (n d : nat) : bool :=
+  match d with
+  | 0 => false
+  | 1 => false
+  | S d' => orb (Nat.eqb (n mod (S d')) 0) (has_divisor n d')
+  end.
 
-Axiom prime_2 : is_prime 2 = true.
-Axiom prime_3 : is_prime 3 = true.
-Axiom prime_5 : is_prime 5 = true.
-Axiom not_prime_1 : is_prime 1 = false.
-Axiom not_prime_4 : is_prime 4 = false.
+Definition is_prime (n : nat) : bool :=
+  match n with
+  | 0 => false
+  | 1 => false
+  | S (S _) => negb (has_divisor n (n - 1))
+  end.
 
-(* The k-th prime, defined recursively *)
+(* Former axioms, now THEOREMS (checked by computation). *)
+Lemma prime_2 : is_prime 2 = true.       Proof. reflexivity. Qed.
+Lemma prime_3 : is_prime 3 = true.       Proof. reflexivity. Qed.
+Lemma prime_5 : is_prime 5 = true.       Proof. reflexivity. Qed.
+Lemma not_prime_1 : is_prime 1 = false.  Proof. reflexivity. Qed.
+Lemma not_prime_4 : is_prime 4 = false.  Proof. reflexivity. Qed.
+
+(* The next prime strictly above `cand`-1, found by a fuel-bounded  *)
+(* upward search (Bertrand's postulate guarantees a prime in        *)
+(* (n, 2n], so the fuel below always suffices).                     *)
+Fixpoint next_prime_from (cand fuel : nat) : nat :=
+  match fuel with
+  | 0 => cand
+  | S f => if is_prime cand then cand else next_prime_from (S cand) f
+  end.
+
+Definition next_prime (n : nat) : nat := next_prime_from (S n) (S n).
+
+(* The k-th prime (0-indexed: kth_prime 0 = 2, 1 -> 3, 2 -> 5, ...) *)
+(* now a GENUINE prime generator, not a placeholder.                *)
 Fixpoint kth_prime (k : nat) : nat :=
   match k with
   | 0    => 2
-  | S k' => kth_prime k' + 1  (* placeholder — actual computation skips composites *)
+  | S k' => next_prime (kth_prime k')
   end.
 
-(* For the proof we use a concrete prime list *)
-Parameter primorial_primes : nat -> list nat.
+(* Sanity: the generator produces the actual primes. *)
+Example kth_prime_check :
+  map kth_prime [0;1;2;3;4;5;6;7] = [2;3;5;7;11;13;17;19].
+Proof. vm_compute; reflexivity. Qed.
 
-Axiom primorial_primes_0 : primorial_primes 0 = [2].
-Axiom primorial_primes_1 : primorial_primes 1 = [2; 3].
-Axiom primorial_primes_2 : primorial_primes 2 = [2; 3; 5].
-Axiom primorial_primes_3 : primorial_primes 3 = [2; 3; 5; 7].
+(* Each search result is at least its starting candidate ... *)
+Lemma next_prime_from_lb : forall fuel cand, cand <= next_prime_from cand fuel.
+Proof.
+  induction fuel as [|f IH]; intro cand; simpl.
+  - lia.
+  - destruct (is_prime cand).
+    + lia.
+    + apply Nat.le_trans with (S cand); [ lia | apply IH ].
+Qed.
 
-(* All primorial prime lists are nested *)
-Axiom primorial_primes_nested : forall k,
+(* ... so the next prime after n is > n, ... *)
+Lemma next_prime_lb : forall n, S n <= next_prime n.
+Proof. intro n; unfold next_prime; apply next_prime_from_lb. Qed.
+
+(* ... hence every kth_prime is at least 2. *)
+Lemma kth_prime_ge_2 : forall k, 2 <= kth_prime k.
+Proof.
+  induction k as [|k' IH].
+  - simpl; lia.
+  - change (kth_prime (S k')) with (next_prime (kth_prime k')).
+    pose proof (next_prime_lb (kth_prime k')); lia.
+Qed.
+
+(* The first k+1 primes, as a real (computable) list. *)
+Definition primorial_primes (k : nat) : list nat := map kth_prime (seq 0 (S k)).
+
+(* Former axioms, now THEOREMS. *)
+Lemma primorial_primes_0 : primorial_primes 0 = [2].          Proof. vm_compute; reflexivity. Qed.
+Lemma primorial_primes_1 : primorial_primes 1 = [2; 3].       Proof. vm_compute; reflexivity. Qed.
+Lemma primorial_primes_2 : primorial_primes 2 = [2; 3; 5].    Proof. vm_compute; reflexivity. Qed.
+Lemma primorial_primes_3 : primorial_primes 3 = [2; 3; 5; 7]. Proof. vm_compute; reflexivity. Qed.
+
+(* Nesting is now provable, not assumed. *)
+Lemma primorial_primes_nested : forall k,
   exists p, primorial_primes (S k) = primorial_primes k ++ [p].
+Proof.
+  intro k. exists (kth_prime (S k)).
+  unfold primorial_primes. rewrite seq_S, map_app. simpl.
+  reflexivity.
+Qed.
 
 (* The primorial number n_k = product of the first k+1 primes *)
 Fixpoint primorial (k : nat) : nat :=
@@ -99,30 +158,28 @@ Fixpoint primorial (k : nat) : nat :=
   | S k' => primorial k' * (kth_prime (S k'))
   end.
 
+(* Sanity: the primorial now computes the TRUE values 2,6,30,210,...  *)
+(* (previously, with the placeholder kth_prime, it gave 2,6,24,120).  *)
+Example primorial_check :
+  map primorial [0;1;2;3;4;5] = [2; 6; 30; 210; 2310; 30030].
+Proof. vm_compute; reflexivity. Qed.
+
 (* The primorial sequence is strictly increasing *)
 Theorem primorial_grows : forall k,
   primorial k < primorial (S k).
 Proof.
   intro k.
-  assert (Hkp : forall j, kth_prime j >= 2).
-  { induction j as [|j' IH]; simpl; lia. }
-  assert (Hpos : forall j, primorial j >= 1).
-  { induction j as [|j' IH]; simpl.
-    - lia.
-    - apply Nat.le_trans with (1 * 1).
-      + lia.
-      + apply Nat.mul_le_mono; [ exact IH | pose proof (Hkp (S j')); lia ]. }
+  assert (Hpos : forall j, 1 <= primorial j).
+  { induction j as [|j' IH].
+    - simpl; lia.
+    - change (primorial (S j')) with (primorial j' * kth_prime (S j')).
+      pose proof (kth_prime_ge_2 (S j')); nia. }
   change (primorial (S k)) with (primorial k * kth_prime (S k)).
-  pose proof (Hkp (S k)) as Hp.
-  pose proof (Hpos k) as Hq.
-  destruct (kth_prime (S k)) as [|[|b']] eqn:Eb.
-  - lia.
-  - lia.
-  - rewrite !Nat.mul_succ_r. lia.
+  pose proof (Hpos k). pose proof (kth_prime_ge_2 (S k)). nia.
 Qed.
 
-(* The primorial growth is structurally correct; the elementary case 
-   analysis is what's admitted. *)
+(* The primorial sequence 2, 6, 30, 210, ... is now computed by a real
+   prime generator (kth_prime) and its growth is fully proved. *)
 
 (* ================================================================ *)
 (*  PART 2 — CLAIM A: PRIMORIAL EXHAUSTION                          *)
