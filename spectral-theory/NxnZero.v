@@ -12,6 +12,7 @@
 (*  Uses the classical Reals axioms (quarantined).                    *)
 (* ================================================================= *)
 
+Require Import EulerFactorR.
 From Stdlib Require Import Reals Lra Lia.
 Open Scope R_scope.
 
@@ -100,6 +101,58 @@ Proof.
 Qed.
 
 Print Assumptions nxn_zero.
+
+(* ================================================================= *)
+(*  THE SERIES  Sum_{k=0}^oo k x^k = x/(1-x)^2                        *)
+(* ================================================================= *)
+
+Definition nsumR (x : R) (N : nat) : R := sum_f_R0 (fun k => INR k * x ^ k) N.
+Definition geomR (x : R) (N : nat) : R := sum_f_R0 (fun k => x ^ k) N.
+
+Lemma sum_rec : forall (f : nat -> R) N, sum_f_R0 f (S N) = sum_f_R0 f N + f (S N).
+Proof. intros; reflexivity. Qed.
+
+Lemma Un_cv_shift : forall u l, Un_cv u l -> Un_cv (fun n => u (S n)) l.
+Proof.
+  intros u l H eps He; destruct (H eps He) as [N HN].
+  exists N; intros n Hn; apply HN; lia.
+Qed.
+
+(* the closed-form recurrence: (1-x) * S_N = G_{N+1} - 1 - (N+1) x^{N+1} *)
+Lemma key : forall x N,
+  (1 - x) * nsumR x N = geomR x (S N) - 1 - INR (S N) * x ^ (S N).
+Proof.
+  intros x N; induction N as [|N IH]; unfold nsumR, geomR in *.
+  - simpl; ring.
+  - rewrite (sum_rec (fun k => INR k * x ^ k) N).
+    rewrite (sum_rec (fun k => x ^ k) (S N)).
+    rewrite (S_INR (S N)).
+    replace (x ^ S (S N)) with (x * x ^ S N) by (simpl; ring).
+    rewrite Rmult_plus_distr_l, IH; ring.
+Qed.
+
+Theorem number_series : forall x, 0 <= x -> x < 1 ->
+  Un_cv (nsumR x) (x / (1 - x) ^ 2).
+Proof.
+  intros x Hx0 Hx1.
+  assert (Hne : 1 - x <> 0) by lra.
+  assert (HG : Un_cv (fun N => geomR x (S N)) (/ (1 - x))).
+  { apply (Un_cv_shift (geomR x)); unfold geomR; apply geom_limit;
+      rewrite Rabs_pos_eq; lra. }
+  assert (HNz : Un_cv (fun N => INR (S N) * x ^ (S N)) 0).
+  { apply (Un_cv_shift (fun n => INR n * x ^ n)); apply nxn_zero; assumption. }
+  assert (Hlim : Un_cv (fun N => (1 - x) * nsumR x N) (x / (1 - x))).
+  { apply Un_cv_ext with (un := fun N => geomR x (S N) - 1 - INR (S N) * x ^ (S N)).
+    - intro n; symmetry; apply key.
+    - replace (x / (1 - x)) with (/ (1 - x) - 1 - 0) by (field; exact Hne).
+      apply CV_minus; [ apply CV_minus; [ exact HG | apply Un_cv_const ] | exact HNz ]. }
+  apply Un_cv_ext with (un := fun N => / (1 - x) * ((1 - x) * nsumR x N)).
+  - intro n; field; exact Hne.
+  - replace (x / (1 - x) ^ 2) with (/ (1 - x) * (x / (1 - x))) by (field; exact Hne).
+    apply CV_mult; [ apply Un_cv_const | exact Hlim ].
+Qed.
+
+Print Assumptions number_series.
 
 (* ================================================================= *)
 (*  END NxnZero.v                                                     *)

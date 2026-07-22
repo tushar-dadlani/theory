@@ -89,8 +89,11 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   (`ProductMobius.vm2_interior_zero`: Λ supported on prime-power axes). All generalise to `k`
   primes by iteration. The general **arbitrary-`ℕ⁺`** divisor-sum forms (needing divisor
   enumeration / factorisation of a general `n`) are still **not** proved.
-- **Analytic layer** (`EulerFactorR`, `LadderDerivR`, `VonMangoldtR`): **per single prime**. The
-  infinite Euler product, full `ζ`, `−ζ'/ζ = Σ Λ(n)n⁻ˢ` over all primes, and term-by-term
+- **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):
+  the single Euler factor, the **finite** Euler product (`EulerProductR`), the number operator as a
+  derivative (`LadderDerivR`), and now the number-weighted series `Σ k xᵏ = x/(1−x)²`
+  (`NxnZero.number_series`, built on the from-scratch `n·xⁿ→0`) are proved. The **infinite**
+  Euler product, full `ζ`, `−ζ'/ζ = Σ Λ(n)n⁻ˢ` over all primes, and general term-by-term
   differentiation are **not** proved (stdlib-only; no analysis library).
 - **`ChainTower`/`InvLimit`**: the tower's inverse limit is **ω+1** (profinite completion of the
   chain), *not* `ℤ_p`. `ℤ_p` is the separate `PadicIntegers` tower (`ℤ/pⁿ`, reduction maps).
