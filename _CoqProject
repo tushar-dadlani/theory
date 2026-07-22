@@ -434,3 +434,4 @@ spectral-theory/WalshHadamardHilbertQ.v
 spectral-theory/InvolutionQ.v
 spectral-theory/LandauerQ.v
 spectral-theory/BiView.v
+spectral-theory/BiViewProduct.v
