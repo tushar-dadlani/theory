@@ -457,3 +457,4 @@ spectral-theory/InvLimit.v
 spectral-theory/PadicIntegers.v
 spectral-theory/PadicMetric.v
 spectral-theory/PadicRing.v
+spectral-theory/EulerProductR.v
