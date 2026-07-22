@@ -471,6 +471,7 @@ spectral-theory/PrimeFactorizationN.v
 spectral-theory/PrimeFactorizationExists.v
 spectral-theory/ProductFormulaQ.v
 spectral-theory/ProfiniteCRT.v
+spectral-theory/LocalGlobalCompat.v
 spectral-theory/EulerReindex.v
 spectral-theory/RecipSquareBound.v
 spectral-theory/EulerProductZetaBound.v

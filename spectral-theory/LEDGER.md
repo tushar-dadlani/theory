@@ -63,6 +63,13 @@ is axiom-free.
   `n=∏_p p^{v_p}` gives `Ẑ ≅ ∏_p ℤ_p`. Honest ceiling (same as ProductFormulaQ): this is the
   finite factor only; `ℝ=ℚ_∞` (the archimedean completion, hence Γ-factors/`ξ(s)`/functional
   equation/ζ special values) is the separate factor it never reaches.
+- **Local–global compatibility** `LocalGlobalCompat` (`fabs_is_recip` + `local_global_compat`):
+  the valuation description of `𝔸_f` (`ProductFormulaQ.fabs = ∏_p |·|_p`) and the ring
+  description (`ProfiniteCRT`: `Ẑ = lim ℤ/nℤ = ∏_p ℤ_p`) read the **same** exponents. Global:
+  `fabs ps ks == /inject_Z(code ps ks)` (`∏_p |n|_p = 1/n`). Local: for `n = code (p::ps')(k::ks')`,
+  the CRT-split modulus `p^k` (ring component `ℤ/p^{v_p}ℤ`) is the reciprocal of the local abs
+  value `|n|_p = p^{−v_p}` that `fabs` peels off — same `k = v_p(n)`. **Axiom-free.** The
+  non-archimedean local–global principle; `ℝ=ℚ_∞` stays the separate archimedean factor.
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).
