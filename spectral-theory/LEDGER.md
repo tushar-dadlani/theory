@@ -128,7 +128,13 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   What remains open toward `∏_p = ζ(2)` is then: (i) tying this ℚ reindexing to the ℝ tower
   `EP`/`zpart` and taking `K→∞` (the analytic bridge), and (ii) "every `m ≤ pₙ` is
   `{first n primes}`-smooth" (a property of the prime *enumeration* `P` — that it lists all
-  primes in order — not of `code`).
+  primes in order — not of `code`). The **ℝ-side domination** for (i) is now proved:
+  `RecipSquareBound.recip_sq_nodup_bound` — any finite set of distinct positive integers sums
+  (of `1/m²`) to at most `ζ(2)` (via `incl_sum_le` over `List.remove` + `seqsum_zpart` +
+  `growing_ineq`). This is the tight bound (`ζ(2) < 2`) that gives `EP n ≤ ζ(2) = Hupper` once
+  the ℚ→ℝ transport of `euler_reindex` feeds `EP n`'s reindexed (distinct-smooth-number) form
+  into it. Remaining in (i): that Q2R transport (mechanical homomorphism plumbing) and the
+  `K→∞` limit.
   Also still **not** proved: the value `π²/6`, `ζ` as a general infinite-product identity for
   `s≠2`, `−ζ'/ζ`, and the `1<s<2` range.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):
