@@ -66,6 +66,11 @@ is axiom-free.
   observer/observed partition), the one-`F` veto `val_n_zero_iff` (`val_n l = 0 ⟺ In F l`), and
   `val_n_mu` (= `μ` of a product of `n` prime-powers). "Observer" stays an *interpretation* of a
   coordinate/prime; the theorems are about the product monoid. Axiom-free.
+- **Hermitian operator on the observer/observed/observation triad** `ObserverTriad`: a genuine
+  self-adjoint (Hermitian-over-ℝ = symmetric) operator `M` with real spectrum `{0,+√2,−√2}` and
+  an orthogonal eigenbasis (`M_self_adjoint`, `eig_*`, `ortho_*`), the eigenvalue-0 mode being
+  the observer−observed kernel. Axiom-quarantined (ℝ). Honest: the role names are
+  interpretation; the theorems are about the symmetric operator.
 - **Finite Fourier + sampling** `WalshHadamard` (DFT on `F₂ⁿ`: shift, convolution, `H²=8I`
   inversion, Parseval), `WalshSampling` (the finite Shannon–Nyquist sampling theorem: comb
   transform `Ĥ 1_H = |H| 1_{H⊥}`, Poisson summation, band-limited reconstruction): all **genuine
