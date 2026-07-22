@@ -169,10 +169,13 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   Σ_{d≤x}Λ(d)⌊x/d⌋`, and `log⌊x⌋!` bounds. `VonMangoldtGlobal` is **in progress** on this: the
   **foundation is built and axiom-free** — `spf` (smallest prime factor) proved prime
   (`spf_nprime`), the divisor sum `dsum` with permutation-invariance (`dsum_perm`), all in `nat`
-  (`Nat.gauss`) + `R`. Still to do: define `Λ` (via `spf` + prime-power test), its
-  characterisation, the **coprime divisor-multiplicativity** bijection `divisors(ab)≅
-  divisors(a)×divisors(b)` (the hard combinatorial core, via `Nat.gauss`), and the assembly
-  `Σ_{d|n}Λ(d)=log n`. **Hard ceiling:**
+  (`Nat.gauss`) + `R`. The **delicate Gauss keystone is now done** (`split_divisor`,
+  axiom-free): for `gcd(a,b)=1` and `c∣a·b`, `c = gcd(c,a)·gcd(c,b)` — by divisibility
+  antisymmetry, each direction a `Nat.gauss` argument (`Nat.gcd_div_gcd` for the divide-out
+  coprimality). Still to do: lift `split_divisor` to the divisor-list bijection
+  `divisors(ab)≅divisors(a)×divisors(b)` (`NoDup_Permutation`) → `dsum` multiplicativity; define
+  `Λ` (via `spf` + prime-power test) with its characterisation; the prime-power base
+  `dsum Λ (p^k)=k·ln p`; and the strong-induction assembly `Σ_{d|n}Λ(d)=log n`. **Hard ceiling:**
   the *sharp* `ψ(x)∼x` (PNT), the explicit formula, and anything about zeta *zeros* genuinely
   require the contour step / complex analysis we deliberately do not build.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):

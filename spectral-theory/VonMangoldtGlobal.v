@@ -130,10 +130,67 @@ Proof.
   intros f l l' H; exact (Rsum_perm (map f l) (map f l') (Permutation_map f H)).
 Qed.
 
-Print Assumptions spf_nprime.
+(* ================================================================= *)
+(*  4.  THE COPRIME DIVISOR SPLIT (the delicate Gauss keystone)       *)
+(*                                                                    *)
+(*  For coprime a, b, every divisor c of a*b factors as the product   *)
+(*  of its gcd with a and its gcd with b:                             *)
+(*     c = gcd(c,a) * gcd(c,b).                                       *)
+(*  This is the heart of divisor-multiplicativity.  Proof by          *)
+(*  antisymmetry of divisibility, each direction a Gauss argument:    *)
+(*   - c | g*e :  writing c = c1*g, a = a1*g with gcd(c1,a1)=1         *)
+(*       (Nat.gcd_div_gcd), c1 | a1*b so c1 | b (Nat.gauss), hence     *)
+(*       c1 | gcd(c,b)=e and c = c1*g | g*e;                          *)
+(*   - g*e | c :  g,e both divide c and are coprime (Nat.gauss).      *)
+(* ================================================================= *)
+
+Lemma split_divisor : forall a b c, Nat.gcd a b = 1 -> 1 <= a -> 1 <= b ->
+  Nat.divide c (a*b) -> c = Nat.gcd c a * Nat.gcd c b.
+Proof.
+  intros a b c Hab Ha Hb Hc.
+  assert (Hc1 : 1 <= c)
+    by (destruct c as [|c']; [ destruct Hc as [k Hk]; simpl in Hk; nia | lia ]).
+  set (g := Nat.gcd c a). set (e := Nat.gcd c b).
+  assert (Hg1 : 1 <= g)
+    by (unfold g; destruct (Nat.gcd c a) eqn:G; [ apply Nat.gcd_eq_0 in G; lia | lia ]).
+  assert (Hgc : Nat.divide g c) by (unfold g; apply Nat.gcd_divide_l).
+  assert (Hga : Nat.divide g a) by (unfold g; apply Nat.gcd_divide_r).
+  assert (Hec : Nat.divide e c) by (unfold e; apply Nat.gcd_divide_l).
+  assert (Heb : Nat.divide e b) by (unfold e; apply Nat.gcd_divide_r).
+  assert (Hge : Nat.gcd g e = 1).
+  { assert (H1 : Nat.divide (Nat.gcd g e) a)
+      by (apply Nat.divide_trans with g; [ apply Nat.gcd_divide_l | exact Hga ]).
+    assert (H2 : Nat.divide (Nat.gcd g e) b)
+      by (apply Nat.divide_trans with e; [ apply Nat.gcd_divide_r | exact Heb ]).
+    apply Nat.divide_1_r; rewrite <- Hab; apply Nat.gcd_greatest; assumption. }
+  apply Nat.divide_antisym.
+  - (* c | g*e *)
+    destruct Hgc as [c1 Hc1eq]. destruct Hga as [a1 Ha1eq].
+    assert (Hcop : Nat.gcd c1 a1 = 1).
+    { assert (Hcd : c / g = c1) by (rewrite Hc1eq, Nat.div_mul by lia; reflexivity).
+      assert (Had : a / g = a1) by (rewrite Ha1eq, Nat.div_mul by lia; reflexivity).
+      rewrite <- Hcd, <- Had; apply Nat.gcd_div_gcd; [ lia | unfold g; reflexivity ]. }
+    assert (Hc1ab : Nat.divide c1 (a1 * b)).
+    { destruct Hc as [q Hq]. exists q.
+      apply (Nat.mul_cancel_r _ _ g); [ lia | ].
+      rewrite Ha1eq, Hc1eq in Hq; nia. }
+    assert (Hc1b : Nat.divide c1 b) by (apply Nat.gauss with (m := a1); assumption).
+    assert (Hc1e : Nat.divide c1 e)
+      by (unfold e; apply Nat.gcd_greatest; [ exists g; rewrite Hc1eq; ring | exact Hc1b ]).
+    destruct Hc1e as [m Hm]. exists m. rewrite Hm, Hc1eq; ring.
+  - (* g*e | c *)
+    destruct Hgc as [c1 Hc1eq].
+    assert (Hediv : Nat.divide e c1)
+      by (apply Nat.gauss with (m := g);
+          [ replace (g * c1) with c by (rewrite Hc1eq; ring); exact Hec
+          | rewrite Nat.gcd_comm; exact Hge ]).
+    destruct Hediv as [m Hm]. exists m. rewrite Hc1eq, Hm; ring.
+Qed.
+
+Print Assumptions split_divisor.
 
 (* ================================================================= *)
-(*  END VonMangoldtGlobal.v (checkpoint A)                           *)
+(*  END VonMangoldtGlobal.v (checkpoint A + coprime keystone)        *)
 (*  spf (smallest prime factor, proved prime), the divisor sum dsum,   *)
 (*  and its permutation-invariance -- the foundation for Lambda and    *)
 (*  the identity sum_{d|n} Lambda(d) = log n.                          *)
