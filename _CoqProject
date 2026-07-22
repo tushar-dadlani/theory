@@ -480,3 +480,4 @@ spectral-theory/WalshSampling.v
 spectral-theory/INFMonoid.v
 spectral-theory/INFProduct.v
 spectral-theory/ObserverTriad.v
+spectral-theory/ObserverSwap.v

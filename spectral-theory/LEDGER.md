@@ -70,7 +70,10 @@ is axiom-free.
   self-adjoint (Hermitian-over-ℝ = symmetric) operator `M` with real spectrum `{0,+√2,−√2}` and
   an orthogonal eigenbasis (`M_self_adjoint`, `eig_*`, `ortho_*`), the eigenvalue-0 mode being
   the observer−observed kernel. Axiom-quarantined (ℝ). Honest: the role names are
-  interpretation; the theorems are about the symmetric operator.
+  interpretation; the theorems are about the symmetric operator. `ObserverSwap` adds the
+  involution cousin — the observer↔observed swap `S` (self-adjoint + `S²=I`, spectrum `{+1,−1}`)
+  realising the unit group `{I,N}` of `INFMonoid` (`IZR(val N)=−1`, `IZR(val I)=+1`), with `v0`
+  simultaneously `M`'s kernel and `S`'s `−1` mode, plus the reflection residue decomposition.
 - **Finite Fourier + sampling** `WalshHadamard` (DFT on `F₂ⁿ`: shift, convolution, `H²=8I`
   inversion, Parseval), `WalshSampling` (the finite Shannon–Nyquist sampling theorem: comb
   transform `Ĥ 1_H = |H| 1_{H⊥}`, Poisson summation, band-limited reconstruction): all **genuine
