@@ -2,6 +2,8 @@
 
 Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint structures, the standing wave, and the spectral triple approach to RH.
 
+> **See [`LEDGER.md`](./LEDGER.md)** for an honest audit: axiom status, genuine theorem vs structural analogy, and complete structure vs curated bundle. No result here proves or materially advances any Millennium problem; this arc formalizes the elementary skeleton (Euler product ↔ CRT, Möbius inversion, order→topology, inverse-limit completions).
+
 `WalshHadamard.v` is the Fourier transform native to the framework's xor/Fano structure: the Walsh–Hadamard transform on the Boolean cube F₂³. It is the first *actual* transform in the repo (a linear operator, not a comment), and proves — axiom-free — that it is symmetric, a self-inverse-up-to-scale involution (H² = 8·I), turns translation into a ±1 character sign, turns xor-convolution into a pointwise product, and realises the `StandingWave.v` apex reflection as a Fourier sign flip whose ±1 eigenspaces are the nodes and antinodes.
 
 `StandingWaveSpectrum.v` closes the loop: on the observer square F₂², it builds the amplitude signal directly from `StandingWave.v`'s own `fwd_*`/`inf_*` counts (proving it equals (−1, 0, 0, +1)), shows the apex reflection negates it (a −1-eigenvector), and concludes — both structurally via the shift theorem and by computation — that its Walsh spectrum is `(0, −2, −2, 0)`: exactly zero on the node frequencies and carrying all its weight on the antinodes. StandingWave's hand-counted table is thus the eigen-spectrum of a real Fourier transform.
@@ -46,6 +48,8 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `PadicIntegers.v` builds **the p‑adic integers `ℤ_p` as the inverse limit of the genuine tower `ℤ/pⁿ`** (mod‑`pⁿ` reduction maps), axiom-free over `nat` — the completion `ChainTower`'s order‑truncation tower does *not* give. Same coherent‑sequence recipe as `InvLimit`, but the levels are the residue rings and the bonding maps are ring quotients: `Zp = { a : ℕ→ℕ | ∀ n, a n = a(n+1) mod pⁿ }` (`redcoh`). The reduction projection cone commutes with the bonding maps (`projZ_cone`); the **ring operations** `rzero`/`rone`/`radd`/`rmul` (reduced mod `pⁿ` at each level) **descend to the inverse limit** — `redcoh_add`, `redcoh_mul` prove coherence is preserved, via the nested‑modulus lemma `nested_mod` (`(x mod p^{n+1}) mod pⁿ = x mod pⁿ`, from `Nat.Div0.mod_mul_r`); the **projections are ring homomorphisms** (`projZ_add`, `projZ_mul`); and the **universal property** `Zmediate` (coherent residue data assembles into a limit point — this *is* completeness: a coherent Cauchy tower has a limit). `Print Assumptions padic_integers` → **"Closed under the global context"**. This is the algebraic completion; `ℤ_p` as inverse limit.
 
+`PadicRing.v` **consolidates** the algebra of `ℤ_p`: under pointwise equality `Zeq`, the p‑adic integers form a **commutative semiring** — `Zp_comm_semiring` bundles associativity/commutativity of `+`/`*`, the unit laws (`Zadd_0_l`, `Zmul_1_l`, via `redcoh_lt`: a coherent digit is a genuine residue `< pⁿ`), `Zmul_0_l`, and left distributivity, each reducing to `ℤ/pⁿ` via the `Nat.Div0` idempotent‑mod lemmas. `Print Assumptions Zp_comm_semiring` → **"Closed under the global context"**. **Honest note:** `ℤ_p` is a full commutative *ring* (additive inverses exist, `−a = (pⁿ−a) mod pⁿ`), but the coherence of that negation across levels (nat truncated subtraction) and Coq `Add Ring` registration are **deferred** — see `LEDGER.md`.
+
 `PadicMetric.v` builds **the metric side of `ℤ_p`** — the same object seen through `Padic`'s **ultrametric** — axiom-free (pure ℚ, no Reals). Residue sequences are close when they agree on leading levels: `agree_upto a b k` (⟺ `|a−b|_p ≤ prad k = pabs k = p⁻ᵏ`) is the p‑adic ball of radius `prad k`. It's a genuine **ultrametric**: reflexive, symmetric, radius‑monotone (`agree_mono`), and the **strong triangle inequality** `strong_triangle` — agreement to radii `k₁,k₂` gives agreement to `min(k₁,k₂)`, and via `Padic.pabs_min` the radius `prad(min k₁ k₂) = max(prad k₁, prad k₂)`, so `d(a,c) ≤ max(d(a,b),d(b,c))`. Plus `separated` (agreement at every level ⇒ equality: a genuine Hausdorff metric) and `prad_pos` (radii `> 0`, `→ 0`). `Print Assumptions padic_metric` → **"Closed under the global context"**. Together with `PadicIntegers` this exhibits `ℤ_p` as the p‑adic **metric completion**: the algebraic inverse limit and the metric completion are the *same* object (radii `pabs k → 0`; coherent Cauchy data has a limit via `Zmediate`).
 
 `InvLimit.v` builds **the limit object** of the `ChainTower`, axiom-free, as **coherent sequences** — no completion, no classical axioms, just a dependent function plus a `Prop` compatibility condition. A point of `InvLim` is a choice `x_n : Chain n` at every level with `val (trunc x_{n+1}) = val x_n` (`Coherent`). It carries the pointwise order `leL` (hence its Alexandrov topology via `PosetTopology`), a **continuous projection cone** `projL : InvLim → Chain n` that commutes with the truncation bonding maps (`projL_cone`, `projL_continuous`), and the **universal property** `mediate`: every compatible cone `Z → Chain n` factors through `InvLim` with `projL n ∘ mediate = famₙ`. Its shape is characterised as **`ω+1`**: a top point `infty` (the diagonal `x_n = n`, `infty_top`) plus an embedding of every natural number (`emb m`, the capped `min m n`). `Print Assumptions inverse_limit` → **"Closed under the global context"**. So the genuine limit object of an infinite tower of finite topologies is fully constructible from pure order — the completion‑free route.
@@ -70,7 +74,7 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `WalshHadamardHilbert.v` lifts the whole picture into a genuine (finite, 4-dimensional) real Hilbert space: it equips the signal space with the inner product ⟨f,g⟩ = Σ f g and proves it positive-definite, that the Hadamard operator is self-adjoint and satisfies Parseval (⟨Hf,Hg⟩ = 4⟨f,g⟩), that the normalized transform `Ur = ½H` is a real unitary involution (⟨Ur f, Ur g⟩ = ⟨f,g⟩, Ur² = I), that the apex reflection is a self-adjoint involution with orthogonal ±1 eigenspaces (nodes ⊥ antinodes), and that the standing-wave amplitude is a −1-eigenvector of norm²=2 preserved by `Ur`. Uses only the standard Coq `Reals` axioms; no custom axioms, no `admit`. (The infinite-dimensional ℓ²/L² lift the Hilbert–Pólya program needs is a much larger, analysis-library undertaking.)
 
-**52 proof file(s):**
+**53 proof file(s):**
 
 - `BiView.v`
 - `BiViewProduct.v`
@@ -109,6 +113,7 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 - `Padic.v`
 - `PadicIntegers.v`
 - `PadicMetric.v`
+- `PadicRing.v`
 - `PrimonGas.v`
 - `PrimorialSpectralTheory.v`
 - `SpectralAlgebra.v`
