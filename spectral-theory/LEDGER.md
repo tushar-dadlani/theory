@@ -95,9 +95,11 @@ structure. Known gaps between "what the name suggests" and "what is proved":
 - **Primorial-relativized Euler product**: `PrimorialEuler` builds the primorial tower
   `EP n = ∏_{first n primes} (1−p⁻²)⁻¹` and proves each rung is a finite Euler product
   (`EP_is_limit`) and the tower is monotone (`EP_monotone`), mirroring the primorial's growth.
-  What is **not** proved: the tower's **convergence** to `ζ` (needs a uniform bound on the smooth
-  partial sums), the infinite **Euler product** as an actual product `ζ = ∏_p (1−p⁻ˢ)⁻¹`,
-  `−ζ'/ζ`, and the `1<s<2` range.
+  `PrimorialEulerBound.EP_converges` now proves the tower **converges** (the rungs are uniformly
+  bounded, `EP n ≤ 2`, via a telescoping majorant `M n = 2−2/(n+2)`, under `P i ≥ i+2` which the
+  actual primes satisfy) — so the primorial-relativized Euler product **exists as a limit**.
+  Still **not** proved: the limit's *value*, and `ζ` as an actual infinite-product identity
+  `∏_p (1−p⁻ˢ)⁻¹ = Σ_n n⁻ˢ`; `−ζ'/ζ`; and the `1<s<2` range.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):
   the single Euler factor, the **finite** Euler product (`EulerProductR`), the number operator as a
   derivative (`LadderDerivR`), and now the number-weighted series `Σ k xᵏ = x/(1−x)²`

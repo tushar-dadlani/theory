@@ -72,6 +72,8 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `PrimorialEuler.v` answers "can the Euler product over all primes be relativized to primorials?" — **yes**. It builds the **primorial tower**: `EP n = ∏_{i<n} 1/(1−pᵢ⁻²)`, the finite Euler product over the first `n` primes (the primes dividing the `n`-th primorial `primor n`), for an abstract prime enumeration `P` (`P i ≥ 2`; instantiate with the real primes for the genuine primorial). Proved: each rung adjoins one factor — `EP_rec : EP(n+1) = EP n · 1/(1−pₙ⁻²)` — exactly as the primorial grows `primor_rec : primor(n+1) = primor n · pₙ`; each rung **is a genuine finite Euler product** — `EP_is_limit : Un_cv (Zpartial (pfugs n)) (EP n)`, the `K→∞` product of truncated geometric sums = the primon-gas partition function *restricted to the first n primes* (from `EulerProductR`); and the tower is positive and **monotone increasing** (`EP_pos`, `EP_monotone`). So the infinite Euler product over all primes is the *limit of this primorial-indexed monotone tower*. `Print Assumptions primorial_euler` → the quarantined Reals axioms. **Honest scope:** the tower, its per-rung Euler-product identity, and monotonicity are proved; its *convergence* to `ζ(s)` (the top of the tower) still needs a uniform bound on the smooth partial sums, deferred.
 
+`PrimorialEulerBound.v` answers "are the primorial rungs uniformly bounded?" — **yes**, and so the primorial‑relativized Euler product **converges**. Under the honest hypothesis `P i ≥ i+2` (true for the actual primes `2,3,5,…`), each Euler factor `1/(1−pᵢ⁻²)` is majorized by the consecutive‑integer factor `1/(1−1/(i+2)²)`, whose product **telescopes**: `M n = ∏_{i<n} 1/(1−1/(i+2)²) = 2 − 2/(n+2) < 2` (`M_closed`). Hence `EP_bounded : EP n ≤ 2` for all `n` — a **uniform bound** — and with `PrimorialEuler.EP_monotone`, monotone‑bounded convergence (`growing_cv`) gives `EP_converges : { l | Un_cv (EP P) l }`: **the Euler product over all primes, relativized to the primorial tower, exists as a limit.** `Print Assumptions primorial_euler_converges` → the quarantined Reals axioms. This closes the boundedness gap flagged in `PrimorialEuler` (still an *existence* result — the limit's value, and `ζ` as an infinite product identity `∏_p = Σ_n`, remain out of scope).
+
 `ZetaConverge.v` adds a genuine **infinite process**: the Dirichlet series `ζ(2) = Σ_{n≥1} 1/n²` **converges** — the first genuinely‑infinite, over‑*all*‑numbers object in the arc (the total primon‑gas partition function at `s=2`, not a per‑prime factor or a finite product). Proof by **monotone‑bounded convergence** (`growing_cv`): the partial sums `zpart` are increasing (`zpart_growing`) and bounded above by `2` (`zpart_ub`) via the telescoping estimate `1/(m+1)² ≤ 1/m − 1/(m+1)` (`zpart_bound`). `zeta2_converges : { l | Un_cv zpart l }`. **Honest scope:** proves the limit *exists*, not its value `π²/6`; the same bound gives convergence of `Σ 1/nˢ` for every real `s ≥ 2`. The infinite Euler product `ζ = ∏_p(1−p⁻ˢ)⁻¹` over all primes and the `1<s<2` range stay out of scope. Uses the classical Reals axioms (quarantined).
 
 `EulerProductR.v` fills the **per‑prime → finite product** gap on the analytic side: for any finite list of fugacities `xs` (each `|x| < 1`), the product of the truncated geometric partial sums converges to the product of Euler factors — `euler_product_R : Un_cv (Zpartial xs) (Zfactor xs)`, i.e. `∏_{x∈xs} Σ_{k≤N} xᵏ → ∏_{x∈xs} 1/(1−x)`, the **finite Euler product** `∏_p (1−p⁻ˢ)⁻¹` as `N→∞`. Proof: each factor converges (`EulerFactorR.geom_limit`) and a finite product of convergent sequences converges to the product of limits (stdlib `CV_mult`), by induction on the list. Uses the classical Reals axioms (quarantined). Still per *finite* prime set; the infinite product / full `ζ` remains out of scope (`LEDGER.md`).
@@ -90,7 +92,7 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `WalshHadamardHilbert.v` lifts the whole picture into a genuine (finite, 4-dimensional) real Hilbert space: it equips the signal space with the inner product ⟨f,g⟩ = Σ f g and proves it positive-definite, that the Hadamard operator is self-adjoint and satisfies Parseval (⟨Hf,Hg⟩ = 4⟨f,g⟩), that the normalized transform `Ur = ½H` is a real unitary involution (⟨Ur f, Ur g⟩ = ⟨f,g⟩, Ur² = I), that the apex reflection is a self-adjoint involution with orthogonal ±1 eigenspaces (nodes ⊥ antinodes), and that the standing-wave amplitude is a −1-eigenvector of norm²=2 preserved by `Ur`. Uses only the standard Coq `Reals` axioms; no custom axioms, no `admit`. (The infinite-dimensional ℓ²/L² lift the Hilbert–Pólya program needs is a much larger, analysis-library undertaking.)
 
-**61 proof file(s):**
+**62 proof file(s):**
 
 - `BiView.v`
 - `BiViewProduct.v`
@@ -138,6 +140,7 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 - `PadicRingOpp.v`
 - `PrimonGas.v`
 - `PrimorialEuler.v`
+- `PrimorialEulerBound.v`
 - `PrimorialSpectralTheory.v`
 - `SpectralAlgebra.v`
 - `SpectralEvent.v`
