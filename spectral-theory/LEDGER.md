@@ -78,10 +78,11 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   i.e. `Div(pᵃqᵇ) ≅ [0..a]×[0..b]` as posets. What is still **not** proved is the *lattice-
   operation* form `gcd(pⁱqʲ,pⁱ'qʲ') = p^min·q^min` as an equation (the order iso gives the
   poset structure; the explicit coordinatewise gcd/lcm formula is not separately derived).
-- **`PadicRing`**: proves the commutative **semiring** axioms (`0,1,+,*`) completely. Additive
-  inverses / full **ring** and Coq `Add Ring` registration are **deferred** (nat truncated
-  subtraction makes `opp` coherence fiddly). So `ℤ_p` is proved a semiring here, asserted (not
-  yet proved) a ring.
+- **`PadicRing` / `PadicRingOpp`**: the commutative **semiring** axioms (`PadicRing`) *and* the
+  **additive inverse** (`PadicRingOpp.Zadd_opp_l`, with `neg_coh` handling nat truncated
+  subtraction) are now proved — so `ℤ_p` is a proved **commutative ring**. Only the Coq
+  `Add Ring` *tactic registration* (setoid Proper boilerplate) is still not done; the ring
+  axioms themselves are complete.
 - **Möbius / von Mangoldt / FTC**: proved for the **single prime** (chain), the **two-prime
   product of chains** for the FTC (`ProductFTC`), and lifted to the **two-prime product** for
   Möbius (`ProductMobius.mu2_reciprocal`: `(1−x)(1−y)`) and von Mangoldt
