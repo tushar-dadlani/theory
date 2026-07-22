@@ -78,6 +78,9 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   i.e. `Div(pᵃqᵇ) ≅ [0..a]×[0..b]` as posets. What is still **not** proved is the *lattice-
   operation* form `gcd(pⁱqʲ,pⁱ'qʲ') = p^min·q^min` as an equation (the order iso gives the
   poset structure; the explicit coordinatewise gcd/lcm formula is not separately derived).
+  `PrimeFactorizationN` now **generalizes the order embedding to `n` distinct primes**
+  (`code_order_iso_N`) and adds **injectivity** (`code_inj`) — unique factorization over the
+  first `n` primes, as a bijection onto its image. Axiom-free.
 - **`PadicRing` / `PadicRingOpp`**: the commutative **semiring** axioms (`PadicRing`) *and* the
   **additive inverse** (`PadicRingOpp.Zadd_opp_l`, with `neg_coh` handling nat truncated
   subtraction) are now proved — so `ℤ_p` is a proved **commutative ring**. Only the Coq
@@ -103,10 +106,15 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   `EP n = Σ_{{first n primes}-smooth m} 1/m²` (namely `∀n, EP n ≤ ζ(2)` and
   `∀N, ∃n, zpart N ≤ EP n`), the analytic squeeze (`growing_ineq` + `lim_le` + `Rle_antisym`)
   gives `Un_cv (EP P) ζ(2)`. So the two infinite processes (`Σ 1/n²` and the product tower)
-  provably share a limit. What remains **genuinely open** is exactly that factorization crux —
-  unique factorization over the first `n` primes (generalizing `FreeDivMeetIso` to `n`
-  generators as a *bijection*), the sum reindexing `Σ_occupation = Σ_smooth`, and "every `m`
-  below the largest prime is smooth" (needs prime-factorization existence + primes unbounded).
+  provably share a limit. The factorization crux has two halves; the **uniqueness** half is now
+  **done**: `PrimeFactorizationN` proves `code ps : exponent-tuples → {first n primes}-smooth
+  numbers` (`∏ pᵢ^{kᵢ}`) is an **order embedding** and **injective** (`code_inj`,
+  `code_order_iso_N`) — unique factorization over the first `n` primes, as a bijection onto its
+  image, generalizing `FreeDivMeetIso` from 2 to `n` distinct primes (axiom-free, via the
+  `p`-adic cancellation `prime_pow_cancel`). What remains **genuinely open** is the **existence**
+  half (surjectivity onto *all* `{first n primes}`-smooth numbers — every such number *has* a
+  factorization), the sum reindexing `Σ_occupation = Σ_smooth`, and "every `m` below the largest
+  prime is smooth" (needs factorization existence + primes unbounded).
   Also still **not** proved: the value `π²/6`, `ζ` as a general infinite-product identity for
   `s≠2`, `−ζ'/ζ`, and the `1<s<2` range.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):
