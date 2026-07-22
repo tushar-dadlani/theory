@@ -36,7 +36,13 @@ is axiom-free.
 **Genuine theorems** — the stated result is literally proved about the stated object:
 
 - **Euler product (finite)** `PrimonGas.euler_product`: `Σ_states ∏ x_p^{k_p} = ∏_p Σ_{k<K} x_p^k`.
-  A true finite distributive identity. (The *infinite* Euler product / actual `ζ` is **not** here.)
+  A true finite distributive identity.
+- **Euler product formula for ζ(2)** `EulerProductZeta.euler_product_zeta2`: `∏_{p prime, p≤B} (1−p⁻²)⁻¹
+  → ζ(2)` as `B→∞` — the genuine *infinite* Euler product identity **at `s=2`**, unconditional,
+  built from the finite distributive identity above by reindexing along the factorization
+  bijection and squeezing between the ζ-partial-sums and `ζ(2)`. Honest scope: existence of the
+  product limit `= ζ(2)` (itself an existence limit, **not** the value `π²/6`); general `s`,
+  `−ζ'/ζ`, and zeta *zeros* are still absent.
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).
@@ -140,11 +146,16 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   `codes_nat_nodup`/`code_pos` (distinct positive integers, using `gstates_nodup`),
   `recip_sq_nodup_bound`, and `K→∞` (`euler_product_R` + `lim_le`). So the full chain
   **primon gas → reindex → factorization bijection → ζ(2) domination → `EP ≤ ζ(2)`** is
-  machine-checked (quarantined Reals axioms). What remains toward the full unconditional
-  `∏_p = ζ(2)`: **`Hlower`** (the matching lower bound, which additionally needs the enumeration
-  property "every `m ≤ pₙ` is `{first n primes}`-smooth"), and repackaging the list-form
-  `euler_factor_le_zeta` into `PrimorialEuler.EP P`'s nat-indexed shape (`map`-`nth`-`seq`
-  bookkeeping) to feed `PrimorialZeta.tower_is_zeta2` directly.
+  machine-checked (quarantined Reals axioms). **`Hlower` is now also done**, and the arc is
+  **closed**: `EulerProductZeta.euler_product_zeta2` proves the unconditional Euler product
+  formula `∏_{p prime, p≤B}(1−p⁻²)⁻¹ → ζ(2)` — a squeeze between `zpart_le_euler` (`Hlower`, via
+  a prime enumeration `primes_upto`, `small_smooth`, factorization *existence* `code_surj` with
+  bounded exponents `entry_pow_le_code`/`gstates_complete`, and `incl_sum_le`) and the constant
+  `ζ(2)` (Hupper). This is the genuine classical Euler product identity at `s=2`. What is **not**
+  done (deliberately, and cleanly separable): the *value* `π²/6`; general `s` and the `−ζ'/ζ`
+  Dirichlet series; and the nat-indexed `PrimorialZeta.tower_is_zeta2` repackaging (which would
+  need an *ordered* "nth prime" enumeration — the `primes_upto`/bound-indexed form here sidesteps
+  that and is the more natural statement).
   Also still **not** proved: the value `π²/6`, `ζ` as a general infinite-product identity for
   `s≠2`, `−ζ'/ζ`, and the `1<s<2` range.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):
