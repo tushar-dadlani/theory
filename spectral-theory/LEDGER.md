@@ -98,8 +98,17 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   `PrimorialEulerBound.EP_converges` now proves the tower **converges** (the rungs are uniformly
   bounded, `EP n ≤ 2`, via a telescoping majorant `M n = 2−2/(n+2)`, under `P i ≥ i+2` which the
   actual primes satisfy) — so the primorial-relativized Euler product **exists as a limit**.
-  Still **not** proved: the limit's *value*, and `ζ` as an actual infinite-product identity
-  `∏_p (1−p⁻ˢ)⁻¹ = Σ_n n⁻ˢ`; `−ζ'/ζ`; and the `1<s<2` range.
+  `PrimorialZeta.tower_is_zeta` then proves — **rigorously, modulo one isolated hypothesis** —
+  that the tower's limit **is ζ(2)**: given the two consequences of the Euler factorization
+  `EP n = Σ_{{first n primes}-smooth m} 1/m²` (namely `∀n, EP n ≤ ζ(2)` and
+  `∀N, ∃n, zpart N ≤ EP n`), the analytic squeeze (`growing_ineq` + `lim_le` + `Rle_antisym`)
+  gives `Un_cv (EP P) ζ(2)`. So the two infinite processes (`Σ 1/n²` and the product tower)
+  provably share a limit. What remains **genuinely open** is exactly that factorization crux —
+  unique factorization over the first `n` primes (generalizing `FreeDivMeetIso` to `n`
+  generators as a *bijection*), the sum reindexing `Σ_occupation = Σ_smooth`, and "every `m`
+  below the largest prime is smooth" (needs prime-factorization existence + primes unbounded).
+  Also still **not** proved: the value `π²/6`, `ζ` as a general infinite-product identity for
+  `s≠2`, `−ζ'/ζ`, and the `1<s<2` range.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):
   the single Euler factor, the **finite** Euler product (`EulerProductR`), the number operator as a
   derivative (`LadderDerivR`), and now the number-weighted series `Σ k xᵏ = x/(1−x)²`

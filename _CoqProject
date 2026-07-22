@@ -466,3 +466,4 @@ spectral-theory/NxnZero.v
 spectral-theory/ZetaConverge.v
 spectral-theory/PrimorialEuler.v
 spectral-theory/PrimorialEulerBound.v
+spectral-theory/PrimorialZeta.v
