@@ -73,9 +73,11 @@ Möbius inversion, order→topology, inverse limits/completions) that those prob
 Each file's `*_master`/bundle theorem collects **selected** facts, not necessarily a complete
 structure. Known gaps between "what the name suggests" and "what is proved":
 
-- **`FreeDivMeet`**: the CRT coincidence is proved **only at the axis generators** `pᵃ`, `qᵇ`
-  (meet `=1`, join `=pᵃqᵇ`). The full lattice isomorphism `Div(pᵃqᵇ) ≅ [0..a]×[0..b]` (all
-  interior points, coordinatewise `gcd`) is **not** proved.
+- **`FreeDivMeet`**: the CRT coincidence at the axis generators (`FreeDivMeet`), now extended
+  to the full **order embedding** `code u ∣ code v ↔ fle u v` (`FreeDivMeetIso.code_order_iso`),
+  i.e. `Div(pᵃqᵇ) ≅ [0..a]×[0..b]` as posets. What is still **not** proved is the *lattice-
+  operation* form `gcd(pⁱqʲ,pⁱ'qʲ') = p^min·q^min` as an equation (the order iso gives the
+  poset structure; the explicit coordinatewise gcd/lcm formula is not separately derived).
 - **`PadicRing`**: proves the commutative **semiring** axioms (`0,1,+,*`) completely. Additive
   inverses / full **ring** and Coq `Add Ring` registration are **deferred** (nat truncated
   subtraction makes `opp` coherence fiddly). So `ℤ_p` is proved a semiring here, asserted (not
