@@ -445,3 +445,5 @@ spectral-theory/PrimonGas.v
 spectral-theory/LadderOps.v
 spectral-theory/EulerFactorR.v
 spectral-theory/LadderDerivR.v
+spectral-theory/MobiusReciprocal.v
+spectral-theory/MobiusReciprocalR.v
