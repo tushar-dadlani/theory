@@ -120,11 +120,15 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   total `p`-adic valuation (`padic_val`, well-founded recursion on `0≤·<m`) and
   `has_prime_divisor` (every `m>1` has a prime divisor, via stdlib `not_prime_divide`). So
   `code_bijection_smooth` makes `code` a genuine **bijection** exponent-tuples ↔ `{ps}`-smooth
-  positives — both halves of the factorization crux complete, **fully axiom-free**. What remains
-  open toward `∏_p = ζ(2)` is now purely *analytic/combinatorial*: the sum reindexing
-  `Σ_occupation = Σ_smooth` (transporting a finite sum along this bijection) and "every `m ≤ pₙ`
-  is `{first n primes}`-smooth" (needs the enumeration `P` to actually list *all* primes, in
-  order — a property of the specific prime enumeration, not of `code`).
+  positives — both halves of the factorization crux complete, **fully axiom-free**. The
+  **reindexing** is now also done: `EulerReindex` proves (over ℚ, axiom-free) `weight_fug`
+  (the primon-gas weight with fugacity `1/p²` equals `1/(code ps ks)²`) and hence `euler_reindex`
+  — the finite Euler product `∏ᵢ Σ_{k<K} pᵢ⁻²ᵏ = Σ_{occupation states} 1/(code ps ks)²`, a sum
+  of `1/m²` over the (pairwise distinct, `codes_distinct`) smooth numbers `m = code ps ks`.
+  What remains open toward `∏_p = ζ(2)` is then: (i) tying this ℚ reindexing to the ℝ tower
+  `EP`/`zpart` and taking `K→∞` (the analytic bridge), and (ii) "every `m ≤ pₙ` is
+  `{first n primes}`-smooth" (a property of the prime *enumeration* `P` — that it lists all
+  primes in order — not of `code`).
   Also still **not** proved: the value `π²/6`, `ζ` as a general infinite-product identity for
   `s≠2`, `−ζ'/ζ`, and the `1<s<2` range.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):
