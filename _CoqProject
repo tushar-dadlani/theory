@@ -473,6 +473,7 @@ spectral-theory/ProductFormulaQ.v
 spectral-theory/ProfiniteCRT.v
 spectral-theory/LocalGlobalCompat.v
 spectral-theory/ComplexField.v
+spectral-theory/RootsOfUnity.v
 spectral-theory/EulerReindex.v
 spectral-theory/RecipSquareBound.v
 spectral-theory/EulerProductZetaBound.v
