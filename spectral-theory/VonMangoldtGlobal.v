@@ -309,10 +309,115 @@ Proof.
   rewrite (dsum_perm f _ _ (divisors_prod_perm a b Hab Ha Hb)), map_map; reflexivity.
 Qed.
 
-Print Assumptions dsum_prod.
+(* ================================================================= *)
+(*  8.  THE GLOBAL VON MANGOLDT FUNCTION Lambda                      *)
+(* ================================================================= *)
+
+(* Euclid for nprime *)
+Lemma nprime_euclid : forall p a b,
+  nprime p -> Nat.divide p (a*b) -> Nat.divide p a \/ Nat.divide p b.
+Proof.
+  intros p a b [Hp2 Hpd] Hpab.
+  destruct (Nat.eq_dec (Nat.gcd p a) p) as [Hg|Hg].
+  - left; rewrite <- Hg; apply Nat.gcd_divide_r.
+  - right; apply Nat.gauss with (m := a); [ exact Hpab | ].
+    destruct (Hpd (Nat.gcd p a) (Nat.gcd_divide_l _ _)) as [H1|Hp']; [ exact H1 | contradiction ].
+Qed.
+
+(* a prime dividing q^k equals q *)
+Lemma prime_dvd_prime_pow : forall p q k,
+  nprime p -> nprime q -> Nat.divide p (q^k) -> p = q.
+Proof.
+  intros p q k Hp Hq; induction k as [|k IH]; intro Hpk.
+  - simpl in Hpk; apply Nat.divide_1_r in Hpk; destruct Hp as [Hp2 _]; lia.
+  - simpl in Hpk; destruct (nprime_euclid p q (q^k) Hp Hpk) as [Hpq|Hpqk].
+    + destruct Hq as [Hq2 Hqd]; destruct (Hqd p Hpq) as [H1|He];
+        [ destruct Hp; lia | exact He ].
+    + apply IH; exact Hpqk.
+Qed.
+
+(* prime-power test: is_pow p n = true  iff  n is a power of p *)
+Fixpoint is_pow (fuel p n : nat) : bool :=
+  match fuel with
+  | O => false
+  | S f => if Nat.eqb n 1 then true
+           else if Nat.eqb (n mod p) 0 then is_pow f p (n / p) else false
+  end.
+
+Lemma is_pow_true_pow : forall fuel p n, 2 <= p -> is_pow fuel p n = true -> exists k, n = p^k.
+Proof.
+  induction fuel as [|f IH]; intros p n Hp H; simpl in H; [ discriminate | ].
+  destruct (Nat.eqb n 1) eqn:E1.
+  - apply Nat.eqb_eq in E1; exists 0; simpl; lia.
+  - destruct (Nat.eqb (n mod p) 0) eqn:E2; [ | discriminate ].
+    apply Nat.eqb_eq, Nat.Lcm0.mod_divide in E2.
+    destruct (IH p (n/p) Hp H) as [k Hk].
+    exists (S k); destruct E2 as [q Hq].
+    rewrite Hq, Nat.div_mul in Hk by lia; rewrite Hq, Hk; simpl; ring.
+Qed.
+
+(* the global von Mangoldt function.  spf 1 = 1 and ln (INR 1) = 0, so    *)
+(* Lambda 1 = 0 needs no special case.                                   *)
+Definition Lam (n : nat) : R :=
+  if is_pow n (spf n) n then ln (INR (spf n)) else 0%R.
+
+Lemma Lam_1 : Lam 1 = 0%R.
+Proof.
+  unfold Lam.
+  replace (is_pow 1 (spf 1) 1) with true by reflexivity.
+  replace (spf 1) with 1 by reflexivity.
+  replace (INR 1) with 1%R by (simpl; ring); rewrite ln_1; reflexivity.
+Qed.
+
+(* Lambda vanishes on a coprime product of two non-units (two distinct     *)
+(* primes, so not a prime power)                                          *)
+Lemma Lam_mul_zero : forall d e,
+  2 <= d -> 2 <= e -> Nat.gcd d e = 1 -> Lam (d*e) = 0%R.
+Proof.
+  intros d e Hd He Hde; unfold Lam.
+  destruct (is_pow (d*e) (spf (d*e)) (d*e)) eqn:E; [ exfalso | reflexivity ].
+  assert (Hde2 : 2 <= d*e) by nia.
+  assert (Hq2 : 2 <= spf (d*e)) by (apply spf_ge2; exact Hde2).
+  destruct (is_pow_true_pow (d*e) (spf (d*e)) (d*e) Hq2 E) as [k Hk].
+  set (q := spf (d*e)) in *.
+  assert (Hqp : nprime q) by (unfold q; apply spf_nprime; exact Hde2).
+  (* spf d = q and spf e = q *)
+  assert (Hdq : spf d = q).
+  { apply (prime_dvd_prime_pow (spf d) q k); [ apply spf_nprime; lia | exact Hqp | ].
+    rewrite <- Hk. apply Nat.divide_trans with d; [ apply spf_divides; lia | exists e; ring ]. }
+  assert (Heq : spf e = q).
+  { apply (prime_dvd_prime_pow (spf e) q k); [ apply spf_nprime; lia | exact Hqp | ].
+    rewrite <- Hk. apply Nat.divide_trans with e; [ apply spf_divides; lia | exists d; ring ]. }
+  (* q divides gcd d e = 1, contradiction *)
+  assert (Hq1 : Nat.divide q 1).
+  { rewrite <- Hde. apply Nat.gcd_greatest.
+    - rewrite <- Hdq; apply spf_divides; lia.
+    - rewrite <- Heq; apply spf_divides; lia. }
+  apply Nat.divide_1_r in Hq1; destruct Hqp as [Hq2' _]; lia.
+Qed.
+
+(* the per-pair collapse: for coprime d,e, Lambda(d*e) is Lambda of        *)
+(* whichever factor is >1 (or 0 if both are)                              *)
+Lemma Lam_collapse : forall d e, Nat.gcd d e = 1 -> 1 <= d -> 1 <= e ->
+  Lam (d*e) = ((if Nat.eqb d 1 then Lam e else 0) + (if Nat.eqb e 1 then Lam d else 0))%R.
+Proof.
+  intros d e Hde Hd He.
+  destruct (Nat.eq_dec d 1) as [->|Hd1].
+  - rewrite Nat.mul_1_l, Nat.eqb_refl.
+    destruct (Nat.eqb e 1) eqn:Ee; [ apply Nat.eqb_eq in Ee; subst e; rewrite Lam_1 | ]; lra.
+  - destruct (Nat.eq_dec e 1) as [->|He1].
+    + rewrite Nat.mul_1_r.
+      destruct (Nat.eqb d 1) eqn:Ed; [ apply Nat.eqb_eq in Ed; lia | ].
+      rewrite Nat.eqb_refl; lra.
+    + rewrite Lam_mul_zero by (try lia; exact Hde).
+      destruct (Nat.eqb d 1) eqn:Ed; [ apply Nat.eqb_eq in Ed; lia | ].
+      destruct (Nat.eqb e 1) eqn:Ee; [ apply Nat.eqb_eq in Ee; lia | ]. lra.
+Qed.
+
+Print Assumptions Lam_collapse.
 
 (* ================================================================= *)
-(*  END VonMangoldtGlobal.v (checkpoint A + keystone + divisor bij.) *)
+(*  END VonMangoldtGlobal.v (+ Lambda definition + per-pair collapse) *)
 (*  spf (smallest prime factor, proved prime), the divisor sum dsum,   *)
 (*  and its permutation-invariance -- the foundation for Lambda and    *)
 (*  the identity sum_{d|n} Lambda(d) = log n.                          *)
