@@ -443,3 +443,4 @@ spectral-theory/Padic.v
 spectral-theory/FreeDivMeet.v
 spectral-theory/PrimonGas.v
 spectral-theory/LadderOps.v
+spectral-theory/EulerFactorR.v
