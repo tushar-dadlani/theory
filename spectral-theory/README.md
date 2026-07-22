@@ -66,6 +66,8 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `VonMangoldtR.v` is the **analytic face** (over ℝ, quarantined axioms): the genuine **logarithmic derivative** of the Euler factor `Z_p(s) = 1/(1−p⁻ˢ)`. `vonmangoldt_logderiv` proves `d/ds log Z_p = −log p · fug/(1−fug)` (`fug = p⁻ˢ`), built by composing `derivable_pt_lim_ln` with `LadderDerivR.euler_factor_energy_deriv`. So `−d/ds log Z_p = log p · fug/(1−fug) = Σ_{k≥1} Λ(pᵏ) p⁻ᵏˢ` (since `Λ(pᵏ)=log p`); summed over primes this is the classical `−ζ'/ζ(s) = Σₙ Λ(n) n⁻ˢ`. This closes the loop with `LadderDerivR`'s energy `log p`: the per-prime logarithmic derivative *is* the von Mangoldt Dirichlet series. Uses the classical Reals axioms (quarantined); the ℚ core stays "Closed under the global context".
 
+`NxnZero.v` proves the analysis lemma `LadderDerivR` flagged as missing: `n·xⁿ → 0` for `0 ≤ x < 1` (`nxn_zero`, `Un_cv (fun n => INR n * x^n) 0`) — not in stdlib. Via second-order Bernoulli `(1+h)ⁿ ≥ 1 + nh + n(n−1)/2·h²` (`ber2`, by induction) it bounds `n·xⁿ ≤ 2/((n−1)h²)` and squeezes against `2/h²·/(n−1) → 0` (`cv_infty_cv_0` + `INR_unbounded`). Uses the classical Reals axioms (quarantined).
+
 `LadderDerivR.v` is the **ladder-derivative payoff** in the analytic layer (over ℝ): the number operator `N = x·d/dx` and the primon **energy `log p`** as *genuine* derivatives (`Ranalysis`), completing `LadderOps.v`. Where `LadderOps` proved the *formal/termwise* facts `MD` (`x·D(xᵏ) = N(xᵏ)`) and `deriv_number` (`x·dsum = nsum`) over ℚ, here they become analytic derivatives of the partition-function limit `Z(x) = 1/(1−x)`: `Zinf_deriv` (`d/dx(1/(1−x)) = 1/(1−x)²`, via stdlib `derivable_pt_lim_div`) and `number_operator` (`x·d/dx Z = x/(1−x)²`, the mean-occupation generating function). The **energy** payoff: `fugacity_deriv` proves `d/ds p⁻ˢ = −log p · p⁻ˢ` — differentiating the fugacity `p⁻ˢ = exp(−s·ln p)` *brings down the single-particle energy* `log p` (via `derivable_pt_lim_comp` with `exp`); and `euler_factor_energy_deriv` composes it through `Zinf_deriv` to give `d/ds(1/(1−p⁻ˢ)) = −log p · p⁻ˢ/(1−p⁻ˢ)²`, so differentiating the Euler factor w.r.t. `s` pulls out `log p`. Like `EulerFactorR.v`, this file **uses the classical Reals axioms** (quarantined); `LadderOps`, `PrimonGas` and the rest of the ℚ core stay "Closed under the global context".
 
 `EulerProductR.v` fills the **per‑prime → finite product** gap on the analytic side: for any finite list of fugacities `xs` (each `|x| < 1`), the product of the truncated geometric partial sums converges to the product of Euler factors — `euler_product_R : Un_cv (Zpartial xs) (Zfactor xs)`, i.e. `∏_{x∈xs} Σ_{k≤N} xᵏ → ∏_{x∈xs} 1/(1−x)`, the **finite Euler product** `∏_p (1−p⁻ˢ)⁻¹` as `N→∞`. Proof: each factor converges (`EulerFactorR.geom_limit`) and a finite product of convergent sequences converges to the product of limits (stdlib `CV_mult`), by induction on the list. Uses the classical Reals axioms (quarantined). Still per *finite* prime set; the infinite product / full `ζ` remains out of scope (`LEDGER.md`).
@@ -84,7 +86,7 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `WalshHadamardHilbert.v` lifts the whole picture into a genuine (finite, 4-dimensional) real Hilbert space: it equips the signal space with the inner product ⟨f,g⟩ = Σ f g and proves it positive-definite, that the Hadamard operator is self-adjoint and satisfies Parseval (⟨Hf,Hg⟩ = 4⟨f,g⟩), that the normalized transform `Ur = ½H` is a real unitary involution (⟨Ur f, Ur g⟩ = ⟨f,g⟩, Ur² = I), that the apex reflection is a self-adjoint involution with orthogonal ±1 eigenspaces (nodes ⊥ antinodes), and that the standing-wave amplitude is a −1-eigenvector of norm²=2 preserved by `Ur`. Uses only the standard Coq `Reals` axioms; no custom axioms, no `admit`. (The infinite-dimensional ℓ²/L² lift the Hilbert–Pólya program needs is a much larger, analysis-library undertaking.)
 
-**58 proof file(s):**
+**59 proof file(s):**
 
 - `BiView.v`
 - `BiViewProduct.v`
@@ -111,6 +113,7 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 - `MassGapQ.v`
 - `MobiusReciprocal.v`
 - `MobiusReciprocalR.v`
+- `NxnZero.v`
 - `KappaOmega.v`
 - `KroneckerSelfAdjoint.v`
 - `LadderDerivR.v`
