@@ -133,8 +133,18 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   (of `1/m²`) to at most `ζ(2)` (via `incl_sum_le` over `List.remove` + `seqsum_zpart` +
   `growing_ineq`). This is the tight bound (`ζ(2) < 2`) that gives `EP n ≤ ζ(2) = Hupper` once
   the ℚ→ℝ transport of `euler_reindex` feeds `EP n`'s reindexed (distinct-smooth-number) form
-  into it. Remaining in (i): that Q2R transport (mechanical homomorphism plumbing) and the
-  `K→∞` limit.
+  into it. **That transport is now done**: `EulerProductZetaBound.euler_factor_le_zeta` proves,
+  for any list `ps` of distinct primes, the finite Euler product `∏_{p∈ps}(1−p⁻²)⁻¹ ≤ ζ(2)` —
+  i.e. **`Hupper` for the concrete prime enumeration** — via `Q2R` transport of `euler_reindex`
+  (`euler_partial_reindex_R`: the ℝ partial product = sum of `1/m²` over the coded numbers),
+  `codes_nat_nodup`/`code_pos` (distinct positive integers, using `gstates_nodup`),
+  `recip_sq_nodup_bound`, and `K→∞` (`euler_product_R` + `lim_le`). So the full chain
+  **primon gas → reindex → factorization bijection → ζ(2) domination → `EP ≤ ζ(2)`** is
+  machine-checked (quarantined Reals axioms). What remains toward the full unconditional
+  `∏_p = ζ(2)`: **`Hlower`** (the matching lower bound, which additionally needs the enumeration
+  property "every `m ≤ pₙ` is `{first n primes}`-smooth"), and repackaging the list-form
+  `euler_factor_le_zeta` into `PrimorialEuler.EP P`'s nat-indexed shape (`map`-`nth`-`seq`
+  bookkeeping) to feed `PrimorialZeta.tower_is_zeta2` directly.
   Also still **not** proved: the value `π²/6`, `ζ` as a general infinite-product identity for
   `s≠2`, `−ζ'/ζ`, and the `1<s<2` range.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):
