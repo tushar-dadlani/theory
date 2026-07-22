@@ -91,9 +91,13 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   enumeration / factorisation of a general `n`) are still **not** proved.
 - **Infinite process**: `ZetaConverge.zeta2_converges` proves the infinite sum `Σ_{n≥1} 1/n² =
   ζ(2)` **converges** (existence, not the value `π²/6`; the same telescoping bound gives
-  `Σ 1/nˢ` for all `s ≥ 2`) — the first genuinely-infinite, over-all-numbers object. The infinite
-  **Euler product** `ζ = ∏_p (1−p⁻ˢ)⁻¹` over all primes, `−ζ'/ζ`, and the `1<s<2` range remain
-  **not** proved.
+  `Σ 1/nˢ` for all `s ≥ 2`) — the first genuinely-infinite, over-all-numbers object.
+- **Primorial-relativized Euler product**: `PrimorialEuler` builds the primorial tower
+  `EP n = ∏_{first n primes} (1−p⁻²)⁻¹` and proves each rung is a finite Euler product
+  (`EP_is_limit`) and the tower is monotone (`EP_monotone`), mirroring the primorial's growth.
+  What is **not** proved: the tower's **convergence** to `ζ` (needs a uniform bound on the smooth
+  partial sums), the infinite **Euler product** as an actual product `ζ = ∏_p (1−p⁻ˢ)⁻¹`,
+  `−ζ'/ζ`, and the `1<s<2` range.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):
   the single Euler factor, the **finite** Euler product (`EulerProductR`), the number operator as a
   derivative (`LadderDerivR`), and now the number-weighted series `Σ k xᵏ = x/(1−x)²`
