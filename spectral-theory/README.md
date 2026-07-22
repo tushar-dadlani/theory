@@ -34,9 +34,11 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `LandauerBoundL.v` removes the *last* Reals dependency by abstracting the one‑bit entropy to a **parameter `L`**. `LandauerBound.v` proved the genuinely transcendental `Hb(½) = ln 2` (which forces the classical Reals axioms); here we don't compute the entropy — we take `L : Q`, `0 < L` (the entropy of one fair bit, `= ln 2` in the ℝ interpretation, never committed to). Then the whole Landauer structure is pure ℚ: `landauer_min dS = k·T·dS`, `erase_bit_heat = k·T·L`, additivity over bits (`landauer_min (a+b) = landauer_min a + landauer_min b`), monotonicity, strict positivity, and the second‑law inequality — all axiom‑free (`Print Assumptions` **"Closed under the global context"**). So the transcendental `ln 2` is quarantined to a labelled parameter, and every construction in this directory now has an axiom‑free ℚ realization; only `LandauerBound.v` itself (which deliberately keeps the real `ln 2`) uses the Reals axioms.
 
+`Padic.v` brings in genuine **non-archimedean topology machinery** — the **p-adic ultrametric** — over ℚ, axiom-free, as the *non-archimedean companion* of `BiView`. For a prime `p`, the p-adic absolute value of an element of valuation `v` is `|x|_p = p^{−v}`, which is **rational** (a power of `1/p`), so the whole norm lives over ℚ — no Reals, no completion, no topology library. Indexing by the valuation `v` (which *is* `BiView`'s global coordinate), we define `pabs v = 1 # p^v` and prove it is positive, `pabs 0 = 1` (units have norm 1), **multiplicative** (`pabs (v+w) = pabs v · pabs w` — valuation-additivity becomes norm-multiplicativity), **antitone** (larger valuation = smaller norm, "closer to 0"), and the **ultrametric / strong-triangle max-law** (`Nat.min v w ≤ u → pabs u ≤ max (pabs v) (pabs w)`: since `pabs` is a decreasing exponential of the valuation, a sum — whose valuation is `≥ min` — has norm `≤ max` of the two). **Wiring to `BiView`:** `arch_padic_opposite` shows `pabs` and `BiView.alpha` are the two views of one valuation moving in **opposite directions** — the archimedean view (`alpha`) *increases* while the p-adic view (`pabs`) *decreases* — the real and p-adic completions of a single arithmetic object. `Print Assumptions` **"Closed under the global context"** (no Reals, no topology). This is the genuine ultrametric *space* structure; the completion to ℚ_p (Cauchy limits) is deliberately out of scope.
+
 `WalshHadamardHilbert.v` lifts the whole picture into a genuine (finite, 4-dimensional) real Hilbert space: it equips the signal space with the inner product ⟨f,g⟩ = Σ f g and proves it positive-definite, that the Hadamard operator is self-adjoint and satisfies Parseval (⟨Hf,Hg⟩ = 4⟨f,g⟩), that the normalized transform `Ur = ½H` is a real unitary involution (⟨Ur f, Ur g⟩ = ⟨f,g⟩, Ur² = I), that the apex reflection is a self-adjoint involution with orthogonal ±1 eigenspaces (nodes ⊥ antinodes), and that the standing-wave amplitude is a −1-eigenvector of norm²=2 preserved by `Ur`. Uses only the standard Coq `Reals` axioms; no custom axioms, no `admit`. (The infinite-dimensional ℓ²/L² lift the Hilbert–Pólya program needs is a much larger, analysis-library undertaking.)
 
-**35 proof file(s):**
+**36 proof file(s):**
 
 - `BiView.v`
 - `BiViewProduct.v`
@@ -61,6 +63,7 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 - `LandauerBound.v`
 - `LandauerBoundL.v`
 - `ProductFormula.v`
+- `Padic.v`
 - `PrimorialSpectralTheory.v`
 - `SpectralAlgebra.v`
 - `SpectralEvent.v`
