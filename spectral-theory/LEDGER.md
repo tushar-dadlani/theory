@@ -43,6 +43,16 @@ is axiom-free.
   bijection and squeezing between the ζ-partial-sums and `ζ(2)`. Honest scope: existence of the
   product limit `= ζ(2)` (itself an existence limit, **not** the value `π²/6`); general `s`,
   `−ζ'/ζ`, and zeta *zeros* are still absent.
+- **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
+  `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
+  (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
+  instances. **Axiom-free** — genuine, because for a *rational* input `|x|_∞` is itself rational
+  (a ratio of coded integers), so no ℝ is constructed. This is the honest **adelic bridge**:
+  finite valuations determine archimedean size *on rational points*. It does **not** build
+  `ℝ=ℚ_∞` (the completion at `∞`, a separate factor `𝔸_ℚ=ℝ×𝔸_f` orthogonal to the profinite
+  tower `∏_p ℤ_p=lim ℤ/nℤ`); Γ-factors, `ξ(s)`, the functional equation, and ζ special values
+  (π²/6) are archimedean-local and stay out of reach — the file's closing note pins where the
+  quarantined Reals axioms would re-enter (Cauchy/Dedekind completion).
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).

@@ -469,6 +469,7 @@ spectral-theory/PrimorialEulerBound.v
 spectral-theory/PrimorialZeta.v
 spectral-theory/PrimeFactorizationN.v
 spectral-theory/PrimeFactorizationExists.v
+spectral-theory/ProductFormulaQ.v
 spectral-theory/EulerReindex.v
 spectral-theory/RecipSquareBound.v
 spectral-theory/EulerProductZetaBound.v
