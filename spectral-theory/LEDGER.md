@@ -74,6 +74,9 @@ is axiom-free.
   involution cousin — the observer↔observed swap `S` (self-adjoint + `S²=I`, spectrum `{+1,−1}`)
   realising the unit group `{I,N}` of `INFMonoid` (`IZR(val N)=−1`, `IZR(val I)=+1`), with `v0`
   simultaneously `M`'s kernel and `S`'s `−1` mode, plus the reflection residue decomposition.
+  `ObserverSpectral` shows `M` and `S` are **commuting observables** (`[M,S]=0`) simultaneously
+  diagonalized by `{v0,vp,vm}` — the finite spectral picture of simultaneously-measurable
+  observables (`v0` = `(0,−1)`, `vp/vm` = `(±√2,+1)`). Axiom-quarantined; role names interpretation.
 - **Finite Fourier + sampling** `WalshHadamard` (DFT on `F₂ⁿ`: shift, convolution, `H²=8I`
   inversion, Parseval), `WalshSampling` (the finite Shannon–Nyquist sampling theorem: comb
   transform `Ĥ 1_H = |H| 1_{H⊥}`, Poisson summation, band-limited reconstruction): all **genuine
@@ -207,9 +210,13 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   built** (`Chebyshev`): `Lam_nonneg` (`Λ≥0`), the floor lemma `floor_half_step`
   (`⌊N/d⌋−2⌊N/(2d)⌋=(⌊N/d⌋)mod 2∈{0,1}`), and `ψ`. These give (via `order_swap_identity`) the
   sandwich `ψ(N)−ψ(⌊N/2⌋) ≤ D(N) ≤ ψ(N)` with `D(N)=T(N)−2T(⌊N/2⌋)=Σ_d Λ(d)·((⌊N/d⌋)mod 2)`,
-  reducing `ψ≍x` to the single **numerical input** `D(N)≈N·log 2` — an elementary-Stirling /
-  central-binomial estimate (`log(N!)−2log((N/2)!) = log C(N,⌊N/2⌋)`), a real-analysis layer left
-  for a dedicated pass. **Hard ceiling:** the *sharp* `ψ(x)∼x` (PNT), the explicit
+  reducing `ψ≍x` to the single **numerical input** `D(N)≈N·log 2`. The **factorial–log bridge
+  is now built** (`Chebyshev.Tlog_eq_ln_fact`: `T(N)=Σ_{n≤N}log n = log(N!)`), so
+  `D(N)=log(N!/(⌊N/2⌋!)²)=log C(2M,M)`. The remaining `ψ≍x` pieces (a dedicated ~pass): the
+  **binomial↔factorial** identity `C(n,k)·k!·(n−k)! = n!`, the **row sum** `Σ_k C(n,k)=2^n`
+  (generalizing `BitDensity.cube3_total`), **unimodality** `C(2M,M) = max_k C(2M,k)` ⟹
+  `4^M/(2M+1) ≤ C(2M,M) ≤ 4^M`, the reformulation `D=Σ_d Λ(d)·((⌊N/d⌋)mod 2)` (order-swap +
+  range extend), and the `T(N)−2T(⌊N/2⌋)` telescoping. **Hard ceiling:** the *sharp* `ψ(x)∼x` (PNT), the explicit
   formula, and anything about zeta *zeros* genuinely require the contour step / complex analysis
   we deliberately do not build.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):

@@ -21,7 +21,7 @@
 (* ================================================================= *)
 
 Require Import VonMangoldtGlobal.
-From Stdlib Require Import Arith Lia PeanoNat List Reals Lra.
+From Stdlib Require Import Arith Lia PeanoNat List Reals Lra Factorial.
 Import ListNotations.
 
 (* going from N to S N, floor(./d) increases by [d | S N] *)
@@ -156,6 +156,31 @@ Qed.
 
 (* the Chebyshev prime-counting function *)
 Definition psi (N : nat) : R := fold_right Rplus 0%R (map Lam (seq 1 N)).
+
+(* ----------------------------------------------------------------- *)
+(*  THE FACTORIAL-LOG BRIDGE toward the central binomial             *)
+(*                                                                    *)
+(*  T(N) = sum_{n<=N} log n = log(N!).  Then                          *)
+(*     D(N) := T(N) - 2 T(floor N/2)                                  *)
+(*           = log(N!) - 2 log((floor N/2)!)                          *)
+(*           = log( N! / ((floor N/2)!)^2 )  = log(central binomial),  *)
+(*  reducing psi ≍ x to the elementary bounds 4^M/(2M+1) <= C(2M,M)    *)
+(*  <= 4^M (row sum + unimodality), the remaining real-analysis layer. *)
+(* ----------------------------------------------------------------- *)
+
+Lemma Tlog_rec : forall N, Tlog (S N) = (Tlog N + ln (INR (S N)))%R.
+Proof.
+  intro N; unfold Tlog; rewrite seq_S, map_app, Rsum_app; cbn [map fold_right].
+  replace (1 + N)%nat with (S N) by lia; ring.
+Qed.
+
+Lemma Tlog_eq_ln_fact : forall N, Tlog N = ln (INR (fact N)).
+Proof.
+  induction N as [|N IH].
+  - unfold Tlog; simpl; rewrite ln_1; reflexivity.
+  - rewrite Tlog_rec, IH, fact_simpl, mult_INR, ln_mult;
+      [ ring | apply lt_0_INR; lia | apply lt_0_INR; apply lt_O_fact ].
+Qed.
 
 (* ================================================================= *)
 (*  END Chebyshev.v                                                  *)

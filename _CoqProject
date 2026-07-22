@@ -481,3 +481,4 @@ spectral-theory/INFMonoid.v
 spectral-theory/INFProduct.v
 spectral-theory/ObserverTriad.v
 spectral-theory/ObserverSwap.v
+spectral-theory/ObserverSpectral.v
