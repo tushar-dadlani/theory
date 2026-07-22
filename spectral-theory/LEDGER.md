@@ -79,8 +79,11 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   operation* form `gcd(pⁱqʲ,pⁱ'qʲ') = p^min·q^min` as an equation (the order iso gives the
   poset structure; the explicit coordinatewise gcd/lcm formula is not separately derived).
   `PrimeFactorizationN` now **generalizes the order embedding to `n` distinct primes**
-  (`code_order_iso_N`) and adds **injectivity** (`code_inj`) — unique factorization over the
-  first `n` primes, as a bijection onto its image. Axiom-free.
+  (`code_order_iso_N`) and adds **injectivity** (`code_inj`); `PrimeFactorizationExists` adds
+  **surjectivity** onto the `{ps}`-smooth positives (`code_surj`, via a total `p`-adic
+  valuation). Together (`code_bijection_smooth`) `code` is a full **bijection** exponent-tuples
+  ↔ `{first n primes}`-smooth positives — unique factorization over the first `n` primes, both
+  existence and uniqueness. Axiom-free.
 - **`PadicRing` / `PadicRingOpp`**: the commutative **semiring** axioms (`PadicRing`) *and* the
   **additive inverse** (`PadicRingOpp.Zadd_opp_l`, with `neg_coh` handling nat truncated
   subtraction) are now proved — so `ℤ_p` is a proved **commutative ring**. Only the Coq
@@ -111,10 +114,17 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   numbers` (`∏ pᵢ^{kᵢ}`) is an **order embedding** and **injective** (`code_inj`,
   `code_order_iso_N`) — unique factorization over the first `n` primes, as a bijection onto its
   image, generalizing `FreeDivMeetIso` from 2 to `n` distinct primes (axiom-free, via the
-  `p`-adic cancellation `prime_pow_cancel`). What remains **genuinely open** is the **existence**
-  half (surjectivity onto *all* `{first n primes}`-smooth numbers — every such number *has* a
-  factorization), the sum reindexing `Σ_occupation = Σ_smooth`, and "every `m` below the largest
-  prime is smooth" (needs factorization existence + primes unbounded).
+  `p`-adic cancellation `prime_pow_cancel`). The **existence** half is now **also done**:
+  `PrimeFactorizationExists` proves `code ps` **surjective** onto the `{ps}`-smooth positives
+  (`code_surj`) — every `m>0` whose prime divisors lie in `ps` has an exponent tuple — via the
+  total `p`-adic valuation (`padic_val`, well-founded recursion on `0≤·<m`) and
+  `has_prime_divisor` (every `m>1` has a prime divisor, via stdlib `not_prime_divide`). So
+  `code_bijection_smooth` makes `code` a genuine **bijection** exponent-tuples ↔ `{ps}`-smooth
+  positives — both halves of the factorization crux complete, **fully axiom-free**. What remains
+  open toward `∏_p = ζ(2)` is now purely *analytic/combinatorial*: the sum reindexing
+  `Σ_occupation = Σ_smooth` (transporting a finite sum along this bijection) and "every `m ≤ pₙ`
+  is `{first n primes}`-smooth" (needs the enumeration `P` to actually list *all* primes, in
+  order — a property of the specific prime enumeration, not of `code`).
   Also still **not** proved: the value `π²/6`, `ζ` as a general infinite-product identity for
   `s≠2`, `−ζ'/ζ`, and the `1<s<2` range.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):
