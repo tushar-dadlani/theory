@@ -478,3 +478,4 @@ spectral-theory/VonMangoldtGlobal.v
 spectral-theory/Chebyshev.v
 spectral-theory/WalshSampling.v
 spectral-theory/INFMonoid.v
+spectral-theory/INFProduct.v

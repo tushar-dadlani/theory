@@ -60,7 +60,12 @@ is axiom-free.
   the Walsh sign group `Z/2 = {I,N}`, and — via `sym_of_mu` — **exactly the value-monoid of the
   Möbius function on prime powers** (`MobiusReciprocal.mu_pp`), `F` = the squarefree collapse.
   Axiom-free. (Honest: this is a proved structural *identification*/bridge between the two arcs,
-  not a claim beyond it.)
+  not a claim beyond it.) `INFProduct` inducts it to `n` observers: the `n`-fold monoid
+  `({I,N,F})ⁿ` (`op_n` commutative monoid) with product-sign `val_n`, proving the homomorphism
+  `val_n_op`, the free-split `val_n_app` (`val_n (a++b) = val_n a·val_n b` — arbitrary
+  observer/observed partition), the one-`F` veto `val_n_zero_iff` (`val_n l = 0 ⟺ In F l`), and
+  `val_n_mu` (= `μ` of a product of `n` prime-powers). "Observer" stays an *interpretation* of a
+  coordinate/prime; the theorems are about the product monoid. Axiom-free.
 - **Finite Fourier + sampling** `WalshHadamard` (DFT on `F₂ⁿ`: shift, convolution, `H²=8I`
   inversion, Parseval), `WalshSampling` (the finite Shannon–Nyquist sampling theorem: comb
   transform `Ĥ 1_H = |H| 1_{H⊥}`, Poisson summation, band-limited reconstruction): all **genuine
