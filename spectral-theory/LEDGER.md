@@ -163,32 +163,22 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   has no machinery for (no ℂ, no Cauchy, no analytic continuation, no zeros). We instead build
   its **elementary shadow**: `abel_summation` (summation by parts) is the discrete
   integration-by-parts that replaces the contour shift; combined with `Λ = μ⋆log` it is the
-  pre-Riemann toolkit for Chebyshev's `ψ(x) ≍ x`. **Status:** only the tool (`abel_summation`) is
-  built. The Chebyshev prime-counting bound itself is **not** proved — it needs a *global*
-  von Mangoldt `Λ:ℕ→ℝ`, the general-`n` identity `Σ_{d|n} Λ(d) = log n` (the crux), `T(x)=
-  Σ_{d≤x}Λ(d)⌊x/d⌋`, and `log⌊x⌋!` bounds. `VonMangoldtGlobal` is **in progress** on this: the
-  **foundation is built and axiom-free** — `spf` (smallest prime factor) proved prime
-  (`spf_nprime`), the divisor sum `dsum` with permutation-invariance (`dsum_perm`), all in `nat`
-  (`Nat.gauss`) + `R`. The **delicate Gauss keystone is now done** (`split_divisor`,
-  axiom-free): for `gcd(a,b)=1` and `c∣a·b`, `c = gcd(c,a)·gcd(c,b)` — by divisibility
-  antisymmetry, each direction a `Nat.gauss` argument (`Nat.gcd_div_gcd` for the divide-out
-  coprimality). The **divisor-list bijection is now also done**: `divisors_prod_perm`
-  (`Permutation (divisors (a·b)) (map (·) (divisors a × divisors b))` via `NoDup_Permutation`,
-  using `prod_map_inj` from `gcd_mul_coprime`, and `NoDup_list_prod`), giving the `dsum`
-  reindexing `dsum_prod`: `dsum f (a·b) = Σ_{(d,e)∈div a×div b} f(d·e)` for coprime `a,b` —
-  all axiom-free/quarantined. The **`Λ` definition and per-pair collapse are now done**:
-  `Λ n = ln(INR(spf n))` when `is_pow (spf n) n` else `0` (a prime-power test; `spf 1 = 1` so
-  `Λ 1 = 0` automatically), with `Lam_mul_zero` (`Λ(d·e)=0` for coprime `d,e≥2` — two distinct
-  primes so not a prime power, via `is_pow_true_pow` + `prime_dvd_prime_pow` + `nprime_euclid`)
-  and hence `Lam_collapse`: `Λ(d·e) = [d=1]·Λe + [e=1]·Λd` for coprime `d,e`. The **`dsum`-level
-  collapse is now done** (`dsum_mult`: `dsum Λ (a·b) = dsum Λ a + dsum Λ b` for coprime `a,b`) —
-  pure sum manipulation on `dsum_prod` + `Lam_collapse`: `Rsum_plus` splits the pair-sum,
-  `Fubini_list_prod` reorders, `Rsum_pull_if`/`Rsum_if1` (an indicator picks out the divisor `1`
-  over the `NoDup` divisor list) evaluate each half. Still to do: the prime-power base
-  `dsum Λ (p^k)=k·ln p` (divisors of `p^k` are its powers); and the strong-induction assembly
-  `Σ_{d|n}Λ(d)=log n` (peel `p=spf n`, `n=p^a·m` coprime, `dsum_mult` + base + IH). **Hard ceiling:**
-  the *sharp* `ψ(x)∼x` (PNT), the explicit formula, and anything about zeta *zeros* genuinely
-  require the contour step / complex analysis we deliberately do not build.
+  pre-Riemann toolkit for Chebyshev's `ψ(x) ≍ x`. **Status:** the tool (`abel_summation`) **and**
+  the arithmetic crux — the general-`n` identity `Σ_{d|n} Λ(d) = log n` — are **done**.
+  `VonMangoldtGlobal.vonmangoldt_identity` proves it for a genuine global `Λ:ℕ→ℝ`, entirely in
+  `nat` (`Nat.gauss`) + `R` (only `ln` pulls the quarantined classical Reals axioms), via: `spf`
+  proved prime; the **coprime divisor split** `c=gcd(c,a)·gcd(c,b)` (`split_divisor`, the Gauss
+  keystone); the **divisor-list bijection** `divisors(a·b)≅divisors(a)×divisors(b)`
+  (`divisors_prod_perm`, `dsum_prod`); `Λ` with `Lam_mul_zero` (`Λ(d·e)=0` for coprime `d,e≥2`,
+  via `is_pow_true_pow`+`prime_dvd_prime_pow`); **multiplicativity** `dsum Λ (a·b)=dsum Λ a+
+  dsum Λ b` (`dsum_mult`, pure sum manipulation); the **prime-power base** `dsum Λ (p^k)=ln(p^k)`
+  (`dsum_primepow`); and the strong-induction **assembly** (peel `p=spf n`, `n=p^a·m` coprime via
+  `pval`, `dsum_mult`+base+IH+`ln_mult`). This closes the "general-`n` divisor sums" gap. What
+  remains for Chebyshev's `ψ(x)≍x` is now the **analytic assembly**: `T(x)=Σ_{n≤x}log n=
+  Σ_{d≤x}Λ(d)⌊x/d⌋` (order swap using the identity) + `log⌊x⌋!` bounds + the `T(x)−2T(x/2)`
+  squeeze (using `abel_summation`). **Hard ceiling:** the *sharp* `ψ(x)∼x` (PNT), the explicit
+  formula, and anything about zeta *zeros* genuinely require the contour step / complex analysis
+  we deliberately do not build.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):
   the single Euler factor, the **finite** Euler product (`EulerProductR`), the number operator as a
   derivative (`LadderDerivR`), and now the number-weighted series `Σ k xᵏ = x/(1−x)²`

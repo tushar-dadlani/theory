@@ -506,10 +506,188 @@ Proof.
     ring.
 Qed.
 
-Print Assumptions dsum_mult.
+(* ================================================================= *)
+(*  10.  PRIME-POWER DIVISORS AND THE PRIME-POWER BASE               *)
+(* ================================================================= *)
+
+(* divisors of a prime power are exactly its powers *)
+Lemma dvd_prime_pow : forall p k d,
+  nprime p -> Nat.divide d (p^k) -> exists j, (j <= k)%nat /\ d = p^j.
+Proof.
+  intros p k; induction k as [|k IH]; intros d Hp Hd.
+  - simpl in Hd; apply Nat.divide_1_r in Hd; exists 0; simpl; auto.
+  - simpl in Hd.
+    destruct (Nat.eq_dec (Nat.gcd d p) p) as [Hg|Hg].
+    + assert (Hpd : Nat.divide p d) by (rewrite <- Hg; apply Nat.gcd_divide_l).
+      destruct Hpd as [d' Hd'].
+      assert (Hd'pk : Nat.divide d' (p^k)).
+      { destruct Hd as [c Hc]. exists c.
+        apply (Nat.mul_cancel_r _ _ p); [ destruct Hp; lia | ].
+        rewrite Hd' in Hc; nia. }
+      destruct (IH d' Hp Hd'pk) as [j [Hj Hdj]].
+      exists (S j); split; [ lia | rewrite Hd', Hdj; simpl; ring ].
+    + assert (Hgcd : Nat.gcd d p = 1).
+      { destruct Hp as [Hp2 Hpd']; destruct (Hpd' (Nat.gcd d p) (Nat.gcd_divide_r _ _)) as [H1|Hp'];
+          [ exact H1 | contradiction ]. }
+      assert (Hdpk : Nat.divide d (p^k))
+        by (apply Nat.gauss with (m := p); [ exact Hd | exact Hgcd ]).
+      destruct (IH d Hp Hdpk) as [j [Hj Hdj]]; exists j; split; [ lia | exact Hdj ].
+Qed.
+
+Lemma spf_prime_pow : forall p j, nprime p -> 1 <= j -> spf (p^j) = p.
+Proof.
+  intros p j Hp Hj; assert (Hp2 : 2 <= p) by (destruct Hp; lia).
+  assert (Hpj2 : 2 <= p^j)
+    by (apply Nat.le_trans with (p^1); [ rewrite Nat.pow_1_r; exact Hp2 | apply Nat.pow_le_mono_r; lia ]).
+  assert (Hpn : Nat.divide p (p^j)).
+  { assert (Hpj : p^j = p * p^(j-1)) by (replace j with (S (j-1)) at 1 by lia; apply Nat.pow_succ_r').
+    exists (p^(j-1)); rewrite Hpj; ring. }
+  assert (Hge : 2 <= spf (p^j)) by (apply spf_ge2; exact Hpj2).
+  destruct (dvd_prime_pow p j (spf (p^j)) Hp (spf_divides _ Hpj2)) as [i [Hi Hspf]].
+  assert (Hle : spf (p^j) <= p).
+  { destruct (le_gt_dec (spf (p^j)) p) as [Hle|Hgt]; [ exact Hle | exfalso ].
+    apply (spf_least (p^j) p Hpj2 Hp2 Hgt); exact Hpn. }
+  assert (Hgep : p <= spf (p^j)).
+  { rewrite Hspf; destruct i as [|i'].
+    - rewrite Hspf in Hge; simpl in Hge; lia.
+    - apply Nat.le_trans with (p^1); [ rewrite Nat.pow_1_r; lia | apply Nat.pow_le_mono_r; lia ]. }
+  lia.
+Qed.
+
+Lemma is_pow_pow_true : forall fuel p j, 2 <= p -> (j < fuel)%nat -> is_pow fuel p (p^j) = true.
+Proof.
+  induction fuel as [|f IH]; intros p j Hp Hj; [ lia | ].
+  simpl; destruct (Nat.eqb (p^j) 1) eqn:E1; [ reflexivity | ].
+  assert (Hj1 : 1 <= j).
+  { destruct j; [ simpl in E1; discriminate | lia ]. }
+  assert (Hpj : p^j = p * p^(j-1)) by (replace j with (S (j-1)) at 1 by lia; apply Nat.pow_succ_r').
+  assert (Hmod : (p^j) mod p = 0) by (apply Nat.Lcm0.mod_divide; exists (p^(j-1)); rewrite Hpj; ring).
+  assert (Hb : (Nat.eqb (p^j mod p) 0) = true) by (apply Nat.eqb_eq; exact Hmod).
+  rewrite Hb.
+  replace (p^j / p) with (p^(j-1))
+    by (rewrite Hpj, Nat.mul_comm, Nat.div_mul by lia; reflexivity).
+  apply IH; [ exact Hp | lia ].
+Qed.
+
+Lemma Lam_prime_pow : forall p j, nprime p -> 1 <= j -> Lam (p^j) = ln (INR p).
+Proof.
+  intros p j Hp Hj; assert (Hp2 : 2 <= p) by (destruct Hp; lia).
+  assert (Hjlt : (j < p^j)%nat).
+  { assert (j < 2^j)%nat by (clear; induction j as [|j IHj]; simpl; lia).
+    assert (2^j <= p^j)%nat by (apply Nat.pow_le_mono_l; lia). lia. }
+  unfold Lam.
+  rewrite (spf_prime_pow p j Hp Hj), (is_pow_pow_true (p^j) p j Hp2 Hjlt); reflexivity.
+Qed.
+
+Lemma divisors_primepow : forall p k, nprime p ->
+  Permutation (divisors (p^k)) (map (fun j => p^j) (seq 0 (S k))).
+Proof.
+  intros p k Hp; assert (Hp2 : 2 <= p) by (destruct Hp; lia).
+  apply NoDup_Permutation.
+  - apply divisors_nodup.
+  - apply NoDup_map_inj;
+      [ intros x y _ _ Hexy; apply Nat.pow_inj_r with p; [ lia | exact Hexy ] | apply seq_NoDup ].
+  - intro d; rewrite in_divisors; split.
+    + intros [_ Hdd].
+      destruct (dvd_prime_pow p k d Hp Hdd) as [j [Hj Hdj]].
+      apply in_map_iff; exists j; split; [ symmetry; exact Hdj | apply in_seq; lia ].
+    + intro Hin; apply in_map_iff in Hin; destruct Hin as [j [Hdj Hjin]].
+      apply in_seq in Hjin; subst d; split.
+      * split.
+        -- rewrite <- (Nat.pow_1_l j); apply Nat.pow_le_mono_l; lia.
+        -- apply Nat.pow_le_mono_r; lia.
+      * exists (p^(k-j)); rewrite <- Nat.pow_add_r; f_equal; lia.
+Qed.
+
+Lemma pow_pos_R : forall p k, 1 <= p -> (0 < INR (p^k))%R.
+Proof.
+  intros p k Hp; apply lt_0_INR.
+  assert (1 <= p^k)%nat by (rewrite <- (Nat.pow_1_l k); apply Nat.pow_le_mono_l; lia); lia.
+Qed.
+
+Lemma sum_pow_Lam : forall p k, nprime p ->
+  fold_right Rplus 0%R (map (fun j => Lam (p^j)) (seq 0 (S k))) = ln (INR (p^k)).
+Proof.
+  intros p k Hp; assert (Hp2 : 2 <= p) by (destruct Hp; lia).
+  induction k as [|k IH].
+  - cbn [seq map fold_right]; rewrite Nat.pow_0_r, Lam_1.
+    replace (INR 1) with 1%R by (simpl; ring); rewrite ln_1; ring.
+  - rewrite seq_S, map_app, Rsum_app, IH; cbn [map fold_right]; rewrite Nat.add_0_l.
+    rewrite (Lam_prime_pow p (S k) Hp) by lia.
+    replace (p ^ S k) with (p * p^k) by (rewrite Nat.pow_succ_r'; reflexivity).
+    rewrite mult_INR, ln_mult; [ ring | apply lt_0_INR; lia | apply pow_pos_R; lia ].
+Qed.
+
+Lemma dsum_primepow : forall p k, nprime p -> dsum Lam (p^k) = ln (INR (p^k)).
+Proof.
+  intros p k Hp; unfold dsum.
+  rewrite (dsum_perm Lam _ _ (divisors_primepow p k Hp)), map_map.
+  apply sum_pow_Lam; exact Hp.
+Qed.
 
 (* ================================================================= *)
-(*  END VonMangoldtGlobal.v (+ dsum-level collapse dsum_mult)         *)
+(*  11.  p-ADIC VALUATION AND THE ASSEMBLY                           *)
+(* ================================================================= *)
+
+Lemma coprime_ppow_pfree : forall p a m,
+  nprime p -> ~ Nat.divide p m -> Nat.gcd (p^a) m = 1.
+Proof.
+  intros p a m Hp Hpm.
+  destruct (dvd_prime_pow p a (Nat.gcd (p^a) m) Hp (Nat.gcd_divide_l _ _)) as [j [Hj Hg]].
+  destruct j as [|j']; [ simpl in Hg; exact Hg | exfalso ].
+  apply Hpm; apply Nat.divide_trans with (Nat.gcd (p^a) m); [ | apply Nat.gcd_divide_r ].
+  rewrite Hg; exists (p^j'); simpl; ring.
+Qed.
+
+Lemma pval_fuel : forall fuel p n, 2 <= p -> 1 <= n -> (n <= fuel)%nat ->
+  exists a m, n = p^a * m /\ ~ Nat.divide p m /\ 1 <= m.
+Proof.
+  induction fuel as [|f IH]; intros p n Hp Hn Hnf; [ lia | ].
+  destruct (Nat.eq_dec (n mod p) 0) as [Hmod|Hmod].
+  - assert (Hpn : Nat.divide p n) by (apply Nat.Lcm0.mod_divide; exact Hmod).
+    destruct Hpn as [n' Hn'].
+    assert (Hn'1 : 1 <= n') by nia.
+    assert (Hn'f : (n' <= f)%nat) by nia.
+    destruct (IH p n' Hp Hn'1 Hn'f) as [a [m [Heq [Hnd Hm]]]].
+    exists (S a), m; split; [ rewrite Hn', Heq; simpl; ring | split; assumption ].
+  - exists 0, n; split; [ simpl; lia | split; [ | exact Hn ] ].
+    intro Hd; apply Hmod, Nat.Lcm0.mod_divide; exact Hd.
+Qed.
+
+(* THE GLOBAL VON MANGOLDT IDENTITY *)
+Theorem vonmangoldt_identity : forall n, 1 <= n -> dsum Lam n = ln (INR n).
+Proof.
+  intro n; induction n as [n IH] using (well_founded_induction lt_wf); intro Hn.
+  destruct (Nat.eq_dec n 1) as [->|Hn1].
+  - unfold dsum; replace (divisors 1) with (1 :: nil) by reflexivity.
+    cbn [map fold_right]; rewrite Lam_1.
+    replace (INR 1) with 1%R by (simpl; ring); rewrite ln_1; ring.
+  - assert (Hn2 : 2 <= n) by lia.
+    set (p := spf n).
+    assert (Hp : nprime p) by (apply spf_nprime; exact Hn2).
+    assert (Hp2 : 2 <= p) by (destruct Hp; lia).
+    assert (Hpn : Nat.divide p n) by (apply spf_divides; exact Hn2).
+    destruct (pval_fuel n p n Hp2 Hn (le_n n)) as [a [m [Heq [Hpm Hm]]]].
+    assert (Ha1 : 1 <= a).
+    { destruct a as [|a']; [ exfalso | lia ].
+      apply Hpm.
+      assert (Hnm : m = n) by (rewrite Heq; simpl; lia).
+      rewrite Hnm; exact Hpn. }
+    assert (Hcop : Nat.gcd (p^a) m = 1) by (apply coprime_ppow_pfree; assumption).
+    assert (Hpa1 : 1 <= p^a)
+      by (rewrite <- (Nat.pow_1_l a); apply Nat.pow_le_mono_l; lia).
+    assert (Hpa2 : 2 <= p^a)
+      by (apply Nat.le_trans with (p^1); [ rewrite Nat.pow_1_r; lia | apply Nat.pow_le_mono_r; lia ]).
+    assert (Hmlt : (m < n)%nat) by (rewrite Heq; nia).
+    rewrite Heq, (dsum_mult (p^a) m Hcop Hpa1 Hm),
+            (dsum_primepow p a Hp), (IH m Hmlt Hm).
+    rewrite mult_INR, ln_mult; [ reflexivity | apply pow_pos_R; lia | apply lt_0_INR; lia ].
+Qed.
+
+Print Assumptions vonmangoldt_identity.
+
+(* ================================================================= *)
+(*  END VonMangoldtGlobal.v -- sum_{d|n} Lambda(d) = log n            *)
 (*  spf (smallest prime factor, proved prime), the divisor sum dsum,   *)
 (*  and its permutation-invariance -- the foundation for Lambda and    *)
 (*  the identity sum_{d|n} Lambda(d) = log n.                          *)
