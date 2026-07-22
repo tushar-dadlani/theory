@@ -80,9 +80,11 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   inverses / full **ring** and Coq `Add Ring` registration are **deferred** (nat truncated
   subtraction makes `opp` coherence fiddly). So `ℤ_p` is proved a semiring here, asserted (not
   yet proved) a ring.
-- **Möbius / von Mangoldt / FTC**: all proved for the **single prime** (exponent-indexed chain).
-  The general `ℕ⁺` divisor-sum forms (arbitrary `n`, needing divisor enumeration) and the
-  product-over-primes (adelic) forms are **not** proved.
+- **Möbius / von Mangoldt / FTC**: `MobiusReciprocal`, `VonMangoldt` proved for the **single
+  prime** (exponent-indexed chain). The FTC is now proved for the **two-prime product of
+  chains** (`ProductFTC.ftc2_1`/`ftc2_2`, generalising to `k` primes by iteration). The general
+  `ℕ⁺` divisor-sum forms (arbitrary `n`, needing divisor enumeration) are still **not** proved,
+  and `MobiusReciprocal`/`VonMangoldt` are not yet lifted to the product.
 - **Analytic layer** (`EulerFactorR`, `LadderDerivR`, `VonMangoldtR`): **per single prime**. The
   infinite Euler product, full `ζ`, `−ζ'/ζ = Σ Λ(n)n⁻ˢ` over all primes, and term-by-term
   differentiation are **not** proved (stdlib-only; no analysis library).
