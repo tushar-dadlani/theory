@@ -76,13 +76,15 @@ is axiom-free.
   Deliberate replacement for an opaque/external `C`: `Print Assumptions` = **exactly** the two
   quarantined classical-`ℝ` axioms, so **no new axiom** enters — the "complex axioms" are Qed
   lemmas, not assumptions. Genuine field; footprint = R.
-- **N-th roots of unity + DFT orthogonality** `RootsOfUnity` (`w_pow_N`, `dft_orthogonality`):
-  in the custom `C`, `w N = exp(2πi/N)` with `(w N)ᴺ = 1` (De Moivre), and the character sum
-  `Σ_{k<N} (w N)^{jk} = N` (if `(w N)ʲ=1`) or `0` — the complex-DFT orthogonality, general-`N`
-  cousin of `WalshHadamard.H²=8I`. Genuine; the vanishing branch is pure `C`-field algebra
-  (geometric series + `aᴺ=1`), trig enters only for `(w N)ᴺ=1`. Quarantined Reals axioms (via
-  `C`/trig). Honest: `dft_orthogonality`'s "= 0" branch is conditioned on `(w N)ʲ ≠ 1`
-  (primitivity — that `(w N)ʲ ≠ 1` for `0<j<N` — is the extra fact not separately proved here).
+- **N-th roots of unity + DFT orthogonality** `RootsOfUnity` (`w_pow_N`, `w_primitive`,
+  `dft_orthogonality_delta`): in the custom `C`, `w N = exp(2πi/N)` with `(w N)ᴺ = 1` (De Moivre),
+  and the character sum `Σ_{k<N} (w N)^{jk} = N` (if `(w N)ʲ=1`) or `0` — the complex-DFT
+  orthogonality, general-`N` cousin of `WalshHadamard.H²=8I`. The vanishing branch is pure
+  `C`-field algebra (geometric series + `aᴺ=1`); trig enters only for `(w N)ᴺ=1`.
+  **Primitivity is proved** (`w_primitive`: `(w N)ʲ ≠ 1` for `0<j<N`, from `cos(2πj/N) < 1`
+  strictly — `cos_lt_1` via `cos x = 1−2sin²(x/2)`), so orthogonality holds in the
+  **unconditional Kronecker-delta form** `dft_orthogonality_delta`: for `j < N`, `Σ = N·[j=0]`
+  — the exact input for ℂ-DFT inversion `F⁻¹F = id`. Quarantined Reals axioms (via `C`/trig).
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).

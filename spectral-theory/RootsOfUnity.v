@@ -177,8 +177,68 @@ Proof.
     apply Cpow_C1.
 Qed.
 
+(* ----------------------------------------------------------------- *)
+(*  PRIMITIVITY:  (w N)^j <> 1  for  0 < j < N                        *)
+(*                                                                    *)
+(*  The one real-analysis input.  (w N)^j = cos(2pi j/N) + i sin(...), *)
+(*  and for 0 < 2pi j/N < 2pi we have cos(2pi j/N) < 1 strictly (via   *)
+(*  cos x = 1 - 2 sin^2(x/2) and sin(x/2) > 0 on (0, pi)), so it       *)
+(*  cannot equal 1.                                                   *)
+(* ----------------------------------------------------------------- *)
+
+Lemma cos_lt_1 : forall x, 0 < x -> x < 2 * PI -> cos x < 1.
+Proof.
+  intros x Hx0 Hx2.
+  assert (Hs : 0 < sin (x / 2)) by (apply sin_gt_0; lra).
+  replace x with (2 * (x / 2)) by field.
+  rewrite cos_2a_sin; nra.
+Qed.
+
+Theorem w_primitive : forall N j, (0 < j < N)%nat -> Cpow (w N) j <> C1.
+Proof.
+  intros N j [Hj0 HjN].
+  assert (HjR  : 0 < INR j)      by (apply lt_0_INR; lia).
+  assert (HNR  : 0 < INR N)      by (apply lt_0_INR; lia).
+  assert (HjltN: INR j < INR N)  by (apply lt_INR; lia).
+  assert (HPI  : 0 < PI)         by exact PI_RGT_0.
+  assert (Hne  : INR N <> 0)     by (apply Rgt_not_eq; exact HNR).
+  unfold w; rewrite de_moivre; intro H.
+  assert (Hcos : cos (INR j * (2 * PI / INR N)) = 1) by exact (f_equal Re H).
+  assert (Hlo : 0 < INR j * (2 * PI / INR N)).
+  { apply Rmult_lt_0_compat; [ exact HjR | ].
+    unfold Rdiv; apply Rmult_lt_0_compat; [ lra | apply Rinv_0_lt_compat; exact HNR ]. }
+  assert (Hhi : INR j * (2 * PI / INR N) < 2 * PI).
+  { replace (INR j * (2 * PI / INR N)) with (2 * PI * (INR j / INR N)) by (field; exact Hne).
+    rewrite <- (Rmult_1_r (2 * PI)) at 2.
+    apply Rmult_lt_compat_l; [ lra | ].
+    apply Rmult_lt_reg_r with (INR N); [ exact HNR | ].
+    unfold Rdiv; rewrite Rmult_assoc, Rinv_l by exact Hne.
+    rewrite Rmult_1_r, Rmult_1_l; exact HjltN. }
+  pose proof (cos_lt_1 _ Hlo Hhi) as Hlt; lra.
+Qed.
+
+(* ----------------------------------------------------------------- *)
+(*  DFT ORTHOGONALITY, unconditional Kronecker-delta form            *)
+(*     sum_{k<N} (w N)^{jk}  =  N   if j = 0                          *)
+(*                          =  0   if 0 < j < N                       *)
+(* ----------------------------------------------------------------- *)
+
+Theorem dft_orthogonality_delta : forall N j, (j < N)%nat ->
+  Csum (fun k => Cpow (Cpow (w N) j) k) N
+  = (if Nat.eqb j 0 then RtoC (INR N) else C0).
+Proof.
+  intros N j HjN; destruct (Nat.eqb j 0) eqn:E.
+  - apply Nat.eqb_eq in E; subst j.
+    apply sum_pow_eq_1; reflexivity.
+  - apply Nat.eqb_neq in E.
+    apply sum_pow_eq_0; [ apply w_primitive; lia | ].
+    rewrite <- Cpow_mul, Nat.mul_comm, Cpow_mul, (w_pow_N N ltac:(lia)).
+    apply Cpow_C1.
+Qed.
+
 Print Assumptions w_pow_N.
-Print Assumptions dft_orthogonality.
+Print Assumptions w_primitive.
+Print Assumptions dft_orthogonality_delta.
 
 (* ================================================================= *)
 (*  END RootsOfUnity.v                                               *)
