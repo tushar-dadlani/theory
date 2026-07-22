@@ -79,7 +79,10 @@ is axiom-free.
   observables (`v0` = `(0,−1)`, `vp/vm` = `(±√2,+1)`). Axiom-quarantined; role names interpretation.
 - **Finite Fourier + sampling** `WalshHadamard` (DFT on `F₂ⁿ`: shift, convolution, `H²=8I`
   inversion, Parseval), `WalshSampling` (the finite Shannon–Nyquist sampling theorem: comb
-  transform `Ĥ 1_H = |H| 1_{H⊥}`, Poisson summation, band-limited reconstruction): all **genuine
+  transform `Ĥ 1_H = |H| 1_{H⊥}`, Poisson summation, band-limited reconstruction), and
+  `WalshUncertainty` (the **Donoho–Stark discrete uncertainty principle**: `f≠0 ⟹
+  |supp f|·|supp Ĥf| ≥ 8 = |F₂³|` — the l¹/l∞ argument done entirely over `ℤ`, the complement
+  to sampling: it bounds *why* you cannot localize in space and frequency at once): all **genuine
   theorems** about the actual transform (axiom-free). The *bridge* framing — Poisson summation as
   the shadow of `ζ`'s functional equation, and Fourier/sampling inversion as the finite instance
   of Perron's contour inversion (cousin: `PosetMobiusFTC` = Möbius inversion) — is honest
