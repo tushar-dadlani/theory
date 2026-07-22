@@ -112,6 +112,52 @@ Qed.
 Print Assumptions order_swap_identity.
 
 (* ================================================================= *)
+(*  TOWARD THE FINAL SQUEEZE (Chebyshev psi(x) ≍ x)                  *)
+(*                                                                    *)
+(*  The Chebyshev bounds follow from the order-swap identity via       *)
+(*     D(N) := T(N) - 2*T(floor(N/2)) = sum_{d<=N} Lambda(d) * a_d,     *)
+(*  where a_d = floor(N/d) - 2*floor(N/(2d)) = (floor(N/d)) mod 2 in    *)
+(*  {0,1}, giving the sandwich  psi(N) - psi(floor N/2) <= D(N) <=      *)
+(*  psi(N)  (using Lambda >= 0).  The remaining NUMERICAL input is      *)
+(*  D(N) ~ N*log 2 (equivalently log of the central binomial), an       *)
+(*  elementary-Stirling / central-binomial estimate -- a real-analysis  *)
+(*  layer left for a dedicated pass.  Below: the combinatorial building *)
+(*  blocks (Lambda >= 0, the {0,1} floor lemma, and psi).              *)
+(* ================================================================= *)
+
+Lemma spf_ge1 : forall n, 1 <= n -> 1 <= spf n.
+Proof.
+  intros n Hn; destruct (le_lt_dec 2 n) as [H2|H2].
+  - apply Nat.le_trans with 2; [ lia | apply spf_ge2; exact H2 ].
+  - assert (n = 1) by lia; subst; cbv; lia.
+Qed.
+
+Lemma ln_ge0 : forall x, (1 <= x)%R -> (0 <= ln x)%R.
+Proof.
+  intros x Hx; destruct (Rle_lt_or_eq_dec 1 x Hx) as [Hlt|Heq];
+    [ rewrite <- ln_1; left; apply ln_increasing; lra | rewrite <- Heq, ln_1; lra ].
+Qed.
+
+(* the von Mangoldt function is nonnegative *)
+Lemma Lam_nonneg : forall n, (0 <= Lam n)%R.
+Proof.
+  intro n; unfold Lam; destruct (is_pow n (spf n) n) eqn:E; [ | lra ].
+  destruct (Nat.eq_dec n 0) as [->|Hn0]; [ simpl in E; discriminate | ].
+  apply ln_ge0; replace 1%R with (INR 1) by (simpl; ring); apply le_INR, spf_ge1; lia.
+Qed.
+
+(* a_d = floor(N/d) - 2*floor(N/(2d)) = (floor(N/d)) mod 2, hence in {0,1} *)
+Lemma floor_half_step : forall N d, 1 <= d ->
+  (N / d - 2 * (N / (2 * d)) = (N / d) mod 2)%nat.
+Proof.
+  intros N d Hd; rewrite (Nat.mul_comm 2 d), <- Nat.div_div by lia.
+  pose proof (Nat.div_mod (N / d) 2 ltac:(lia)); lia.
+Qed.
+
+(* the Chebyshev prime-counting function *)
+Definition psi (N : nat) : R := fold_right Rplus 0%R (map Lam (seq 1 N)).
+
+(* ================================================================= *)
 (*  END Chebyshev.v                                                  *)
 (*  sum_{n<=N} log n = sum_{d<=N} Lambda(d) floor(N/d) -- the          *)
 (*  contour-free Dirichlet-hyperbola bridge, from sum_{d|n}Lambda=log n *)

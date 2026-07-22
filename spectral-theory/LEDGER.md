@@ -177,8 +177,13 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   **order swap is now also done** (`Chebyshev.order_swap_identity`): `Σ_{n≤N} log n =
   Σ_{d≤N} Λ(d)⌊N/d⌋` — the Dirichlet-hyperbola / elementary-Perron bridge, proved without Fubini
   (both sides satisfy `f(S N)=f N + dsum Λ(S N)`, key nat fact `⌊(N+1)/d⌋=⌊N/d⌋+[d∣N+1]`). What
-  remains for `ψ(x)≍x` is now purely the **final analytic squeeze**: `log⌊x⌋!` bounds (elementary
-  Stirling) + the `T(x)−2T(⌊x/2⌋)` argument via `abel_summation`. **Hard ceiling:** the *sharp* `ψ(x)∼x` (PNT), the explicit
+  remains for `ψ(x)≍x` is the **final squeeze**. Its **combinatorial building blocks are now
+  built** (`Chebyshev`): `Lam_nonneg` (`Λ≥0`), the floor lemma `floor_half_step`
+  (`⌊N/d⌋−2⌊N/(2d)⌋=(⌊N/d⌋)mod 2∈{0,1}`), and `ψ`. These give (via `order_swap_identity`) the
+  sandwich `ψ(N)−ψ(⌊N/2⌋) ≤ D(N) ≤ ψ(N)` with `D(N)=T(N)−2T(⌊N/2⌋)=Σ_d Λ(d)·((⌊N/d⌋)mod 2)`,
+  reducing `ψ≍x` to the single **numerical input** `D(N)≈N·log 2` — an elementary-Stirling /
+  central-binomial estimate (`log(N!)−2log((N/2)!) = log C(N,⌊N/2⌋)`), a real-analysis layer left
+  for a dedicated pass. **Hard ceiling:** the *sharp* `ψ(x)∼x` (PNT), the explicit
   formula, and anything about zeta *zeros* genuinely require the contour step / complex analysis
   we deliberately do not build.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):
