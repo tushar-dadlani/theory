@@ -433,3 +433,4 @@ spectral-theory/BitCountContrast.v
 spectral-theory/WalshHadamardHilbertQ.v
 spectral-theory/InvolutionQ.v
 spectral-theory/LandauerQ.v
+spectral-theory/BiView.v

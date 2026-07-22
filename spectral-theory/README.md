@@ -24,10 +24,13 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `InvolutionQ.v` and `LandauerQ.v` continue the ℚ sweep on top of `WalshHadamardHilbertQ`: they re-prove `Involution` (residue decomposition `f = symQ f + antiQ f`, residue vanishes iff fixed, sectors orthogonal, not-globally-free) and `Landauer` (residue is an exact ½-eigen-sector of the diffusion, `heat_dissipated (antiQ f) = ¾·⟨antiQ f, antiQ f⟩ ≥ 0`, `> 0` iff the residue is nonzero, `= 0` iff `f` is fixed) entirely over `QArith`. Both report `Print Assumptions` **"Closed under the global context"** — the same theorems as the ℝ files, now with no Reals axioms and no `admit`. (The ℝ originals stay in place for the existing chain.)
 
+`BiView.v` introduces a new object: **one arithmetic thing, two views**, as a **Galois connection** — the local–global (adelic) duality done in pure order theory, so **no topology is needed** (a Galois connection is just two posets + monotone adjoint maps; the p-adic/archimedean completeness the full adeles need is deliberately routed around, and isn't available in the stdlib anyway). The global view is `(Z,≤)` (a prime's valuation/divisibility coordinate), the local view is `(Q,≤)`, adjoined by `alpha = inject_Z` and `gamma = Qfloor` with `galois_connection : z ≤ gamma q ↔ alpha z ≤ q` (division-free, reusing stdlib `Qfloor_le`/`Qfloor_resp_le`/`Qfloor_Z`), plus monotonicity and the retract `gamma (alpha z) = z`. At resolution `n`, the density `dens z = z/n ∈ [0,1]` carries the **shared involution**: the global complement `z ↦ n−z` (BitDensity's `k↦n−k`) maps under `dens` to the local reflection `q ↦ 1−q` (RiemannHypothesisSpectral's `s↦1−s`), `shared_reflection : dens (n−z) == 1 − dens z` — literally the *same reflection about the centre seen in both views*, fixed at ½ / n⁄2. Local coordinate over ℚ; `Print Assumptions` **"Closed under the global context"** — no Reals axioms, no topology, no `admit`.
+
 `WalshHadamardHilbert.v` lifts the whole picture into a genuine (finite, 4-dimensional) real Hilbert space: it equips the signal space with the inner product ⟨f,g⟩ = Σ f g and proves it positive-definite, that the Hadamard operator is self-adjoint and satisfies Parseval (⟨Hf,Hg⟩ = 4⟨f,g⟩), that the normalized transform `Ur = ½H` is a real unitary involution (⟨Ur f, Ur g⟩ = ⟨f,g⟩, Ur² = I), that the apex reflection is a self-adjoint involution with orthogonal ±1 eigenspaces (nodes ⊥ antinodes), and that the standing-wave amplitude is a −1-eigenvector of norm²=2 preserved by `Ur`. Uses only the standard Coq `Reals` axioms; no custom axioms, no `admit`. (The infinite-dimensional ℓ²/L² lift the Hilbert–Pólya program needs is a much larger, analysis-library undertaking.)
 
-**29 proof file(s):**
+**30 proof file(s):**
 
+- `BiView.v`
 - `BitCountContrast.v`
 - `BitDensity.v`
 - `DiracDiagonal.v`
