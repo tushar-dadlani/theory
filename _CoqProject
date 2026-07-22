@@ -453,3 +453,4 @@ spectral-theory/PosetMobiusFTC.v
 spectral-theory/PosetTopology.v
 spectral-theory/FiniteTopology.v
 spectral-theory/ChainTower.v
+spectral-theory/InvLimit.v
