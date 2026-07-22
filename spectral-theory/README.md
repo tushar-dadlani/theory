@@ -22,9 +22,11 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `WalshHadamardHilbertQ.v` is the **rational (ℚ) pilot** for dropping the Reals axioms. It re-proves the entire `WalshHadamardHilbert` development — positive-definite inner product, self-adjoint `WHq`, Parseval (`⟨WHq f, WHq g⟩ = 4⟨f,g⟩`), the unitary involution `Uq = ½WHq`, the self-adjoint apex reflection, and orthogonal ±1 eigenspaces — over `QArith` instead of `Reals`. Every constant in the construction is rational (`±1, ½, ¼, 2, 4`), so `Print Assumptions` reports **"Closed under the global context"**: no `ClassicalDedekindReals`, no `functional_extensionality`, no axioms at all. The ℚ tax is that equality is `Qeq` (`==`); the one subtlety is keeping the `½` rational constant away from `cbn` (the ½-normalized lemmas are proved via `WHq` scaling lemmas + `ring`). This is the template for re-basing the rest of the chain off ℝ.
 
+`InvolutionQ.v` and `LandauerQ.v` continue the ℚ sweep on top of `WalshHadamardHilbertQ`: they re-prove `Involution` (residue decomposition `f = symQ f + antiQ f`, residue vanishes iff fixed, sectors orthogonal, not-globally-free) and `Landauer` (residue is an exact ½-eigen-sector of the diffusion, `heat_dissipated (antiQ f) = ¾·⟨antiQ f, antiQ f⟩ ≥ 0`, `> 0` iff the residue is nonzero, `= 0` iff `f` is fixed) entirely over `QArith`. Both report `Print Assumptions` **"Closed under the global context"** — the same theorems as the ℝ files, now with no Reals axioms and no `admit`. (The ℝ originals stay in place for the existing chain.)
+
 `WalshHadamardHilbert.v` lifts the whole picture into a genuine (finite, 4-dimensional) real Hilbert space: it equips the signal space with the inner product ⟨f,g⟩ = Σ f g and proves it positive-definite, that the Hadamard operator is self-adjoint and satisfies Parseval (⟨Hf,Hg⟩ = 4⟨f,g⟩), that the normalized transform `Ur = ½H` is a real unitary involution (⟨Ur f, Ur g⟩ = ⟨f,g⟩, Ur² = I), that the apex reflection is a self-adjoint involution with orthogonal ±1 eigenspaces (nodes ⊥ antinodes), and that the standing-wave amplitude is a −1-eigenvector of norm²=2 preserved by `Ur`. Uses only the standard Coq `Reals` axioms; no custom axioms, no `admit`. (The infinite-dimensional ℓ²/L² lift the Hilbert–Pólya program needs is a much larger, analysis-library undertaking.)
 
-**27 proof file(s):**
+**29 proof file(s):**
 
 - `BitCountContrast.v`
 - `BitDensity.v`
@@ -34,12 +36,14 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 - `FanoSelfAdjoint.v`
 - `FredholmDirac.v`
 - `HeatFlow.v`
+- `InvolutionQ.v`
 - `Involution.v`
 - `KappaInvariant.v`
 - `MassGap.v`
 - `KappaOmega.v`
 - `KroneckerSelfAdjoint.v`
 - `Landauer.v`
+- `LandauerQ.v`
 - `LandauerBound.v`
 - `PrimorialSpectralTheory.v`
 - `SpectralAlgebra.v`
