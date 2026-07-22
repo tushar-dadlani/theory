@@ -180,10 +180,13 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   `Λ n = ln(INR(spf n))` when `is_pow (spf n) n` else `0` (a prime-power test; `spf 1 = 1` so
   `Λ 1 = 0` automatically), with `Lam_mul_zero` (`Λ(d·e)=0` for coprime `d,e≥2` — two distinct
   primes so not a prime power, via `is_pow_true_pow` + `prime_dvd_prime_pow` + `nprime_euclid`)
-  and hence `Lam_collapse`: `Λ(d·e) = [d=1]·Λe + [e=1]·Λd` for coprime `d,e`. Still to do: the
-  `dsum`-level collapse `dsum Λ (a·b)=dsum Λ a+dsum Λ b` (sum manipulation via `dsum_prod` +
-  `Lam_collapse`); the prime-power base `dsum Λ (p^k)=k·ln p`; and the strong-induction
-  assembly `Σ_{d|n}Λ(d)=log n`. **Hard ceiling:**
+  and hence `Lam_collapse`: `Λ(d·e) = [d=1]·Λe + [e=1]·Λd` for coprime `d,e`. The **`dsum`-level
+  collapse is now done** (`dsum_mult`: `dsum Λ (a·b) = dsum Λ a + dsum Λ b` for coprime `a,b`) —
+  pure sum manipulation on `dsum_prod` + `Lam_collapse`: `Rsum_plus` splits the pair-sum,
+  `Fubini_list_prod` reorders, `Rsum_pull_if`/`Rsum_if1` (an indicator picks out the divisor `1`
+  over the `NoDup` divisor list) evaluate each half. Still to do: the prime-power base
+  `dsum Λ (p^k)=k·ln p` (divisors of `p^k` are its powers); and the strong-induction assembly
+  `Σ_{d|n}Λ(d)=log n` (peel `p=spf n`, `n=p^a·m` coprime, `dsum_mult` + base + IH). **Hard ceiling:**
   the *sharp* `ψ(x)∼x` (PNT), the explicit formula, and anything about zeta *zeros* genuinely
   require the contour step / complex analysis we deliberately do not build.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):

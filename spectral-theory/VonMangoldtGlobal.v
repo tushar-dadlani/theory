@@ -414,10 +414,102 @@ Proof.
       destruct (Nat.eqb e 1) eqn:Ee; [ apply Nat.eqb_eq in Ee; lia | ]. lra.
 Qed.
 
-Print Assumptions Lam_collapse.
+(* ================================================================= *)
+(*  9.  THE dsum-LEVEL COLLAPSE (pure sum manipulation)              *)
+(* ================================================================= *)
+
+Lemma Rsum_app : forall l1 l2 : list R,
+  fold_right Rplus 0%R (l1 ++ l2) = (fold_right Rplus 0%R l1 + fold_right Rplus 0%R l2)%R.
+Proof. induction l1 as [|x l1 IH]; intro l2; simpl; [ ring | rewrite IH; ring ]. Qed.
+
+Lemma Rsum_plus : forall (A : Type) (f g : A -> R) (l : list A),
+  fold_right Rplus 0%R (map (fun x => (f x + g x)%R) l)
+  = (fold_right Rplus 0%R (map f l) + fold_right Rplus 0%R (map g l))%R.
+Proof. intros A f g; induction l as [|x l IH]; simpl; [ ring | rewrite IH; ring ]. Qed.
+
+Lemma Rsum_pull_if : forall (bb : bool) (h : nat -> R) (l : list nat),
+  fold_right Rplus 0%R (map (fun e => if bb then h e else 0%R) l)
+  = (if bb then fold_right Rplus 0%R (map h l) else 0%R).
+Proof.
+  intros bb h l; induction l as [|x l IH]; simpl;
+    [ destruct bb; reflexivity | rewrite IH; destruct bb; simpl; ring ].
+Qed.
+
+Lemma Rsum_if1_notin : forall L B, ~ In 1 L ->
+  fold_right Rplus 0%R (map (fun d => if Nat.eqb d 1 then B else 0%R) L) = 0%R.
+Proof.
+  intros L B; induction L as [|x L IH]; intro Hnin; simpl; [ reflexivity | ].
+  destruct (Nat.eqb x 1) eqn:E.
+  - apply Nat.eqb_eq in E; subst x; exfalso; apply Hnin; left; reflexivity.
+  - rewrite IH; [ ring | intro Hin; apply Hnin; right; exact Hin ].
+Qed.
+
+Lemma Rsum_if1 : forall L B, NoDup L -> In 1 L ->
+  fold_right Rplus 0%R (map (fun d => if Nat.eqb d 1 then B else 0%R) L) = B.
+Proof.
+  intros L B; induction L as [|x L IH]; intros Hnd Hin; [ destruct Hin | ].
+  rewrite NoDup_cons_iff in Hnd; destruct Hnd as [Hnx Hnd].
+  simpl; destruct (Nat.eqb x 1) eqn:E.
+  - apply Nat.eqb_eq in E; subst x; rewrite (Rsum_if1_notin L B Hnx); ring.
+  - destruct Hin as [Hx|Hin];
+      [ apply Nat.eqb_neq in E; contradiction | rewrite (IH Hnd Hin); ring ].
+Qed.
+
+Lemma Fubini_list_prod : forall (g : nat -> nat -> R) (l1 l2 : list nat),
+  fold_right Rplus 0%R (map (fun de => g (fst de) (snd de)) (list_prod l1 l2))
+  = fold_right Rplus 0%R (map (fun d => fold_right Rplus 0%R (map (g d) l2)) l1).
+Proof.
+  intros g l1 l2; induction l1 as [|x l1 IH]; simpl; [ reflexivity | ].
+  rewrite map_app, Rsum_app, map_map, IH.
+  f_equal; apply f_equal, map_ext; intro y; reflexivity.
+Qed.
+
+Lemma in_1_divisors : forall n, 1 <= n -> In 1 (divisors n).
+Proof. intros n Hn; apply in_divisors; split; [ lia | apply Nat.divide_1_l ]. Qed.
+
+(* THE COLLAPSE: dsum Lambda is additive over coprime products *)
+Theorem dsum_mult : forall a b, Nat.gcd a b = 1 -> 1 <= a -> 1 <= b ->
+  dsum Lam (a*b) = (dsum Lam a + dsum Lam b)%R.
+Proof.
+  intros a b Hab Ha Hb.
+  rewrite (dsum_prod Lam a b Hab Ha Hb).
+  transitivity (fold_right Rplus 0%R
+     (map (fun de => ((if Nat.eqb (fst de) 1 then Lam (snd de) else 0)
+                      + (if Nat.eqb (snd de) 1 then Lam (fst de) else 0))%R)
+          (list_prod (divisors a) (divisors b)))).
+  - f_equal; apply map_ext_in; intros [d e] Hin.
+    apply in_prod_iff in Hin; destruct Hin as [Hd He].
+    rewrite in_divisors in Hd, He.
+    destruct Hd as [[Hd1 _] Hdd]; destruct He as [[He1 _] Hed].
+    assert (Hcop : Nat.gcd d e = 1).
+    { apply Nat.divide_1_r; rewrite <- Hab; apply Nat.gcd_greatest;
+        [ apply Nat.divide_trans with d; [ apply Nat.gcd_divide_l | exact Hdd ]
+        | apply Nat.divide_trans with e; [ apply Nat.gcd_divide_r | exact Hed ] ]. }
+    simpl; apply Lam_collapse; assumption.
+  - rewrite Rsum_plus.
+    rewrite (Fubini_list_prod (fun d e => if Nat.eqb d 1 then Lam e else 0%R)).
+    rewrite (Fubini_list_prod (fun d e => if Nat.eqb e 1 then Lam d else 0%R)).
+    (* first term: inner = if d=1 then dsum Lam b else 0, outer picks d=1 *)
+    erewrite map_ext with
+      (f := fun d => fold_right Rplus 0%R (map (fun e => if Nat.eqb d 1 then Lam e else 0%R) (divisors b))).
+    2:{ intro d; rewrite (Rsum_pull_if (Nat.eqb d 1) Lam (divisors b)); reflexivity. }
+    (* second term: inner = Lam d (picks e=1 over div b) *)
+    erewrite map_ext with
+      (f := fun d => fold_right Rplus 0%R (map (fun e => if Nat.eqb e 1 then Lam d else 0%R) (divisors b))).
+    2:{ intro d; rewrite (Rsum_if1 (divisors b) (Lam d) (divisors_nodup b) (in_1_divisors b Hb));
+        reflexivity. }
+    (* now: fold(map (fun d => if d=1 then dsum Lam b else 0) div a)
+           + fold(map Lam div a)  =  dsum Lam a + dsum Lam b *)
+    unfold dsum.
+    rewrite (Rsum_if1 (divisors a) (fold_right Rplus 0%R (map Lam (divisors b)))
+               (divisors_nodup a) (in_1_divisors a Ha)).
+    ring.
+Qed.
+
+Print Assumptions dsum_mult.
 
 (* ================================================================= *)
-(*  END VonMangoldtGlobal.v (+ Lambda definition + per-pair collapse) *)
+(*  END VonMangoldtGlobal.v (+ dsum-level collapse dsum_mult)         *)
 (*  spf (smallest prime factor, proved prime), the divisor sum dsum,   *)
 (*  and its permutation-invariance -- the foundation for Lambda and    *)
 (*  the identity sum_{d|n} Lambda(d) = log n.                          *)
