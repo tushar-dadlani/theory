@@ -53,6 +53,16 @@ is axiom-free.
   tower `∏_p ℤ_p=lim ℤ/nℤ`); Γ-factors, `ξ(s)`, the functional equation, and ζ special values
   (π²/6) are archimedean-local and stay out of reach — the file's closing note pins where the
   quarantined Reals axioms would re-enter (Cauchy/Dedekind completion).
+- **Profinite completion, explicit** `ProfiniteCRT.profinite_crt`: the finite/non-archimedean
+  factor `𝔸_f` of `𝔸_ℚ = ℝ × 𝔸_f`, machine-checked as (1) the **CRT ring iso**
+  `ℤ/mnℤ ≅ ℤ/mℤ × ℤ/nℤ` (coprime `m,n`) — `crt_iso` with explicit Bézout reconstruction
+  inverting the reduction pair, `crt_roundtrip` closing the round-trip via `Gauss`, reduction a
+  ring hom (`Zplus_mod`/`Zmult_mod`); and (2) the **inverse system** `Ẑ = lim_n ℤ/nℤ` — commuting
+  projections (`proj_compat`), the prime-power tower `ℤ/p^{k+1}→ℤ/pᵏ` (`tower_proj`), directedness
+  (`system_directed`). **Axiom-free**: built from finite discrete data. Iterating CRT over
+  `n=∏_p p^{v_p}` gives `Ẑ ≅ ∏_p ℤ_p`. Honest ceiling (same as ProductFormulaQ): this is the
+  finite factor only; `ℝ=ℚ_∞` (the archimedean completion, hence Γ-factors/`ξ(s)`/functional
+  equation/ζ special values) is the separate factor it never reaches.
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).
