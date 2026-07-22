@@ -463,3 +463,4 @@ spectral-theory/ProductMobius.v
 spectral-theory/FreeDivMeetIso.v
 spectral-theory/PadicRingOpp.v
 spectral-theory/NxnZero.v
+spectral-theory/ZetaConverge.v

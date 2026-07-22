@@ -89,6 +89,11 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   (`ProductMobius.vm2_interior_zero`: Λ supported on prime-power axes). All generalise to `k`
   primes by iteration. The general **arbitrary-`ℕ⁺`** divisor-sum forms (needing divisor
   enumeration / factorisation of a general `n`) are still **not** proved.
+- **Infinite process**: `ZetaConverge.zeta2_converges` proves the infinite sum `Σ_{n≥1} 1/n² =
+  ζ(2)` **converges** (existence, not the value `π²/6`; the same telescoping bound gives
+  `Σ 1/nˢ` for all `s ≥ 2`) — the first genuinely-infinite, over-all-numbers object. The infinite
+  **Euler product** `ζ = ∏_p (1−p⁻ˢ)⁻¹` over all primes, `−ζ'/ζ`, and the `1<s<2` range remain
+  **not** proved.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):
   the single Euler factor, the **finite** Euler product (`EulerProductR`), the number operator as a
   derivative (`LadderDerivR`), and now the number-weighted series `Σ k xᵏ = x/(1−x)²`
