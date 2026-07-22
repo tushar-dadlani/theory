@@ -28,9 +28,13 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `BiViewProduct.v` takes the **finite-prime product** of `BiView`'s connection: over a set `Idx` of primes, the global view becomes the exponent/valuation **vector** `Idx → Z` whose product (componentwise) order **is the divisibility order** — with componentwise `min`/`max` = **gcd/lcm**, the genuine divisibility lattice (`gmeet_glb`, `gjoin_lub`). A product of Galois connections is a Galois connection, so `galois_product : gle f (gammaP g) ↔ lle (alphaP f) g` and monotonicity/retract all lift pointwise from `BiView`. The shared reflection lifts per‑prime (independent resolution `nv i` at each place): `shared_reflection_product`. Everything is a pointwise lift, so it stays axiom‑free — `Print Assumptions` **"Closed under the global context"** (no Reals, no topology). This is the divisibility‑lattice ↔ local‑coordinate adjunction at every place at once — the order‑theoretic skeleton of the adele.
 
+`HeatFlowQ.v` and `MassGapQ.v` finish the ℚ sweep for the diffusion side. `HeatFlowQ` re-proves the Walsh diagonalization of the lazy bit-flip diffusion over `QArith` — `step_diagonal : WHq (step f) y == μ(y)·WHq f y` (proved via `WHq` linearity + the shift theorem, keeping the `½`/`⅙` constants away from `cbn`), `iterate_spectrum` (`μ(y)ᵏ`), `mu_zero`, `mu_bound` (`0 ≤ μ ≤ ⅔`), and `dc_preserved` — all axiom-free. `MassGapQ` gives the μ‑energy bridge over ℚ: `mu_spectrum` (`μ` = `1, ⅔, ⅓, 0` on the four Hamming shells = `1−|y|/3`), vacuum stationary, lightest excitation `⅔`. Both `Print Assumptions` **"Closed under the global context"**. (The one genuinely transcendental holdout is `LandauerBound`'s `ln 2`.)
+
+`ProductFormula.v` closes the **product formula** as an order/algebra identity on `BiViewProduct`'s divisibility lattice — topology-free. Over a finite list of places, the degree (total valuation) `deg L f = Σ f i` satisfies `deg_gcd_lcm : deg (gcd) + deg (lcm) = deg a + deg b` — the additive/valuation form of `gcd(a,b)·lcm(a,b) = a·b` (per place, `min + max = a + b`), the multiplicative product formula of the divisibility lattice; and `deg_reflection : deg (complement f) = total − deg f`, so the shared reflection acts on the degree as `d ↦ total − d` (fixed at `total/2`). Pure `Z`/`lia`, axiom-free.
+
 `WalshHadamardHilbert.v` lifts the whole picture into a genuine (finite, 4-dimensional) real Hilbert space: it equips the signal space with the inner product ⟨f,g⟩ = Σ f g and proves it positive-definite, that the Hadamard operator is self-adjoint and satisfies Parseval (⟨Hf,Hg⟩ = 4⟨f,g⟩), that the normalized transform `Ur = ½H` is a real unitary involution (⟨Ur f, Ur g⟩ = ⟨f,g⟩, Ur² = I), that the apex reflection is a self-adjoint involution with orthogonal ±1 eigenspaces (nodes ⊥ antinodes), and that the standing-wave amplitude is a −1-eigenvector of norm²=2 preserved by `Ur`. Uses only the standard Coq `Reals` axioms; no custom axioms, no `admit`. (The infinite-dimensional ℓ²/L² lift the Hilbert–Pólya program needs is a much larger, analysis-library undertaking.)
 
-**31 proof file(s):**
+**34 proof file(s):**
 
 - `BiView.v`
 - `BiViewProduct.v`
@@ -42,15 +46,18 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 - `FanoSelfAdjoint.v`
 - `FredholmDirac.v`
 - `HeatFlow.v`
+- `HeatFlowQ.v`
 - `InvolutionQ.v`
 - `Involution.v`
 - `KappaInvariant.v`
 - `MassGap.v`
+- `MassGapQ.v`
 - `KappaOmega.v`
 - `KroneckerSelfAdjoint.v`
 - `Landauer.v`
 - `LandauerQ.v`
 - `LandauerBound.v`
+- `ProductFormula.v`
 - `PrimorialSpectralTheory.v`
 - `SpectralAlgebra.v`
 - `SpectralEvent.v`

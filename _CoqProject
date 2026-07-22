@@ -435,3 +435,6 @@ spectral-theory/InvolutionQ.v
 spectral-theory/LandauerQ.v
 spectral-theory/BiView.v
 spectral-theory/BiViewProduct.v
+spectral-theory/ProductFormula.v
+spectral-theory/HeatFlowQ.v
+spectral-theory/MassGapQ.v
