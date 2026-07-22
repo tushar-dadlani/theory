@@ -85,6 +85,12 @@ is axiom-free.
   strictly — `cos_lt_1` via `cos x = 1−2sin²(x/2)`), so orthogonality holds in the
   **unconditional Kronecker-delta form** `dft_orthogonality_delta`: for `j < N`, `Σ = N·[j=0]`
   — the exact input for ℂ-DFT inversion `F⁻¹F = id`. Quarantined Reals axioms (via `C`/trig).
+- **Complex DFT inversion** `DFTInversion.dft_inversion`: on the custom `C`, `IDFT (DFT f) k = f k`
+  (`k < N`) with `(DFT f) m = Σ_{k<N} f k·(wc N)^{mk}`, `(IDFT g) k = (1/N)Σ_{m<N} g m·(w N)^{mk}`,
+  `wc N = conj(w N)` — the finite Fourier transform on `ℂ` is invertible (`F⁻¹F = id`), the ℂ
+  analogue of `WalshHadamard.H²=8I`. Engine: two-index orthogonality `orthogonality_2` (off-diagonal
+  vanishing from injectivity `w_pow_inj`, i.e. primitivity) + finite Fubini (`Csum_swap`) + delta
+  extraction (`Csum_delta`) — all pure `C`-field algebra. Quarantined Reals axioms (via `C`/trig).
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).
