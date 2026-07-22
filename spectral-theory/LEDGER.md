@@ -172,10 +172,14 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   (`Nat.gauss`) + `R`. The **delicate Gauss keystone is now done** (`split_divisor`,
   axiom-free): for `gcd(a,b)=1` and `c∣a·b`, `c = gcd(c,a)·gcd(c,b)` — by divisibility
   antisymmetry, each direction a `Nat.gauss` argument (`Nat.gcd_div_gcd` for the divide-out
-  coprimality). Still to do: lift `split_divisor` to the divisor-list bijection
-  `divisors(ab)≅divisors(a)×divisors(b)` (`NoDup_Permutation`) → `dsum` multiplicativity; define
-  `Λ` (via `spf` + prime-power test) with its characterisation; the prime-power base
-  `dsum Λ (p^k)=k·ln p`; and the strong-induction assembly `Σ_{d|n}Λ(d)=log n`. **Hard ceiling:**
+  coprimality). The **divisor-list bijection is now also done**: `divisors_prod_perm`
+  (`Permutation (divisors (a·b)) (map (·) (divisors a × divisors b))` via `NoDup_Permutation`,
+  using `prod_map_inj` from `gcd_mul_coprime`, and `NoDup_list_prod`), giving the `dsum`
+  reindexing `dsum_prod`: `dsum f (a·b) = Σ_{(d,e)∈div a×div b} f(d·e)` for coprime `a,b` —
+  all axiom-free/quarantined. Still to do: the `Λ(d·e)` collapse ⟹
+  `dsum Λ (a·b)=dsum Λ a+dsum Λ b`; the `Λ` definition (via `spf` + prime-power test) with its
+  characterisation; the prime-power base `dsum Λ (p^k)=k·ln p`; and the strong-induction
+  assembly `Σ_{d|n}Λ(d)=log n`. **Hard ceiling:**
   the *sharp* `ψ(x)∼x` (PNT), the explicit formula, and anything about zeta *zeros* genuinely
   require the contour step / complex analysis we deliberately do not build.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):

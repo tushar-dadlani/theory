@@ -187,10 +187,132 @@ Proof.
     destruct Hediv as [m Hm]. exists m. rewrite Hc1eq, Hm; ring.
 Qed.
 
-Print Assumptions split_divisor.
+(* ================================================================= *)
+(*  5.  GCD HELPERS FOR THE PRODUCT MAP                              *)
+(* ================================================================= *)
+
+Lemma gcd_coprime_of_dvd : forall a b e,
+  Nat.divide e b -> Nat.gcd a b = 1 -> Nat.gcd e a = 1.
+Proof.
+  intros a b e Heb Hab; apply Nat.divide_1_r; rewrite <- Hab.
+  apply Nat.gcd_greatest;
+    [ apply Nat.gcd_divide_r
+    | apply Nat.divide_trans with e; [ apply Nat.gcd_divide_l | exact Heb ] ].
+Qed.
+
+(* gcd(d*e, a) = d  when d | a and gcd(e,a) = 1 *)
+Lemma gcd_mul_coprime : forall a d e,
+  Nat.divide d a -> Nat.gcd e a = 1 -> Nat.gcd (d*e) a = d.
+Proof.
+  intros a d e Hda Hea; apply Nat.divide_antisym.
+  - (* gcd(d*e,a) | d, via Gauss (coprime to e) *)
+    apply Nat.gauss with (m := e).
+    + replace (e*d) with (d*e) by ring; apply Nat.gcd_divide_l.
+    + assert (Hae : Nat.gcd a e = 1) by (rewrite Nat.gcd_comm; exact Hea).
+      apply Nat.divide_1_r; rewrite <- Hae; apply Nat.gcd_greatest.
+      * apply Nat.divide_trans with (Nat.gcd (d*e) a);
+          [ apply Nat.gcd_divide_l | apply Nat.gcd_divide_r ].
+      * apply Nat.gcd_divide_r.
+  - apply Nat.gcd_greatest; [ exists e; ring | exact Hda ].
+Qed.
 
 (* ================================================================= *)
-(*  END VonMangoldtGlobal.v (checkpoint A + coprime keystone)        *)
+(*  6.  NoDup PLUMBING FOR list_prod                                 *)
+(* ================================================================= *)
+
+Lemma NoDup_map_inj : forall (A B : Type) (f : A -> B) (l : list A),
+  (forall x y, In x l -> In y l -> f x = f y -> x = y) -> NoDup l -> NoDup (map f l).
+Proof.
+  intros A B f l; induction l as [|a l IH]; intros Hinj Hnd; simpl; [ constructor | ].
+  rewrite NoDup_cons_iff in Hnd; destruct Hnd as [Hna Hnd].
+  rewrite NoDup_cons_iff; split.
+  - intro Hin; apply in_map_iff in Hin; destruct Hin as [y [Hfy Hy]].
+    assert (a = y) by (apply Hinj; [ left; reflexivity | right; exact Hy | symmetry; exact Hfy ]).
+    subst y; contradiction.
+  - apply IH; [ intros x y Hx Hy; apply Hinj; right; assumption | exact Hnd ].
+Qed.
+
+Lemma NoDup_list_prod : forall (A B : Type) (l1 : list A) (l2 : list B),
+  NoDup l1 -> NoDup l2 -> NoDup (list_prod l1 l2).
+Proof.
+  intros A B l1 l2; induction l1 as [|x l1 IH]; intros H1 H2; simpl; [ constructor | ].
+  rewrite NoDup_cons_iff in H1; destruct H1 as [Hx H1].
+  apply NoDup_app.
+  - apply NoDup_map_inj; [ intros u v _ _ Heq; injection Heq; auto | exact H2 ].
+  - apply IH; [ exact H1 | exact H2 ].
+  - intros p Hp1 Hp2.
+    apply in_map_iff in Hp1; destruct Hp1 as [y1 [Hy1 _]]; subst p.
+    apply in_prod_iff in Hp2; destruct Hp2 as [Hpx _]; contradiction.
+Qed.
+
+(* ================================================================= *)
+(*  7.  THE DIVISOR-LIST BIJECTION AND dsum REINDEXING               *)
+(* ================================================================= *)
+
+(* the product map on divisor pairs is injective (coprime case) *)
+Lemma prod_map_inj : forall a b, Nat.gcd a b = 1 -> 1 <= a -> 1 <= b ->
+  forall de1 de2,
+    In de1 (list_prod (divisors a) (divisors b)) ->
+    In de2 (list_prod (divisors a) (divisors b)) ->
+    fst de1 * snd de1 = fst de2 * snd de2 -> de1 = de2.
+Proof.
+  intros a b Hab Ha Hb [d1 e1] [d2 e2] Hin1 Hin2 Heq; simpl in Heq.
+  apply in_prod_iff in Hin1; apply in_prod_iff in Hin2.
+  destruct Hin1 as [Hd1 He1]; destruct Hin2 as [Hd2 He2].
+  rewrite in_divisors in Hd1, He1, Hd2, He2.
+  destruct Hd1 as [[Hd1a Hd1b] Hd1d]; destruct He1 as [[He1a He1b] He1d].
+  destruct Hd2 as [[Hd2a Hd2b] Hd2d]; destruct He2 as [[He2a He2b] He2d].
+  assert (Hc1 : Nat.gcd (d1*e1) a = d1)
+    by (apply gcd_mul_coprime; [ exact Hd1d | apply gcd_coprime_of_dvd with b; assumption ]).
+  assert (Hc2 : Nat.gcd (d2*e2) a = d2)
+    by (apply gcd_mul_coprime; [ exact Hd2d | apply gcd_coprime_of_dvd with b; assumption ]).
+  assert (Hdd : d1 = d2) by (rewrite <- Hc1, <- Hc2, Heq; reflexivity).
+  assert (Hee : e1 = e2) by (apply (Nat.mul_cancel_l _ _ d1); [ lia | rewrite Hdd at 2; exact Heq ]).
+  subst; reflexivity.
+Qed.
+
+Lemma divisors_prod_perm : forall a b, Nat.gcd a b = 1 -> 1 <= a -> 1 <= b ->
+  Permutation (divisors (a*b))
+              (map (fun de => fst de * snd de) (list_prod (divisors a) (divisors b))).
+Proof.
+  intros a b Hab Ha Hb; apply NoDup_Permutation.
+  - apply divisors_nodup.
+  - apply NoDup_map_inj;
+      [ apply prod_map_inj; assumption
+      | apply NoDup_list_prod; apply divisors_nodup ].
+  - intro c; rewrite in_divisors; split.
+    + intros [Hcr Hcd]; apply in_map_iff.
+      exists (Nat.gcd c a, Nat.gcd c b); split; simpl.
+      * symmetry; apply split_divisor; [ exact Hab | lia | lia | exact Hcd ].
+      * apply in_prod_iff; split; rewrite in_divisors.
+        -- split; [ split | apply Nat.gcd_divide_r ].
+           ++ destruct (Nat.gcd c a) eqn:G; [ apply Nat.gcd_eq_0 in G; lia | lia ].
+           ++ apply Nat.divide_pos_le; [ lia | apply Nat.gcd_divide_r ].
+        -- split; [ split | apply Nat.gcd_divide_r ].
+           ++ destruct (Nat.gcd c b) eqn:G; [ apply Nat.gcd_eq_0 in G; lia | lia ].
+           ++ apply Nat.divide_pos_le; [ lia | apply Nat.gcd_divide_r ].
+    + intro Hin; apply in_map_iff in Hin; destruct Hin as [[d e] [Hphi Hprod]]; simpl in Hphi.
+      apply in_prod_iff in Hprod; destruct Hprod as [Hd He].
+      rewrite in_divisors in Hd, He.
+      destruct Hd as [[Hd1 Hd2] Hdd]; destruct He as [[He1 He2] Hed].
+      subst c; split; [ nia | ].
+      destruct Hdd as [da Hda]; destruct Hed as [eb Heb]; exists (da*eb); subst; ring.
+Qed.
+
+(* the divisor sum over a coprime product reindexes over the pair-product *)
+Lemma dsum_prod : forall (f : nat -> R) a b, Nat.gcd a b = 1 -> 1 <= a -> 1 <= b ->
+  dsum f (a*b)
+  = fold_right Rplus 0%R
+      (map (fun de => f (fst de * snd de)) (list_prod (divisors a) (divisors b))).
+Proof.
+  intros f a b Hab Ha Hb; unfold dsum.
+  rewrite (dsum_perm f _ _ (divisors_prod_perm a b Hab Ha Hb)), map_map; reflexivity.
+Qed.
+
+Print Assumptions dsum_prod.
+
+(* ================================================================= *)
+(*  END VonMangoldtGlobal.v (checkpoint A + keystone + divisor bij.) *)
 (*  spf (smallest prime factor, proved prime), the divisor sum dsum,   *)
 (*  and its permutation-invariance -- the foundation for Lambda and    *)
 (*  the identity sum_{d|n} Lambda(d) = log n.                          *)
