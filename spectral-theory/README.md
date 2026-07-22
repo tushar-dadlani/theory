@@ -32,9 +32,11 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 
 `ProductFormula.v` closes the **product formula** as an order/algebra identity on `BiViewProduct`'s divisibility lattice — topology-free. Over a finite list of places, the degree (total valuation) `deg L f = Σ f i` satisfies `deg_gcd_lcm : deg (gcd) + deg (lcm) = deg a + deg b` — the additive/valuation form of `gcd(a,b)·lcm(a,b) = a·b` (per place, `min + max = a + b`), the multiplicative product formula of the divisibility lattice; and `deg_reflection : deg (complement f) = total − deg f`, so the shared reflection acts on the degree as `d ↦ total − d` (fixed at `total/2`). Pure `Z`/`lia`, axiom-free.
 
+`LandauerBoundL.v` removes the *last* Reals dependency by abstracting the one‑bit entropy to a **parameter `L`**. `LandauerBound.v` proved the genuinely transcendental `Hb(½) = ln 2` (which forces the classical Reals axioms); here we don't compute the entropy — we take `L : Q`, `0 < L` (the entropy of one fair bit, `= ln 2` in the ℝ interpretation, never committed to). Then the whole Landauer structure is pure ℚ: `landauer_min dS = k·T·dS`, `erase_bit_heat = k·T·L`, additivity over bits (`landauer_min (a+b) = landauer_min a + landauer_min b`), monotonicity, strict positivity, and the second‑law inequality — all axiom‑free (`Print Assumptions` **"Closed under the global context"**). So the transcendental `ln 2` is quarantined to a labelled parameter, and every construction in this directory now has an axiom‑free ℚ realization; only `LandauerBound.v` itself (which deliberately keeps the real `ln 2`) uses the Reals axioms.
+
 `WalshHadamardHilbert.v` lifts the whole picture into a genuine (finite, 4-dimensional) real Hilbert space: it equips the signal space with the inner product ⟨f,g⟩ = Σ f g and proves it positive-definite, that the Hadamard operator is self-adjoint and satisfies Parseval (⟨Hf,Hg⟩ = 4⟨f,g⟩), that the normalized transform `Ur = ½H` is a real unitary involution (⟨Ur f, Ur g⟩ = ⟨f,g⟩, Ur² = I), that the apex reflection is a self-adjoint involution with orthogonal ±1 eigenspaces (nodes ⊥ antinodes), and that the standing-wave amplitude is a −1-eigenvector of norm²=2 preserved by `Ur`. Uses only the standard Coq `Reals` axioms; no custom axioms, no `admit`. (The infinite-dimensional ℓ²/L² lift the Hilbert–Pólya program needs is a much larger, analysis-library undertaking.)
 
-**34 proof file(s):**
+**35 proof file(s):**
 
 - `BiView.v`
 - `BiViewProduct.v`
@@ -57,6 +59,7 @@ Spectral algebra and events, the Dirac operator, eigen-systems, self-adjoint str
 - `Landauer.v`
 - `LandauerQ.v`
 - `LandauerBound.v`
+- `LandauerBoundL.v`
 - `ProductFormula.v`
 - `PrimorialSpectralTheory.v`
 - `SpectralAlgebra.v`
