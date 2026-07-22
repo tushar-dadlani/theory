@@ -55,6 +55,12 @@ is axiom-free.
   semiring): genuine, with the deferrals in §3.
 - **Analytic Euler factor / log-derivative** `EulerFactorR`, `VonMangoldtR`, `LadderDerivR`:
   genuine limits/derivatives over ℝ — but **per single prime factor**, not summed over all primes.
+- **The 3-symbol algebra `{I,N,F}`** `INFMonoid`: a genuine theorem identifying it as the
+  commutative monoid `({+1,−1,0},×) = (𝔽₃,×)` (via an injective hom `val`) whose unit group is
+  the Walsh sign group `Z/2 = {I,N}`, and — via `sym_of_mu` — **exactly the value-monoid of the
+  Möbius function on prime powers** (`MobiusReciprocal.mu_pp`), `F` = the squarefree collapse.
+  Axiom-free. (Honest: this is a proved structural *identification*/bridge between the two arcs,
+  not a claim beyond it.)
 - **Finite Fourier + sampling** `WalshHadamard` (DFT on `F₂ⁿ`: shift, convolution, `H²=8I`
   inversion, Parseval), `WalshSampling` (the finite Shannon–Nyquist sampling theorem: comb
   transform `Ĥ 1_H = |H| 1_{H⊥}`, Poisson summation, band-limited reconstruction): all **genuine

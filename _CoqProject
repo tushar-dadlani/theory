@@ -477,3 +477,4 @@ spectral-theory/AbelSummation.v
 spectral-theory/VonMangoldtGlobal.v
 spectral-theory/Chebyshev.v
 spectral-theory/WalshSampling.v
+spectral-theory/INFMonoid.v
