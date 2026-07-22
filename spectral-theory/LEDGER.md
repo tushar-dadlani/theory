@@ -158,6 +158,18 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   that and is the more natural statement).
   Also still **not** proved: the value `π²/6`, `ζ` as a general infinite-product identity for
   `s≠2`, `−ζ'/ζ`, and the `1<s<2` range.
+- **Contour-free prime bridge** (`AbelSummation`): the analytic zeta→primes bridge runs through a
+  *contour integral* (Perron + residue theorem, invariant = winding number), which our system
+  has no machinery for (no ℂ, no Cauchy, no analytic continuation, no zeros). We instead build
+  its **elementary shadow**: `abel_summation` (summation by parts) is the discrete
+  integration-by-parts that replaces the contour shift; combined with `Λ = μ⋆log` it is the
+  pre-Riemann toolkit for Chebyshev's `ψ(x) ≍ x`. **Status:** only the tool (`abel_summation`) is
+  built. The Chebyshev prime-counting bound itself is **not** proved — it needs a *global*
+  von Mangoldt `Λ:ℕ→ℝ`, the general-`n` identity `Σ_{d|n} Λ(d) = log n` (the crux; our
+  factorization bijection is the engine, but general-`n` divisor sums are not yet formalized —
+  see the Möbius/FTC gap below), `T(x)=Σ_{d≤x}Λ(d)⌊x/d⌋`, and `log⌊x⌋!` bounds. **Hard ceiling:**
+  the *sharp* `ψ(x)∼x` (PNT), the explicit formula, and anything about zeta *zeros* genuinely
+  require the contour step / complex analysis we deliberately do not build.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):
   the single Euler factor, the **finite** Euler product (`EulerProductR`), the number operator as a
   derivative (`LadderDerivR`), and now the number-weighted series `Σ k xᵏ = x/(1−x)²`
