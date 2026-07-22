@@ -173,10 +173,12 @@ structure. Known gaps between "what the name suggests" and "what is proved":
   via `is_pow_true_pow`+`prime_dvd_prime_pow`); **multiplicativity** `dsum Λ (a·b)=dsum Λ a+
   dsum Λ b` (`dsum_mult`, pure sum manipulation); the **prime-power base** `dsum Λ (p^k)=ln(p^k)`
   (`dsum_primepow`); and the strong-induction **assembly** (peel `p=spf n`, `n=p^a·m` coprime via
-  `pval`, `dsum_mult`+base+IH+`ln_mult`). This closes the "general-`n` divisor sums" gap. What
-  remains for Chebyshev's `ψ(x)≍x` is now the **analytic assembly**: `T(x)=Σ_{n≤x}log n=
-  Σ_{d≤x}Λ(d)⌊x/d⌋` (order swap using the identity) + `log⌊x⌋!` bounds + the `T(x)−2T(x/2)`
-  squeeze (using `abel_summation`). **Hard ceiling:** the *sharp* `ψ(x)∼x` (PNT), the explicit
+  `pval`, `dsum_mult`+base+IH+`ln_mult`). This closes the "general-`n` divisor sums" gap. The
+  **order swap is now also done** (`Chebyshev.order_swap_identity`): `Σ_{n≤N} log n =
+  Σ_{d≤N} Λ(d)⌊N/d⌋` — the Dirichlet-hyperbola / elementary-Perron bridge, proved without Fubini
+  (both sides satisfy `f(S N)=f N + dsum Λ(S N)`, key nat fact `⌊(N+1)/d⌋=⌊N/d⌋+[d∣N+1]`). What
+  remains for `ψ(x)≍x` is now purely the **final analytic squeeze**: `log⌊x⌋!` bounds (elementary
+  Stirling) + the `T(x)−2T(⌊x/2⌋)` argument via `abel_summation`. **Hard ceiling:** the *sharp* `ψ(x)∼x` (PNT), the explicit
   formula, and anything about zeta *zeros* genuinely require the contour step / complex analysis
   we deliberately do not build.
 - **Analytic layer** (`EulerFactorR`, `EulerProductR`, `LadderDerivR`, `NxnZero`, `VonMangoldtR`):

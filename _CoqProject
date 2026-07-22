@@ -475,3 +475,4 @@ spectral-theory/EulerProductZetaBound.v
 spectral-theory/EulerProductZeta.v
 spectral-theory/AbelSummation.v
 spectral-theory/VonMangoldtGlobal.v
+spectral-theory/Chebyshev.v
