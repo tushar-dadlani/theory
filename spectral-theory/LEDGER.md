@@ -23,7 +23,7 @@ standard classical `Reals` axioms and are **quarantined** — nothing axiom-free
 | `FreeDivMeet`, `BiView`, `BiViewProduct`, `ProductFormula`, `Padic` | `HeatFlow`, `MassGap` (bundled master), `Involution`, `Landauer`, `LandauerBound`, `WalshHadamardHilbert` |
 | `PosetTopology`, `FiniteTopology`, `ChainTower`, `InvLimit` | |
 | `PadicIntegers`, `PadicMetric`, `PadicRing` | |
-| the ℚ-sweep: `WalshHadamardHilbertQ`, `InvolutionQ`, `LandauerQ`, `HeatFlowQ`, `MassGapQ`, `LandauerBoundL` | |
+| the ℚ-sweep: `WalshHadamardHilbertQ`, `InvolutionQ`, `LandauerQ`, `HeatFlowQ`, `MassGapQ`, `LandauerBoundL` | `ComplexField` (custom `C = ℝ[i]`; footprint = R only) |
 
 The `LandauerBound` (real `ln 2`) vs `LandauerBoundL` (parameter `L`, axiom-free) split is the
 template: the one genuinely transcendental fact is isolated in an ℝ file, everything structural
@@ -70,6 +70,12 @@ is axiom-free.
   the CRT-split modulus `p^k` (ring component `ℤ/p^{v_p}ℤ`) is the reciprocal of the local abs
   value `|n|_p = p^{−v_p}` that `fabs` peels off — same `k = v_p(n)`. **Axiom-free.** The
   non-archimedean local–global principle; `ℝ=ℚ_∞` stays the separate archimedean factor.
+- **Custom complex field** `ComplexField.complex_field_axioms`: `C = ℝ[i] = ℝ×ℝ` with **every
+  complex-number axiom proved as a theorem** (field laws — `ring`/`field` registered; `i²=−1`;
+  `c = Re+i·Im`; `ℝ↪C` injective ring hom; conjugation involution/hom; `c·c̄ = |c|² ≥ 0`).
+  Deliberate replacement for an opaque/external `C`: `Print Assumptions` = **exactly** the two
+  quarantined classical-`ℝ` axioms, so **no new axiom** enters — the "complex axioms" are Qed
+  lemmas, not assumptions. Genuine field; footprint = R.
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).
