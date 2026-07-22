@@ -447,3 +447,5 @@ spectral-theory/EulerFactorR.v
 spectral-theory/LadderDerivR.v
 spectral-theory/MobiusReciprocal.v
 spectral-theory/MobiusReciprocalR.v
+spectral-theory/VonMangoldt.v
+spectral-theory/VonMangoldtR.v
