@@ -454,3 +454,5 @@ spectral-theory/PosetTopology.v
 spectral-theory/FiniteTopology.v
 spectral-theory/ChainTower.v
 spectral-theory/InvLimit.v
+spectral-theory/PadicIntegers.v
+spectral-theory/PadicMetric.v
