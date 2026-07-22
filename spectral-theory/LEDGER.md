@@ -55,6 +55,13 @@ is axiom-free.
   semiring): genuine, with the deferrals in §3.
 - **Analytic Euler factor / log-derivative** `EulerFactorR`, `VonMangoldtR`, `LadderDerivR`:
   genuine limits/derivatives over ℝ — but **per single prime factor**, not summed over all primes.
+- **Finite Fourier + sampling** `WalshHadamard` (DFT on `F₂ⁿ`: shift, convolution, `H²=8I`
+  inversion, Parseval), `WalshSampling` (the finite Shannon–Nyquist sampling theorem: comb
+  transform `Ĥ 1_H = |H| 1_{H⊥}`, Poisson summation, band-limited reconstruction): all **genuine
+  theorems** about the actual transform (axiom-free). The *bridge* framing — Poisson summation as
+  the shadow of `ζ`'s functional equation, and Fourier/sampling inversion as the finite instance
+  of Perron's contour inversion (cousin: `PosetMobiusFTC` = Möbius inversion) — is honest
+  **lineage/shared-structure**, **not** a formalized `Ĥ → ζ` theorem (which needs the contour).
 
 **Structural analogies** — a real theorem is proved, but about a *toy model*; it is **not** a
 statement about the classical object it evokes. These must never be cited as progress on the
