@@ -74,8 +74,15 @@ is axiom-free.
   complex-number axiom proved as a theorem** (field laws — `ring`/`field` registered; `i²=−1`;
   `c = Re+i·Im`; `ℝ↪C` injective ring hom; conjugation involution/hom; `c·c̄ = |c|² ≥ 0`).
   Deliberate replacement for an opaque/external `C`: `Print Assumptions` = **exactly** the two
-  quarantined classical-`ℝ` axioms, so **no new axiom** enters — the "complex axioms" are Qed
-  lemmas, not assumptions. Genuine field; footprint = R.
+  quarantined classical-`ℝ` axioms (`sig_forall_dec`, `functional_extensionality_dep`), so **no
+  new axiom** enters — the "complex axioms" are Qed lemmas, not assumptions. Genuine field;
+  footprint = R. **Weak/strong layering** `ComplexField.ring_core_generalization`: the `Im·Im`
+  coupling is parameterised as `i²=δ` (`Cmulg δ`); the **ring core is genuine for every δ**
+  (`Cring_theory_g` — `ℝ[e]/(e²=δ)` a commutative ring, no use of `−1`), `i²=−1` (`Ci_sq`) is a
+  *downstream* `δ=−1` fact (via `Cig_sq`: `e²=δ`), and the **field cap** adds the *single* honest
+  hypothesis `δ<0` (`Cnorm2g_pos`, nonzero norm-form off `0`). Trichotomy `δ<0/=0/>0` =
+  complex/dual/split-complex. Same footprint (2 axioms); refactor keeps all public names, so the
+  ~15 downstream `C`-files compile unchanged.
 - **N-th roots of unity + DFT orthogonality** `RootsOfUnity` (`w_pow_N`, `w_primitive`,
   `dft_orthogonality_delta`): in the custom `C`, `w N = exp(2πi/N)` with `(w N)ᴺ = 1` (De Moivre),
   and the character sum `Σ_{k<N} (w N)^{jk} = N` (if `(w N)ʲ=1`) or `0` — the complex-DFT
