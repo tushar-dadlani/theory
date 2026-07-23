@@ -136,6 +136,14 @@ is axiom-free.
   (`orbit_dlog_step`, from `FpField.dlog_triad`). **Honest scope:** no cycle-length count, no
   fixed-point uniqueness, no pre-period-tail analysis. `Print Assumptions` = Closed under the global
   context.
+- **Counting self-power fixed points** `SelfPowerFixedCount.self_power_fixed_count` (**axiom-free**):
+  `nfix p = #{x∈[1,p−1] : x^x ≡ x}` as a rigorous computable count (`length (filter …)`), with the
+  set-characterisation `fixed_pts_ord` (`ord(x) ∣ (x−1)`), the universal **sandwich
+  `1 ≤ nfix p ≤ p−2`** (odd p: `x=1` always fixed ⇒ `≥1`; `x=p−1` never fixed ⇒ `≤p−2`; pins
+  `nfix 3 = 1`), and computed values `nfix ∈ {1,1,1,2}` for `p∈{2,3,5,7}` (`vm_compute`, capped at
+  `p=7` by unary-`nat` `x^x`). **Analogy boundary:** `nfix p` is an *irregular* function — no
+  closed-form or asymptotic is proved or claimed; the count beyond the bounds and small table is
+  left open. `Print Assumptions` = Closed under the global context.
 - **N-th roots of unity + DFT orthogonality** `RootsOfUnity` (`w_pow_N`, `w_primitive`,
   `dft_orthogonality_delta`): in the custom `C`, `w N = exp(2πi/N)` with `(w N)ᴺ = 1` (De Moivre),
   and the character sum `Σ_{k<N} (w N)^{jk} = N` (if `(w N)ʲ=1`) or `0` — the complex-DFT
