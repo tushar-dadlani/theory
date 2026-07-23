@@ -97,6 +97,11 @@ is axiom-free.
   + shift injectivity) ⟹ reindexing `Csum_reindex`; with root periodicity `Cpow_wc_mod` it gives
   the shift theorem `dft_shift`, then finite Fubini (`Csum_swap`) finishes. With `DFTInversion`
   this is the full finite-Fourier toolkit on `C`. Quarantined Reals axioms (via `C`/trig).
+- **Parseval / Plancherel** `Parseval` (`plancherel`, `parseval_norm`): the DFT is (up to `N`) an
+  **isometry** — `Σ_k f k·conj(g k) = (1/N)Σ_m F̂_m·conj(Ĝ_m)`, and `Σ_k |f k|² = (1/N)Σ_m |F̂_m|²`.
+  Same `orthogonality_2` + Fubini + delta engine as inversion, plus conjugation commuting with the
+  transform (`conj_wc_pow`). Completes finite Fourier analysis on `C` (inversion + convolution +
+  isometry). Quarantined Reals axioms (via `C`/trig).
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).
