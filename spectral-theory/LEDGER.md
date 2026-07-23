@@ -102,6 +102,14 @@ is axiom-free.
   Same `orthogonality_2` + Fubini + delta engine as inversion, plus conjugation commuting with the
   transform (`conj_wc_pow`). Completes finite Fourier analysis on `C` (inversion + convolution +
   isometry). Quarantined Reals axioms (via `C`/trig).
+- **Characters of ℤ/Nℤ** `CharactersModN` (`characters_of_Z_mod_N`): `χ_a(n)=(w N)^{an}` are the
+  characters of the cyclic group `(ℤ/Nℤ,+)`, forming the dual group `ℤ/Nℤ` (`chi_add`, `chi_mul`,
+  `chi_pow_N`), with **both orthogonality relations** of the character table (`char_orthogonality_row/col`:
+  `Σ χ_a conj(χ_b) = N·[a=b]`) — the DFT orthogonality in character language. **Honest ceiling:**
+  these are characters of the *cyclic* group `ℤ/Nℤ`, the abelian orthogonality underlying Dirichlet
+  characters; a Dirichlet char mod `N` is a character of the *multiplicative* `(ℤ/Nℤ)*` — cyclic
+  ⟹ these via a primitive root, but `(ℤ/Nℤ)*`, primitivity, and L-series are NOT built.
+  Quarantined Reals axioms (via `C`/trig).
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).
