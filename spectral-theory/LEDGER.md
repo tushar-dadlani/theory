@@ -160,6 +160,15 @@ is axiom-free.
   and `w N = Cexp(2π/N)` (with `w_pow_N` re-derived from Euler). This is the analytic backbone that
   *manufactures* the root of unity the axiom-free orthogonality (`AlgebraicOrthogonality`) consumes —
   the precise locus of the quarantined ℝ. Genuine theorem; classical Reals axioms (via cos/sin).
+- **Gauss sum `|g(χ)|² = p`** `GaussSum.gauss_sum_abs` (quarantined ℝ): for a nonprincipal Dirichlet
+  character `χ` mod a prime `p` and additive root `ζ = w p`, the Gauss sum `g(χ) = Σ χ(n)ζⁿ` has
+  `g(χ)·conj g(χ) = p` — a genuine classical theorem (a complex character sum whose modulus² is the
+  integer `p`), the marquee union of the analytic + number-theory threads. Proof (the arc's largest)
+  uses the multiplicative reindex `a=(b·c) mod p` (`units_perm`), `dchar_mul` + `|χ|=1`, the geometric
+  series of the `p`-th roots (`β(c)`, `sum_pow_eq_0`), and `Σχ=0` (`dirichlet_orthogonality`). Only the
+  3 classical-ℝ axioms — and by `AlgebraicOrthogonality` even that is confined to the analytic root.
+  **Analogy boundary:** the *value/sign* of `g(χ)` (the deep Gauss-sign theorem), the quadratic Gauss
+  sum, and non-prime moduli are not done.
 - **N-th roots of unity + DFT orthogonality** `RootsOfUnity` (`w_pow_N`, `w_primitive`,
   `dft_orthogonality_delta`): in the custom `C`, `w N = exp(2πi/N)` with `(w N)ᴺ = 1` (De Moivre),
   and the character sum `Σ_{k<N} (w N)^{jk} = N` (if `(w N)ʲ=1`) or `0` — the complex-DFT
