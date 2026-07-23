@@ -83,6 +83,15 @@ is axiom-free.
   hypothesis `δ<0` (`Cnorm2g_pos`, nonzero norm-form off `0`). Trichotomy `δ<0/=0/>0` =
   complex/dual/split-complex. Same footprint (2 axioms); refactor keeps all public names, so the
   ~15 downstream `C`-files compile unchanged.
+- **Bridge into ℤ — Gaussian integers** `GaussianIntegers.gaussian_integers`: the same parametric
+  ring core run over `ℤ`, `ZI = ℤ[e]/(e²=δ) = ℤ×ℤ`, and over `ℤ` it is **AXIOM-FREE** ("Closed under
+  the global context") — strictly cleaner than the `ℝ` version. Weak ring core for every `δ`
+  (`ZIring_theory_g`); `i²=−1` a downstream `δ=−1` fact. **The bridge is the multiplicative norm**
+  `N_δ:ZI→ℤ`, `N_δ(a)=Re²−δ·Im²`, a genuine ring→ℤ homomorphism `N_δ(a·b)=N_δ(a)·N_δ(b)`
+  (`ZInorm_mul`) with `a·conj a = N_δ(a)` (`ZImulg_conj`). Gaussian case: `ℤ↪ZI` ring hom, and the
+  **units = norm-1 elements = {1,−1,i,−i}** (`unit_norm` + `gaussian_units` + `norm1_unit`), all
+  genuine theorems. Arithmetic shadow of `ComplexField`; `δ<0/=0/>0` = Gaussian/dual/split integers.
+  Entry point for sums-of-two-squares / Gaussian-prime number theory.
 - **N-th roots of unity + DFT orthogonality** `RootsOfUnity` (`w_pow_N`, `w_primitive`,
   `dft_orthogonality_delta`): in the custom `C`, `w N = exp(2πi/N)` with `(w N)ᴺ = 1` (De Moivre),
   and the character sum `Σ_{k<N} (w N)^{jk} = N` (if `(w N)ʲ=1`) or `0` — the complex-DFT
