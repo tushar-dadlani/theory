@@ -99,6 +99,7 @@ is axiom-free.
   from the from-scratch cyclicity `units_cyclic` (`x=g^{(p−1)/4}`, its square a non-trivial root of
   `1`) + the sqrt-of-1 fact `sqrt1` (Euclid via `prime_mult_nat`). Both genuine theorems.
   These are the two *ingredients* of Fermat's `p ≡ 1 (mod 4) ⟹ p = a²+b²`, now assembled below.
+  The global valuation-parity iff (deferred there) is now **completed** in `TwoSquaresFull` (below).
 - **Fermat's two-square theorem** `FermatTwoSquares.fermat_two_squares` (**axiom-free**): every prime
   `p ≡ 1 (mod 4)` is a sum of two squares, `p = a²+b²` — a genuine classical theorem of number
   theory, reached entirely within the repo. Proof = **Euler's descent**: `neg1_QR` seeds `p ∣ x²+1`,
@@ -115,8 +116,18 @@ is axiom-free.
   the **necessity engine** `prime3_descent` — such a `q` divides a sum of two squares to an even power
   (`q²∣n`, `n/q²` still sum2); and the **sufficiency blocks** (`2`, squares, products via `sum2_mul`,
   primes `≡1 mod4` via Fermat). All genuine theorems, both directions of the classical
-  characterisation. **Analogy boundary:** the global valuation-parity *iff* over an arbitrary
-  factorisation (stitching these with valuation additivity) is deferred, not done here.
+  characterisation. **Boundary (now lifted):** the global valuation-parity *iff* is completed in
+  `TwoSquaresFull` (next).
+- **FULL two-square characterisation** `TwoSquaresFull.two_squares_iff` (**axiom-free**): for `n>0`,
+  `sum2 n ↔ (∀ prime q ≡ 3 (mod 4), even q-valuation of n)` — the complete classical Fermat–Euler
+  theorem. Both directions by strong induction (`Z.lt_wf`): necessity via `prime3_descent` +
+  `pow_split2` + `even_shift2`; sufficiency via `has_prime_divisor` + `padic_val` + `q3even_transfer`
+  (Euler hypothesis carried to the cofactor by Euclid `prime_mult`/`prime_ndvd_pow`) + `prime_mod4`
+  case split (`sum2_2` / Fermat `sum2_prime1` / even-power `sum2_sq`) + `sum2_mul`. Uses only
+  **per-prime** coprimality/cancellation — *not* a general valuation-additivity theorem (which was
+  declined). `Print Assumptions` = Closed under the global context. A genuine classical number-theory
+  theorem, machine-checked with zero axioms. **Not done:** a reusable valuation function, `n=0`, or
+  counting representations.
 - **A number as a field — the triad `1/x, x, x^x` in `𝔽_p`** `FpField.Fp_field_triad`
   (**axiom-free**): the prime `p` makes `ℤ/pℤ` a field; the inverse is a power `1/x = x^{p−2} mod p`
   with `x·(1/x) ≡ 1` proved as `fermat` (`inv_correct`), self-power `x^x = pw p x x`, so the triad is
