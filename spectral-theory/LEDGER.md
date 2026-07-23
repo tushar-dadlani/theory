@@ -144,6 +144,15 @@ is axiom-free.
   `p=7` by unary-`nat` `x^x`). **Analogy boundary:** `nfix p` is an *irregular* function — no
   closed-form or asymptotic is proved or claimed; the count beyond the bounds and small table is
   left open. `Print Assumptions` = Closed under the global context.
+- **The "inessential ℝ", made precise** `AlgebraicOrthogonality.algebraic_orthogonality`
+  (**axiom-free**): DFT/character orthogonality proved over an *abstract field* with an *abstract
+  root of unity* (`apow w N = 1`) — `w^m=1 ⟹ Σ w^{km} = N·1`, `w^m≠1 ⟹ Σ = 0`, pure geometric
+  series (`ageom`) + field cancellation. Zero axioms, no ℝ/ℂ/trig. A measured **axiom-footprint
+  contrast** then pins where ℝ enters: the same vanishing law over our `ℂ` for an *abstract* root
+  (`c_orth_vanish`) carries **2** axioms (field-of-ℝ, *not* the order axiom `sig_not_dec`); the
+  *analytic* root `exp(2πi/N)` (`c_orth_w`, via `w_pow_N`) carries **3**. Conclusion: the quarantined
+  ℝ-axioms of the entire character/DFT/Dirichlet layer are cosmetic — the orthogonality is axiom-free
+  field algebra; ℝ enters solely through the analytic realisation of a concrete root of unity.
 - **N-th roots of unity + DFT orthogonality** `RootsOfUnity` (`w_pow_N`, `w_primitive`,
   `dft_orthogonality_delta`): in the custom `C`, `w N = exp(2πi/N)` with `(w N)ᴺ = 1` (De Moivre),
   and the character sum `Σ_{k<N} (w N)^{jk} = N` (if `(w N)ʲ=1`) or `0` — the complex-DFT
