@@ -115,8 +115,7 @@ is axiom-free.
   (`mulmod_in_units`), cancellation (`cancel_mod` via `Gauss`), and Fermat via the
   units-permutation product argument (`units_perm`, `Pi_coprime`). `nat`↔`ℤ` primality bridged
   through `mod` (`prime_mult_nat`, `Zof_nat_divide_inv`). Foundation for the from-scratch
-  primitive-root / Dirichlet build (Phase 4b `PrimitiveRoot`, Phase 5
-  `DirichletModP` — not yet built).
+  primitive-root / Dirichlet build (Phase 5 `DirichletModP` — not yet built).
 - **Euler totient + divisor sum** `Totient` (Phase 2): `totient_divisor_sum : Σ_{d∣n} φ(d) = n`
   — **axiom-free**. Partition of `[1,n]` by `n/gcd(k,n)` into `φ`-sized fibers
   (`count_key_eq_phi` via a membership-`Permutation`, `disjoint_filter_sum`). Counting input for
@@ -129,7 +128,13 @@ is axiom-free.
 - **Multiplicative order mod p** `ZmodOrder` (Phase 4a): `ord p a` (least positive period),
   with `ord_least`, `ord_divides`, `ord_div_pm1` (via Fermat), `pow_inj_below` (powers below the
   order are distinct). **Axiom-free.** Foundation for the order-counting primitive-root proof;
-  the counting/squeeze (`ψ(d)≤φ(d)`, `Σψ=Σφ=p−1 ⟹ ∃` primitive root) is Phase 4b (not yet built).
+  the counting/squeeze (`ψ(d)≤φ(d)`, `Σψ=Σφ=p−1 ⟹ ∃` primitive root) is Phase 4b.
+- **(ℤ/pℤ)\* is cyclic** `PrimitiveRoot.units_cyclic` (Phase 4b): for prime `p`, `∃ g, ord p g = p−1`
+  (a primitive root) — proven from scratch, unconditionally, **axiom-free**. Order-counting:
+  `psi_le_phi` (`ψ(d)≤φ(d)` via surjectivity-onto-roots `root_is_power` + `gcd_of_order`),
+  `sum_psi` (`Σψ=p−1`), squeeze against `Totient.totient_divisor_sum` (`Σφ=p−1`) ⟹ `ψ=φ` ⟹
+  `ψ(p−1)=φ(p−1)≥1`. This is the genuine cyclicity theorem the whole Dirichlet arc rests on;
+  every ingredient axiom-free. Feeds the Dirichlet-character construction (Phase 5).
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).
