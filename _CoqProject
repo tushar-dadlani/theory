@@ -496,6 +496,7 @@ spectral-theory/AlgebraicOrthogonality.v
 spectral-theory/EulerFormula.v
 spectral-theory/GaussSum.v
 spectral-theory/DirichletKernel.v
+spectral-theory/ChebyshevPoly.v
 spectral-theory/EulerReindex.v
 spectral-theory/RecipSquareBound.v
 spectral-theory/EulerProductZetaBound.v

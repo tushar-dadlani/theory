@@ -176,6 +176,12 @@ is axiom-free.
   `(Cexp t−1)·DK n t = Cexp(−nt)·(Cexp(t)^{2n+1}−1)` = `geom_sum` via `EulerFormula.Cexp`. Genuine
   theorem; classical Reals axioms (via cos/sin). (The real↔complex identification `DK = RtoC(Dsum)`
   — a symmetric-pair Csum reindex — is not spelled out; both faces are proved independently.)
+- **Chebyshev polynomials** `ChebyshevPoly.chebyshev_poly` (quarantined ℝ): `Tₙ` of the first kind
+  (recurrence `T_{n+2}=2x·T_{n+1}−Tₙ`, `T₂=2x²−1`, `T₃=4x³−3x`) with the defining identity
+  `Tcheb_cos : Tₙ(cos t)=cos(nt)` (two-step induction, cosine recurrence via product-to-sum), the de
+  Moivre link `Tcheb_Re : Tₙ(cos t)=Re((Cexp t)ⁿ)`, `Tₙ(1)=1`, and the `n` roots at `cos((2k+1)π/2n)`
+  (`cos_odd_pihalf`). Genuine theorem; classical Reals axioms (via cos/sin). Distinct from the
+  number-theoretic `Chebyshev.v` (ψ function).
 - **N-th roots of unity + DFT orthogonality** `RootsOfUnity` (`w_pow_N`, `w_primitive`,
   `dft_orthogonality_delta`): in the custom `C`, `w N = exp(2πi/N)` with `(w N)ᴺ = 1` (De Moivre),
   and the character sum `Σ_{k<N} (w N)^{jk} = N` (if `(w N)ʲ=1`) or `0` — the complex-DFT
