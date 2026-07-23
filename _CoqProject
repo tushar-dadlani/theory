@@ -481,6 +481,7 @@ spectral-theory/CharactersModN.v
 spectral-theory/ZmodPStar.v
 spectral-theory/Totient.v
 spectral-theory/PolyRootsFp.v
+spectral-theory/ZmodOrder.v
 spectral-theory/EulerReindex.v
 spectral-theory/RecipSquareBound.v
 spectral-theory/EulerProductZetaBound.v
