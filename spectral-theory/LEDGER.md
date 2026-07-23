@@ -115,12 +115,17 @@ is axiom-free.
   (`mulmod_in_units`), cancellation (`cancel_mod` via `Gauss`), and Fermat via the
   units-permutation product argument (`units_perm`, `Pi_coprime`). `nat`↔`ℤ` primality bridged
   through `mod` (`prime_mult_nat`, `Zof_nat_divide_inv`). Foundation for the from-scratch
-  primitive-root / Dirichlet build (Phases 3–5: `PolyRootsFp`, `PrimitiveRoot`,
+  primitive-root / Dirichlet build (Phases 4–5: `PrimitiveRoot`,
   `DirichletModP` — not yet built).
 - **Euler totient + divisor sum** `Totient` (Phase 2): `totient_divisor_sum : Σ_{d∣n} φ(d) = n`
   — **axiom-free**. Partition of `[1,n]` by `n/gcd(k,n)` into `φ`-sized fibers
   (`count_key_eq_phi` via a membership-`Permutation`, `disjoint_filter_sum`). Counting input for
   the order-counting primitive-root proof (Phase 4).
+- **Roots bound over 𝔽_p** `PolyRootsFp` (Phase 3): `dth_roots_bound : #{a∈[1,p−1] : a^d mod p = 1}
+  ≤ d` — **axiom-free**. Minimal polynomial theory over `ℤ` + synthetic division (`sdiv`) + factor
+  theorem (`factor_mod`) + Lagrange bound `roots_le` (strong induction on degree, `𝔽_p` an
+  integral domain via `prime_mult`, `NoDup_incl_length`), instantiated at `X^d−1`. The
+  field-theoretic input for the order-counting primitive-root proof (Phase 4).
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).
