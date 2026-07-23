@@ -484,6 +484,7 @@ spectral-theory/PolyRootsFp.v
 spectral-theory/ZmodOrder.v
 spectral-theory/PrimitiveRoot.v
 spectral-theory/DirichletModP.v
+spectral-theory/DirichletLEuler.v
 spectral-theory/EulerReindex.v
 spectral-theory/RecipSquareBound.v
 spectral-theory/EulerProductZetaBound.v

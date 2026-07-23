@@ -143,6 +143,18 @@ is axiom-free.
   (`N=p−1`). Quarantined Reals axioms (via `C`/trig). **Completes the 5-phase from-scratch
   Dirichlet-mod-p build**: the number-theory core (Phases 1–4b, `(ℤ/pℤ)*` cyclic) is axiom-free;
   only Phase 5's `ℂ`/trig is quarantined.
+- **Finite Dirichlet L-function / Euler product** `DirichletLEuler.dirichlet_L_function`: the genuine
+  theorem-content is **complete multiplicativity** of the character — `dchar_mul` (`χ(mn)=χ(m)χ(n)`)
+  and `dchar_pow` (`χ(qᵏ)=χ(q)ᵏ`), proved from scratch via the discrete-log homomorphism
+  `dlog_mul` (`dlog(uv)≡dlog u+dlog v mod (p−1)`, from `pw_mod` + `pow_inj_below`); this closes the
+  "complete multiplicativity" bullet `DirichletModP` had only advertised. Plus the local Euler factor
+  `local_euler_factor` (`(1−χ(q)x)·Σ_{k<K}χ(qᵏ)xᵏ = 1−(χ(q)x)^K`, genuine geometric closed form) and
+  the finite Euler product `dirichlet_L_euler_product` (`PrimonGas` state-sum machinery ported to `C`
+  as `euler_product_C`, at character-twisted fugacities: `Σ_states ∏_q(χ(q)x_q)^{k_q} = ∏_q Llocal_q`).
+  **Analogy boundary, stated honestly:** the *finite* Euler product = product of local factors is
+  proved; `L(s,χ)=∏(1−χ(q)q⁻ˢ)⁻¹=Σχ(n)n⁻ˢ` as an *infinite* product/series (needing the
+  state↔integer unique-factorisation bijection and convergence) stays prose. Quarantined Reals axioms
+  (via `C`/trig).
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).
