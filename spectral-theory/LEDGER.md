@@ -91,6 +91,12 @@ is axiom-free.
   analogue of `WalshHadamard.H²=8I`. Engine: two-index orthogonality `orthogonality_2` (off-diagonal
   vanishing from injectivity `w_pow_inj`, i.e. primitivity) + finite Fubini (`Csum_swap`) + delta
   extraction (`Csum_delta`) — all pure `C`-field algebra. Quarantined Reals axioms (via `C`/trig).
+- **DFT convolution theorem** `DFTConvolution.conv_theorem`: the DFT diagonalises cyclic
+  convolution — `DFT (f⋆g) m = DFT f m · DFT g m` for `(f⋆g)(n)=Σ_{k<N} f k·g((n−k) mod N)`.
+  New ingredient: a cyclic shift permutes `{0..N−1}` (`rotation_perm` via `NoDup_Permutation_bis`
+  + shift injectivity) ⟹ reindexing `Csum_reindex`; with root periodicity `Cpow_wc_mod` it gives
+  the shift theorem `dft_shift`, then finite Fubini (`Csum_swap`) finishes. With `DFTInversion`
+  this is the full finite-Fourier toolkit on `C`. Quarantined Reals axioms (via `C`/trig).
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).

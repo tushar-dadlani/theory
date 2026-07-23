@@ -475,6 +475,7 @@ spectral-theory/LocalGlobalCompat.v
 spectral-theory/ComplexField.v
 spectral-theory/RootsOfUnity.v
 spectral-theory/DFTInversion.v
+spectral-theory/DFTConvolution.v
 spectral-theory/EulerReindex.v
 spectral-theory/RecipSquareBound.v
 spectral-theory/EulerProductZetaBound.v
