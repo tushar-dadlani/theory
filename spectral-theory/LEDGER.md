@@ -92,6 +92,14 @@ is axiom-free.
   **units = norm-1 elements = {1,−1,i,−i}** (`unit_norm` + `gaussian_units` + `norm1_unit`), all
   genuine theorems. Arithmetic shadow of `ComplexField`; `δ<0/=0/>0` = Gaussian/dual/split integers.
   Entry point for sums-of-two-squares / Gaussian-prime number theory.
+- **Sums of two squares — two pillars** `SumTwoSquares.sum_two_squares_pillars` (**axiom-free**):
+  (1) **Brahmagupta–Fibonacci** `sum2_mul` — sums of two squares closed under multiplication,
+  `(a²+b²)(c²+d²)=(ac−bd)²+(ad+bc)²`, proved as *exactly* Gaussian-norm multiplicativity
+  (`ZInorm_mul`); (2) **`−1` a QR mod `p` for `p ≡ 1 (mod 4)`** `neg1_QR` — `∃x, x²+1 ≡ 0 (mod p)`,
+  from the from-scratch cyclicity `units_cyclic` (`x=g^{(p−1)/4}`, its square a non-trivial root of
+  `1`) + the sqrt-of-1 fact `sqrt1` (Euclid via `prime_mult_nat`). Both genuine theorems.
+  **Analogy boundary:** these are the two *ingredients* of Fermat's `p ≡ 1 (mod 4) ⟹ p = a²+b²`;
+  the descent (Thue/Euler) assembling them into `p = a²+b²` is the deferred deep step, not yet done.
 - **N-th roots of unity + DFT orthogonality** `RootsOfUnity` (`w_pow_N`, `w_primitive`,
   `dft_orthogonality_delta`): in the custom `C`, `w N = exp(2πi/N)` with `(w N)ᴺ = 1` (De Moivre),
   and the character sum `Σ_{k<N} (w N)^{jk} = N` (if `(w N)ʲ=1`) or `0` — the complex-DFT

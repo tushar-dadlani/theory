@@ -486,6 +486,7 @@ spectral-theory/PrimitiveRoot.v
 spectral-theory/DirichletModP.v
 spectral-theory/DirichletLEuler.v
 spectral-theory/GaussianIntegers.v
+spectral-theory/SumTwoSquares.v
 spectral-theory/EulerReindex.v
 spectral-theory/RecipSquareBound.v
 spectral-theory/EulerProductZetaBound.v
