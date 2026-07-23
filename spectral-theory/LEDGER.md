@@ -108,6 +108,15 @@ is axiom-free.
   decreasing `m` (induction on `Z.to_nat m`) to `m=1`. Built on the from-scratch cyclicity tower +
   the Gaussian-integer bridge; no external axioms. `Print Assumptions` = Closed under the global
   context.
+- **Two-square converse + characterisation engine** `SumTwoSquaresConverse.two_squares_characterisation`
+  (**axiom-free**): `neg1_not_QR` — `−1` is *not* a QR mod a prime `q ≡ 3 (mod 4)` (mirror of
+  `neg1_QR`, from the order theory: an `x²≡−1` has order 4 ⟹ `4∣q−1`); the **obstruction**
+  `prime3_obstruction` — `q ≡ 3 (mod 4)` prime, `q ∣ a²+b²` ⟹ `q∣a ∧ q∣b` (Bezout + `neg1_not_QR_Z`);
+  the **necessity engine** `prime3_descent` — such a `q` divides a sum of two squares to an even power
+  (`q²∣n`, `n/q²` still sum2); and the **sufficiency blocks** (`2`, squares, products via `sum2_mul`,
+  primes `≡1 mod4` via Fermat). All genuine theorems, both directions of the classical
+  characterisation. **Analogy boundary:** the global valuation-parity *iff* over an arbitrary
+  factorisation (stitching these with valuation additivity) is deferred, not done here.
 - **N-th roots of unity + DFT orthogonality** `RootsOfUnity` (`w_pow_N`, `w_primitive`,
   `dft_orthogonality_delta`): in the custom `C`, `w N = exp(2πi/N)` with `(w N)ᴺ = 1` (De Moivre),
   and the character sum `Σ_{k<N} (w N)^{jk} = N` (if `(w N)ʲ=1`) or `0` — the complex-DFT

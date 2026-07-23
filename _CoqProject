@@ -488,6 +488,7 @@ spectral-theory/DirichletLEuler.v
 spectral-theory/GaussianIntegers.v
 spectral-theory/SumTwoSquares.v
 spectral-theory/FermatTwoSquares.v
+spectral-theory/SumTwoSquaresConverse.v
 spectral-theory/EulerReindex.v
 spectral-theory/RecipSquareBound.v
 spectral-theory/EulerProductZetaBound.v
