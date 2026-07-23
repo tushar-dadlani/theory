@@ -98,8 +98,16 @@ is axiom-free.
   (`ZInorm_mul`); (2) **`−1` a QR mod `p` for `p ≡ 1 (mod 4)`** `neg1_QR` — `∃x, x²+1 ≡ 0 (mod p)`,
   from the from-scratch cyclicity `units_cyclic` (`x=g^{(p−1)/4}`, its square a non-trivial root of
   `1`) + the sqrt-of-1 fact `sqrt1` (Euclid via `prime_mult_nat`). Both genuine theorems.
-  **Analogy boundary:** these are the two *ingredients* of Fermat's `p ≡ 1 (mod 4) ⟹ p = a²+b²`;
-  the descent (Thue/Euler) assembling them into `p = a²+b²` is the deferred deep step, not yet done.
+  These are the two *ingredients* of Fermat's `p ≡ 1 (mod 4) ⟹ p = a²+b²`, now assembled below.
+- **Fermat's two-square theorem** `FermatTwoSquares.fermat_two_squares` (**axiom-free**): every prime
+  `p ≡ 1 (mod 4)` is a sum of two squares, `p = a²+b²` — a genuine classical theorem of number
+  theory, reached entirely within the repo. Proof = **Euler's descent**: `neg1_QR` seeds `p ∣ x²+1`,
+  `nearest_rep` reduces to `m·p = u²+1` with `0<m<p`, and `descent_step` uses Brahmagupta–Fibonacci
+  (`sum2_mul`, `ring`) + cancellation (`Z.mul_reg_l`) to produce `r·p = A²+B²` with `0<r<m`
+  (`r≠0` since else `m∣p`, barred by `prime_divisors` for `1<m<p`); `descent_fuel` iterates the
+  decreasing `m` (induction on `Z.to_nat m`) to `m=1`. Built on the from-scratch cyclicity tower +
+  the Gaussian-integer bridge; no external axioms. `Print Assumptions` = Closed under the global
+  context.
 - **N-th roots of unity + DFT orthogonality** `RootsOfUnity` (`w_pow_N`, `w_primitive`,
   `dft_orthogonality_delta`): in the custom `C`, `w N = exp(2πi/N)` with `(w N)ᴺ = 1` (De Moivre),
   and the character sum `Σ_{k<N} (w N)^{jk} = N` (if `(w N)ʲ=1`) or `0` — the complex-DFT
