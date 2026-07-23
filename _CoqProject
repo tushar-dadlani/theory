@@ -490,6 +490,7 @@ spectral-theory/SumTwoSquares.v
 spectral-theory/FermatTwoSquares.v
 spectral-theory/SumTwoSquaresConverse.v
 spectral-theory/FpField.v
+spectral-theory/SelfPowerDynamics.v
 spectral-theory/EulerReindex.v
 spectral-theory/RecipSquareBound.v
 spectral-theory/EulerProductZetaBound.v

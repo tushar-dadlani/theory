@@ -125,6 +125,17 @@ is axiom-free.
   scaling by `x` (`dlog_triad`), collapsing to `1` at `x=1` (`triad_collapse`). Genuine theorems,
   reusing the from-scratch cyclicity tower; the reused `dlog` lemmas are axiom-free so `Print
   Assumptions` = Closed under the global context.
+- **Self-power dynamics `x ↦ x^x mod p`** `SelfPowerDynamics.self_power_dynamics` (**axiom-free**):
+  the self-power map as a dynamical system on `𝔽_p*`. `selfpow_exp_reduce` — the careful
+  base/exponent asymmetry `x^x mod p = pw p x (x mod (p−1))` (exponent reduces mod `p−1`, base stays
+  `x`), giving `selfpow p (p−1) = 1`; `selfpow_unit` (stays on units); fixed points
+  `selfpow_fixed_ord` (`x^x ≡ x ⟺ ord(x) ∣ (x−1)`, cancel a unit via `cancel_mod`); and the capstone
+  **eventual periodicity** `orbit_eventually_periodic` via a newly-built constructive pigeonhole
+  `orbit_collision` (`existsb` double-search + `NoDup_incl_length`: `p` iterates can't be distinct in
+  `p−1` units) + `orbit_shift`. One step linearises in discrete-log space to scaling by `x`
+  (`orbit_dlog_step`, from `FpField.dlog_triad`). **Honest scope:** no cycle-length count, no
+  fixed-point uniqueness, no pre-period-tail analysis. `Print Assumptions` = Closed under the global
+  context.
 - **N-th roots of unity + DFT orthogonality** `RootsOfUnity` (`w_pow_N`, `w_primitive`,
   `dft_orthogonality_delta`): in the custom `C`, `w N = exp(2πi/N)` with `(w N)ᴺ = 1` (De Moivre),
   and the character sum `Σ_{k<N} (w N)^{jk} = N` (if `(w N)ʲ=1`) or `0` — the complex-DFT
