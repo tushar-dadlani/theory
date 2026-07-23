@@ -117,6 +117,14 @@ is axiom-free.
   primes `≡1 mod4` via Fermat). All genuine theorems, both directions of the classical
   characterisation. **Analogy boundary:** the global valuation-parity *iff* over an arbitrary
   factorisation (stitching these with valuation additivity) is deferred, not done here.
+- **A number as a field — the triad `1/x, x, x^x` in `𝔽_p`** `FpField.Fp_field_triad`
+  (**axiom-free**): the prime `p` makes `ℤ/pℤ` a field; the inverse is a power `1/x = x^{p−2} mod p`
+  with `x·(1/x) ≡ 1` proved as `fermat` (`inv_correct`), self-power `x^x = pw p x x`, so the triad is
+  `pw p x` at exponents `{p−2, 1, x}` (`triad_powers_of_x`). In discrete-log space (base a primitive
+  root, `DirichletModP.dlog`) it is `{L·(p−2), L, x·L} mod p−1` — reciprocal = negation, self-power =
+  scaling by `x` (`dlog_triad`), collapsing to `1` at `x=1` (`triad_collapse`). Genuine theorems,
+  reusing the from-scratch cyclicity tower; the reused `dlog` lemmas are axiom-free so `Print
+  Assumptions` = Closed under the global context.
 - **N-th roots of unity + DFT orthogonality** `RootsOfUnity` (`w_pow_N`, `w_primitive`,
   `dft_orthogonality_delta`): in the custom `C`, `w N = exp(2πi/N)` with `(w N)ᴺ = 1` (De Moivre),
   and the character sum `Σ_{k<N} (w N)^{jk} = N` (if `(w N)ʲ=1`) or `0` — the complex-DFT
