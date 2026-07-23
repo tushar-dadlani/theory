@@ -153,6 +153,13 @@ is axiom-free.
   *analytic* root `exp(2πi/N)` (`c_orth_w`, via `w_pow_N`) carries **3**. Conclusion: the quarantined
   ℝ-axioms of the entire character/DFT/Dirichlet layer are cosmetic — the orthogonality is axiom-free
   field algebra; ℝ enters solely through the analytic realisation of a concrete root of unity.
+- **Euler's formula / circle group** `EulerFormula.euler_circle_group` (quarantined ℝ): `Cexp t =
+  cos t + i·sin t` proved to be a group homomorphism `(ℝ,+) → (ℂ*,×)` onto the unit circle —
+  `Cexp 0 = 1`, `Cexp(a+b)=Cexp a·Cexp b` (one identity = `cos_plus` **and** `sin_plus`),
+  `|Cexp t|²=1`, `Cinv(Cexp t)=Cconj(Cexp t)=Cexp(−t)`, de Moivre `(Cexp t)ⁿ=Cexp(n·t)`, `Cexp 2π=1`,
+  and `w N = Cexp(2π/N)` (with `w_pow_N` re-derived from Euler). This is the analytic backbone that
+  *manufactures* the root of unity the axiom-free orthogonality (`AlgebraicOrthogonality`) consumes —
+  the precise locus of the quarantined ℝ. Genuine theorem; classical Reals axioms (via cos/sin).
 - **N-th roots of unity + DFT orthogonality** `RootsOfUnity` (`w_pow_N`, `w_primitive`,
   `dft_orthogonality_delta`): in the custom `C`, `w N = exp(2πi/N)` with `(w N)ᴺ = 1` (De Moivre),
   and the character sum `Σ_{k<N} (w N)^{jk} = N` (if `(w N)ʲ=1`) or `0` — the complex-DFT

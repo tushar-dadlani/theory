@@ -493,6 +493,7 @@ spectral-theory/FpField.v
 spectral-theory/SelfPowerDynamics.v
 spectral-theory/SelfPowerFixedCount.v
 spectral-theory/AlgebraicOrthogonality.v
+spectral-theory/EulerFormula.v
 spectral-theory/EulerReindex.v
 spectral-theory/RecipSquareBound.v
 spectral-theory/EulerProductZetaBound.v
