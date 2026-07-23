@@ -115,7 +115,7 @@ is axiom-free.
   (`mulmod_in_units`), cancellation (`cancel_mod` via `Gauss`), and Fermat via the
   units-permutation product argument (`units_perm`, `Pi_coprime`). `nat`↔`ℤ` primality bridged
   through `mod` (`prime_mult_nat`, `Zof_nat_divide_inv`). Foundation for the from-scratch
-  primitive-root / Dirichlet build (Phase 5 `DirichletModP` — not yet built).
+  primitive-root / Dirichlet build (now COMPLETE, Phases 1–5).
 - **Euler totient + divisor sum** `Totient` (Phase 2): `totient_divisor_sum : Σ_{d∣n} φ(d) = n`
   — **axiom-free**. Partition of `[1,n]` by `n/gcd(k,n)` into `φ`-sized fibers
   (`count_key_eq_phi` via a membership-`Permutation`, `disjoint_filter_sum`). Counting input for
@@ -135,6 +135,14 @@ is axiom-free.
   `sum_psi` (`Σψ=p−1`), squeeze against `Totient.totient_divisor_sum` (`Σφ=p−1`) ⟹ `ψ=φ` ⟹
   `ψ(p−1)=φ(p−1)≥1`. This is the genuine cyclicity theorem the whole Dirichlet arc rests on;
   every ingredient axiom-free. Feeds the Dirichlet-character construction (Phase 5).
+- **Dirichlet characters mod p + orthogonality** `DirichletModP.dirichlet_characters_mod_p` (Phase 5):
+  genuine Dirichlet characters `χ_a` mod a prime `p` (via discrete log base a primitive root:
+  `χ_a(n) = (w(p−1))^{a·dlog n}` on units, 0 on multiples of `p`) with `χ_a(1)=1`, period `p`,
+  vanishing on multiples, and the orthogonality `Σ_{n<p} χ_a(n)conj(χ_b(n)) = (p−1)[a=b]` —
+  reindexing units→exponents (`powers_units_perm`) onto `CharactersModN.char_orthogonality_row`
+  (`N=p−1`). Quarantined Reals axioms (via `C`/trig). **Completes the 5-phase from-scratch
+  Dirichlet-mod-p build**: the number-theory core (Phases 1–4b, `(ℤ/pℤ)*` cyclic) is axiom-free;
+  only Phase 5's `ℂ`/trig is quarantined.
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).
