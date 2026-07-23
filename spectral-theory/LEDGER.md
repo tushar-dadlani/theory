@@ -115,8 +115,12 @@ is axiom-free.
   (`mulmod_in_units`), cancellation (`cancel_mod` via `Gauss`), and Fermat via the
   units-permutation product argument (`units_perm`, `Pi_coprime`). `nat`↔`ℤ` primality bridged
   through `mod` (`prime_mult_nat`, `Zof_nat_divide_inv`). Foundation for the from-scratch
-  primitive-root / Dirichlet build (Phases 2–5: `Totient`, `PolyRootsFp`, `PrimitiveRoot`,
+  primitive-root / Dirichlet build (Phases 3–5: `PolyRootsFp`, `PrimitiveRoot`,
   `DirichletModP` — not yet built).
+- **Euler totient + divisor sum** `Totient` (Phase 2): `totient_divisor_sum : Σ_{d∣n} φ(d) = n`
+  — **axiom-free**. Partition of `[1,n]` by `n/gcd(k,n)` into `φ`-sized fibers
+  (`count_key_eq_phi` via a membership-`Permutation`, `disjoint_filter_sum`). Counting input for
+  the order-counting primitive-root proof (Phase 4).
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).

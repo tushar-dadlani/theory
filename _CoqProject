@@ -479,6 +479,7 @@ spectral-theory/DFTConvolution.v
 spectral-theory/Parseval.v
 spectral-theory/CharactersModN.v
 spectral-theory/ZmodPStar.v
+spectral-theory/Totient.v
 spectral-theory/EulerReindex.v
 spectral-theory/RecipSquareBound.v
 spectral-theory/EulerProductZetaBound.v
