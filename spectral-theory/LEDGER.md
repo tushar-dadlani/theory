@@ -110,6 +110,13 @@ is axiom-free.
   characters; a Dirichlet char mod `N` is a character of the *multiplicative* `(ℤ/Nℤ)*` — cyclic
   ⟹ these via a primitive root, but `(ℤ/Nℤ)*`, primitivity, and L-series are NOT built.
   Quarantined Reals axioms (via `C`/trig).
+- **Units mod p + Fermat** `ZmodPStar` (Phase 1 of the actual-Dirichlet-mod-p build):
+  `fermat : 1≤a≤p−1 ⟹ a^{p−1} mod p = 1` — **axiom-free**. Units group `(ℤ/pℤ)*` closure
+  (`mulmod_in_units`), cancellation (`cancel_mod` via `Gauss`), and Fermat via the
+  units-permutation product argument (`units_perm`, `Pi_coprime`). `nat`↔`ℤ` primality bridged
+  through `mod` (`prime_mult_nat`, `Zof_nat_divide_inv`). Foundation for the from-scratch
+  primitive-root / Dirichlet build (Phases 2–5: `Totient`, `PolyRootsFp`, `PrimitiveRoot`,
+  `DirichletModP` — not yet built).
 - **Möbius inversion**, three forms — all genuine over the stated (single-prime / chain) domain:
   `MobiusReciprocal` (`(1−x)·psum = 1−x^K`, `∏(1−p⁻ˢ)=1/ζ` finite form), `VonMangoldt`
   (`Λ = μ⋆log`, `Σ_{d|pᵐ}Λ = log pᵐ`), `PosetMobiusFTC` (zeta/Möbius transforms mutually inverse).
