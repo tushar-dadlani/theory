@@ -498,6 +498,8 @@ spectral-theory/GaussSum.v
 spectral-theory/DirichletKernel.v
 spectral-theory/ChebyshevPoly.v
 spectral-theory/TwoSquaresFull.v
+spectral-theory/QuadraticGaussSum.v
+spectral-theory/R2Count.v
 spectral-theory/EulerReindex.v
 spectral-theory/RecipSquareBound.v
 spectral-theory/EulerProductZetaBound.v

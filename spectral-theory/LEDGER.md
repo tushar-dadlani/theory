@@ -126,8 +126,19 @@ is axiom-free.
   case split (`sum2_2` / Fermat `sum2_prime1` / even-power `sum2_sq`) + `sum2_mul`. Uses only
   **per-prime** coprimality/cancellation — *not* a general valuation-additivity theorem (which was
   declined). `Print Assumptions` = Closed under the global context. A genuine classical number-theory
-  theorem, machine-checked with zero axioms. **Not done:** a reusable valuation function, `n=0`, or
-  counting representations.
+  theorem, machine-checked with zero axioms. **Not done:** a reusable valuation function, or `n=0`.
+  (Counting representations is now started in `R2Count`, below.)
+- **Counting two-square representations `r₂(n)`** `R2Count.two_squares_count` (**axiom-free**): defines
+  `r₂(n) = #{(a,b)∈ℤ² : a²+b²=n}` as a decidable bounded count (`filter` over the box
+  `[−⌊√n⌋,⌊√n⌋]²`, since a representation forces `|a|,|b| ≤ √n`), and proves two structural facts.
+  **(1) Positivity ↔ representability:** `r₂(n) > 0 ↔ sum2 n`, hence by `two_squares_iff`, for `n>0`,
+  `r₂(n) > 0 ↔ q3even n` — the full arithmetic test for when the count is nonzero.
+  **(2) The factor of 4 in Jacobi:** `4 | r₂(n)` for `n>0`, proved directly — the Gaussian-unit
+  rotation `(a,b) ↦ (−b,a)` (mult by `i`) is a **fixed-point-free order-4** action on the solution set
+  (general lemma `div4_of_free_order4`: a `NoDup` list closed under such an `f` has length divisible by
+  4, by orbit removal via strong induction). Everything is over ℤ/ℕ/lists — no Reals — so `Print
+  Assumptions` = Closed under the global context. **Not done:** the full Jacobi count
+  `r₂(n) = 4(d₁(n)−d₃(n))` (a deeper theta/Gaussian-integer result).
 - **A number as a field — the triad `1/x, x, x^x` in `𝔽_p`** `FpField.Fp_field_triad`
   (**axiom-free**): the prime `p` makes `ℤ/pℤ` a field; the inverse is a power `1/x = x^{p−2} mod p`
   with `x·(1/x) ≡ 1` proved as `fermat` (`inv_correct`), self-power `x^x = pw p x x`, so the triad is
@@ -178,8 +189,18 @@ is axiom-free.
   uses the multiplicative reindex `a=(b·c) mod p` (`units_perm`), `dchar_mul` + `|χ|=1`, the geometric
   series of the `p`-th roots (`β(c)`, `sum_pow_eq_0`), and `Σχ=0` (`dirichlet_orthogonality`). Only the
   3 classical-ℝ axioms — and by `AlgebraicOrthogonality` even that is confined to the analytic root.
-  **Analogy boundary:** the *value/sign* of `g(χ)` (the deep Gauss-sign theorem), the quadratic Gauss
-  sum, and non-prime moduli are not done.
+  **Analogy boundary:** the *value/sign* of `g(χ)` (the deep Gauss-sign theorem) and non-prime moduli
+  are not done.
+- **Quadratic Gauss sum `g² = χ(−1)·p`** `QuadraticGaussSum.quadratic_gauss_sum_sq` (quarantined ℝ):
+  for an *odd* prime `p` and the order-2 (Legendre) character `χ = dchar p g ((p−1)/2)`, the Gauss sum
+  squares to `χ(−1)·p`, and since `χ(−1) = ±1`, `g² = +p` or `−p`. Builds directly on `GaussSum`: the
+  already-proved `|g|² = g·conj g = p` (`gauss_abs`) plus the *reflection* `conj g = χ(−1)·g`
+  (`gauss_conj_chi`), which holds because the quadratic character is **real-valued** (`chi_real`, via
+  `w(p−1)^{2·a₀·k} = 1` for `2a₀ = p−1`). Then `p = g·conj g = χ(−1)·g²`. The reflection uses the
+  reindex `b ↦ (p−1)·b mod p` (`Sf_reindex_mul`) and `wc_p^{(p−1)x mod p} = w_p^x` (inverse-of-root,
+  `wc_reindex`). Uses the same quarantined classical-ℝ axioms as the character layer. **Not done:** the
+  *sign* `χ(−1) = (−1)^((p−1)/2)` (needs `g^((p−1)/2) ≡ −1`), i.e. `+p` for `p≡1 (4)` vs `−p` for
+  `p≡3 (4)`.
 - **Dirichlet kernel** `DirichletKernel.dirichlet_kernel_thm` (quarantined ℝ): the Fourier-convergence
   kernel `D_n(t) = Σ_{k=−n}^n e^{ikt}`, two faces. Real closed form `dirichlet_kernel`:
   `(1+2Σ_{k=1}^n cos kt)·sin(t/2) = sin((n+½)t)` (telescoping `2cosA sinB = sin(A+B)−sin(A−B)`),
