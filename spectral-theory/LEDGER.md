@@ -101,6 +101,14 @@ is axiom-free.
   the global context. **Next:** gcd/Euclidean algorithm, Bézout, irreducible=prime, unique
   factorisation, and the Gaussian-prime classification — the ℤ[i] engine the general Jacobi
   identity `r₂(n)=4·S(n)` needs.
+- **ℤ[i] divisibility, gcd and Bézout** `GaussianGCD.ZI_bezout` (**axiom-free**): divisibility
+  `ZIdvd a b := ∃c, b=a·c` (with `refl`/`trans`/`add`/`sub`/`mul_r`/`0` lemmas), and the **Bézout
+  property**: every pair `x,y` has a gcd `g = u·x + v·y` that divides both `x` and `y` and is divided
+  by every common divisor. Proved by **well-founded induction on `N(y)`** (the Euclidean algorithm
+  `gcd(x,y)=gcd(y, x mod y)` via `ZI_euclid`), with no recursive `gcd` function — the norm decrease
+  from `GaussianDivision` powers the recursion. Closed under the global context. **Next:** Euclid's
+  lemma (irreducible ⇒ prime) from Bézout, then existence + uniqueness of factorisation, then the
+  Gaussian-prime classification.
 - **Sums of two squares — two pillars** `SumTwoSquares.sum_two_squares_pillars` (**axiom-free**):
   (1) **Brahmagupta–Fibonacci** `sum2_mul` — sums of two squares closed under multiplication,
   `(a²+b²)(c²+d²)=(ac−bd)²+(ad+bc)²`, proved as *exactly* Gaussian-norm multiplicativity

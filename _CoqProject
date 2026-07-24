@@ -487,6 +487,7 @@ spectral-theory/DirichletModP.v
 spectral-theory/DirichletLEuler.v
 spectral-theory/GaussianIntegers.v
 spectral-theory/GaussianDivision.v
+spectral-theory/GaussianGCD.v
 spectral-theory/SumTwoSquares.v
 spectral-theory/FermatTwoSquares.v
 spectral-theory/SumTwoSquaresConverse.v
