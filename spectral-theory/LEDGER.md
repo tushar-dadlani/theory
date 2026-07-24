@@ -160,6 +160,18 @@ is axiom-free.
   under the global context. **This completes both multiplicativity facts** (`S_mult`, `r2_mult`) and
   all prime-power values on both sides; the general `r₂(n)=4·S(n)` now needs only the
   multiplicative-agreement assembly over the prime factorisation.
+- **JACOBI'S TWO-SQUARE FORMULA** `R2Jacobi.jacobi_two_squares` (**axiom-free**): for `n ≥ 1`,
+  `r₂(n) = 4·(d₁(n) − d₃(n))` — the exact count of representations `n = a²+b²` equals four times the
+  excess of divisors `≡1` over divisors `≡3 (mod 4)`. The **multiplicative-agreement assembly**:
+  `r₂` and `4·S` agree on prime powers (`r2_ppow_eq_4S`, casing `2`/`p≡1`/`p≡3` against `r2_2pow`/
+  `r2_1pow`/`r2_3pow` and `S_prime_pow_*`), and both `r₂` and `S` are multiplicative on coprimes
+  (`r2_mult`, `S_mult`), so by strong induction peeling one prime power `p^v ∥ n` (`nat_padic`,
+  `gcd_pow_coprime`): `4·r₂(n) = r₂(p^v)·r₂(m') = (4·S(p^v))·(4·S(m')) = 16·S(n)`, giving
+  `r₂(n) = 4·S(n) = 4·(d₁−d₃)` (`jacobi_full` + `S_as_d1d3`). This is the genuine classical theorem,
+  machine-checked with **zero axioms**, resting on the full ℤ[i] unique-factorisation tower
+  (`GaussianDivision`…`GaussianCoprime`), the three prime-power counts, and both multiplicativities.
+  Closed under the global context. The `vm_compute` check `jacobi_upto` (n ≤ 200) is now a corollary,
+  not the evidence.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
