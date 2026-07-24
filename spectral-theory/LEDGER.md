@@ -119,6 +119,16 @@ is axiom-free.
   | a`, unit `g` ⟹ `1 = U·p + V·a` ⟹ `p | b`. This is the uniqueness half of unique factorisation in
   ℤ[i]. Closed under the global context. **Next:** existence of factorisation (norm induction), then
   the Gaussian-prime classification.
+- **ℤ[i] factorisation existence** `GaussianFactorization.factor_exists` (**axiom-free**): every
+  nonzero non-unit is a product of irreducibles. Constructive: the nearest-integer quotient is
+  **exact** when `a | z` (`ZIdiv_exact`, since `znear(c·d, d)=c`), so **divisibility is decidable**
+  (`ZIdvdb`/`ZIdvd_dec`) with no search; a **bounded box search** over `{N(a) ≤ N(z)}`
+  (`gbox`/`pdiv_list`) then either returns a proper divisor (`1 < N(d) < N(z)`) or certifies
+  irreducibility (`pdiv_nil_irreducible` — the disjunction `unit a ∨ unit b` for `z=a·b` comes from
+  deciding `N(a)=1`, not excluded middle). Strong induction on `N` splits `z = d·(z/d)` into two
+  smaller non-units and concatenates their factor lists. Together with Euclid's lemma this is
+  **unique factorisation in ℤ[i]**. Closed under the global context. **Next:** the Gaussian-prime
+  classification (`2` ramifies, `p≡1 (4)` splits, `p≡3 (4)` inert).
 - **Sums of two squares — two pillars** `SumTwoSquares.sum_two_squares_pillars` (**axiom-free**):
   (1) **Brahmagupta–Fibonacci** `sum2_mul` — sums of two squares closed under multiplication,
   `(a²+b²)(c²+d²)=(ac−bd)²+(ad+bc)²`, proved as *exactly* Gaussian-norm multiplicativity
