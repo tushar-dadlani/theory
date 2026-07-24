@@ -109,6 +109,16 @@ is axiom-free.
   from `GaussianDivision` powers the recursion. Closed under the global context. **Next:** Euclid's
   lemma (irreducible ⇒ prime) from Bézout, then existence + uniqueness of factorisation, then the
   Gaussian-prime classification.
+- **ℤ[i] units, associates, Euclid's lemma** `GaussianIrreducible.ZI_euclid_lemma` (**axiom-free**):
+  units = norm-1 elements = `{1,−1,i,−i}` (`ZIunit_norm`, `ZIunit_cases`); ℤ[i] is an **integral
+  domain** (`ZI_no_zero_div`, `ZImul_cancel_l`) since the norm is multiplicative and `N(z)=0 ⟺ z=0`;
+  associates via units, with mutual divisibility of nonzero elements ⟹ associate
+  (`dvd_antisym_assoc`). **Euclid's lemma**: for `p` irreducible, `p | a·b ⇒ p | a ∨ p | b` — proved
+  **constructively** from Bézout: `g = gcd(p,a) = u·p+v·a` and `g | p`, so `p = g·k` gives (unit `g`)
+  or (unit `k`) — the split is on the *factorisation*, not on decidability of `p|a`; unit `k` ⟹ `p ~ g
+  | a`, unit `g` ⟹ `1 = U·p + V·a` ⟹ `p | b`. This is the uniqueness half of unique factorisation in
+  ℤ[i]. Closed under the global context. **Next:** existence of factorisation (norm induction), then
+  the Gaussian-prime classification.
 - **Sums of two squares — two pillars** `SumTwoSquares.sum_two_squares_pillars` (**axiom-free**):
   (1) **Brahmagupta–Fibonacci** `sum2_mul` — sums of two squares closed under multiplication,
   `(a²+b²)(c²+d²)=(ac−bd)²+(ad+bc)²`, proved as *exactly* Gaussian-norm multiplicativity
