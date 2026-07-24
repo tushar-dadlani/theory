@@ -493,6 +493,7 @@ spectral-theory/GaussianFactorization.v
 spectral-theory/GaussianPrimes.v
 spectral-theory/GaussianNormCount.v
 spectral-theory/GaussianPrimePowerCount.v
+spectral-theory/R2PrimePower.v
 spectral-theory/SumTwoSquares.v
 spectral-theory/FermatTwoSquares.v
 spectral-theory/SumTwoSquaresConverse.v

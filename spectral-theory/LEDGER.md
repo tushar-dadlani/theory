@@ -157,6 +157,16 @@ is axiom-free.
   norm-`p^k` element, the reusable core of all three counts. Closed under the global context.
   **Next:** the case decompositions + `NoDup_Permutation` counts (`p=2`/`p≡3` first, then split
   `p≡1`).
+- **ℤ[i] norm-`p^k` decompositions** `R2PrimePower.decomp_p3` / `decomp_p2` (Milestone A structural
+  half, **axiom-free**): for the single-prime-family cases, every norm-`p^k` Gaussian integer is a
+  unit times a power of the prime over `p`. **`p≡3 (4)` (inert)**: `N(z)=p^k ⇒ z = u·(ZtoZI p)^j`
+  with `k=2j` (so `k` must be even). **`p=2` (ramified)**: `N(z)=2^k ⇒ z = u·(1+i)^k`. Both by strong
+  induction on `N(z)`: `z·conj z = (base)^k` (`z_conj_pow`), so any irreducible factor divides
+  `(ZtoZI p)^k` — for `p≡3`, `prime_pow_dvd` + inertness makes it an associate of `ZtoZI p`; for
+  `p=2`, `2 = (−i)(1+i)²` (`two_eq_sq`) routes it through `(1+i)²` to `(1+i)` — so the prime divides
+  `z`, peel it off and recurse. Uses the associate helpers `irr_dvd_irr_assoc` (irreducible ∣
+  irreducible ⇒ associate) and `assoc_dvd_r`. Closed under the global context. **Next:** the
+  `NoDup_Permutation` counts turning these into `r₂(2^k)=4` and `r₂(p^k)=4·[k even]`.
 - **Sums of two squares — two pillars** `SumTwoSquares.sum_two_squares_pillars` (**axiom-free**):
   (1) **Brahmagupta–Fibonacci** `sum2_mul` — sums of two squares closed under multiplication,
   `(a²+b²)(c²+d²)=(ac−bd)²+(ad+bc)²`, proved as *exactly* Gaussian-norm multiplicativity
