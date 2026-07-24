@@ -172,6 +172,16 @@ is axiom-free.
   (`GaussianDivision`…`GaussianCoprime`), the three prime-power counts, and both multiplicativities.
   Closed under the global context. The `vm_compute` check `jacobi_upto` (n ≤ 200) is now a corollary,
   not the evidence.
+- **Legendre symbol + Euler's criterion** `LegendreSymbol` (**axiom-free**, QR brick 1): the
+  foundation for quadratic reciprocity. Defines `(a/p) : ℤ` (`0` if `p∣a`, else `±1` by whether
+  `a^((p-1)/2) ≡ 1`), and proves **Euler's criterion** `a^((p-1)/2) ≡ (a/p) (mod p)`
+  (`legendre_euler`) — the half-power `pw p a ((p-1)/2)` squares to `a^(p-1)=1` (Fermat), so is `1`
+  or `p-1` (`euler_pm1`, via `sqrt1`). Plus **complete multiplicativity** `(ab/p)=(a/p)(b/p)` on units
+  (`legendre_mult_unit`): both sides are `±1` congruent mod `p` to `pw a·pw b` (Euler + `pw_mul_base`),
+  and a sign is pinned by its residue mod an odd prime (`sign_mod_inj`). Reuses `fermat`, `sqrt1`,
+  `unit_not_div`, `not_div_pow`, `pw_add`. Closed under the global context. **Next (QR bricks 2–5):**
+  Gauss's lemma `(a/p)=(-1)^μ`, Eisenstein's `⌊ka/p⌋`-sum refinement, the lattice-point count, and
+  the assembly `(p/q)(q/p)=(-1)^(((p-1)/2)((q-1)/2))`.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
