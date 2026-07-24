@@ -74,14 +74,14 @@ Open Scope nat_scope.
 Variable p a : nat.
 Hypothesis Hp : prime (Z.of_nat p).
 Hypothesis Hodd : p mod 2 = 1.
-Hypothesis Ha : 1 <= a <= p - 1.
+Hypothesis Hna : ~ Nat.divide p a.
 
 Lemma GHp3 : 3 <= p.
 Proof. destruct (Nat.eq_dec p 2) as [->|Hne]; [ discriminate Hodd | pose proof (prime_ge_2 _ Hp); lia ]. Qed.
 Lemma GHH : 2 * hlf p = p - 1.
 Proof. apply two_hlf; [ exact Hodd | pose proof GHp3; lia ]. Qed.
 Lemma GHnda : ~ Nat.divide p a.
-Proof. apply unit_not_div; exact Ha. Qed.
+Proof. exact Hna. Qed.
 
 Definition res (k : nat) : nat := (k * a) mod p.
 Definition fres (k : nat) : nat := if res k <=? hlf p then res k else p - res k.
@@ -246,10 +246,10 @@ Proof.
     rewrite Z_mod_plus_full; reflexivity. }
   (* connect to Euler's criterion and pin the sign *)
   apply (sign_mod_inj p _ _ Hp3).
-  - apply legendre_pm1; exact Ha.
+  - apply legendre_pm1; exact Hna.
   - apply neg1_pow_pm1.
   - rewrite <- Hac.
-    rewrite <- (legendre_euler p a Hp Hodd Ha).
+    rewrite <- (legendre_euler p a Hp Hodd Hna).
     unfold pw; rewrite Nat2Z.inj_mod, Zmod_mod, Nat2Z.inj_pow; reflexivity.
 Qed.
 

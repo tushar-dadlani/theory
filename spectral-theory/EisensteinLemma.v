@@ -81,7 +81,7 @@ Open Scope nat_scope.
 Variable p a : nat.
 Hypothesis Hp : prime (Z.of_nat p).
 Hypothesis Hodd : p mod 2 = 1.
-Hypothesis Ha : 1 <= a <= p - 1.
+Hypothesis Hna : ~ Nat.divide p a.
 Hypothesis Haodd : a mod 2 = 1.
 
 Notation L := (seq 1 (hlf p)).
@@ -128,7 +128,7 @@ Proof.
   unfold mu; rewrite <- (Zsum_const_filter nat (fun k => negb (res p a k <=? hlf p)) (Z.of_nat p) L).
   rewrite <- Zsum_map_add.
   f_equal; apply map_ext_in; intros k Hk; apply in_seq in Hk.
-  pose proof (res_bound p a Hp Hodd Ha k ltac:(lia)) as Hb; unfold fres.
+  pose proof (res_bound p a Hp Hodd Hna k ltac:(lia)) as Hb; unfold fres.
   destruct (res p a k <=? hlf p) eqn:E; cbn [negb].
   - apply Nat.leb_le in E; ring.
   - apply Nat.leb_gt in E; rewrite Nat2Z.inj_sub by lia; ring.
@@ -173,7 +173,7 @@ Qed.
 
 Theorem legendre_eisenstein : legendre p a = ((-1) ^ Z.of_nat Tsum)%Z.
 Proof.
-  rewrite (legendre_gauss p a Hp Hodd Ha).
+  rewrite (legendre_gauss p a Hp Hodd Hna).
   apply neg1_pow_same, eis_parity.
 Qed.
 

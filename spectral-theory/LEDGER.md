@@ -210,6 +210,18 @@ is axiom-free.
   (`count_transpose`) gives `above = fsum q p`, and `below`+`above` partition the box
   (`filter_length`). Self-contained list layer. Closed under the global context. **Next (QR brick
   5):** apply Eisenstein twice and multiply.
+- **THE LAW OF QUADRATIC RECIPROCITY** `QuadraticReciprocity.quadratic_reciprocity` (**axiom-free**,
+  QR brick 5 / capstone): for distinct odd primes `p, q`,
+  `(q/p)·(p/q) = (-1)^(((p-1)/2)·((q-1)/2))`. Assembled in a few lines: Eisenstein's refinement gives
+  `(q/p) = (-1)^(Σ⌊kq/p⌋)` and `(p/q) = (-1)^(Σ⌊kp/q⌋)` (the two floor sums `Tsum`/`fsum` coincide
+  definitionally), their product is `(-1)^(Σ⌊kq/p⌋ + Σ⌊kp/q⌋)`, and the lattice-point count
+  (`reciprocity_count`) makes the exponent `((p-1)/2)·((q-1)/2)`. To let the numerator exceed the
+  modulus, the whole Euler/Gauss/Eisenstein layer was generalized from `1≤a≤p-1` to `~ p∣a`
+  (`fermat_gen`). Gauss's-lemma proof of Gauss's reciprocity, machine-checked with **zero axioms** —
+  a landmark classical theorem, resting on Fermat/`sqrt1`/order machinery (bricks 1–2), the
+  Eisenstein floor identity (brick 3), and a pure lattice-point double-count (brick 4). Closed under
+  the global context. **Not done:** the two supplements `(-1/p)=(-1)^((p-1)/2)` and
+  `(2/p)=(-1)^((p²-1)/8)`.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the

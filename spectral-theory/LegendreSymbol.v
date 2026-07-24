@@ -54,16 +54,29 @@ Proof.
   rewrite pow_mod_base, Nat.pow_mul_l, Nat.Div0.mul_mod; reflexivity.
 Qed.
 
+(* Fermat for any a coprime to p (a need not be a least residue) *)
+Lemma fermat_gen : forall p a, prime (Z.of_nat p) -> ~ Nat.divide p a ->
+  a ^ (p - 1) mod p = 1.
+Proof.
+  intros p a Hp Hnd.
+  assert (Hp2 : 2 <= p) by (pose proof (prime_ge_2 _ Hp); lia).
+  rewrite <- pow_mod_base.
+  assert (Ham : 1 <= a mod p <= p - 1).
+  { pose proof (Nat.mod_upper_bound a p ltac:(lia)).
+    assert (a mod p <> 0) by (intro E; apply Hnd, Nat.Lcm0.mod_divide; exact E).
+    lia. }
+  apply fermat; [ exact Hp | exact Ham ].
+Qed.
+
 (* ================================================================= *)
 (*  §2  EULER'S CRITERION: a^((p-1)/2) is 1 or p-1                    *)
 (* ================================================================= *)
 
 Lemma euler_pm1 : forall p a, prime (Z.of_nat p) -> p mod 2 = 1 ->
-  1 <= a <= p - 1 -> pw p a (hlf p) = 1 \/ pw p a (hlf p) = p - 1.
+  ~ Nat.divide p a -> pw p a (hlf p) = 1 \/ pw p a (hlf p) = p - 1.
 Proof.
-  intros p a Hp Hodd Ha.
+  intros p a Hp Hodd Hnd.
   assert (Hp2 : 2 <= p) by (pose proof (prime_ge_2 _ Hp); lia).
-  assert (Hnd : ~ Nat.divide p a) by (apply unit_not_div; exact Ha).
   assert (Hlo : pw p a (hlf p) <> 0).
   { unfold pw; intro Hz.
     apply (not_div_pow p a (hlf p) Hp Hnd), Nat.Lcm0.mod_divide; exact Hz. }
@@ -72,7 +85,7 @@ Proof.
   assert (Hsq : (pw p a (hlf p) * pw p a (hlf p)) mod p = 1).
   { rewrite <- pw_add.
     replace (hlf p + hlf p) with (p - 1) by (pose proof (two_hlf p Hodd Hp2); lia).
-    unfold pw; apply fermat; [ exact Hp | exact Ha ]. }
+    unfold pw; apply fermat_gen; [ exact Hp | exact Hnd ]. }
   apply (sqrt1 p (pw p a (hlf p)) Hp); [ lia | exact Hsq ].
 Qed.
 
@@ -92,18 +105,18 @@ Proof.
   destruct (pw p a (hlf p) =? 1); [ right; left | right; right ]; reflexivity.
 Qed.
 
-Lemma legendre_unit : forall p a, 1 <= a <= p - 1 ->
+Lemma legendre_unit : forall p a, ~ Nat.divide p a ->
   legendre p a = (if pw p a (hlf p) =? 1 then 1%Z else (-1)%Z).
 Proof.
-  intros p a Ha; unfold legendre.
+  intros p a Hnd; unfold legendre.
   replace (a mod p =? 0) with false; [ reflexivity | ].
-  symmetry; apply Nat.eqb_neq; rewrite Nat.mod_small by lia; lia.
+  symmetry; apply Nat.eqb_neq; intro E; apply Hnd, Nat.Lcm0.mod_divide; exact E.
 Qed.
 
-Lemma legendre_pm1 : forall p a, 1 <= a <= p - 1 ->
+Lemma legendre_pm1 : forall p a, ~ Nat.divide p a ->
   legendre p a = 1%Z \/ legendre p a = (-1)%Z.
 Proof.
-  intros p a Ha; rewrite (legendre_unit p a Ha).
+  intros p a Hnd; rewrite (legendre_unit p a Hnd).
   destruct (pw p a (hlf p) =? 1); [ left | right ]; reflexivity.
 Qed.
 
@@ -112,16 +125,16 @@ Qed.
 (* ================================================================= *)
 
 Lemma legendre_euler : forall p a, prime (Z.of_nat p) -> p mod 2 = 1 ->
-  1 <= a <= p - 1 ->
+  ~ Nat.divide p a ->
   Z.modulo (Z.of_nat (pw p a (hlf p))) (Z.of_nat p)
   = Z.modulo (legendre p a) (Z.of_nat p).
 Proof.
-  intros p a Hp Hodd Ha.
+  intros p a Hp Hodd Hnd.
   assert (Hp3 : 3 <= p).
   { destruct (Nat.eq_dec p 2) as [->|Hne]; [ discriminate Hodd |
       pose proof (prime_ge_2 _ Hp); lia ]. }
-  rewrite (legendre_unit p a Ha).
-  destruct (euler_pm1 p a Hp Hodd Ha) as [E | E]; rewrite E.
+  rewrite (legendre_unit p a Hnd).
+  destruct (euler_pm1 p a Hp Hodd Hnd) as [E | E]; rewrite E.
   - cbn [Nat.eqb]; reflexivity.
   - replace (p - 1 =? 1) with false by (symmetry; apply Nat.eqb_neq; lia).
     rewrite Nat2Z.inj_sub by lia; cbn [Z.of_nat].
@@ -154,7 +167,8 @@ Lemma legendre_1 : forall p, prime (Z.of_nat p) -> p mod 2 = 1 -> legendre p 1 =
 Proof.
   intros p Hp Hodd.
   assert (Hp2 : 2 <= p) by (pose proof (prime_ge_2 _ Hp); lia).
-  rewrite (legendre_unit p 1 ltac:(lia)), (pw_1 p (hlf p) Hp2); reflexivity.
+  rewrite (legendre_unit p 1 ltac:(intro Hd; apply Nat.divide_1_r in Hd; lia)),
+          (pw_1 p (hlf p) Hp2); reflexivity.
 Qed.
 
 Lemma legendre_mult_unit : forall p a b,
@@ -174,16 +188,19 @@ Proof.
     destruct (prime_mult_nat p a b Hp Hpab) as [H|H];
       [ apply (unit_not_div p a Ha) | apply (unit_not_div p b Hb) ]; exact H. }
   assert (Hab1 : 1 <= (a * b) mod p <= p - 1) by lia.
+  assert (Hnab : ~ Nat.divide p ((a * b) mod p)) by (apply (unit_not_div p _ Hab1)).
   apply (sign_mod_inj p _ _ Hp3).
-  - apply legendre_pm1; exact Hab1.
-  - destruct (legendre_pm1 p a Ha) as [E|E]; destruct (legendre_pm1 p b Hb) as [F|F];
+  - apply legendre_pm1; exact Hnab.
+  - destruct (legendre_pm1 p a (unit_not_div p a Ha)) as [E|E];
+    destruct (legendre_pm1 p b (unit_not_div p b Hb)) as [F|F];
       rewrite E, F; ((left; reflexivity) || (right; reflexivity)).
   - (* both sides congruent to  pw p a h * pw p b h  (mod p) *)
     transitivity (Z.modulo (Z.of_nat (pw p a (hlf p) * pw p b (hlf p))) (Z.of_nat p)).
-    + rewrite <- (legendre_euler p ((a * b) mod p) Hp Hodd Hab1),
+    + rewrite <- (legendre_euler p ((a * b) mod p) Hp Hodd Hnab),
               (pw_mul_base p a b (hlf p)), Nat2Z.inj_mod, Zmod_mod; reflexivity.
     + rewrite (Zmult_mod (legendre p a) (legendre p b)),
-              <- (legendre_euler p a Hp Hodd Ha), <- (legendre_euler p b Hp Hodd Hb),
+              <- (legendre_euler p a Hp Hodd (unit_not_div p a Ha)),
+              <- (legendre_euler p b Hp Hodd (unit_not_div p b Hb)),
               <- Zmult_mod, <- Nat2Z.inj_mul; reflexivity.
 Qed.
 

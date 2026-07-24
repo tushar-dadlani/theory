@@ -503,6 +503,7 @@ spectral-theory/LegendreSymbol.v
 spectral-theory/GaussLemma.v
 spectral-theory/EisensteinLemma.v
 spectral-theory/ReciprocityCount.v
+spectral-theory/QuadraticReciprocity.v
 spectral-theory/FermatTwoSquares.v
 spectral-theory/SumTwoSquaresConverse.v
 spectral-theory/FpField.v
