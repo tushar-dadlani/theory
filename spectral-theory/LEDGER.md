@@ -182,6 +182,16 @@ is axiom-free.
   `unit_not_div`, `not_div_pow`, `pw_add`. Closed under the global context. **Next (QR bricks 2–5):**
   Gauss's lemma `(a/p)=(-1)^μ`, Eisenstein's `⌊ka/p⌋`-sum refinement, the lattice-point count, and
   the assembly `(p/q)(q/p)=(-1)^(((p-1)/2)((q-1)/2))`.
+- **Gauss's lemma** `GaussLemma.legendre_gauss` (**axiom-free**, QR brick 2): `(a/p) = (-1)^μ`, where
+  `μ = #{ k ∈ [1,(p-1)/2] : (k·a) mod p > (p-1)/2 }` (`mu`). The combinatorial heart: the
+  least-absolute residues `fres k` of `a, 2a, …, ((p-1)/2)a` are a **permutation** of `1..(p-1)/2`
+  (`fres_perm` — injective since `fres i = fres j` forces `i≡±j` and `i+j<p` rules out the minus,
+  via `cancel_mod`), so taking the product mod `p`, `a^((p-1)/2)·((p-1)/2)! ≡ (-1)^μ·((p-1)/2)!`
+  (`prod_res_val`/`prod_res_sign`), and cancelling the unit `((p-1)/2)!` (`fact_coprime`) gives
+  `a^((p-1)/2) ≡ (-1)^μ`, hence `(a/p)=(-1)^μ` by Euler's criterion + `sign_mod_inj`. Uses a reusable
+  `Zprod` (product-over-list) layer with permutation-invariance, sum-over-product, and sign-count
+  lemmas. Closed under the global context. **Next (QR bricks 3–5):** Eisenstein's `μ ≡ Σ⌊ka/p⌋
+  (mod 2)`, the lattice-point count, and the assembly.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
