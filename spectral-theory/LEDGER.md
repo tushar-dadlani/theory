@@ -149,6 +149,17 @@ is axiom-free.
   `N(x)=m` and `y=z/x` has norm `n`. Closed under the global context. **Next:** the 4-to-1 count
   `r₂(m)·r₂(n)=4·r₂(mn)` (each norm-`mn` element has exactly 4 splits — its unit orbit), then the
   multiplicative-agreement assembly for the full `r₂(n)=4·S(n)`.
+- **r₂ is multiplicative (up to 4)** `R2Multiplicative.r2_mult` (**axiom-free**): `gcd(m,n)=1 ⇒
+  r₂(m)·r₂(n) = 4·r₂(mn)`. Via `r₂(n)=#{N(z)=n}` (`Lnorm`), the product map `(x,y)↦x·y` on
+  norm-`m`×norm-`n` pairs is **surjective** onto norm-`mn` elements (`gaussian_split`) and exactly
+  **4-to-1**: every fibre is the unit orbit `{(x₀·u, y₀·conj u) : u∈units}` of size 4
+  (`fiber_length_4`), because a second split `x·y=x₀·y₀` with matching norms forces `x~x₀` — `x`, `y₀`
+  are ℤ[i]-coprime (their norms `m`, `n` are coprime, so their gcd has norm 1) so `x | x₀·y₀ ⇒ x | x₀`
+  via Bézout (`split_unique`). A generic key-partition count (`count_by_key`: every fibre size `c` ⇒
+  `|domain|=c·|image|`) then gives `r₂(m)·r₂(n) = |norm-m × norm-n| = 4·|norm-mn| = 4·r₂(mn)`. Closed
+  under the global context. **This completes both multiplicativity facts** (`S_mult`, `r2_mult`) and
+  all prime-power values on both sides; the general `r₂(n)=4·S(n)` now needs only the
+  multiplicative-agreement assembly over the prime factorisation.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
