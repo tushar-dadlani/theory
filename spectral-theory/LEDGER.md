@@ -148,6 +148,15 @@ is axiom-free.
   count norm-`n` elements via the Gaussian factorisation — `r₂` multiplicative on coprimes and the
   prime-power counts (`r₂(2^k)=4`, `r₂(p^k)=4(k+1)` for `p≡1`, `4·[k even]` for `p≡3`) — then combine
   with `JacobiRHS` (`S` multiplicative + prime powers) for `r₂(n)=4·S(n)`.
+- **ℤ[i] prime-power count machinery** `GaussianPrimePowerCount` (part 1, **axiom-free**): the shared
+  base for the three prime-power values `r₂(2^k)=4`, `r₂(p^k)=4(k+1)` (`p≡1`), `4·[k even]` (`p≡3`).
+  Gaussian powers `ZIpow` with `N(a^m)=(N a)^m` (`ZIpow_norm`) and nonzero (`ZIpow_nonzero`);
+  extraction of an irreducible factor `irr_factor_exists` (head of the nonempty `factor_exists`
+  list); and **prime-power divisibility** `prime_pow_dvd` (`π` irreducible, `π | a^m ⇒ π | a`, by
+  induction via Euclid's lemma, `π ∤ unit`). These pin down the Gaussian-prime structure of a
+  norm-`p^k` element, the reusable core of all three counts. Closed under the global context.
+  **Next:** the case decompositions + `NoDup_Permutation` counts (`p=2`/`p≡3` first, then split
+  `p≡1`).
 - **Sums of two squares — two pillars** `SumTwoSquares.sum_two_squares_pillars` (**axiom-free**):
   (1) **Brahmagupta–Fibonacci** `sum2_mul` — sums of two squares closed under multiplication,
   `(a²+b²)(c²+d²)=(ac−bd)²+(ad+bc)²`, proved as *exactly* Gaussian-norm multiplicativity
