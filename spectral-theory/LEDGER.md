@@ -140,6 +140,14 @@ is axiom-free.
   itself to the odd power 1). This completes the ℤ[i] arithmetic engine (Euclidean division → gcd →
   Bézout → Euclid's lemma → unique factorisation → prime classification) that the general Jacobi
   identity `r₂(n)=4·S(n)` builds on. Closed under the global context.
+- **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
+  `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
+  `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
+  foundation for counting norm-`n` elements through unique factorisation, the last conceptual step to
+  the general Jacobi identity `r₂(n)=4·S(n)`. Closed under the global context. **Next (the payoff):**
+  count norm-`n` elements via the Gaussian factorisation — `r₂` multiplicative on coprimes and the
+  prime-power counts (`r₂(2^k)=4`, `r₂(p^k)=4(k+1)` for `p≡1`, `4·[k even]` for `p≡3`) — then combine
+  with `JacobiRHS` (`S` multiplicative + prime powers) for `r₂(n)=4·S(n)`.
 - **Sums of two squares — two pillars** `SumTwoSquares.sum_two_squares_pillars` (**axiom-free**):
   (1) **Brahmagupta–Fibonacci** `sum2_mul` — sums of two squares closed under multiplication,
   `(a²+b²)(c²+d²)=(ac−bd)²+(ad+bc)²`, proved as *exactly* Gaussian-norm multiplicativity
