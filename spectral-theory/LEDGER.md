@@ -165,8 +165,15 @@ is axiom-free.
   `(ZtoZI p)^k` — for `p≡3`, `prime_pow_dvd` + inertness makes it an associate of `ZtoZI p`; for
   `p=2`, `2 = (−i)(1+i)²` (`two_eq_sq`) routes it through `(1+i)²` to `(1+i)` — so the prime divides
   `z`, peel it off and recurse. Uses the associate helpers `irr_dvd_irr_assoc` (irreducible ∣
-  irreducible ⇒ associate) and `assoc_dvd_r`. Closed under the global context. **Next:** the
-  `NoDup_Permutation` counts turning these into `r₂(2^k)=4` and `r₂(p^k)=4·[k even]`.
+  irreducible ⇒ associate) and `assoc_dvd_r`. From these, the **prime-power counts**
+  `R2PrimePower.r2_prime_power_2_3`: `r₂(2^k)=4` (`r2_2pow`) and `r₂(p^k)=4·[k even]` for `p≡3 (4)`
+  (`r2_3pow`). Via the bridge `r₂(n)=#{N(z)=n}` (`r2_as_gnorm`), the norm-`p^k` elements are exactly
+  the 4 associates `assoc4` of the base power (unit × base^j, `in_assoc4`); a `NoDup_Permutation`
+  between the norm-filtered box (`gbox_NoDup`) and that 4-element list (or `[]` when `p≡3` and `k`
+  odd, since the decomposition forces `k` even) gives the count. Closed under the global context.
+  **Next (Milestone B):** the split case `p≡1 (4)` — `r₂(p^k)=4(k+1)` (two conjugate Gaussian-prime
+  families `π₀,π̄₀`, `k+1` exponent splits × 4 units, distinctness via cancellation +
+  `prime_pow_dvd`).
 - **Sums of two squares — two pillars** `SumTwoSquares.sum_two_squares_pillars` (**axiom-free**):
   (1) **Brahmagupta–Fibonacci** `sum2_mul` — sums of two squares closed under multiplication,
   `(a²+b²)(c²+d²)=(ac−bd)²+(ad+bc)²`, proved as *exactly* Gaussian-norm multiplicativity

@@ -20,9 +20,10 @@
 (*  p, so z is a unit times a power of it.  AXIOM-FREE.               *)
 (* ================================================================= *)
 
-From Stdlib Require Import ZArith Znumtheory Arith Lia List Bool Wf_nat.
+From Stdlib Require Import ZArith Znumtheory Arith Lia List Bool Wf_nat Permutation.
 Require Import GaussianIntegers GaussianDivision GaussianGCD GaussianIrreducible
-        GaussianPrimes GaussianPrimePowerCount.
+        GaussianPrimes GaussianPrimePowerCount GaussianFactorization
+        GaussianNormCount R2Count.
 Import ListNotations.
 Open Scope Z_scope.
 
@@ -181,8 +182,6 @@ Proof.
     + rewrite Hw, Hwd, ZIpow_S; ring.
 Qed.
 
-Print Assumptions decomp_p3.
-
 (* ================================================================= *)
 (*  §5  DECOMPOSITION for  p = 2  (ramified),  base prime  1+i        *)
 (* ================================================================= *)
@@ -255,4 +254,173 @@ Proof.
     rewrite Hw, Hwd, ZIpow_S; ring.
 Qed.
 
-Print Assumptions decomp_p2.
+(* ================================================================= *)
+(*  §6  counting infrastructure: the 4 associates                    *)
+(* ================================================================= *)
+
+Definition unit4 : list ZI := [ZI1; ZIopp ZI1; ZIi; ZIopp ZIi].
+Definition assoc4 (a : ZI) : list ZI := map (ZImul a) unit4.
+
+Lemma unit4_units : forall u, In u unit4 -> ZIunit u.
+Proof.
+  intros u H; simpl in H; destruct H as [<-|[<-|[<-|[<-|[]]]]].
+  - apply ZIunit_1.
+  - exists (ZIopp ZI1); apply ZIeq; reflexivity.
+  - apply ZIunit_i.
+  - apply ZIunit_negi.
+Qed.
+
+Lemma unit_in_unit4 : forall u, ZIunit u -> In u unit4.
+Proof.
+  intros u Hu; destruct (ZIunit_cases u Hu) as [E|[E|[E|E]]]; rewrite E;
+    unfold unit4; simpl; tauto.
+Qed.
+
+Lemma unit4_NoDup : NoDup unit4.
+Proof.
+  unfold unit4;
+    repeat (apply NoDup_cons;
+      [ simpl; intro H; repeat (destruct H as [H|H]);
+        solve [ discriminate H | injection H; lia | exact H ] | ]).
+  apply NoDup_nil.
+Qed.
+
+Lemma assoc4_length : forall a, length (assoc4 a) = 4%nat.
+Proof. intro a; unfold assoc4; rewrite length_map; reflexivity. Qed.
+
+Lemma assoc4_NoDup : forall a, a <> ZI0 -> NoDup (assoc4 a).
+Proof.
+  intros a Ha; unfold assoc4; apply Totient.NoDup_map_inj;
+    [ intros x y _ _ H; exact (ZImul_cancel_l a x y Ha H) | apply unit4_NoDup ].
+Qed.
+
+Lemma in_assoc4 : forall a x,
+  In x (assoc4 a) <-> exists u, ZIunit u /\ x = ZImul a u.
+Proof.
+  intros a x; unfold assoc4; rewrite in_map_iff; split.
+  - intros [u [Hu Hin]]; exists u; split; [ apply unit4_units; exact Hin | symmetry; exact Hu ].
+  - intros [u [Hu ->]]; exists u; split; [ reflexivity | apply unit_in_unit4; exact Hu ].
+Qed.
+
+(* gbox has no duplicates *)
+Lemma zrange_NoDup : forall B, NoDup (zrange B).
+Proof.
+  intro B; unfold zrange; apply Totient.NoDup_map_inj;
+    [ intros x y _ _ H; lia | apply seq_NoDup ].
+Qed.
+
+Lemma gbox_NoDup : forall B, NoDup (gbox B).
+Proof.
+  intro B; unfold gbox; apply Totient.NoDup_map_inj.
+  - intros [x1 y1] [x2 y2] _ _ H; cbn [fst snd] in H;
+      injection H as Hr Hi; subst; reflexivity.
+  - apply NoDup_list_prod; apply zrange_NoDup.
+Qed.
+
+Lemma filter_all_false : forall (g : ZI -> bool) l,
+  (forall x, In x l -> g x = false) -> filter g l = [].
+Proof.
+  intros g l; induction l as [|a l IH]; intro H; simpl; [ reflexivity | ].
+  rewrite (H a (or_introl eq_refl)); apply IH; intros x Hx; apply H; right; exact Hx.
+Qed.
+
+(* ================================================================= *)
+(*  §7  the two counts via the norm-characterisation                 *)
+(* ================================================================= *)
+
+(* if the norm-n elements are exactly the unit-multiples of a<>0, r2 n = 4 *)
+Lemma count_via_assoc4 : forall n a, a <> ZI0 ->
+  (forall x, ZInorm (-1) x = n <-> exists u, ZIunit u /\ x = ZImul a u) ->
+  r2 n = 4%nat.
+Proof.
+  intros n a Ha Hchar.
+  rewrite r2_as_gnorm.
+  transitivity (length (assoc4 a)); [ | apply assoc4_length ].
+  apply Permutation_length, NoDup_Permutation.
+  - apply NoDup_filter, gbox_NoDup.
+  - apply assoc4_NoDup; exact Ha.
+  - intro x; rewrite filter_In, Z.eqb_eq; split.
+    + intros [_ Hnx]; apply in_assoc4, Hchar; exact Hnx.
+    + intro Hin.
+      assert (Hnx : ZInorm (-1) x = n) by (apply Hchar, in_assoc4; exact Hin).
+      split; [ | exact Hnx ].
+      pose proof (in_gbox_of_norm_le x x (Z.le_refl _)) as Hbox.
+      rewrite Hnx in Hbox; exact Hbox.
+Qed.
+
+(* if no element has norm n, r2 n = 0 *)
+Lemma count_empty : forall n, (forall x, ZInorm (-1) x <> n) -> r2 n = 0%nat.
+Proof.
+  intros n Hno; rewrite r2_as_gnorm.
+  rewrite filter_all_false; [ reflexivity | ].
+  intros x _; apply Z.eqb_neq, Hno.
+Qed.
+
+(* --- p = 2 : r2(2^k) = 4 --- *)
+Theorem r2_2pow : forall k, r2 (2 ^ Z.of_nat k) = 4%nat.
+Proof.
+  intro k.
+  apply (count_via_assoc4 _ (ZIpow (mkZI 1 1) k)).
+  - apply ZIpow_nonzero; intro H; discriminate H.
+  - intro x; split.
+    + intro Hx; destruct (decomp_p2 x k Hx) as [u [Hu Hxd]].
+      exists u; split; [ exact Hu | rewrite Hxd; ring ].
+    + intros [u [Hu ->]].
+      unfold ZImul at 1; rewrite ZInorm_mul, ZIpow_norm.
+      replace (ZInorm (-1) (mkZI 1 1)) with 2 by reflexivity.
+      rewrite (proj1 (ZIunit_norm u) Hu); ring.
+Qed.
+
+(* --- p = 3 (mod 4) : r2(p^k) = 4 * [k even] --- *)
+Theorem r2_3pow : forall p k, prime (Z.of_nat p) -> (p mod 4 = 3)%nat ->
+  r2 ((Z.of_nat p) ^ Z.of_nat k) = (if Nat.even k then 4 else 0)%nat.
+Proof.
+  intros p k Hp Hmod.
+  assert (HP2 : 2 <= Z.of_nat p) by (pose proof (prime_ge_2 _ Hp); lia).
+  destruct (Nat.even k) eqn:Ek.
+  - (* k even : k = 2j *)
+    destruct (Nat.even_spec k) as [Hev _]; specialize (Hev Ek); destruct Hev as [j Hj].
+    apply (count_via_assoc4 _ (ZIpow (ZtoZI (Z.of_nat p)) j)).
+    + apply ZIpow_nonzero; intro H;
+        apply (f_equal (ZInorm (-1))) in H; rewrite ZInorm_ZtoZI, norm_ZI0 in H; nia.
+    + intro x; split.
+      * intro Hx; destruct (decomp_p3 p Hp Hmod x k Hx) as [u [j' [Hu [Hk Hxd]]]].
+        assert (j' = j) by lia; subst j'.
+        exists u; split; [ exact Hu | rewrite Hxd; ring ].
+      * intros [u [Hu ->]].
+        unfold ZImul at 1;
+          rewrite ZInorm_mul, ZIpow_norm, ZInorm_ZtoZI, (proj1 (ZIunit_norm u) Hu), Z.mul_1_r.
+        replace (Z.of_nat k) with (2 * Z.of_nat j) by (rewrite Hj; lia).
+        rewrite Z.pow_mul_r by lia; rewrite Z.pow_2_r; reflexivity.
+  - (* k odd : no element has norm p^k (decomp forces even) *)
+    apply count_empty; intros x Hx.
+    destruct (decomp_p3 p Hp Hmod x k Hx) as [u [j [_ [Hk _]]]].
+    assert (Nat.even k = true) by (rewrite Hk, Nat.even_mul; reflexivity).
+    rewrite Ek in H; discriminate.
+Qed.
+
+(* ================================================================= *)
+(*  §8  MASTER: two of the three prime-power counts of r2             *)
+(* ================================================================= *)
+
+Theorem r2_prime_power_2_3 :
+     (forall k, r2 (2 ^ Z.of_nat k) = 4%nat)
+  /\ (forall p k, prime (Z.of_nat p) -> (p mod 4 = 3)%nat ->
+        r2 ((Z.of_nat p) ^ Z.of_nat k) = (if Nat.even k then 4 else 0)%nat).
+Proof. split; [ exact r2_2pow | exact r2_3pow ]. Qed.
+
+Print Assumptions r2_prime_power_2_3.
+
+(* ================================================================= *)
+(*  END R2PrimePower.v                                               *)
+(*  Milestone A of the r2 prime-power counts, via the Z[i] UFD tower  *)
+(*  and the r2 = #{N(z)=n} bridge:                                    *)
+(*    r2(2^k)   = 4         (ramified: z = unit*(1+i)^k),             *)
+(*    r2(p^k)   = 4*[k even] (p=3 mod 4 inert: z = unit*(ZtoZI p)^j,  *)
+(*                            k=2j).                                  *)
+(*  Each norm-p^k element is a unit times a power of the single       *)
+(*  Gaussian prime over p (decomp_p2 / decomp_p3); counting the 4      *)
+(*  associates (assoc4) via NoDup_Permutation over the norm-filtered   *)
+(*  box gives the value.  The split case p=1 mod 4 (r2=4(k+1)) is      *)
+(*  Milestone B.  Closed under the global context (axiom-free).       *)
+(* ================================================================= *)
