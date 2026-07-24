@@ -246,8 +246,14 @@ is axiom-free.
   for `p≡3 (4)` (`S_prime_pow_*`, via `divisors_prime_pow`: divisors of `p^k` are exactly `p^0…p^k`,
   proved with a nat/ℤ divisibility bridge + `Nat.gauss`). The full identity `r₂(n) = 4·S(n)` is
   **verified by `vm_compute` for n ≤ 200** (`jacobi_upto`). `Print Assumptions` = Closed under the
-  global context. **Not done (deferred):** `S` multiplicative on coprimes, `S(n)>0 ↔ q3even n`, and the
-  general `r₂(n)=4·S(n)` (needs ℤ[i] unique factorisation, absent from the repo).
+  global context. `S` is also proved **multiplicative on coprimes** (`S_mult`): `gcd(m,n)=1 ⇒
+  S(mn)=S(m)·S(n)`, via the divisor-product permutation `divisors(mn) ~ {a·b : a|m, b|n}`
+  (`divisors_mul_perm`, a `NoDup_Permutation` — existence of the split from `Nat.divide_mul_split`,
+  uniqueness from the coprime gcd identity `gcd(a·b,m)=a`, `gcd_prod_l`) plus the sum-over-product
+  distributivity `fold_prod_mul` and `chi4_mul`. **Not done (deferred):** `S(n)>0 ↔ q3even n`, and the
+  general `r₂(n)=4·S(n)` — the ℤ[i] unique-factorisation engine and all three prime-power counts now
+  exist (`GaussianDivision`…`R2PrimePowerSplit`), so what remains is `r₂`-multiplicativity + a
+  multiplicative-agreement assembly.
 - **A number as a field — the triad `1/x, x, x^x` in `𝔽_p`** `FpField.Fp_field_triad`
   (**axiom-free**): the prime `p` makes `ℤ/pℤ` a field; the inverse is a power `1/x = x^{p−2} mod p`
   with `x·(1/x) ≡ 1` proved as `fermat` (`inv_correct`), self-power `x^x = pw p x x`, so the triad is

@@ -268,6 +268,128 @@ Proof.
 Qed.
 
 (* ================================================================= *)
+(*  §3b  S is MULTIPLICATIVE on coprimes                             *)
+(* ================================================================= *)
+
+(* --- fold distributes over a product-indexed sum --- *)
+Lemma fold_Zadd_app : forall l1 l2,
+  fold_right Z.add 0 (l1 ++ l2) = fold_right Z.add 0 l1 + fold_right Z.add 0 l2.
+Proof. induction l1 as [|a l1 IH]; intro l2; simpl; [ ring | rewrite IH; ring ]. Qed.
+
+Lemma fold_map_scale : forall (f : nat -> Z) c l,
+  fold_right Z.add 0 (map (fun x => c * f x) l) = c * fold_right Z.add 0 (map f l).
+Proof. intros f c l; induction l as [|x l IH]; simpl; [ ring | rewrite IH; ring ]. Qed.
+
+Lemma fold_prod_mul : forall (f g : nat -> Z) l1 l2,
+  fold_right Z.add 0 (map (fun ab => f (fst ab) * g (snd ab)) (list_prod l1 l2))
+  = fold_right Z.add 0 (map f l1) * fold_right Z.add 0 (map g l2).
+Proof.
+  intros f g l1 l2; induction l1 as [|a l1 IH]; [ simpl; ring | ].
+  simpl list_prod; rewrite map_app, fold_Zadd_app, map_map; cbn [fst snd].
+  rewrite (fold_map_scale g (f a)), IH; cbn [map fold_right]; ring.
+Qed.
+
+(* --- the coprime divisor bijection:  gcd(a*b, m) = a --- *)
+Lemma gcd_prod_l : forall m n a b, Nat.gcd m n = 1%nat ->
+  Nat.divide a m -> Nat.divide b n -> Nat.gcd (a * b) m = a.
+Proof.
+  intros m n a b Hco Ham Hbn; apply Nat.divide_antisym.
+  - (* gcd(a*b,m) | a : it is coprime to b, and divides a*b *)
+    set (g := Nat.gcd (a * b) m).
+    assert (Hgm : Nat.divide g m) by apply Nat.gcd_divide_r.
+    assert (Hgab : Nat.divide g (a * b)) by apply Nat.gcd_divide_l.
+    assert (Hgn1 : Nat.gcd g n = 1%nat).
+    { assert (Hd : Nat.divide (Nat.gcd g n) 1).
+      { rewrite <- Hco; apply Nat.gcd_greatest;
+          [ apply (Nat.divide_trans _ g); [ apply Nat.gcd_divide_l | exact Hgm ]
+          | apply Nat.gcd_divide_r ]. }
+      apply Nat.divide_1_r; exact Hd. }
+    assert (Hgb1 : Nat.gcd g b = 1%nat).
+    { assert (Hd : Nat.divide (Nat.gcd g b) 1).
+      { rewrite <- Hgn1; apply Nat.gcd_greatest;
+          [ apply Nat.gcd_divide_l
+          | apply (Nat.divide_trans _ b); [ apply Nat.gcd_divide_r | exact Hbn ] ]. }
+      apply Nat.divide_1_r; exact Hd. }
+    apply (Nat.gauss g b a); [ rewrite Nat.mul_comm; exact Hgab | exact Hgb1 ].
+  - (* a | gcd(a*b,m) : a divides a*b and m *)
+    apply Nat.gcd_greatest; [ apply Nat.divide_mul_l; apply Nat.divide_refl | exact Ham ].
+Qed.
+
+(* --- divisor membership over a product --- *)
+Lemma in_divisors_mul : forall m n d, (1 <= m)%nat -> (1 <= n)%nat ->
+  (In d (divisors (m * n)) <->
+   exists a b, In a (divisors m) /\ In b (divisors n) /\ d = (a * b)%nat).
+Proof.
+  intros m n d Hm Hn; rewrite in_divisors; split.
+  - intros [Hbnd Hmod].
+    assert (Hd0 : d <> 0%nat) by lia.
+    assert (Hdvd : Nat.divide d (m * n)) by (apply Nat.Lcm0.mod_divide; exact Hmod).
+    destruct (Nat.divide_mul_split d m n Hd0 Hdvd) as [q [r [Hqr [Hqm Hrn]]]].
+    assert (Hq1 : (1 <= q)%nat) by (destruct q as [|q]; [ destruct Hqm; lia | lia ]).
+    assert (Hr1 : (1 <= r)%nat) by (destruct r as [|r]; [ destruct Hrn; lia | lia ]).
+    exists q, r; repeat split.
+    + apply in_divisors; split;
+        [ split; [ lia | apply Nat.divide_pos_le; [ lia | exact Hqm ] ]
+        | apply Nat.Lcm0.mod_divide; exact Hqm ].
+    + apply in_divisors; split;
+        [ split; [ lia | apply Nat.divide_pos_le; [ lia | exact Hrn ] ]
+        | apply Nat.Lcm0.mod_divide; exact Hrn ].
+    + exact Hqr.
+  - intros [a [b [Ha [Hb ->]]]].
+    apply in_divisors in Ha; destruct Ha as [[Ha1 Ham] Hamod].
+    apply in_divisors in Hb; destruct Hb as [[Hb1 Hbn] Hbmod].
+    assert (Ham' : Nat.divide a m) by (apply Nat.Lcm0.mod_divide; exact Hamod).
+    assert (Hbn' : Nat.divide b n) by (apply Nat.Lcm0.mod_divide; exact Hbmod).
+    split.
+    + split; [ nia | ].
+      apply Nat.mul_le_mono; assumption.
+    + apply Nat.Lcm0.mod_divide.
+      destruct Ham' as [s Hs]; destruct Hbn' as [t Ht].
+      exists (s * t)%nat; rewrite Hs, Ht; ring.
+Qed.
+
+(* --- the divisor-product permutation --- *)
+Lemma divisors_mul_perm : forall m n, Nat.gcd m n = 1%nat -> (1 <= m)%nat -> (1 <= n)%nat ->
+  Permutation (divisors (m * n))
+              (map (fun ab => (fst ab * snd ab)%nat) (list_prod (divisors m) (divisors n))).
+Proof.
+  intros m n Hco Hm Hn; apply NoDup_Permutation.
+  - apply divisors_nodup.
+  - apply NoDup_map_inj; [ | apply NoDup_list_prod; apply divisors_nodup ].
+    intros [a b] [a' b'] Hin Hin' Heq; cbn [fst snd] in Heq.
+    apply in_prod_iff in Hin; destruct Hin as [Ha Hb].
+    apply in_prod_iff in Hin'; destruct Hin' as [Ha' Hb'].
+    apply in_divisors in Ha; apply in_divisors in Hb.
+    apply in_divisors in Ha'; apply in_divisors in Hb'.
+    assert (Ham : Nat.divide a m) by (apply Nat.Lcm0.mod_divide; apply Ha).
+    assert (Hbn : Nat.divide b n) by (apply Nat.Lcm0.mod_divide; apply Hb).
+    assert (Ham' : Nat.divide a' m) by (apply Nat.Lcm0.mod_divide; apply Ha').
+    assert (Hbn' : Nat.divide b' n) by (apply Nat.Lcm0.mod_divide; apply Hb').
+    assert (Haa : a = a').
+    { rewrite <- (gcd_prod_l m n a b Hco Ham Hbn), Heq;
+        apply (gcd_prod_l m n a' b' Hco Ham' Hbn'). }
+    subst a'; f_equal.
+    apply (Nat.mul_cancel_l b b' a); [ lia | exact Heq ].
+  - intro d; rewrite (in_divisors_mul m n d Hm Hn), in_map_iff; split.
+    + intros [a [b [Ha [Hb Hd]]]]; exists (a, b); cbn [fst snd];
+        split; [ symmetry; exact Hd | apply in_prod_iff; split; assumption ].
+    + intros [[a b] [Hd Hin]]; cbn [fst snd] in Hd; apply in_prod_iff in Hin;
+        exists a, b; split; [ apply Hin | split; [ apply Hin | symmetry; exact Hd ] ].
+Qed.
+
+Lemma S_mult : forall m n, Nat.gcd m n = 1%nat -> (1 <= m)%nat -> (1 <= n)%nat ->
+  Sfun (m * n) = (Sfun m * Sfun n)%Z.
+Proof.
+  intros m n Hco Hm Hn; unfold Sfun.
+  rewrite (fold_Zadd_perm _ _ (Permutation_map chi4 (divisors_mul_perm m n Hco Hm Hn))).
+  rewrite map_map.
+  rewrite (map_ext (fun x => chi4 (fst x * snd x))
+                   (fun ab => chi4 (fst ab) * chi4 (snd ab)))
+    by (intro ab; apply chi4_mul).
+  apply (fold_prod_mul chi4 chi4).
+Qed.
+
+(* ================================================================= *)
 (*  §4  the reflective check:  r2(n) = 4 * S(n)  for n <= 200         *)
 (* ================================================================= *)
 
@@ -287,6 +409,9 @@ Theorem jacobi_rhs :
      (* the divisor sum is d1 - d3 *)
   /\ (forall n, Sfun n = Z.of_nat (d1 n) - Z.of_nat (d3 n))
   /\ Sfun 1 = 1
+     (* S is multiplicative on coprimes *)
+  /\ (forall m n, Nat.gcd m n = 1%nat -> (1 <= m)%nat -> (1 <= n)%nat ->
+        Sfun (m * n) = Sfun m * Sfun n)
      (* prime-power values *)
   /\ (forall k, Sfun (2 ^ k) = 1)
   /\ (forall p k, prime (Z.of_nat p) -> (p mod 4 = 1)%nat -> Sfun (p ^ k) = Z.of_nat (S k))
@@ -296,7 +421,7 @@ Theorem jacobi_rhs :
   /\ jacobi_check 200 = true.
 Proof.
   repeat split;
-    first [ exact chi4_mul | exact S_as_d1d3 | exact S_1 | exact S_prime_pow_2
+    first [ exact chi4_mul | exact S_as_d1d3 | exact S_1 | exact S_mult | exact S_prime_pow_2
           | exact S_prime_pow_1 | exact S_prime_pow_3 | exact jacobi_upto ].
 Qed.
 
