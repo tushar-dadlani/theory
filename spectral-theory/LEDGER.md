@@ -181,8 +181,15 @@ is axiom-free.
   impossible for odd `p`). **`decomp_p1`**: `N(z)=p^k ⇒ z = u·q₀^i·q₁^(k−i)` with `i≤k`, by strong
   induction on `N(z)` — `z·conj z = (q₀q₁)^k = q₀^k·q₁^k`, so an irreducible factor divides `q₀^k` or
   `q₁^k` (Euclid on the product), hence (via `prime_pow_dvd` + associate) equals `q₀` or `q₁`; peel
-  it off and recurse. Closed under the global context. **Next:** the cross-family distinctness
-  (`q₀^i·q₁^(k−i)` injective in `i`) and the `4(k+1)` count.
+  it off and recurse. From these, the **split count** `r2_1pow`: `r₂(p^k)=4(k+1)` for `p≡1 (4)`. The
+  `4(k+1)` norm-`p^k` elements `u·q₀^i·q₁^(k−i)` (`0≤i≤k`, `u` a unit) are all distinct
+  (`base_distinct`): distinct exponents can't coincide even up to a unit, since `q₀^i·q₁^(k−i)` twist
+  would force `q₀ | q₁^d` (`prime_pow_dvd`) hence `q₀ ~ q₁`, contradicting `q0_not_assoc_q1`. A
+  `NoDup_Permutation` (`count_eq_list`) between the norm-filtered box and the explicit
+  `list_prod`-of-`(exponent, unit)` list (`splitlist`, length `4(k+1)` via `length_list_prod`) gives
+  the count. Closed under the global context. **All three prime-power counts are now proved**
+  (`r2_2pow`, `r2_3pow`, `r2_1pow`); assembling the general `r₂(n)=4·S(n)` additionally needs
+  `S_mult` + `r₂`-multiplicativity.
 - **Sums of two squares — two pillars** `SumTwoSquares.sum_two_squares_pillars` (**axiom-free**):
   (1) **Brahmagupta–Fibonacci** `sum2_mul` — sums of two squares closed under multiplication,
   `(a²+b²)(c²+d²)=(ac−bd)²+(ad+bc)²`, proved as *exactly* Gaussian-norm multiplicativity

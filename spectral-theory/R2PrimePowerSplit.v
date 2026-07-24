@@ -18,7 +18,8 @@
 
 From Stdlib Require Import ZArith Znumtheory Arith Lia List Bool Wf_nat Permutation.
 Require Import GaussianIntegers GaussianDivision GaussianGCD GaussianIrreducible
-        GaussianPrimes GaussianPrimePowerCount GaussianNormCount R2Count R2PrimePower.
+        GaussianPrimes GaussianPrimePowerCount GaussianFactorization
+        GaussianNormCount R2Count R2PrimePower.
 Import ListNotations.
 Open Scope Z_scope.
 
@@ -28,6 +29,41 @@ Proof.
   intros q Hq c E; pose proof (prime_ge_2 _ Hq) as H2.
   assert (Hdvd : (c | q)) by (exists c; rewrite E; ring).
   destruct (prime_divisors q Hq c Hdvd) as [E1|[E1|[E1|E1]]]; subst c; nia.
+Qed.
+
+(* ================================================================= *)
+(*  Generic helpers (norm-count of an explicit list; products)        *)
+(* ================================================================= *)
+
+Lemma ZInorm_ZImul : forall x y,
+  ZInorm (-1) (ZImul x y) = ZInorm (-1) x * ZInorm (-1) y.
+Proof. intros x y; unfold ZImul; apply ZInorm_mul. Qed.
+
+Lemma ZImul_nonzero : forall x y, x <> ZI0 -> y <> ZI0 -> ZImul x y <> ZI0.
+Proof. intros x y Hx Hy Heq; apply Hy; exact (ZI_no_zero_div x y Heq Hx). Qed.
+
+Lemma length_list_prod : forall (X Y : Type) (l1 : list X) (l2 : list Y),
+  length (list_prod l1 l2) = (length l1 * length l2)%nat.
+Proof.
+  intros X Y l1 l2; induction l1 as [|a l1 IH]; simpl; [ reflexivity | ].
+  rewrite length_app, length_map, IH; reflexivity.
+Qed.
+
+(* if the norm-n elements are exactly the (NoDup) list L, r2 n = |L| *)
+Lemma count_eq_list : forall n L, NoDup L ->
+  (forall x, ZInorm (-1) x = n <-> In x L) -> r2 n = length L.
+Proof.
+  intros n L HND Hchar; rewrite r2_as_gnorm.
+  apply Permutation_length, NoDup_Permutation.
+  - apply NoDup_filter, gbox_NoDup.
+  - exact HND.
+  - intro x; rewrite filter_In, Z.eqb_eq; split.
+    + intros [_ Hn]; apply Hchar; exact Hn.
+    + intro Hin.
+      assert (Hn : ZInorm (-1) x = n) by (apply Hchar; exact Hin).
+      split; [ | exact Hn ].
+      pose proof (in_gbox_of_norm_le x x (Z.le_refl _)) as Hbox.
+      rewrite Hn in Hbox; exact Hbox.
 Qed.
 
 Section SplitCount.
@@ -176,6 +212,136 @@ Proof.
       rewrite ZIpow_S; ring.
 Qed.
 
+(* ================================================================= *)
+(*  §3  the base elements  q0^i * q1^(k-i)  and their distinctness    *)
+(* ================================================================= *)
+
+Definition base (k i : nat) : ZI := ZImul (ZIpow q0 i) (ZIpow q1 (k - i)).
+
+Lemma base_nonzero : forall k i, base k i <> ZI0.
+Proof.
+  intros k i; apply ZImul_nonzero; apply ZIpow_nonzero; [ apply Hq0_0 | apply Hq1_0 ].
+Qed.
+
+Lemma base_norm : forall k i, (i <= k)%nat ->
+  ZInorm (-1) (base k i) = (Z.of_nat p) ^ (Z.of_nat k).
+Proof.
+  intros k i Hik; unfold base.
+  rewrite ZInorm_ZImul, !ZIpow_norm, HN0, HN1, <- Z.pow_add_r by lia.
+  rewrite <- Nat2Z.inj_add; f_equal; lia.
+Qed.
+
+(* the crux: distinct exponents give non-associate (indeed unequal even    *)
+(* after any unit twist) products, because q0 and q1 are not associates.   *)
+Lemma base_distinct : forall k i i' v w, (i < i')%nat -> (i' <= k)%nat ->
+  ZIunit v -> ZIunit w -> ZImul v (base k i) <> ZImul w (base k i').
+Proof.
+  intros k i i' v w Hlt Hik Hv Hw Heq.
+  set (d := (i' - i)%nat).
+  assert (Hd1 : (1 <= d)%nat) by lia.
+  assert (E0 : ZIpow q0 i' = ZImul (ZIpow q0 i) (ZIpow q0 d))
+    by (rewrite <- ZIpow_add; f_equal; lia).
+  assert (E1 : ZIpow q1 (k - i) = ZImul (ZIpow q1 (k - i')) (ZIpow q1 d))
+    by (rewrite <- ZIpow_add; f_equal; lia).
+  unfold base in Heq; rewrite E0, E1 in Heq.
+  set (A := ZImul (ZIpow q0 i) (ZIpow q1 (k - i'))).
+  assert (HA0 : A <> ZI0)
+    by (apply ZImul_nonzero; apply ZIpow_nonzero; [ apply Hq0_0 | apply Hq1_0 ]).
+  (* cancel A: v*q1^d = w*q0^d *)
+  assert (Hcanc : ZImul A (ZImul v (ZIpow q1 d)) = ZImul A (ZImul w (ZIpow q0 d))).
+  { transitivity (ZImul v (ZImul (ZIpow q0 i) (ZImul (ZIpow q1 (k - i')) (ZIpow q1 d)))).
+    - unfold A; ring.
+    - rewrite Heq; unfold A; ring. }
+  pose proof (ZImul_cancel_l A _ _ HA0 Hcanc) as Hvw.
+  (* q0 | w*q0^d = v*q1^d *)
+  assert (Hdvd : ZIdvd q0 (ZImul v (ZIpow q1 d))).
+  { rewrite Hvw.
+    assert (Hpow : ZIpow q0 d = ZImul q0 (ZIpow q0 (d - 1)))
+      by (replace d with (S (d - 1)) at 1 by lia; rewrite ZIpow_S; reflexivity).
+    rewrite Hpow; exists (ZImul w (ZIpow q0 (d - 1))); ring. }
+  destruct (ZI_euclid_lemma q0 v (ZIpow q1 d) Hirr0 Hdvd) as [Hqv | Hqd].
+  - exact (irr_not_dvd_unit q0 v Hirr0 Hv Hqv).
+  - apply q0_not_assoc_q1; apply irr_dvd_irr_assoc;
+      [ exact Hirr0 | apply Hirr1 | apply (prime_pow_dvd q0 q1 d Hirr0 Hqd) ].
+Qed.
+
+(* ================================================================= *)
+(*  §4  the explicit list of the 4*(k+1) norm-p^k elements           *)
+(* ================================================================= *)
+
+Definition splitlist (k : nat) : list ZI :=
+  map (fun iu => ZImul (snd iu) (base k (fst iu)))
+      (list_prod (seq 0 (S k)) unit4).
+
+Lemma splitlist_NoDup : forall k, NoDup (splitlist k).
+Proof.
+  intro k; unfold splitlist; apply Totient.NoDup_map_inj.
+  - intros [i u] [i' u'] Hin Hin' Hf.
+    apply in_prod_iff in Hin; destruct Hin as [Hi Hu].
+    apply in_prod_iff in Hin'; destruct Hin' as [Hi' Hu'].
+    apply in_seq in Hi; apply in_seq in Hi'.
+    assert (HuU : ZIunit u) by (apply unit4_units; exact Hu).
+    assert (Hu'U : ZIunit u') by (apply unit4_units; exact Hu').
+    cbn [fst snd] in Hf.
+    destruct (Nat.lt_trichotomy i i') as [Hlt|[Heq|Hlt]].
+    + exfalso; apply (base_distinct k i i' u u' Hlt ltac:(lia) HuU Hu'U); exact Hf.
+    + subst i'.
+      assert (u = u').
+      { apply (ZImul_cancel_l (base k i) u u' (base_nonzero k i)).
+        transitivity (ZImul u (base k i)); [ ring | rewrite Hf; ring ]. }
+      subst u'; reflexivity.
+    + exfalso; apply (base_distinct k i' i u' u Hlt ltac:(lia) Hu'U HuU); symmetry; exact Hf.
+  - apply NoDup_list_prod; [ apply seq_NoDup | apply unit4_NoDup ].
+Qed.
+
+Lemma splitlist_char : forall k x,
+  In x (splitlist k) <-> ZInorm (-1) x = (Z.of_nat p) ^ (Z.of_nat k).
+Proof.
+  intros k x; unfold splitlist; rewrite in_map_iff; split.
+  - intros [[i u] [Hxeq Hin]]; cbn [fst snd] in Hxeq.
+    apply in_prod_iff in Hin; destruct Hin as [Hi Hu]; apply in_seq in Hi.
+    subst x; rewrite ZInorm_ZImul, (proj1 (ZIunit_norm u) (unit4_units u Hu)),
+      (base_norm k i ltac:(lia)); ring.
+  - intro Hn.
+    destruct (decomp_p1 x k Hn) as [u [i [Hu [Hik Hxd]]]].
+    exists (i, u); cbn [fst snd]; split.
+    + rewrite Hxd; unfold base; reflexivity.
+    + apply in_prod_iff; split; [ apply in_seq; lia | apply unit_in_unit4; exact Hu ].
+Qed.
+
+Lemma r2_1pow_sec : forall k,
+  r2 ((Z.of_nat p) ^ (Z.of_nat k)) = (4 * S k)%nat.
+Proof.
+  intro k.
+  rewrite (count_eq_list _ (splitlist k) (splitlist_NoDup k)
+             (fun x => iff_sym (splitlist_char k x))).
+  unfold splitlist; rewrite length_map, length_list_prod, length_seq.
+  change (length unit4) with 4%nat; lia.
+Qed.
+
 End SplitCount.
 
-Print Assumptions decomp_p1.
+(* ================================================================= *)
+(*  §5  MASTER: the split prime-power count                          *)
+(* ================================================================= *)
+
+Theorem r2_1pow : forall p k, prime (Z.of_nat p) -> (p mod 4 = 1)%nat ->
+  r2 ((Z.of_nat p) ^ (Z.of_nat k)) = (4 * (k + 1))%nat.
+Proof.
+  intros p k Hp Hmod.
+  destruct (prime1_splits p Hp Hmod) as [a [b [Hirr [HN Hfact]]]].
+  rewrite (r2_1pow_sec p a b Hp Hmod Hirr HN Hfact k); lia.
+Qed.
+
+Print Assumptions r2_1pow.
+
+(* ================================================================= *)
+(*  END R2PrimePowerSplit.v                                          *)
+(*  Milestone B: r2(p^k) = 4*(k+1) for p = 1 (mod 4), via the split   *)
+(*  p = q0*q1 into distinct conjugate Gaussian primes.  Every norm-   *)
+(*  p^k element is unit * q0^i * q1^(k-i) (decomp_p1); the 4*(k+1)     *)
+(*  such elements are distinct because q0, q1 are not associates      *)
+(*  (q0_not_assoc_q1) -- distinct exponents cannot coincide even up    *)
+(*  to a unit (base_distinct) -- so a NoDup_Permutation count gives    *)
+(*  the value.  Closed under the global context (axiom-free).         *)
+(* ================================================================= *)
