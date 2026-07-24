@@ -174,6 +174,15 @@ is axiom-free.
   **Next (Milestone B):** the split case `p≡1 (4)` — `r₂(p^k)=4(k+1)` (two conjugate Gaussian-prime
   families `π₀,π̄₀`, `k+1` exponent splits × 4 units, distinctness via cancellation +
   `prime_pow_dvd`).
+- **ℤ[i] split-prime non-associate + decomposition** `R2PrimePowerSplit` (Milestone B structural
+  half, **axiom-free**): for `p≡1 (4)`, `p = a²+b² = q₀·q₁` with `q₀=a+bi`, `q₁=a−bi` its conjugate.
+  **`q0_not_assoc_q1`**: `q₀` and `q₁` are *not* associates — checking the 4 unit multiples forces
+  `b=0`/`a=0` (⇒ `p` a square, impossible by `prime_not_sq`) or `a=±b` (⇒ `p=2·square` even,
+  impossible for odd `p`). **`decomp_p1`**: `N(z)=p^k ⇒ z = u·q₀^i·q₁^(k−i)` with `i≤k`, by strong
+  induction on `N(z)` — `z·conj z = (q₀q₁)^k = q₀^k·q₁^k`, so an irreducible factor divides `q₀^k` or
+  `q₁^k` (Euclid on the product), hence (via `prime_pow_dvd` + associate) equals `q₀` or `q₁`; peel
+  it off and recurse. Closed under the global context. **Next:** the cross-family distinctness
+  (`q₀^i·q₁^(k−i)` injective in `i`) and the `4(k+1)` count.
 - **Sums of two squares — two pillars** `SumTwoSquares.sum_two_squares_pillars` (**axiom-free**):
   (1) **Brahmagupta–Fibonacci** `sum2_mul` — sums of two squares closed under multiplication,
   `(a²+b²)(c²+d²)=(ac−bd)²+(ad+bc)²`, proved as *exactly* Gaussian-norm multiplicativity
