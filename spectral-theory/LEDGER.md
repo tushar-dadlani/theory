@@ -200,6 +200,16 @@ is axiom-free.
   (mod 2)` (`eis_parity`), so Gauss's `(a/p)=(-1)^μ` becomes `(-1)^(Σ⌊⌋)`. Adds a reusable `Zsum`
   (sum-over-list) layer. Closed under the global context. **Next (QR bricks 4–5):** the lattice-point
   count `Σ⌊kq/p⌋+Σ⌊kp/q⌋ = ((p-1)/2)((q-1)/2)` and the assembly.
+- **Lattice-point count** `ReciprocityCount.reciprocity_count` (**axiom-free**, QR brick 4): for
+  distinct odd primes `p,q`, `fsum p q + fsum q p = ((p-1)/2)·((q-1)/2)`, where `fsum p q =
+  Σ_{k=1}^{(p-1)/2} ⌊k·q/p⌋`. Pure elementary counting over ℕ/lists: the lattice points `(k,j)` in
+  `[1,(p-1)/2]×[1,(q-1)/2]` split into **below** (`p·j < q·k`) and **above** (`q·k < p·j`) the line
+  `q·x = p·y`, with *no* point on it (`p ∤ q·k` for `k ≤ (p-1)/2`, `p≠q`, via `p_ndvd`). Each row
+  count `#{j : p·j < q·k}` is exactly `⌊k·q/p⌋` (`count_row`: `p·j<q·k ↔ j ≤ ⌊q·k/p⌋`, and
+  `⌊q·k/p⌋ ≤ (q-1)/2`); summing rows (`count_list_prod`) gives `below = fsum p q`, the transpose
+  (`count_transpose`) gives `above = fsum q p`, and `below`+`above` partition the box
+  (`filter_length`). Self-contained list layer. Closed under the global context. **Next (QR brick
+  5):** apply Eisenstein twice and multiply.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
