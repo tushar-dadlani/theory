@@ -92,6 +92,15 @@ is axiom-free.
   **units = norm-1 elements = {1,−1,i,−i}** (`unit_norm` + `gaussian_units` + `norm1_unit`), all
   genuine theorems. Arithmetic shadow of `ComplexField`; `δ<0/=0/>0` = Gaussian/dual/split integers.
   Entry point for sums-of-two-squares / Gaussian-prime number theory.
+- **ℤ[i] is a Euclidean domain** `GaussianDivision.ZI_euclid` (**axiom-free**): the cornerstone of
+  unique factorisation in `ℤ[i]`. For `b ≠ 0` there exist `q, r` with `a = q·b + r` and
+  `N(r) < N(b)`. Construction: `znear` rounds each rational coordinate of `a·conj(b)/N(b)` to the
+  nearest integer (`znear_spec`: `|x − q·d| ≤ d/2`, via `Z.div_mod` + `nia`); then
+  `r·conj(b) = (X−qx·d, Y−qy·d)` coordinatewise, so `N(r)·d = N(r·conj b) = (X−qx d)²+(Y−qy d)² ≤
+  d²/2 < d²` (using `ZInorm_mul`, `ZInorm_conj`, `ZImulg_conj`), giving `N(r) < N(b)`. Closed under
+  the global context. **Next:** gcd/Euclidean algorithm, Bézout, irreducible=prime, unique
+  factorisation, and the Gaussian-prime classification — the ℤ[i] engine the general Jacobi
+  identity `r₂(n)=4·S(n)` needs.
 - **Sums of two squares — two pillars** `SumTwoSquares.sum_two_squares_pillars` (**axiom-free**):
   (1) **Brahmagupta–Fibonacci** `sum2_mul` — sums of two squares closed under multiplication,
   `(a²+b²)(c²+d²)=(ac−bd)²+(ad+bc)²`, proved as *exactly* Gaussian-norm multiplicativity
