@@ -140,6 +140,15 @@ is axiom-free.
   itself to the odd power 1). This completes the ℤ[i] arithmetic engine (Euclidean division → gcd →
   Bézout → Euclid's lemma → unique factorisation → prime classification) that the general Jacobi
   identity `r₂(n)=4·S(n)` builds on. Closed under the global context.
+- **ℤ[i] coprime split** `GaussianCoprime.gaussian_split` (**axiom-free**): the surjectivity core of
+  r₂-multiplicativity. If `N(z)=m·n` with `gcd(m,n)=1` then `z=x·y` with `N(x)=m`, `N(y)=n`. Take
+  `x = gcd_{ℤ[i]}(z, m)` (`ZI_bezout`); then `N(x) | m` two ways — `N(x) | N(z)=mn` and `N(x) |
+  N(m)=m²` give `N(x) | gcd(mn,m²)=m` (`Z.gcd_mul_mono_l` + the `Nat.gcd`→`Z.gcd` bridge `nat_gcd_Z`);
+  and **conjugating the Bézout identity** `x = u·z + v·m` shows `(m) | x·conj(x) = ZtoZI(N x)` — the
+  cross term carries `z·conj z = m·n` — so `m | N(x)` (`ZtoZI_dvd`, off the real coordinate). Hence
+  `N(x)=m` and `y=z/x` has norm `n`. Closed under the global context. **Next:** the 4-to-1 count
+  `r₂(m)·r₂(n)=4·r₂(mn)` (each norm-`mn` element has exactly 4 splits — its unit orbit), then the
+  multiplicative-agreement assembly for the full `r₂(n)=4·S(n)`.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the

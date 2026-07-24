@@ -489,6 +489,7 @@ spectral-theory/GaussianIntegers.v
 spectral-theory/GaussianDivision.v
 spectral-theory/GaussianGCD.v
 spectral-theory/GaussianIrreducible.v
+spectral-theory/GaussianCoprime.v
 spectral-theory/GaussianFactorization.v
 spectral-theory/GaussianPrimes.v
 spectral-theory/GaussianNormCount.v
