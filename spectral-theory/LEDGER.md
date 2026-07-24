@@ -192,6 +192,14 @@ is axiom-free.
   `Zprod` (product-over-list) layer with permutation-invariance, sum-over-product, and sign-count
   lemmas. Closed under the global context. **Next (QR bricks 3–5):** Eisenstein's `μ ≡ Σ⌊ka/p⌋
   (mod 2)`, the lattice-point count, and the assembly.
+- **Eisenstein's refinement** `EisensteinLemma.legendre_eisenstein` (**axiom-free**, QR brick 3): for
+  an odd prime `p` and an **odd** unit `a`, `(a/p) = (-1)^(Σ_{k=1}^{(p-1)/2} ⌊k·a/p⌋)`. From the
+  division identity `k·a = p·⌊k·a/p⌋ + (k·a mod p)` summed over `k` (`eis_div`), the permutation
+  `Σ fres = Σ k` (`eis_perm`), and the residue split `Σ res + 2U = Σ fres + p·μ` (`eis_res`), one gets
+  `(a-1)·Σk + 2U = p·(Σ⌊⌋ + μ)`; with `a`, `p` odd this forces `2 | (Σ⌊⌋ + μ)`, i.e. `μ ≡ Σ⌊k·a/p⌋
+  (mod 2)` (`eis_parity`), so Gauss's `(a/p)=(-1)^μ` becomes `(-1)^(Σ⌊⌋)`. Adds a reusable `Zsum`
+  (sum-over-list) layer. Closed under the global context. **Next (QR bricks 4–5):** the lattice-point
+  count `Σ⌊kq/p⌋+Σ⌊kp/q⌋ = ((p-1)/2)((q-1)/2)` and the assembly.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
