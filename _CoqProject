@@ -490,6 +490,7 @@ spectral-theory/GaussianDivision.v
 spectral-theory/GaussianGCD.v
 spectral-theory/GaussianIrreducible.v
 spectral-theory/GaussianFactorization.v
+spectral-theory/GaussianPrimes.v
 spectral-theory/SumTwoSquares.v
 spectral-theory/FermatTwoSquares.v
 spectral-theory/SumTwoSquaresConverse.v

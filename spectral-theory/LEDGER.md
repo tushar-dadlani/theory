@@ -129,6 +129,17 @@ is axiom-free.
   smaller non-units and concatenates their factor lists. Together with Euclid's lemma this is
   **unique factorisation in ℤ[i]**. Closed under the global context. **Next:** the Gaussian-prime
   classification (`2` ramifies, `p≡1 (4)` splits, `p≡3 (4)` inert).
+- **Gaussian-prime classification** `GaussianPrimes.gaussian_prime_classification` (**axiom-free**):
+  the engine `norm_prime_irreducible` (if `N(π)` is a rational prime then `π` is irreducible, since
+  `N(π)=N(a)·N(b)` forces a norm-1 factor), and the three cases over a rational prime: **`2`
+  ramifies** — `2 = (1+i)(1−i)` with `1+i` a Gaussian prime of norm 2 (`two_ramifies`/`two_eq`);
+  **`p≡1 (4)` splits** — `p = a²+b² = (a+bi)(a−bi)` via Fermat (`sum2_prime1`), with `a+bi` a
+  Gaussian prime of norm `p` (`prime1_splits`); **`p≡3 (4)` inert** — `p` stays a Gaussian prime of
+  norm `p²` (`prime3_inert`), because a factor of norm `p` would make `p` a sum of two squares,
+  impossible for `p≡3 (4)` (via `prime_mult` + `two_squares_iff` — `q3even p` fails as `p` divides
+  itself to the odd power 1). This completes the ℤ[i] arithmetic engine (Euclidean division → gcd →
+  Bézout → Euclid's lemma → unique factorisation → prime classification) that the general Jacobi
+  identity `r₂(n)=4·S(n)` builds on. Closed under the global context.
 - **Sums of two squares — two pillars** `SumTwoSquares.sum_two_squares_pillars` (**axiom-free**):
   (1) **Brahmagupta–Fibonacci** `sum2_mul` — sums of two squares closed under multiplication,
   `(a²+b²)(c²+d²)=(ac−bd)²+(ad+bc)²`, proved as *exactly* Gaussian-norm multiplicativity
