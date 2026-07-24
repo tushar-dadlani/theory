@@ -138,7 +138,18 @@ is axiom-free.
   (general lemma `div4_of_free_order4`: a `NoDup` list closed under such an `f` has length divisible by
   4, by orbit removal via strong induction). Everything is over ℤ/ℕ/lists — no Reals — so `Print
   Assumptions` = Closed under the global context. **Not done:** the full Jacobi count
-  `r₂(n) = 4(d₁(n)−d₃(n))` (a deeper theta/Gaussian-integer result).
+  `r₂(n) = 4(d₁(n)−d₃(n))` (a deeper theta/Gaussian-integer result) — its RHS is built in
+  `JacobiRHS` (below).
+- **Jacobi's formula — the RHS** `JacobiRHS.jacobi_rhs` (**axiom-free**): builds the right-hand side of
+  `r₂(n) = 4·Σ_{d|n} χ₄(d)` and checks the identity reflectively. Defines `χ₄` (the nontrivial
+  character mod 4, `+1/−1/0`) and proves it **completely multiplicative** (`chi4_mul`, 16-case mod-4
+  analysis); the divisor sum `S(n) = Σ_{d|n} χ₄(d)` (over `Totient.divisors`) equals `d₁(n)−d₃(n)`
+  (`S_as_d1d3`); and the **prime-power values** `S(2^k)=1`, `S(p^k)=k+1` for `p≡1 (4)`, `S(p^k)=[k even]`
+  for `p≡3 (4)` (`S_prime_pow_*`, via `divisors_prime_pow`: divisors of `p^k` are exactly `p^0…p^k`,
+  proved with a nat/ℤ divisibility bridge + `Nat.gauss`). The full identity `r₂(n) = 4·S(n)` is
+  **verified by `vm_compute` for n ≤ 200** (`jacobi_upto`). `Print Assumptions` = Closed under the
+  global context. **Not done (deferred):** `S` multiplicative on coprimes, `S(n)>0 ↔ q3even n`, and the
+  general `r₂(n)=4·S(n)` (needs ℤ[i] unique factorisation, absent from the repo).
 - **A number as a field — the triad `1/x, x, x^x` in `𝔽_p`** `FpField.Fp_field_triad`
   (**axiom-free**): the prime `p` makes `ℤ/pℤ` a field; the inverse is a power `1/x = x^{p−2} mod p`
   with `x·(1/x) ≡ 1` proved as `fermat` (`inv_correct`), self-power `x^x = pw p x x`, so the triad is
