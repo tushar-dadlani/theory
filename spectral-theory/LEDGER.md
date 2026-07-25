@@ -332,6 +332,11 @@ is axiom-free.
   Euclidean division, gcd, Bézout and squarefreeness of `X^n−1` — where distinct cyclotomics ARE
   coprime — which will give `∏_{d|n}Φ_d = X^n−1` over ℚ and (monic-integer quotient) back over ℤ.
   Closed under the global context.
+- **ℚ[X] Euclidean division** `QPolyDiv.qdivmod_spec` (**axiom-free**, ℚ[X] layer brick 2): `f = q·g +
+  r` with `deg r < d`, `deg q ≤ n−d`, for any `g` of degree `d` with **nonzero** leading coefficient
+  `cl` (not necessarily monic — over the field ℚ each step divides `cl`). Ports `PolyDivComp` with the
+  field division `c := lead(f)/cl` cancelling the top term (`c·cl = lead(f)` by `field`). This is the
+  step the ℚ[X] gcd/Euclidean algorithm runs on. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
