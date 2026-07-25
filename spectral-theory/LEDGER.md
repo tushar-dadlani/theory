@@ -226,6 +226,20 @@ is axiom-free.
   (p-1)/2 − ((p-1)/2)/2` (`mu_two`) has the same parity as `(p²-1)/8 = h(h+1)/2` (`parity_h`, via the
   `2x mod 4` / `mod 4` bridge)). All axiom-free — quadratic reciprocity and both supplements are
   complete.
+- **Euclid: infinitely many primes** `EuclidPrimes.euclid_primes` (**axiom-free**, Dirichlet brick 1):
+  for every `m` there is a prime `p > m`. Classic argument over `nat`: `m! + 1` has a prime divisor
+  `p` (`nat_prime_divisor`, via `has_prime_divisor` + the `Z`↔`nat` bridge `Zdiv_nat`); if `p ≤ m`
+  then `p | m!` (`divide_fact`) and `p | m!+1`, so `p | 1` (`Nat.divide_sub_r`), absurd. The
+  foundation for the arithmetic-progression results. Closed under the global context.
+- **The order lemma → primes ≡ 1 (mod n)** `OrderPrimeMod.order_prime_mod` (**axiom-free**,
+  Dirichlet brick 2): if a prime `q` divides `a^n − 1` but divides **no** `a^d − 1` for any proper
+  divisor `d | n` (`d < n`), then the multiplicative order of `a` mod `q` is exactly `n`, hence
+  `n | q − 1`, i.e. `q ≡ 1 (mod n)`. Proof reduces `a` to `r = a mod q ∈ [1,q−1]` (`~q∣a`), turns
+  `q | x−1` into `x ≡ 1 (mod q)` (`dvd_pred_iff`), so `q | a^k−1 ↔ pw q r k = 1` (`pw_a_pow`,
+  base-invariance of the residue power); then `ord_divides` forces `ord q r | n`, `ord_period` +
+  the "no proper divisor" hypothesis rules out `ord q r < n`, so `ord q r = n`, and `ord_div_pm1`
+  gives `n | q−1`. The arithmetic core of "infinitely many primes ≡ 1 (mod n)"; the remaining piece
+  is a cyclotomic `Φ_n` supplying, for each `n`, an integer with a primitive prime divisor.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
