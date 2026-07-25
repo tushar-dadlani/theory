@@ -394,6 +394,14 @@ is axiom-free.
   n·X^{n−1}`** (`qeval_qderiv_Xn1`). Rational-index arithmetic handled by `qnat_S`
   (`qnat (S k) = qnat k + 1`, via `Q2Qc_plus`). With the ℚ[X] gcd this gives squarefreeness of
   `X^n−1`. Closed under the global context.
+- **Squarefreeness of X^n−1 in ℚ[X]** `QPolySqfree.qsqfree_Xn1` (**axiom-free**, ℚ[X] layer brick 5d):
+  `qsqfree M := (h²∣M → h constant)`, and `1 ≤ n → qsqfree (X^n−1)`. Proof wires together the whole
+  ℚ[X] layer: `h²∣X^n−1` ⟹ (coeff-PIT) `X^n−1 = h²·k` as polynomials ⟹ (product rule, twice)
+  `h ∣ (X^n−1)′`, with `(X^n−1)′ = n·X^{n−1}` (`qeval_qderiv_Xn1`); also `h ∣ X^n−1`; the Bézout
+  `X·(nX^{n−1}) − n·(X^n−1) = n` gives `h ∣ [n]` (a nonzero constant, `n ≥ 1`), so `h` is constant by
+  degree-of-product (`divides_const_deg0`, using `qcoeff_qmul_top` + `qlead_nonzero`). Also
+  `qsqfree_mul_copr`: a squarefree product has coprime factors (`qcopr`) — the tool by which the
+  cyclotomic factors of `X^n−1` are shown pairwise coprime (brick 6). Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
