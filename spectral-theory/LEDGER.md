@@ -344,6 +344,14 @@ is axiom-free.
   (`qlead_nonzero`, via `qnorm_top_nz`), a degree bound bounds the degree (`qdegle_qdeg`), and the
   degree bound is genuine (`qdegle_above`). Foundation for the ℚ[X] gcd (brick 3b). Closed under the
   global context.
+- **ℚ[X] extended Euclidean algorithm** `QPolyGcd.qeuclid_spec` (**axiom-free**, ℚ[X] layer brick 3b):
+  `qeuclid fuel f g = (h, u, v)` with `u·f + v·g = h`, `h | f`, `h | g` (once `fuel > deg g`). Fuel
+  recursion: base cases `g = 0` (→ `h = f`) and `g` a nonzero constant `c` (→ `h = 1`, via `0·f +
+  (1/c)·g = 1`); otherwise divide (`QPolyDiv.qdivmod`) and recurse on `(g, f mod g)`, whose degree
+  strictly drops (`qdegle_qdeg`). Support: `qdivides` in ℚ[X] with `qdivides_refl`/`_one`/`_zero`/
+  `_lincomb`, `qeval_all_zero`, `qeval_qnorm` (normalization preserves evaluation). `h` is a common
+  divisor carrying a Bézout combination — for coprime `f, g` it is forced constant, giving `u·f + v·g
+  = 1` after scaling: the coprimality tool for the cyclotomic factors. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
