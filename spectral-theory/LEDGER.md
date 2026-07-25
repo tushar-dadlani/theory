@@ -337,6 +337,13 @@ is axiom-free.
   `cl` (not necessarily monic — over the field ℚ each step divides `cl`). Ports `PolyDivComp` with the
   field division `c := lead(f)/cl` cancelling the top term (`c·cl = lead(f)` by `field`). This is the
   step the ℚ[X] gcd/Euclidean algorithm runs on. Closed under the global context.
+- **ℚ[X] degree machinery** `QPolyDeg` (**axiom-free**, ℚ[X] layer brick 3a): the Euclidean-gcd needs
+  the ACTUAL degree/leading coefficient. `qnorm` strips trailing zeros (`Qc_eq_dec` decides zero),
+  `qdeg p := length (qnorm p) − 1`, `qlead p := qcoeff p (qdeg p)`. Proves: coefficients are unchanged
+  by normalization (`qcoeff_qnorm`), the leading coefficient of a nonzero polynomial is nonzero
+  (`qlead_nonzero`, via `qnorm_top_nz`), a degree bound bounds the degree (`qdegle_qdeg`), and the
+  degree bound is genuine (`qdegle_above`). Foundation for the ℚ[X] gcd (brick 3b). Closed under the
+  global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
