@@ -455,6 +455,13 @@ is axiom-free.
   ℚ identity theorem, `qeval_ext_Z` + `qeval_ext_coeff`), the derivative coefficient formula `pcoeff_pderiv`
   (`coeff (p′) i = (i+1)·coeff p (i+1)`), and `pderiv_resp_eval` (`(∀a, p(a)=q(a)) ⟹ ∀a, p′(a)=q′(a)`). Lets us
   differentiate the cyclotomic factorization `X^n−1 = ∏_{d∣n}Φ_d` term-by-term. Closed under the global context.
+- **Primitivity / primitive-divisor lemma** `PrimeDivisorPhi.phi_primitive` (**axiom-free**): if a prime `q`
+  divides `Φ_n(a)` but `q ∤ n`, then `q ∤ a^d − 1` for every proper divisor `d ∣ n` (i.e. `a` has
+  multiplicative order exactly `n` mod `q`). Double-root argument over ℤ (no `F_q[X]` needed): if
+  `q ∣ a^d − 1 = ∏_{e∣d}Φ_e(a)` then `q ∣ Φ_e(a)` for a proper divisor `e`; `q` then divides two distinct
+  factors of `X^n−1 = Φ_n·∏_{d<n}Φ_d`, so differentiating (product rule) gives `q ∣ (X^n−1)′(a) = n·a^{n−1}`;
+  `q ∤ a ⟹ q ∤ a^{n−1} ⟹ q ∣ n`, contradiction. Feeds `OrderPrimeMod.order_prime_mod` (⟹ `n ∣ q−1`).
+  Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
