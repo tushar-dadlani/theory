@@ -409,6 +409,14 @@ is axiom-free.
   multiplicative companion of `Q2Qc_plus`). Evaluation commutes at integer points: `qeval (emb p)
   (Z2Qc a) = Z2Qc (eval p a)` (`qeval_emb`). This lets the ℚ[X] squarefreeness/coprimality machinery
   act on the integer cyclotomic polynomials and transfer results back. Closed under the global context.
+- **Transferring ℤ[X] facts to ℚ[X]** `QPolyTransfer` (**axiom-free**, ℚ[X] layer brick 6b-bridge):
+  the workhorse `qeval_ext_Z` — two ℚ polynomials agreeing at every integer point `Z2Qc a` agree
+  everywhere (a ℚ polynomial is pinned by its values on ℤ, since ℚ is infinite; via `poly_roots_eval`
+  with the distinct points `qnat k`). Consequences: `pdivides_emb` (ℤ-divisibility ⟹ ℚ-divisibility of
+  the embeddings), `qXn1_dvd` (`m∣n → (X^m−1)∣(X^n−1)` in ℚ[X]), `qxn1_bezout` (the Bézout identity for
+  `X^a−1` transferred to ℚ[X] via `Z2Qc_pow`/`Z2Qc_Xn1val`), and `qdiv_gcd` (common divisors of
+  `X^i−1, X^j−1` divide `X^{gcd(i,j)}−1` over ℚ). These are exactly the tools the cyclotomic
+  coprimality argument runs on. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
