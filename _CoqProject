@@ -498,6 +498,7 @@ spectral-theory/CyclotomicProd.v
 spectral-theory/IntPolyDeriv.v
 spectral-theory/IntPolyDerivResp.v
 spectral-theory/PrimeDivisorPhi.v
+spectral-theory/DirichletAP.v
 spectral-theory/DirichletMod4.v
 spectral-theory/ProductFormulaQ.v
 spectral-theory/ProfiniteCRT.v

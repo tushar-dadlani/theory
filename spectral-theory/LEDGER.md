@@ -462,6 +462,16 @@ is axiom-free.
   factors of `X^n−1 = Φ_n·∏_{d<n}Φ_d`, so differentiating (product rule) gives `q ∣ (X^n−1)′(a) = n·a^{n−1}`;
   `q ∤ a ⟹ q ∤ a^{n−1} ⟹ q ∣ n`, contradiction. Feeds `OrderPrimeMod.order_prime_mod` (⟹ `n ∣ q−1`).
   Closed under the global context.
+- **Dirichlet's theorem, the `≡ 1 (mod n)` case (general `n`)** `DirichletAP.dirichlet_primes_1_mod_n`
+  (**axiom-free — THE CAPSTONE**): for every `n ≥ 1` there are infinitely many primes `q ≡ 1 (mod n)`
+  (for every bound `B`, a prime `q > B` with `n ∣ q − 1`). Proof: fix `n, B`; let `A = n·M!` with
+  `M = B + |Φ_n| + 3` (`|Φ_n|` = sum of abs of coefficients). Monic growth (`monic_eval_lower`, via the
+  coefficient-sum bound `abs_eval_degle`) gives `Φ_n(A) ≥ 2`, so it has a prime divisor `q`. Since
+  `Φ_n(A) ≡ Φ_n(0) = ±1 (mod A)` (`a_dvd_eval_sub`, `phi0_unit`), `q ∤ A`; as `n ∣ A` and every prime
+  `≤ B` divides `M! ∣ A`, we get `q ∤ n` and `q > B`. Then `PrimeDivisorPhi.phi_primitive` shows `a`
+  has order exactly `n` mod `q`, and `OrderPrimeMod.order_prime_mod` gives `n ∣ q − 1`. Bridges
+  `nat ↔ ℤ` divisibility/powers throughout. Closed under the global context. **This completes the
+  cyclotomic proof of Dirichlet's theorem for primes `≡ 1 (mod n)`.**
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
