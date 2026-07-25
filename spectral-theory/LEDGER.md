@@ -279,6 +279,14 @@ is axiom-free.
   monic q dq → monic (pmul p q) (dp+dq)`. This is exactly what makes the cyclotomic divisor
   `∏_{d|n,d<n} Φ_d` monic, so `PolyDiv.monic_div` can define `Φ_n` as the exact quotient of `X^n−1`
   by it. Closed under the global context.
+- **Computable monic division** `PolyDivComp.pdivmod_spec` (**axiom-free**, Dirichlet brick 3d —
+  cyclotomic foundation): `PolyDiv.monic_div` only asserts *existence* of `q, r`; to define `Φ_n` as
+  an actual quotient without invoking choice (which would break axiom-freeness), this gives a division
+  **function** `pdivmod n f g d` (leading-term cancellation as a `Fixpoint` on the degree bound `n`)
+  with the full spec: `∀x, eval f x = eval q x · eval g x + eval r x`, `degle r (d−1)`, **and**
+  `degle q (n−d)` — the quotient degree bound, which is exactly what will pin down that `Φ_n` is monic
+  of degree `φ(n)`. Supporting `degle` algebra (`degle_padd`, `degle_pscale`, `degle_pmonom`,
+  `degle_mono`, `coeff_pmonom_hi`). Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
