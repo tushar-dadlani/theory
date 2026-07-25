@@ -69,7 +69,7 @@ Lemma sumf_sift : forall l m g, NoDup l -> In m l ->
   sumf l (fun k => if (m =? k)%nat then g k else 0%Z) = g m.
 Proof.
   induction l as [|a l IH]; intros m g Hnd Hin; [ inversion Hin | ].
-  simpl; inversion Hnd as [|x xs Hna Hnd' Heq]; subst.
+  simpl; inversion Hnd as [|x xs Hna Hnd']; subst.
   destruct (Nat.eqb_spec m a) as [->|Hne].
   - rewrite (sumf_ext l (fun k => if (a =? k)%nat then g k else 0%Z) (fun _ => 0%Z)).
     + rewrite sumf_zero; ring.
@@ -77,6 +77,20 @@ Proof.
         [ exfalso; apply Hna; exact Hk | reflexivity ].
   - destruct Hin as [->|Hin]; [ exfalso; apply Hne; reflexivity | ].
     rewrite IH by assumption; ring.
+Qed.
+
+Lemma sumf_single : forall l m h, NoDup l -> In m l ->
+  (forall j, In j l -> j <> m -> h j = 0%Z) -> sumf l h = h m.
+Proof.
+  induction l as [|a l IH]; intros m h Hnd Hin Hz; [ inversion Hin | ].
+  simpl; inversion Hnd as [|x xs Hna Hnd']; subst.
+  destruct (Nat.eq_dec a m) as [->|Hne].
+  - rewrite (sumf_ext l h (fun _ => 0%Z)).
+    + rewrite sumf_zero; ring.
+    + intros j Hj; apply Hz; [ right; exact Hj | intro Heq; subst; contradiction ].
+  - destruct Hin as [->|Hin]; [ contradiction | ].
+    rewrite (Hz a (or_introl eq_refl) Hne), (IH m h Hnd' Hin); [ ring | ].
+    intros j Hj Hjm; apply Hz; [ right; exact Hj | exact Hjm ].
 Qed.
 
 Lemma bigsum_mul_r : forall f c, bigsum f * c = bigsum (fun k => f k * c).
@@ -210,11 +224,149 @@ Proof.
   intros a k; rewrite antipode_axiom; unfold gunit; destruct (k =? 0)%nat; ring.
 Qed.
 
+(* ================================================================= *)
+(*  CONVOLUTION RING AXIOMS  and  S² = id                            *)
+(*  Equalities of elements are stated pointwise on representatives    *)
+(*  (k < n) — the honest notion of equality in k[ℤ/nℤ].              *)
+(* ================================================================= *)
+
+(* coefficient extraction: pair against a delta function *)
+Definition delta (k : nat) : nat -> Z := fun j => if (k =? j)%nat then 1 else 0.
+
+Lemma dot_delta : forall x k, (k < n)%nat -> dot x (delta k) = x k.
+Proof.
+  intros x k Hk; unfold dot, delta.
+  transitivity (bigsum (fun j => if (k =? j)%nat then x j else 0)).
+  { apply sumf_ext; intros j _; destruct (k =? j)%nat; ring. }
+  unfold bigsum; rewrite (sumf_sift (seq 0 n) k x);
+    [ reflexivity | apply seq_NoDup | apply in_seq; lia ].
+Qed.
+
+Lemma dsum_swap : forall F, dsum F = dsum (fun i j => F j i).
+Proof. intros F; unfold dsum; apply bigsum_swap. Qed.
+
+(* COMMUTATIVITY:  a ⋆ b = b ⋆ a  *)
+Theorem gconv_comm : forall a b k, gconv a b k = gconv b a k.
+Proof.
+  intros a b k; unfold gconv.
+  rewrite (dsum_swap (fun i j => if ((i + j) mod n =? k)%nat then a i * b j else 0)).
+  apply sumf_ext; intros i _; apply sumf_ext; intros j _.
+  rewrite (Nat.add_comm j i); destruct ((i + j) mod n =? k)%nat; ring.
+Qed.
+
+(* DISTRIBUTIVITY over addition (both sides) *)
+Theorem gconv_distrib_l : forall a b c k,
+  gconv a (fun j => b j + c j) k = gconv a b k + gconv a c k.
+Proof.
+  intros a b c k; unfold gconv, dsum, bigsum.
+  rewrite <- sumf_add; apply sumf_ext; intros i _.
+  rewrite <- sumf_add; apply sumf_ext; intros j _.
+  destruct ((i + j) mod n =? k)%nat; ring.
+Qed.
+
+Theorem gconv_distrib_r : forall a b c k,
+  gconv (fun i => a i + b i) c k = gconv a c k + gconv b c k.
+Proof.
+  intros a b c k; unfold gconv, dsum, bigsum.
+  rewrite <- sumf_add; apply sumf_ext; intros i _.
+  rewrite <- sumf_add; apply sumf_ext; intros j _.
+  destruct ((i + j) mod n =? k)%nat; ring.
+Qed.
+
+(* UNIT:  e_0 ⋆ a = a = a ⋆ e_0   (on representatives) *)
+Theorem gconv_unit_r : forall a k, (k < n)%nat -> gconv a gunit k = a k.
+Proof.
+  intros a k Hk; unfold gconv, gunit, dsum, bigsum.
+  transitivity (sumf (seq 0 n) (fun i => if (i mod n =? k)%nat then a i else 0)).
+  { apply sumf_ext; intros i _.
+    rewrite (sumf_single (seq 0 n) 0%nat
+      (fun j => if ((i + j) mod n =? k)%nat then a i * (if (j =? 0)%nat then 1 else 0) else 0)).
+    - cbn beta; rewrite Nat.add_0_r.
+      change (if (0 =? 0)%nat then 1%Z else 0%Z) with 1%Z.
+      destruct (i mod n =? k)%nat; ring.
+    - apply seq_NoDup.
+    - apply in_seq; lia.
+    - intros j _ Hj0; destruct (j =? 0)%nat eqn:Ej.
+      + apply Nat.eqb_eq in Ej; contradiction.
+      + change (if false then 1%Z else 0%Z) with 0%Z.
+        destruct ((i + j) mod n =? k)%nat; ring. }
+  transitivity (sumf (seq 0 n) (fun i => if (k =? i)%nat then a i else 0)).
+  { apply sumf_ext; intros i Hi; apply in_seq in Hi.
+    rewrite Nat.mod_small by lia; rewrite (Nat.eqb_sym i k); reflexivity. }
+  rewrite (sumf_sift (seq 0 n) k a); [ reflexivity | apply seq_NoDup | apply in_seq; lia ].
+Qed.
+
+Theorem gconv_unit_l : forall a k, (k < n)%nat -> gconv gunit a k = a k.
+Proof. intros a k Hk; rewrite gconv_comm; apply gconv_unit_r; exact Hk. Qed.
+
+(* ASSOCIATIVITY, via the duality:  ⟨(a⋆b)⋆c, φ⟩ = ⟨a⋆(b⋆c), φ⟩,      *)
+(* both equal Σ_{i,j,m} a_i b_j c_m φ_{i+j+m}; extract coefficients.   *)
+Lemma dot_R : forall a b c phi,
+  dot (gconv a (gconv b c)) phi
+  = bigsum (fun i => bigsum (fun j => bigsum (fun m =>
+      a i * b j * c m * phi ((i + j + m) mod n)%nat))).
+Proof.
+  intros a b c phi.
+  rewrite (product_coproduct_duality a (gconv b c) phi); unfold dsum.
+  apply sumf_ext; intros i _.
+  transitivity (dot (gconv b c) (fun q => a i * phi ((i + q) mod n)%nat)).
+  { unfold dot; apply sumf_ext; intros q _; ring. }
+  rewrite (product_coproduct_duality b c (fun q => a i * phi ((i + q) mod n)%nat)); unfold dsum.
+  apply sumf_ext; intros j _; apply sumf_ext; intros m _; cbn beta.
+  rewrite Nat.Div0.add_mod_idemp_r.
+  replace (i + (j + m))%nat with (i + j + m)%nat by lia; ring.
+Qed.
+
+Lemma dot_L : forall a b c phi,
+  dot (gconv (gconv a b) c) phi
+  = bigsum (fun i => bigsum (fun j => bigsum (fun m =>
+      a i * b j * c m * phi ((i + j + m) mod n)%nat))).
+Proof.
+  intros a b c phi.
+  rewrite (product_coproduct_duality (gconv a b) c phi); unfold dsum.
+  rewrite bigsum_swap.
+  transitivity (bigsum (fun m => bigsum (fun i => bigsum (fun j =>
+      a i * b j * c m * phi ((i + j + m) mod n)%nat)))).
+  { apply sumf_ext; intros m _.
+    transitivity (dot (gconv a b) (fun p => c m * phi ((p + m) mod n)%nat)).
+    { unfold dot; apply sumf_ext; intros p _; ring. }
+    rewrite (product_coproduct_duality a b (fun p => c m * phi ((p + m) mod n)%nat)); unfold dsum.
+    apply sumf_ext; intros i _; apply sumf_ext; intros j _; cbn beta.
+    rewrite Nat.Div0.add_mod_idemp_l; ring. }
+  rewrite bigsum_swap; apply sumf_ext; intros i _; apply bigsum_swap.
+Qed.
+
+Theorem gconv_assoc : forall a b c k, (k < n)%nat ->
+  gconv (gconv a b) c k = gconv a (gconv b c) k.
+Proof.
+  intros a b c k Hk.
+  rewrite <- (dot_delta (gconv (gconv a b) c) k Hk).
+  rewrite <- (dot_delta (gconv a (gconv b c)) k Hk).
+  rewrite dot_L, dot_R; reflexivity.
+Qed.
+
+(* ANTIPODE INVOLUTIVITY:  S² = id   (on representatives) *)
+Theorem ginv_involutive : forall a k, (k < n)%nat -> ginv (ginv a) k = a k.
+Proof.
+  intros a k Hk; unfold ginv.
+  assert (Hkm : ((n - (n - k) mod n) mod n = k)%nat).
+  { destruct (Nat.eq_dec k 0) as [->|Hk0].
+    - rewrite Nat.sub_0_r, Nat.Div0.mod_same, Nat.sub_0_r, Nat.Div0.mod_same; reflexivity.
+    - rewrite (Nat.mod_small (n - k)) by lia.
+      replace (n - (n - k))%nat with k by lia.
+      apply Nat.mod_small; lia. }
+  rewrite Hkm; reflexivity.
+Qed.
+
 End GroupAlgebra.
 
 Print Assumptions product_coproduct_duality.
 Print Assumptions coproduct_product_duality.
 Print Assumptions antipode_axiom.
+Print Assumptions gconv_assoc.
+Print Assumptions gconv_comm.
+Print Assumptions gconv_unit_r.
+Print Assumptions ginv_involutive.
 
 (* ================================================================= *)
 (*  END HopfGroupAlgebra.v                                            *)

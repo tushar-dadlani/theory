@@ -509,6 +509,11 @@ is axiom-free.
   (`sumf_swap`) plus a sifting lemma (`sumf_sift`) over the finite index set; **no roots of unity /
   DFT** (that route needs the classical Reals axioms). This is the genuine group-algebra side of the
   duality; `HopfGrouplike` was the group-like/coordinate-ring side. Closed under the global context.
+  Also rounds out the algebra structure (all axiom-free, equalities pointwise on representatives `k < n`):
+  `gconv_comm` (convolution commutative), `gconv_distrib_l`/`_r` (bilinear), `gconv_unit_l`/`_r` (`e_0` a
+  two-sided unit), `gconv_assoc` (**associativity** — via the duality: `⟨(a⋆b)⋆c,φ⟩ = Σ_{i,j,m} a_i b_j c_m
+  φ_{i+j+m} = ⟨a⋆(b⋆c),φ⟩` for all `φ` by `dot_L`/`dot_R`, coefficients extracted with delta functions
+  `dot_delta` — so `k[ℤ/nℤ]` is a commutative ring), and `ginv_involutive` (`S² = id`, from `−(−g) ≡ g`).
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
