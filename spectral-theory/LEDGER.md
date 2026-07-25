@@ -287,6 +287,15 @@ is axiom-free.
   `degle q (n−d)` — the quotient degree bound, which is exactly what will pin down that `Φ_n` is monic
   of degree `φ(n)`. Supporting `degle` algebra (`degle_padd`, `degle_pscale`, `degle_pmonom`,
   `degle_mono`, `coeff_pmonom_hi`). Closed under the global context.
+- **Quotient of a monic by a monic is monic** `PolyDivQuot.monic_div_monic` (**axiom-free**,
+  Dirichlet brick 3e — cyclotomic foundation): `monic f n → monic g d → 1 ≤ d ≤ n → monic (quotient
+  of f by g) (n−d)`. This is what makes `Φ_n = (X^n−1)/∏_{d|n,d<n}Φ_d` monic of degree `φ(n)`. Needs
+  the **coefficient-level** division identity `coeff f i = coeff (q·g) i + coeff r i` (`pdivmod_coeff`
+  — the eval-level spec cannot pin a leading coefficient), which rests on a little pmul coefficient
+  algebra: distributivity over `padd` (`coeff_pmul_padd_l`), pulling out a scale
+  (`coeff_pmul_pscale_l`), and `X^k·g = pshiftk k g` (`coeff_pmul_pmonom_l`), plus the `pmonom`
+  coefficient values (`coeff_pmonom_lo`/`_eq`, via `pmonom_repeat`). The leading coefficient of the
+  quotient is then extracted at index `n` using `coeff_pmul_top`. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the

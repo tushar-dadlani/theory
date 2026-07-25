@@ -475,6 +475,7 @@ spectral-theory/IntPoly.v
 spectral-theory/PolyDiv.v
 spectral-theory/PolyMonic.v
 spectral-theory/PolyDivComp.v
+spectral-theory/PolyDivQuot.v
 spectral-theory/DirichletMod4.v
 spectral-theory/ProductFormulaQ.v
 spectral-theory/ProfiniteCRT.v
