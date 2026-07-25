@@ -378,6 +378,13 @@ is axiom-free.
   functional PIT forces the tail to vanish everywhere, and structural recursion closes it. This is
   what lets the identity `X^n−1 = h²·k` (obtained from `h²∣X^n−1` at eval level) become a polynomial
   equation to differentiate for squarefreeness. Closed under the global context.
+- **ℚ[X] multiplication ↔ coefficients** `QPolyMul.qcoeff_qmul_top` (**axiom-free**, ℚ[X] layer brick
+  5c-part2): the ℚ port of `PolyMonic` — convolution formula `qcoeff (p·q) i = Σⱼ qcoeff p j · qcoeff
+  q (i−j)` (`qcoeff_qmul`), degree bound `deg(p·q) ≤ deg p + deg q` (`qdegle_qmul`), and leading
+  coefficient `qcoeff (p·q)(dp+dq) = qcoeff p dp · qcoeff q dq` (`qcoeff_qmul_top`). Together with
+  `QPolyDeg` this yields `deg(p·q) = deg p + deg q` (leadings multiply, ℚ has no zero divisors), so a
+  divisor of a nonzero constant is itself constant — the closing step of the squarefreeness argument.
+  Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the

@@ -487,6 +487,7 @@ spectral-theory/QPolyCoprime.v
 spectral-theory/QPolyRoot.v
 spectral-theory/QPolyPIT.v
 spectral-theory/QPolyCoeffPIT.v
+spectral-theory/QPolyMul.v
 spectral-theory/DirichletMod4.v
 spectral-theory/ProductFormulaQ.v
 spectral-theory/ProfiniteCRT.v
