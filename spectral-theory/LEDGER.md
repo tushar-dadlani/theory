@@ -358,6 +358,12 @@ is axiom-free.
   the Bézout identity `u·f + v·g = 1` after scaling (`coprime_bezout`). Hence the classical
   `qcopr p q → p | M → q | M → (p·q) | M` — the mechanism by which `∏_{d|n} Φ_d` divides `X^n−1` once
   the cyclotomic factors are shown pairwise coprime. Closed under the global context.
+- **Factor theorem in ℚ[X]** `QPolyRoot.factor_theorem` (**axiom-free**, ℚ[X] layer brick 5a): `qeval
+  p a = 0 → ∃ q, ∀x, qeval p x = (x−a)·qeval q x`. Divide `p` by the monic `X − a` (`qdivmod`); the
+  remainder is a constant equal to `p(a) = 0`, so the division is exact (`qeval_const_of_degle0` gives
+  that a degree-0 polynomial is its constant term; `qc_one_neq_zero` for the monic leading coeff). The
+  first step of the polynomial identity theorem (a nonzero polynomial has finitely many roots), which
+  the derivative-based squarefreeness of `X^n−1` will rest on. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
