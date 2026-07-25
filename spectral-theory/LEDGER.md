@@ -425,6 +425,13 @@ is axiom-free.
   NoDup l2 → qprod l1 ∣ qprod l2`. This is the combinatorial tool behind the pairwise coprimality of
   the cyclotomic factors of `X^n−1` (e.g. `X^{gcd(i,j)}−1 ∣ Dprod_i` because divisors of `gcd(i,j)`
   are a sublist of the proper divisors of `i`). Closed under the global context.
+- **Product-divisibility toolkit** `QPolyProdDvd` (**axiom-free**, ℚ[X] layer brick 6b/7-toolkit):
+  `qdiv_deg_zero` (`g∣r`, `deg r < deg g`, `g≠0` ⟹ `r = 0` — forces the division remainder `R_n` to
+  vanish); `qcopr_mul` (coprimality preserved by products, via `qcopr_restrict` + Euclid's lemma
+  `qcopr_euclid`: coprime to `A` and dividing `A·B` ⟹ divides `B`); `qcopr_qprod` (coprime to each
+  `Φ_d` ⟹ coprime to `∏Φ_d`); and `qprod_dvd` (NoDup, pairwise-coprime factors each dividing `M` ⟹
+  their product divides `M`). These wire the coprimality/product-divisibility into the shape needed for
+  `∏_{d|n,d<n}Φ_d ∣ X^n−1`. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
