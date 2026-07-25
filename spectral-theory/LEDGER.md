@@ -496,6 +496,19 @@ is axiom-free.
   `ℤ[X]/(Xⁿ−1) = k[ℤ/nℤ]` restores the antipode `S(X)=Xⁿ⁻¹` (a future brick, needs modular convolution;
   the ℂ-Fourier orthogonality already in `DirichletModP` uses the classical Reals axioms and so lies
   outside the axiom-free core). Closed under the global context.
+- **The finite group algebra k[ℤ/nℤ] + Hopf duality with k^G** `HopfGroupAlgebra` (**axiom-free**):
+  elements are `nat → Z` (indices mod `n`); the group algebra has convolution product
+  `(a⋆b)_k = Σ_{i+j≡k} a_i b_j` (`gconv`), unit `e_0` (`gunit`), diagonal coproduct, augmentation counit,
+  and inversion antipode `S(e_g)=e_{−g}` (`ginv`). Paired with the function algebra `k^G` (pointwise
+  product) via `⟨a,φ⟩ = Σ_g a_g φ_g` (`dot`), the fundamental Hopf duality is proved:
+  `product_coproduct_duality` (`⟨a⋆b,φ⟩ = Σ_{i,j} a_i b_j φ_{i+j}` — convolution dual to the `k^G`
+  coproduct), `coproduct_product_duality` (`⟨a,φ·ψ⟩ = Σ_g a_g φ_g ψ_g` — diagonal coproduct dual to
+  pointwise product), `counit_unit_pairing`/`counit_augmentation` (unit ↔ counit), and the antipode
+  axiom `antipode_axiom`/`antipode_is_eps_unit` (`m∘(S⊗id)∘Δ = η∘ε`). Entirely combinatorial —
+  convolution is defined as an indicator double sum, so the duality reduces to a Fubini swap
+  (`sumf_swap`) plus a sifting lemma (`sumf_sift`) over the finite index set; **no roots of unity /
+  DFT** (that route needs the classical Reals axioms). This is the genuine group-algebra side of the
+  duality; `HopfGrouplike` was the group-like/coordinate-ring side. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the

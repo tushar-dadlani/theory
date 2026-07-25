@@ -501,6 +501,7 @@ spectral-theory/PrimeDivisorPhi.v
 spectral-theory/DirichletAP.v
 spectral-theory/HopfPoly.v
 spectral-theory/HopfGrouplike.v
+spectral-theory/HopfGroupAlgebra.v
 spectral-theory/DirichletMod4.v
 spectral-theory/ProductFormulaQ.v
 spectral-theory/ProfiniteCRT.v
