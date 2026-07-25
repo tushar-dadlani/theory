@@ -307,6 +307,14 @@ is axiom-free.
   ≤ n` from `phi_lt`/`phi_ge_1`. **Sanity-checked by `vm_compute`**: `Φ_1..Φ_6` equal the classical
   `X−1, X+1, X²+X+1, X²+1, …, X²−X+1`. The product identity `∏_{d|n}Φ_d = X^n−1` (remainder zero) is
   the next brick. Closed under the global context.
+- **Bézout identity for X^a−1** `Xn1Bezout.xn1_bezout` (**axiom-free**, Dirichlet brick 3g — product
+  identity): `∃ u v ∈ ℤ[X], u·(X^a−1) + v·(X^b−1) = X^{gcd(a,b)}−1`, proved by the Euclidean
+  algorithm on the exponents mirrored on the polynomials — one division step `X^b = X^{m·(b/m)}·X^{b
+  mod m}` gives `X^b−1 = X^{b mod m}·(X^m−1)·(geo m (b/m)) + (X^{b mod m}−1)`, and strong induction on
+  the first exponent closes it (witnesses built from the sub-call via `psub`/`pmul`/`pmonom`/`geo`). No
+  ℚ[X] machinery — everything stays in ℤ[X]. This expresses the greatest common `X^d−1` as an integer
+  combination, the foundation for the coprimality of the cyclotomic factors needed for `∏_{d|n} Φ_d =
+  X^n−1`. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
