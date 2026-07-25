@@ -364,6 +364,12 @@ is axiom-free.
   that a degree-0 polynomial is its constant term; `qc_one_neq_zero` for the monic leading coeff). The
   first step of the polynomial identity theorem (a nonzero polynomial has finitely many roots), which
   the derivative-based squarefreeness of `X^n−1` will rest on. Closed under the global context.
+- **Polynomial identity theorem in ℚ[X] (functional form)** `QPolyPIT.poly_roots_eval` (**axiom-free**,
+  ℚ[X] layer brick 5b): a polynomial of degree ≤ n vanishing at more than n distinct points is
+  identically zero (as a function). Proof: peel one root `a` with the degree-bounded factor theorem
+  (`factor_theorem_deg`: `p = (X−a)·q` with `deg q ≤ n−1`, quotient bound from `qdivmod`); the other
+  roots are roots of `q` (ℚ has no zero divisors, `Qcmult_integral`), so `q ≡ 0` by induction, hence
+  `p ≡ 0`. The classical root-counting identity theorem. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
