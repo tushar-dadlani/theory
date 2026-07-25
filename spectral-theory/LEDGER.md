@@ -432,6 +432,18 @@ is axiom-free.
   `Φ_d` ⟹ coprime to `∏Φ_d`); and `qprod_dvd` (NoDup, pairwise-coprime factors each dividing `M` ⟹
   their product divides `M`). These wire the coprimality/product-divisibility into the shape needed for
   `∏_{d|n,d<n}Φ_d ∣ X^n−1`. Closed under the global context.
+- **THE CYCLOTOMIC PRODUCT IDENTITY** `CyclotomicProd.cyclotomic_prod` (**axiom-free**, ℚ[X] layer
+  brick 7 — capstone): `∏_{d|n} Φ_d = X^n − 1`, and its consequence **`Phi_dvd_pow`: `Φ_n(a) ∣ a^n −
+  1`** over ℤ. Proved by strong induction over ℚ[X] wiring together the entire layer: the proper-divisor
+  factors `Φ_d` are pairwise coprime (`qsqfree_Xn1` + `qsqfree_mul_copr` + `qdiv_gcd` + the
+  divisor-sublist product divisibility `qdivides_qprod_incl`; the `gcd(i,j)=i` case handled by symmetry
+  `qcopr_sym`), so `∏_{d|n,d<n} Φ_d ∣ X^n−1` over ℚ (`qprod_dvd`); the monic-division remainder is then
+  forced to zero (`qdiv_deg_zero`, `Phi_eq` relating `Φ_n` to `pdivmod`), and the identity transfers
+  back to ℤ at integer arguments (`qeval_ext_Z`, `Z2Qc_inj`). Supporting: `emb_Dprod`/`emb_monic`/
+  `emb_degle` (embed the ℤ cyclotomics), the divisor-membership iffs, `divisors_incl_properdivs`. This
+  is the final gate for general-`n` Dirichlet: with `Φ_n(a) ∣ a^n−1` and `OrderPrimeMod`, a prime
+  divisor of `Φ_n(a)` not dividing `n` is a primitive divisor, hence `≡ 1 (mod n)`. Closed under the
+  global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the

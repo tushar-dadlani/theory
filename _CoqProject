@@ -494,6 +494,7 @@ spectral-theory/QPolyEmbed.v
 spectral-theory/QPolyTransfer.v
 spectral-theory/QProd.v
 spectral-theory/QPolyProdDvd.v
+spectral-theory/CyclotomicProd.v
 spectral-theory/DirichletMod4.v
 spectral-theory/ProductFormulaQ.v
 spectral-theory/ProfiniteCRT.v
