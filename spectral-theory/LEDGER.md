@@ -370,6 +370,14 @@ is axiom-free.
   (`factor_theorem_deg`: `p = (X−a)·q` with `deg q ≤ n−1`, quotient bound from `qdivmod`); the other
   roots are roots of `q` (ℚ has no zero divisors, `Qcmult_integral`), so `q ≡ 0` by induction, hence
   `p ≡ 0`. The classical root-counting identity theorem. Closed under the global context.
+- **Coefficient-form PIT in ℚ[X]** `QPolyCoeffPIT.qeval_zero_norm` (**axiom-free**, ℚ[X] layer brick
+  5c-part1): `(∀x, qeval p x = 0) → qnorm p = []` — vanishing as a function ⟹ all-zero coefficients,
+  the bridge from eval-based to coefficient-level reasoning. Proof: constant term is `p(0)=0`; then
+  `x·(tail)(x) ≡ 0` so the tail vanishes at every nonzero point; supplying `deg(tail)+1` distinct
+  nonzero rationals `qnat(S k) = Q2Qc(inject_Z(S k))` (`qnat_inj`, `qnat_Sk_nz`, `NoDup_map_inj`), the
+  functional PIT forces the tail to vanish everywhere, and structural recursion closes it. This is
+  what lets the identity `X^n−1 = h²·k` (obtained from `h²∣X^n−1` at eval level) become a polynomial
+  equation to differentiate for squarefreeness. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
