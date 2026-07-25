@@ -478,6 +478,7 @@ spectral-theory/PolyDivComp.v
 spectral-theory/PolyDivQuot.v
 spectral-theory/Cyclotomic.v
 spectral-theory/Xn1Bezout.v
+spectral-theory/Xn1Gcd.v
 spectral-theory/DirichletMod4.v
 spectral-theory/ProductFormulaQ.v
 spectral-theory/ProfiniteCRT.v

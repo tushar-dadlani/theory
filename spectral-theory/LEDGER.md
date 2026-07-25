@@ -315,6 +315,15 @@ is axiom-free.
   ℚ[X] machinery — everything stays in ℤ[X]. This expresses the greatest common `X^d−1` as an integer
   combination, the foundation for the coprimality of the cyclotomic factors needed for `∏_{d|n} Φ_d =
   X^n−1`. Closed under the global context.
+- **Common divisors of X^a−1, X^b−1 divide X^{gcd(a,b)}−1** `Xn1Gcd.pdiv_gcd` (**axiom-free**,
+  Dirichlet brick 3h): `pdivides g (X^a−1) → pdivides g (X^b−1) → pdivides g (X^{gcd(a,b)}−1)`.
+  Immediate from `xn1_bezout`: writing `X^{gcd}−1 = u·(X^a−1) + v·(X^b−1)`, any `g` dividing both
+  right-hand terms divides the left. First step toward `gcd(Φ_i,Φ_j) | X^{gcd(i,j)}−1`. Closed under
+  the global context. **NOTE (boundary):** the *next* step — full coprimality of distinct cyclotomic
+  factors — cannot be done in ℤ[X]: there is no integer-polynomial Bézout `s·Φ_i + t·Φ_j = 1` (e.g.
+  `−Φ_1 + Φ_2 = 2`, and no combination gives 1). The product identity `∏_{d|n}Φ_d = X^n−1` therefore
+  needs either a **polynomials-over-ℚ** layer (ℚ[X] gcd/Bézout + squarefreeness of X^n−1) or ℤ[X]
+  unique factorisation — a substantial development, not a single brick.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
