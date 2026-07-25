@@ -444,6 +444,12 @@ is axiom-free.
   is the final gate for general-`n` Dirichlet: with `Φ_n(a) ∣ a^n−1` and `OrderPrimeMod`, a prime
   divisor of `Φ_n(a)` not dividing `n` is a primitive divisor, hence `≡ 1 (mod n)`. Closed under the
   global context.
+- **Formal derivative in ℤ[X]** `IntPolyDeriv` (**axiom-free**, general-`n` Dirichlet brick): `pderiv`
+  differentiates coefficient-wise; delivers the product rule `(p·q)′ = p′·q + p·q′` (`pderiv_mul_eval`)
+  and `(X^n−1)′ = n·X^{n−1}` (`peval_pderiv_Xn1`). Cleaner than the ℚ version (integer index
+  coefficients, `Z.of_nat (S k) = Z.of_nat k + 1`). This is the tool for the prime-divisor lemma: a
+  prime `q` dividing two distinct cyclotomic factors `Φ_e(a), Φ_n(a)` makes `a` a double root of
+  `X^n−1` mod `q`, so `q ∣ (X^n−1)′(a) = n·a^{n−1}`, forcing `q ∣ n`. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
