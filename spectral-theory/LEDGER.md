@@ -220,8 +220,12 @@ is axiom-free.
   (`fermat_gen`). Gauss's-lemma proof of Gauss's reciprocity, machine-checked with **zero axioms** —
   a landmark classical theorem, resting on Fermat/`sqrt1`/order machinery (bricks 1–2), the
   Eisenstein floor identity (brick 3), and a pure lattice-point double-count (brick 4). Closed under
-  the global context. **Not done:** the two supplements `(-1/p)=(-1)^((p-1)/2)` and
-  `(2/p)=(-1)^((p²-1)/8)`.
+  the global context. The **two supplements** are also proved (`first_supplement`,
+  `second_supplement`): `(-1/p) = legendre p (p-1) = (-1)^((p-1)/2)` (Euler's criterion + `-1 ≡ p-1`,
+  via `Zpow_mod_cong`); and `(2/p) = (-1)^((p²-1)/8)` (Gauss's lemma at `a=2`: the count `mu p 2 =
+  (p-1)/2 − ((p-1)/2)/2` (`mu_two`) has the same parity as `(p²-1)/8 = h(h+1)/2` (`parity_h`, via the
+  `2x mod 4` / `mod 4` bridge)). All axiom-free — quadratic reciprocity and both supplements are
+  complete.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
