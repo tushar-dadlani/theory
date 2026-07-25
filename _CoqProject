@@ -472,6 +472,7 @@ spectral-theory/PrimeFactorizationExists.v
 spectral-theory/EuclidPrimes.v
 spectral-theory/OrderPrimeMod.v
 spectral-theory/IntPoly.v
+spectral-theory/PolyDiv.v
 spectral-theory/DirichletMod4.v
 spectral-theory/ProductFormulaQ.v
 spectral-theory/ProfiniteCRT.v

@@ -259,6 +259,17 @@ is axiom-free.
   Hence `order_prime_mod` makes `ord_q(a) = 4`, so `4 | q−1`, i.e. `q ≡ 1 (mod 4)`. The first
   complete Dirichlet-type theorem here (the general-`n` version awaits the cyclotomic `Φ_n`). Closed
   under the global context.
+- **Monic division in ℤ[X]** `PolyDiv.monic_div` (**axiom-free**, Dirichlet brick 3b — cyclotomic
+  foundation): Euclidean division by a MONIC polynomial — for any `f` and any monic `g` of degree
+  `d ≥ 1` there are integer polynomials `q, r` with `∀x, eval f x = eval q x · eval g x + eval r x`
+  and `degle r (d−1)` (degree of `r` below `d`). Coefficients stay in ℤ precisely because `g` is
+  monic: each step subtracts `(lead f)·X^k·g`, cancelling the top term with **no coefficient
+  division** (`monic_div_aux`, by induction on a degree bound of `f`; the cancellation uses only
+  `coeff` of `padd`/`pscale`/`pshiftk`, never the full multiplication convolution). Supporting layer:
+  `coeff` (i-th coefficient), the operations `pneg`/`psub`/`pshiftk` with their `eval` and `coeff`
+  laws, the degree-bound predicate `degle`, and `monic g d := coeff g d = 1 ∧ degle g d`. This is the
+  primitive that will define `Φ_n` as the exact quotient of `X^n−1` by `∏_{d|n,d<n} Φ_d` and feed the
+  squarefreeness/gcd arguments for `∏_{d|n} Φ_d = X^n−1`. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
