@@ -250,6 +250,15 @@ is axiom-free.
   and its evaluated form `Xn1_dvd_val : m | n → (a^m−1 | a^n−1)` in ℤ. This is the reusable base the
   cyclotomic `Φ_n` and the product identity `∏_{d|n} Φ_d = X^n−1` will be built on. Closed under the
   global context.
+- **Dirichlet, the case n = 4** `DirichletMod4.dirichlet_1_mod_4` (**axiom-free**): a genuine
+  arithmetic-progression theorem — **infinitely many primes ≡ 1 (mod 4)**: for every `m` there is a
+  prime `q > m` with `q mod 4 = 1`. Fully elementary via `x²+1` and the order lemma: set `a = 2·m!`,
+  `N = a²+1`; a prime divisor `q` of `N` (from `EuclidPrimes.nat_prime_divisor`) is `> m` (else
+  `q | m! | a` and `q | a²+1` give `q | 1`), odd (`N` is odd as `a` is even), divides `a⁴−1 =
+  (a²+1)(a²−1)`, and divides neither `a`, `a²−1`, nor `a−1` (each would force `q | 2`, so `q = 2`).
+  Hence `order_prime_mod` makes `ord_q(a) = 4`, so `4 | q−1`, i.e. `q ≡ 1 (mod 4)`. The first
+  complete Dirichlet-type theorem here (the general-`n` version awaits the cyclotomic `Φ_n`). Closed
+  under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
