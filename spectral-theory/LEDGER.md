@@ -417,6 +417,14 @@ is axiom-free.
   `X^a−1` transferred to ℚ[X] via `Z2Qc_pow`/`Z2Qc_Xn1val`), and `qdiv_gcd` (common divisors of
   `X^i−1, X^j−1` divide `X^{gcd(i,j)}−1` over ℚ). These are exactly the tools the cyclotomic
   coprimality argument runs on. Closed under the global context.
+- **Products of cyclotomic factors over ℚ** `QProd` (**axiom-free**, ℚ[X] layer brick 6b-products):
+  `qprod l := ∏_{d∈l} emb(Φ_d)`, permutation-invariant (`qprod_perm`), splitting over append
+  (`qeval_qprod_app`), with every listed factor dividing it (`qdivides_qprod_in`), factoring out one
+  element via `remove` (`qprod_remove`, using `in_split` + `Permutation_middle` + `remove_app_mid`),
+  and the key **product-over-sublist divisibility** `qdivides_qprod_incl`: `incl l1 l2 → NoDup l1 →
+  NoDup l2 → qprod l1 ∣ qprod l2`. This is the combinatorial tool behind the pairwise coprimality of
+  the cyclotomic factors of `X^n−1` (e.g. `X^{gcd(i,j)}−1 ∣ Dprod_i` because divisors of `gcd(i,j)`
+  are a sublist of the proper divisors of `i`). Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
