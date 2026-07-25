@@ -352,6 +352,12 @@ is axiom-free.
   `_lincomb`, `qeval_all_zero`, `qeval_qnorm` (normalization preserves evaluation). `h` is a common
   divisor carrying a Bézout combination — for coprime `f, g` it is forced constant, giving `u·f + v·g
   = 1` after scaling: the coprimality tool for the cyclotomic factors. Closed under the global context.
+- **Coprimality → product divides in ℚ[X]** `QPolyCoprime.qcopr_product_divides` (**axiom-free**,
+  ℚ[X] layer brick 4): `qcopr f g` := every common divisor of `f, g` is a nonzero constant. From the
+  extended-Euclid common divisor `h` (with `u·f + v·g = h`), coprimality forces `h` constant, giving
+  the Bézout identity `u·f + v·g = 1` after scaling (`coprime_bezout`). Hence the classical
+  `qcopr p q → p | M → q | M → (p·q) | M` — the mechanism by which `∏_{d|n} Φ_d` divides `X^n−1` once
+  the cyclotomic factors are shown pairwise coprime. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the

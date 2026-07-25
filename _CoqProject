@@ -483,6 +483,7 @@ spectral-theory/QPoly.v
 spectral-theory/QPolyDiv.v
 spectral-theory/QPolyDeg.v
 spectral-theory/QPolyGcd.v
+spectral-theory/QPolyCoprime.v
 spectral-theory/DirichletMod4.v
 spectral-theory/ProductFormulaQ.v
 spectral-theory/ProfiniteCRT.v
