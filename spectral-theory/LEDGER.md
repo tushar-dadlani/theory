@@ -450,6 +450,11 @@ is axiom-free.
   coefficients, `Z.of_nat (S k) = Z.of_nat k + 1`). This is the tool for the prime-divisor lemma: a
   prime `q` dividing two distinct cyclotomic factors `Φ_e(a), Φ_n(a)` makes `a` a double root of
   `X^n−1` mod `q`, so `q ∣ (X^n−1)′(a) = n·a^{n−1}`, forcing `q ∣ n`. Closed under the global context.
+- **ℤ[X] identity theorem + derivative respects equality** `IntPolyDerivResp` (**axiom-free**): `eval_ext_coeff_Z`
+  (functionally-equal ℤ polynomials have equal coefficients — obtained by embedding into ℚ[X] and invoking the
+  ℚ identity theorem, `qeval_ext_Z` + `qeval_ext_coeff`), the derivative coefficient formula `pcoeff_pderiv`
+  (`coeff (p′) i = (i+1)·coeff p (i+1)`), and `pderiv_resp_eval` (`(∀a, p(a)=q(a)) ⟹ ∀a, p′(a)=q′(a)`). Lets us
+  differentiate the cyclotomic factorization `X^n−1 = ∏_{d∣n}Φ_d` term-by-term. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
