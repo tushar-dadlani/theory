@@ -402,6 +402,13 @@ is axiom-free.
   degree-of-product (`divides_const_deg0`, using `qcoeff_qmul_top` + `qlead_nonzero`). Also
   `qsqfree_mul_copr`: a squarefree product has coprime factors (`qcopr`) — the tool by which the
   cyclotomic factors of `X^n−1` are shown pairwise coprime (brick 6). Closed under the global context.
+- **The embedding ℤ[X] ↪ ℚ[X]** `QPolyEmbed` (**axiom-free**, ℚ[X] layer brick 6a): `emb p := map Z2Qc
+  p` (`Z2Qc z := Q2Qc (inject_Z z)`) is a ring homomorphism — `emb (p+q) = emb p + emb q` (`emb_padd`),
+  `emb (p·q) = emb p · emb q` (`emb_pmul`, via `emb_pscale`), `emb (X^n−1) = X^n−1` (`emb_Xn1`), with
+  `Z2Qc` itself a ring hom (`Z2Qc_add`/`_mul`/`_opp`/`_0`/`_1`, injective `Z2Qc_inj`; `Q2Qc_mult` the
+  multiplicative companion of `Q2Qc_plus`). Evaluation commutes at integer points: `qeval (emb p)
+  (Z2Qc a) = Z2Qc (eval p a)` (`qeval_emb`). This lets the ℚ[X] squarefreeness/coprimality machinery
+  act on the integer cyclotomic polynomials and transfer results back. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
