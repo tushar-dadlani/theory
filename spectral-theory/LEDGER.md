@@ -324,6 +324,14 @@ is axiom-free.
   `−Φ_1 + Φ_2 = 2`, and no combination gives 1). The product identity `∏_{d|n}Φ_d = X^n−1` therefore
   needs either a **polynomials-over-ℚ** layer (ℚ[X] gcd/Bézout + squarefreeness of X^n−1) or ℤ[X]
   unique factorisation — a substantial development, not a single brick.
+- **ℚ[X] foundation** `QPoly` (**axiom-free**, ℚ[X] layer brick 1): polynomials over ℚ as `list Qc`
+  (canonical rationals, so equality is Leibniz `=` and `ring`/`field` apply). Mirrors `IntPoly`+`PolyDiv`
+  over ℚ: `qeval` with the evaluation homomorphism (`qeval_add`/`qeval_scale`/`qeval_mul`/`qeval_monom`/
+  `qeval_Xn1`/`qeval_shiftk`), and the coefficient/degree layer (`qcoeff`, `qdegle`, `qmonic`) with the
+  coefficient laws (`qcoeff_add`/`_scale`/`_neg`/`_sub`/`_shiftk`). This is the base for ℚ[X]
+  Euclidean division, gcd, Bézout and squarefreeness of `X^n−1` — where distinct cyclotomics ARE
+  coprime — which will give `∏_{d|n}Φ_d = X^n−1` over ℚ and (monic-integer quotient) back over ℤ.
+  Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
