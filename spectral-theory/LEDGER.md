@@ -296,6 +296,17 @@ is axiom-free.
   (`coeff_pmul_pscale_l`), and `X^k·g = pshiftk k g` (`coeff_pmul_pmonom_l`), plus the `pmonom`
   coefficient values (`coeff_pmonom_lo`/`_eq`, via `pmonom_repeat`). The leading coefficient of the
   quotient is then extracted at index `n` using `coeff_pmul_top`. Closed under the global context.
+- **The cyclotomic polynomials Φ_n, defined and monic** `Cyclotomic.cyclotomic_monic` (**axiom-free**,
+  Dirichlet brick 3f): defines `Φ_1 = X−1` and `Φ_n = (X^n−1)/∏_{d|n,d<n}Φ_d` (n ≥ 2) as an actual
+  integer polynomial — a fuel-recursion `Phi_f` (fuel independence `Phi_f_indep` via strong induction,
+  so `Phi n := Phi_f n n` is well-defined), the divisor degree taken from `Totient.phi` (no separate
+  degree recursion). Proves **`Φ_n is monic of degree φ(n)`** by strong induction: the proper-divisor
+  product `∏_{d|n,d<n}Φ_d` is monic (`monic_fold_pmul` + IH) of degree `Σ_{d|n,d<n} φ(d) = n − φ(n)`
+  (via `Totient.totient_divisor_sum` and `divisors_perm`), and dividing the monic `X^n−1` by it gives a
+  monic quotient (`PolyDivQuot.monic_div_monic`), of degree `n − (n−φ(n)) = φ(n)` — using `1 ≤ n−φ(n)
+  ≤ n` from `phi_lt`/`phi_ge_1`. **Sanity-checked by `vm_compute`**: `Φ_1..Φ_6` equal the classical
+  `X−1, X+1, X²+X+1, X²+1, …, X²−X+1`. The product identity `∏_{d|n}Φ_d = X^n−1` (remainder zero) is
+  the next brick. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
