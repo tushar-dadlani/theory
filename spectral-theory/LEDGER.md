@@ -240,6 +240,16 @@ is axiom-free.
   the "no proper divisor" hypothesis rules out `ord q r < n`, so `ord q r = n`, and `ord_div_pm1`
   gives `n | q−1`. The arithmetic core of "infinitely many primes ≡ 1 (mod n)"; the remaining piece
   is a cyclotomic `Φ_n` supplying, for each `n`, an integer with a primitive prime divisor.
+- **Integer polynomials ℤ[X]** `IntPoly` (**axiom-free**, Dirichlet brick 3a — cyclotomic
+  foundation): polynomials as `list Z` (low degree first), with the **evaluation homomorphism** —
+  `eval` commutes with `padd` (`eval_add`), `pscale` (`eval_scale`), `pmul` (`eval_mul`) and sends
+  `pmonom n` to `X^n` (`eval_monom`). Semantic divisibility `pdivides p q := ∃r, ∀x, eval q x =
+  eval p x · eval r x` (reflexive, transitive). Delivers the **geometric divisibility**
+  `Xn1_dvd : m | n → pdivides (X^m−1) (X^n−1)` with an **explicit integer cofactor** `geo m k =
+  1 + X^m + ⋯ + X^{(k−1)m}` (via the telescoping `(X^m−1)·geo m k = X^{mk}−1`, `geo_telescope`),
+  and its evaluated form `Xn1_dvd_val : m | n → (a^m−1 | a^n−1)` in ℤ. This is the reusable base the
+  cyclotomic `Φ_n` and the product identity `∏_{d|n} Φ_d = X^n−1` will be built on. Closed under the
+  global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
