@@ -617,6 +617,18 @@ is axiom-free.
   `∏_{d∣p^v·m}vexp = (∏_{d∣m}vexp)·∏_{i=1}^{v} p = m·p^v = n`. Uses a paired-product toolkit
   (`prodp`/`prodp_list_prod`) to handle the `list_prod` from the bijection, and `gcd_ppow_coprime`.
   Closed under the global context.
+- **MASTER umbrella for the Dirichlet thread** `DirichletMaster.dirichlet_theory` (**axiom-free**): a
+  single conjunction bundling the headline results of the whole arithmetic-functions arc, as a curated
+  index (each conjunct is exactly the corresponding standalone theorem, assembled by a positional
+  `conj` term). Six sections: **(I)** the Dirichlet convolution ring — `dconv_comm`, `dconv_assoc`,
+  `dconv_eps_l/r` (unit ε), `dconv_distrib_l/r` (bilinearity), and `dconv_as_div` (divisor-sum form);
+  **(II)** Möbius — `mu_one` (μ∗1=ε), `mobius_inversion`, `phi_mobius` (φ=id∗μ), `phi_done_eq_id`;
+  **(III)** multiplicativity — `dconv_mult` and `mu`/`φ`/`τ`/`σ`/`σ_k` multiplicative;
+  **(IV)** prime-power values — `mu_p` (−1), `mu_ppow_ge2` (0), `phi_ppow`, `tau_ppow`, plus τ/σ as
+  divisor sums; **(V)** the reduce-to-prime-powers induction `mult_ind`; **(VI)** von Mangoldt —
+  `vexp_ppow`, `vexp_coprime`, and the general `vonmangoldt` (∏_{d∣n} vexp d = n). `Print Assumptions
+  dirichlet_theory` = closed under the global context. (Bundle, not new mathematics — an at-a-glance
+  statement of what the thread proves.)
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
