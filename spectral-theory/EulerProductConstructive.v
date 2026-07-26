@@ -245,12 +245,159 @@ Proof.
   - intro N; apply Ptrunc_le_zeta2c; [ apply primes_upto_Forall | apply primes_upto_nodup ].
 Qed.
 
+(* ================================================================= *)
+(*  Part E — the FULL Euler factor ∏ 1/(1−p⁻²)                       *)
+(* ================================================================= *)
+Lemma qpow_nonneg : forall x K, 0 <= x -> 0 <= qpow x K.
+Proof. intros x K Hx; induction K; [ cbn; lra | cbn [qpow]; nra ]. Qed.
+
+Lemma qpow_le_base : forall x y K, 0 <= x -> x <= y -> qpow x K <= qpow y K.
+Proof.
+  intros x y K Hx Hxy; induction K as [|K IH]; [ cbn; lra | cbn [qpow] ].
+  assert (Hy : 0 <= y) by lra.
+  pose proof (qpow_nonneg x K Hx) as Hpx; pose proof (qpow_nonneg y K Hy) as Hpy; nra.
+Qed.
+
+Lemma qsum_map_le : forall {A} (f g : A -> Q) l,
+  (forall a, In a l -> f a <= g a) -> qsum (map f l) <= qsum (map g l).
+Proof.
+  intros A f g l; induction l as [|a l IH]; intro H; [ cbn; lra | ].
+  cbn [map qsum]; pose proof (H a (or_introl eq_refl)).
+  assert (qsum (map f l) <= qsum (map g l)) by (apply IH; intros x Hx; apply H; right; exact Hx); lra.
+Qed.
+
+Lemma one_minus_prod_le_sum : forall (l : list Q),
+  (forall x, In x l -> 0 <= x <= 1) -> 0 <= 1 - qprod (map (fun x => 1 - x) l) <= qsum l.
+Proof.
+  induction l as [|a l IH]; intro H; [ cbn; lra | ].
+  cbn [map qprod qsum].
+  assert (Ha : 0 <= a <= 1) by (apply H; left; auto).
+  assert (Hrec : 0 <= 1 - qprod (map (fun x => 1 - x) l) <= qsum l)
+    by (apply IH; intros x Hx; apply H; right; auto).
+  assert (Hp0 : 0 <= qprod (map (fun x => 1 - x) l)).
+  { apply qprod_nonneg; intros y Hy; apply in_map_iff in Hy; destruct Hy as [z [Hz Hin]]; subst y.
+    assert (0 <= z <= 1) by (apply H; right; auto); lra. }
+  assert (Hp1 : qprod (map (fun x => 1 - x) l) <= 1).
+  { apply qprod_le_1; intros y Hy; apply in_map_iff in Hy; destruct Hy as [z [Hz Hin]]; subst y.
+    assert (0 <= z <= 1) by (apply H; right; auto); lra. }
+  nra.
+Qed.
+
+Lemma quarter_pow_le : forall K, qpow (1 # 4) K <= / inject_Z (Z.of_nat (S K)).
+Proof.
+  intro K.
+  assert (Hq : qpow (1 # 4) K == / qpow (inject_Z 4) K).
+  { assert (H : (1 # 4) == / inject_Z 4) by reflexivity; rewrite H, qpow_inv; reflexivity. }
+  rewrite Hq; apply Qinv_le.
+  - unfold Qlt; simpl; lia.
+  - rewrite <- (inj_pow 4 K), <- Zle_Qle.
+    assert (HSK : (S K <= 4 ^ K)%nat).
+    { pose proof (nat_lt_pow2 K); assert (2 ^ K <= 4 ^ K)%nat by (apply Nat.pow_le_mono_l; lia); lia. }
+    replace (4 ^ Z.of_nat K)%Z with (Z.of_nat (4 ^ K)) by (rewrite Nat2Z.inj_pow; reflexivity); lia.
+Qed.
+
+Lemma qN_mult : forall a b, qN (a * b)%nat == qN a * qN b.
+Proof. intros a b; unfold qN; rewrite Nat2Z.inj_mul, inject_Z_mult; reflexivity. Qed.
+
+Lemma ZfactorQ_bound : forall ps, Forall prime ps -> ZfactorQ ps <= qN (2 ^ length ps).
+Proof.
+  induction ps as [|p ps IH]; intro Hps.
+  - unfold ZfactorQ; cbn [map qprod length].
+    assert (E : qN (2 ^ 0)%nat == 1) by (unfold qN; reflexivity); rewrite E; apply Qle_refl.
+  - inversion Hps as [|? ? Hp Hps']; subst.
+    unfold ZfactorQ in *; cbn [map qprod length].
+    assert (Hef : 0 <= efacQ p <= 2)
+      by (split; [ apply Qlt_le_weak, efacQ_pos | apply efacQ_le2 ]; exact Hp).
+    assert (Hzf0 : 0 <= qprod (map efacQ ps)) by (apply ZfactorQ_nonneg; exact Hps').
+    pose proof (IH Hps') as HI.
+    apply Qle_trans with (2 * qN (2 ^ length ps)); [ nra | ].
+    change (2 ^ S (length ps))%nat with (2 * 2 ^ length ps)%nat.
+    rewrite qN_mult; assert (E2 : qN 2 == 2) by (unfold qN; reflexivity); rewrite E2; apply Qle_refl.
+Qed.
+
+Lemma modulus_bound : forall Cn K p, (Cn * Pos.to_nat p <= K)%nat ->
+  qN Cn * / inject_Z (Z.of_nat (S K)) <= 1 # p.
+Proof.
+  intros Cn K p HK.
+  assert (HB : 0 < inject_Z (Z.of_nat (S K))) by (unfold Qlt; simpl; lia).
+  assert (Bne : ~ inject_Z (Z.of_nat (S K)) == 0)
+    by (intro C; rewrite C in HB; exact (Qlt_irrefl 0 HB)).
+  apply (proj1 (Qmult_le_r _ (1 # p) _ HB)).
+  assert (E1 : qN Cn * / inject_Z (Z.of_nat (S K)) * inject_Z (Z.of_nat (S K)) == qN Cn)
+    by (field; exact Bne).
+  rewrite E1.
+  assert (Hpp : 0 < inject_Z (Z.pos p)) by (unfold Qlt; simpl; lia).
+  assert (E2 : (1 # p) * inject_Z (Z.of_nat (S K)) == inject_Z (Z.of_nat (S K)) * / inject_Z (Z.pos p))
+    by (assert (Hpe : (1 # p) == / inject_Z (Z.pos p)) by reflexivity; rewrite Hpe; ring).
+  rewrite E2; apply (proj1 (Qmult_le_r _ _ (inject_Z (Z.pos p)) Hpp)).
+  assert (E3 : inject_Z (Z.of_nat (S K)) * / inject_Z (Z.pos p) * inject_Z (Z.pos p)
+               == inject_Z (Z.of_nat (S K)))
+    by (field; intro C; rewrite C in Hpp; exact (Qlt_irrefl 0 Hpp)).
+  rewrite E3; unfold qN; rewrite <- inject_Z_mult, <- Zle_Qle, <- positive_nat_Z, <- Nat2Z.inj_mul.
+  apply Nat2Z.inj_le; lia.
+Qed.
+
+Lemma Zpartial_cv_Zfactor : forall ps, Forall prime ps ->
+  cvQ (fun K => ZpartialQ ps K) (inject_Q (ZfactorQ ps)).
+Proof.
+  intros ps Hps p.
+  exists (2 ^ length ps * length ps * Pos.to_nat p)%nat; intros K HK.
+  assert (Hle : ZpartialQ ps K <= ZfactorQ ps) by (apply ZpartialQ_le_ZfactorQ; exact Hps).
+  assert (Hdiff : ZfactorQ ps - ZpartialQ ps K <= 1 # p).
+  { rewrite (Zpartial_factored ps K Hps).
+    set (P := qprod (map (fun q => 1 - qpow (fug q) K) ps)).
+    assert (EG : ZfactorQ ps - ZfactorQ ps * P == ZfactorQ ps * (1 - P)) by ring; rewrite EG.
+    set (t := / inject_Z (Z.of_nat (S K))).
+    assert (Ht0 : 0 <= t) by (unfold t; apply Qinv_le_0_compat; unfold Qle; simpl; lia).
+    assert (Hlen0 : 0 <= qN (length ps)) by (apply qN_nonneg).
+    assert (Hzf0 : 0 <= ZfactorQ ps) by (apply ZfactorQ_nonneg; exact Hps).
+    (* 1 - P <= qN (length ps) * t *)
+    assert (Heps : forall x, In x (map (fun q => qpow (fug q) K) ps) -> 0 <= x <= 1).
+    { intros x Hx; apply in_map_iff in Hx; destruct Hx as [q [Hq Hin]]; subst x.
+      rewrite Forall_forall in Hps; pose proof (Hps q Hin) as Hpr.
+      assert (0 <= fug q <= 1) by (pose proof (fug_pos q Hpr); pose proof (fug_le q Hpr); lra).
+      apply (qpow_bounds (fug q) K H). }
+    pose proof (one_minus_prod_le_sum (map (fun q => qpow (fug q) K) ps) Heps) as [_ HG1].
+    rewrite map_map in HG1; fold P in HG1.
+    assert (Hsum : qsum (map (fun q => qpow (fug q) K) ps) <= qN (length ps) * t).
+    { eapply Qle_trans.
+      - apply (qsum_map_le (fun q => qpow (fug q) K) (fun _ => qpow (1 # 4) K) ps).
+        intros q Hin; rewrite Forall_forall in Hps; pose proof (Hps q Hin) as Hpr.
+        apply qpow_le_base; [ apply Qlt_le_weak, fug_pos; exact Hpr | apply fug_le; exact Hpr ].
+      - rewrite (qsum_const (fun _ => qpow (1 # 4) K) ps (qpow (1 # 4) K)) by (intros; reflexivity).
+        pose proof (quarter_pow_le K) as Hq14; unfold t; nra. }
+    assert (H1P : 1 - P <= qN (length ps) * t) by lra.
+    assert (HzfB : ZfactorQ ps <= qN (2 ^ length ps)) by (apply ZfactorQ_bound; exact Hps).
+    assert (Hmod : qN (2 ^ length ps) * qN (length ps) * t <= 1 # p).
+    { rewrite <- qN_mult; unfold t; apply modulus_bound; exact HK. }
+    assert (HCD : 0 <= qN (length ps) * t) by nra.
+    apply Qle_trans with (ZfactorQ ps * (qN (length ps) * t)); [ nra | ].
+    apply Qle_trans with (qN (2 ^ length ps) * (qN (length ps) * t)); [ nra | ].
+    rewrite Qmult_assoc; exact Hmod. }
+  assert (Eq : (inject_Q (ZpartialQ ps K) - inject_Q (ZfactorQ ps)
+               == inject_Q (ZpartialQ ps K - ZfactorQ ps))%CReal)
+    by (rewrite inject_Q_diff; unfold CReal_minus; reflexivity).
+  rewrite Eq; apply inj_abs_le; apply Qabs_Qle_condition; split; lra.
+Qed.
+
+Theorem euler_product_constructive :
+  cvQ (fun N => ZfactorQ (primes_upto (S N))) zeta2c.
+Proof.
+  apply (cvQ_squeeze_const_upper zpartQ (fun N => ZfactorQ (primes_upto (S N))) zeta2c).
+  - apply zeta2c_cv.
+  - intro N; apply Qle_trans with (ZpartialQ (primes_upto (S N)) (S N));
+      [ apply zpartQ_le_Zpartial | apply ZpartialQ_le_ZfactorQ; apply primes_upto_Forall ].
+  - intro N; apply (cvQ_le_const (fun K => ZpartialQ (primes_upto (S N)) K));
+      [ apply Zpartial_cv_Zfactor; apply primes_upto_Forall
+      | intro K; apply Ptrunc_le_zeta2c; [ apply primes_upto_Forall | apply primes_upto_nodup ] ].
+Qed.
+
 Print Assumptions euler_product_trunc.
+Print Assumptions euler_product_constructive.
 
 (* ================================================================= *)
 (*  END EulerProductConstructive.v                                  *)
-(*  The partial Euler product ∏_{p≤N} Σ_{k≤N} p^{−2k} → ζ(2), axiom- *)
-(*  free.  (The full-factor ∏ 1/(1−p⁻²) form needs the geometric      *)
-(*  product-of-limits layer — Part A `ZfactorQ`/`ZpartialQ_le_ZfactorQ`*)
-(*  is the groundwork; see LEDGER.)                                   *)
+(*  The FULL Euler product ∏_{p≤N} 1/(1−p⁻²) → ζ(2), axiom-free      *)
+(*  (euler_product_constructive), plus the truncated-factor form.    *)
+(*  Closed under the global context.                                 *)
 (* ================================================================= *)

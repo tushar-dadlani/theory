@@ -115,22 +115,23 @@ is axiom-free.
   zeta_arc_constructive` = **Closed under the global context**. Remaining vs the 5-movement classical
   `ZetaMaster`: movements **(III)** the Euler product and **(IV)** the primorial tower are **not yet
   ported** to `CReal` (they remain only in the quarantined `ZetaMaster`).
-- **Euler product → ζ(2), constructive** `EulerProductConstructive.euler_product_trunc` (**axiom-free**)
-  — movement III ported to `CReal`. The **partial Euler product** converges to ζ(2):
-  `cvQ (fun N => ∏_{p prime ≤ N} Σ_{k≤N} p^{−2k}) zeta2c` (a diagonal truncation of the geometric
-  factors). Mirrors classical `EulerProductZeta.euler_product_zeta2` over the axiom-free `CReal`: a
-  squeeze `zpartQ N ≤ ∏(…) ≤ ζ(2)` (`cvQ_squeeze_const_upper`, new in `CRealCv`). **Upper**
-  (`Ptrunc_le_zeta2c`): the finite product reindexes (`euler_reindex`) to a `qsum` of `1/code²` over
-  distinct positive codes, ≤ ζ(2) by `recip_sq_le_zeta2c`. **Lower** (`zpartQ_le_Zpartial`): every
-  `m ≤ N` is a bounded smooth code (`code_surj`+`entry_pow_le_code`+`gstates_complete`), so
-  `qsum_incl_le_qw` gives `zpartQ N ≤` the product. Reuses the axiom-free ℚ machinery (`PrimonGas`,
-  `EulerReindex`, factorization) verbatim; the Class-A combinatorics imported from the quarantined R
-  files stay axiom-free — `Print Assumptions` = **Closed under the global context**. Also adds
-  `cvQ_le_const` to `CRealCv`. **Honest boundary:** this is the *truncated-factor* form; the
-  *full-factor* `∏ 1/(1−p⁻²) → ζ(2)` (matching classical `Zfactor`) needs the geometric
-  product-of-limits `Zpartial_cv_Zfactor` (a `qpow`-decay modulus). The file already builds the
-  groundwork (`ZfactorQ`, `Zpartial_factored`, `ZpartialQ_le_ZfactorQ`, `cvQ_le_const`); only that one
-  convergence lemma remains. Movement IV (primorial tower) also still to port.
+- **The FULL Euler product → ζ(2), constructive** `EulerProductConstructive.euler_product_constructive`
+  (**axiom-free**) — movement III fully ported to `CReal`, matching classical
+  `EulerProductZeta.euler_product_zeta2`: **`cvQ (fun N => ∏_{p prime ≤ N} 1/(1−p⁻²)) zeta2c`** with the
+  *true* rational Euler factors `p²/(p²−1)`. Proved by the squeeze `zpartQ N ≤ ∏(…) ≤ ζ(2)`
+  (`cvQ_squeeze_const_upper`, new in `CRealCv`): **lower** `zpartQ N ≤ ZpartialQ ≤ ZfactorQ`
+  (`zpartQ_le_Zpartial` via the smooth-covering `code_surj`+`entry_pow_le_code`+`gstates_complete`, then
+  `ZpartialQ_le_ZfactorQ`); **upper** `inject_Q (ZfactorQ) ≤ ζ(2)` via `cvQ_le_const` on the geometric
+  product-of-limits **`Zpartial_cv_Zfactor`** (`ZpartialQ K → ZfactorQ`), each `ZpartialQ K ≤ ζ(2)`
+  (`Ptrunc_le_zeta2c`: `euler_reindex` → `qsum` of `1/code²` over distinct positive codes →
+  `recip_sq_le_zeta2c`). The convergence uses the telescoping `ZpartialQ K = ZfactorQ·∏(1−fugᵏ)`
+  (`Zpartial_factored`), `1−∏(1−εᵢ) ≤ Σεᵢ` (`one_minus_prod_le_sum`), and an explicit `(1/4)^K ≤ 1/(K+1)`
+  decay modulus (`quarter_pow_le` via `Qinv_le`+`nat_lt_pow2`) with `ZfactorQ ≤ 2^len` (`ZfactorQ_bound`)
+  and `modulus_bound`. `CRealCv` gains `cvQ_squeeze_const_upper` + `cvQ_le_const`. Reuses the axiom-free
+  ℚ machinery (`PrimonGas`/`EulerReindex`/factorization) verbatim; the truncated form
+  `euler_product_trunc` (diagonal-truncated factors) is also kept. `Print Assumptions
+  euler_product_constructive` = **Closed under the global context**. Movement IV (primorial tower)
+  remains the last classical-only movement.
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
