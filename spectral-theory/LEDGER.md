@@ -593,6 +593,16 @@ is axiom-free.
   and the step `P m ⟹ P (p^v · m)` (`p` prime, `p ∤ m`, `v ≥ 1`) — strong induction + peeling. This is the
   reusable engine for any "reduce to prime powers" argument (e.g. the general `∏_{d∣n} vexp(d) = n`, or
   reconstructing `n` from its prime-power factors). Closed under the global context.
+- **Semantic lemmas for computable `vexp` (prime-power case)** `DirichletVexpSem` (**axiom-free**): proves,
+  about the computable `vexp` (= `exp∘Λ`, defined via `least_factor`+`strip`), that `vexp(p^v) = p`
+  (`vexp_ppow`) and hence `∏_{d∣p^k} vexp(d) = p^k` (`vmprod_ppow`) — i.e. the von Mangoldt identity **on
+  prime powers now fully proven** (upgrading `DirichletVonMangoldt`'s reflective check for this case). The
+  work is reasoning about the computational primitives: `strip_pow` (`strip` removes all `p` from `p^v`,
+  giving `1`), `find_first`/`seq_split_at`/`least_factor_least` (a `find`-returns-the-least-divisor
+  characterisation), and `least_factor_ppow` (`least_factor(p^v)=p`, via `JacobiRHS.div_prime_pow`: a
+  divisor of a prime power is a prime power). Honest boundary: the general `∏_{d∣n} vexp(d)=n` additionally
+  needs the *coprime* semantic lemma `vexp(ab)=1` for coprime `a,b≥2` (needing `least_factor` prime + a
+  `strip`-reverse), then `mult_ind` (`DirichletPeel`) — a further step. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
