@@ -579,6 +579,7 @@ spectral-theory/EulerProductConstructive.v
 spectral-theory/PrimorialTowerConstructive.v
 spectral-theory/ZetaArcConstructive.v
 spectral-theory/BaselTrig.v
+spectral-theory/BaselCotPoly.v
 spectral-theory/AbelSummation.v
 spectral-theory/VonMangoldtGlobal.v
 spectral-theory/Chebyshev.v
