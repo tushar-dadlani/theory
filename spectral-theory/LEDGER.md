@@ -514,6 +514,19 @@ is axiom-free.
   two-sided unit), `gconv_assoc` (**associativity** — via the duality: `⟨(a⋆b)⋆c,φ⟩ = Σ_{i,j,m} a_i b_j c_m
   φ_{i+j+m} = ⟨a⋆(b⋆c),φ⟩` for all `φ` by `dot_L`/`dot_R`, coefficients extracted with delta functions
   `dot_delta` — so `k[ℤ/nℤ]` is a commutative ring), and `ginv_involutive` (`S² = id`, from `−(−g) ≡ g`).
+- **The group algebra k[G] for an ARBITRARY finite abelian group** `HopfGroupAlgebraGen` (**axiom-free**):
+  generalises the cyclic case to any finite abelian `G`, presented abstractly by a carrier `A` with
+  decidable equality `Aeq` (a `reflect` spec), a complete NoDup enumeration `elts`, and group operations
+  `op`/`e`/`inv` with the left group axioms + commutativity as hypotheses (`(i+j) mod n ↦ op x y`,
+  `seq 0 n ↦ elts`, `_=?_ ↦ Aeq`, modular facts ↦ group axioms). Derives the needed group facts
+  (`inv_involutive`, right identity, `Aeq_sym`/`Aeq_refl`), then ports the entire `k[ℤ/nℤ]` development:
+  the two duality theorems (`product_coproduct_duality`, `coproduct_product_duality`), counit/unit
+  duality, the antipode axiom (`antipode_axiom`, `antipode_is_eps_unit`), and the full commutative-ring
+  structure of convolution (`gconv_comm`, `gconv_distrib_l`/`_r`, `gconv_unit_l`/`_r`, `gconv_assoc` via
+  the duality, `ginv_involutive`). Because `elts` contains **every** element, all identities hold
+  unconditionally (no representative guard). Non-vacuity is witnessed by a concrete instance —
+  `ℤ/2ℤ = (bool, xorb, false, id)` — with `z2_associative`, `z2_unit` obtained by applying the general
+  theorems, confirming the abstract hypotheses are jointly satisfiable. Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
