@@ -569,6 +569,14 @@ is axiom-free.
   `dconv_mult`: `dtau_mult`, `dsigma_mult`, `dsigmak_mult`. Also their standard values via `dconv_as_div`:
   `dtau_as_div` (`τ(n) = #divisors(n)`), `dsigma_as_div` (`σ(n) = Σ_{d∣n} d`), `dsigmak_as_div`
   (`σ_k(n) = Σ_{d∣n} d^k`). Closed under the global context.
+- **Prime-power values of μ, φ, τ, σ** `DirichletPPow` (**axiom-free**): since all four are multiplicative
+  they are determined by prime-power values, computed here within the ring. Key lemma `arith_ppow_split`:
+  for `p` prime and `k ≥ 1`, any `f` satisfies `f(p^k) = (Σ_{d∣p^k} f) − (Σ_{d∣p^{k-1}} f)` (from
+  `divisors(p^k) = {p^0,…,p^k}`, i.e. `JacobiRHS.divisors_prime_pow`, plus `sumf_seq_last`). Consequences:
+  `mu_p` (`μ(p) = −1`), `mu_ppow_ge2` (`μ(p^k) = 0` for `k ≥ 2`) — both from `μ∗1=ε` (`Sigma_mu_div`);
+  `phi_ppow`/`phi_ppow_nat` (`φ(p^k) = p^k − p^{k-1}`) — from `φ∗1=id` (`phi_done_eq_id`); `tau_ppow`
+  (`τ(p^k) = k+1`, by counting divisors) and `sigma_ppow` (`σ(p^k) = Σ_{j≤k} p^j`). Closed under the
+  global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
