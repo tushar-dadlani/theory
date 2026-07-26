@@ -509,6 +509,7 @@ spectral-theory/DirichletMult.v
 spectral-theory/DirichletDivisor.v
 spectral-theory/DirichletPPow.v
 spectral-theory/DirichletVonMangoldt.v
+spectral-theory/DirichletPeel.v
 spectral-theory/DirichletMod4.v
 spectral-theory/ProductFormulaQ.v
 spectral-theory/ProfiniteCRT.v

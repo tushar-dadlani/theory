@@ -586,6 +586,13 @@ is axiom-free.
   repo's own reflective pattern (cf. `JacobiRHS.jacobi_upto`); the fully general proof reduces to unique
   factorization / prime-power peeling over `nat`, a further infrastructure brick. Closed under the global
   context.
+- **Prime-power peeling + reduce-to-prime-powers induction** `DirichletPeel` (**axiom-free**): the
+  factorization infrastructure. `nat_ppow_peel`: every `n ≥ 2` splits as `n = p^v · m` with `p` prime,
+  `v ≥ 1`, `p ∤ m`, `m ≥ 1`, and `m < n` — built by bridging `PrimeFactorizationExists.padic_val` (over ℤ)
+  to `nat` via `has_prime_divisor`. `mult_ind`: to prove `P n` for all `n ≥ 1`, it suffices to prove `P 1`
+  and the step `P m ⟹ P (p^v · m)` (`p` prime, `p ∤ m`, `v ≥ 1`) — strong induction + peeling. This is the
+  reusable engine for any "reduce to prime powers" argument (e.g. the general `∏_{d∣n} vexp(d) = n`, or
+  reconstructing `n` from its prime-power factors). Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
