@@ -98,6 +98,18 @@ is axiom-free.
   axiom-free — the ℝ-quarantined `ZetaMaster`/`ZetaSquareAnalytic` versions remain as the classical
   parallel. Verdict on the "see what comes out" experiment: stdlib `CReal` was pleasant (only its
   high-level API was touched), so no hand-roll was needed. Still out of scope: π²/6, general `s`.
+- **Axiom-free umbrella for the constructive ζ arc** `ZetaMasterConstructive.zeta_arc_constructive`
+  (**axiom-free**): the constructive companion to `ZetaMaster`, bundling the movements rebuilt over
+  `CReal`: **(I)** ζ(2)=Σ1/n² exists (`zeta2c_cv`); **(II)** a *new* rational finite bound
+  `recip_sq_partial_bound` — a NoDup list of positive integers has `Σ 1/mᵢ²` ≤ the ζ(2) partial sum
+  `SMQ (S (list_max L))` (via a `qw`/nat `qsum_incl_le_qw` NoDup-domination stack); **(V)** ∑τ(n)/n² →
+  ζ(2)² (`zeta_two_sq_tau_constructive`), with the hyperbola sum `SpartQ_cv` and the τ identity
+  `Spart_eq_Dpart`. `Print Assumptions zeta_arc_constructive` = **Closed under the global context**.
+  Honestly partial vs the 5-movement classical `ZetaMaster`: movements **(III)** the Euler product and
+  **(IV)** the primorial tower are **not yet ported** to `CReal`, and movement II is the *rational*
+  "≤ partial sum" form — the strict "≤ ζ(2)" needs a monotone-limit (ε-)principle over `CReal`
+  (`cvQ_term_le`), which stdlib doesn't hand over cheaply (it needs raw-`seq` dissection of `CRealLt`)
+  and is deferred.
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
