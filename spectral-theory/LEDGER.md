@@ -553,6 +553,16 @@ is axiom-free.
   `phi_mobius` (**`φ = id ∗ μ`**, i.e. `φ(n) = Σ_{d∣n} μ(d)·(n/d)`, immediate from `φ∗1=id` by
   inversion). This fuses the Hopf/convolution thread with the arithmetic — the group-algebra
   convolution and the Dirichlet convolution are the same machine. Closed under the global context.
+- **Multiplicativity of μ and φ** `DirichletMult` (**axiom-free**): a function `f : ℕ → ℤ` is
+  `multiplicative` if `f(1)=1` and `f(mn)=f(m)f(n)` for coprime `m,n≥1`. The core is `dconv_mult` —
+  the Dirichlet convolution of two multiplicative functions is multiplicative — proved on the **coprime
+  divisor bijection** `divisors(mn) ↔ divisors(m)×divisors(n)` (reused from `JacobiRHS.divisors_mul_perm`),
+  turning `(f∗g)(mn)` into a product of the two convolutions via `sumf_sep`. From it: `done_mult`
+  (constant `1`), `did_mult` (`id`, completely multiplicative); **`mu_mult`** — μ is multiplicative, by
+  strong induction on the product `m·n` (the term `μ(ab)−μ(a)μ(b)` vanishes off `(a,b)=(m,n)` by the IH,
+  and `μ∗1=ε` makes both remaining sums vanish, via `sumf_single_gen`); and **`phi_mult`** — φ is
+  multiplicative, immediate from `φ = id ∗ μ` (`phi_mobius`) and `dconv_mult`. Closed under the global
+  context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
