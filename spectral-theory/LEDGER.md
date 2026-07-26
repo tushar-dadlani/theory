@@ -148,6 +148,23 @@ is axiom-free.
   zeta_arc_free` = **Closed under the global context**. Every movement of the classical `ZetaMaster`
   (which rests on `sig_forall_dec`/`sig_not_dec`/`functional_extensionality_dep`) is now reproved without
   them. Still out of scope, as for the classical arc: the value π²/6 and general `s`.
+- **THE BASEL PROBLEM: ζ(2) = π²/6** `BaselZeta.basel` (quarantined ℝ) — the value the whole ζ(2)
+  arc converges to, `proj1_sig ZetaConverge.zeta2_converges = PI²/6`, via the elementary Cauchy
+  cotangent squeeze in four milestones. **M1 `BaselTrig`**: `cot²x < 1/x² < 1+cot²x` on (0,π/2)
+  (from `sin_lt_x` + a new `x<tan x` by MVT on `sin x−x·cos x`) and a `Un_cv` sandwich. **M2
+  `BaselCotPoly`**: the **binomial theorem over the complex ring** `Cbinomial` (built from scratch
+  on `ComplexField`, Pascal reindex + boundary terms), then `sin((2m+1)θ) = sin^(2m+1)θ·Pcot(cot²θ)`
+  by extracting `Im (cosθ+i sinθ)^(2m+1)` (de Moivre) with the `i^(2j+1)=(−1)^j·i` parity. **M3
+  `BaselVieta`** (the crux, no reuse): a minimal `list R` polynomial layer — `Peval`, a
+  synthetic-division factor theorem, "≤deg distinct roots ⇒ zero" (`too_many_roots`), function-zero
+  ⇒ coeff-zero (Peval continuity) — hence **Vieta's sum of roots** `vieta_sum : Σr_k = −a_{m−1}/a_m`;
+  applied to `Pcot m` (roots the distinct `cot²(kπ/(2m+1))`, k=1..m) with `C(2m+1,3)/C(2m+1,1) =
+  m(2m−1)/3` gives `cot_sq_sum : Σ cot²(kπ/(2m+1)) = m(2m−1)/3`. **M4 `BaselZeta`**: summing the M1
+  bounds and using `cot_sq_sum` sandwiches `zpart` between two rationals → π²/6 (`lowb_cv`/`upb_cv`
+  via a `/INR(S n)→0` majorant), and `UL_sequence` pins the limit. `Print Assumptions basel` = the
+  quarantined classical-ℝ axioms only (no `Admitted`, no custom axioms). π²/6 is inherently
+  classical (π is archimedean), so this is quarantined, not axiom-free. **Out of scope:** general
+  ζ(2k), the sharp `ψ(x)∼x`, and any contour/zeros argument.
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
