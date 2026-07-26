@@ -603,6 +603,20 @@ is axiom-free.
   divisor of a prime power is a prime power). Honest boundary: the general `∏_{d∣n} vexp(d)=n` additionally
   needs the *coprime* semantic lemma `vexp(ab)=1` for coprime `a,b≥2` (needing `least_factor` prime + a
   `strip`-reverse), then `mult_ind` (`DirichletPeel`) — a further step. Closed under the global context.
+- **`vexp` coprime lemma** `DirichletVexpCoprime` (**axiom-free**): the remaining `vexp` fact —
+  `vexp_coprime`: `vexp(a·b) = 1` for coprime `a,b ≥ 2`. Builds the two named primitives: `find-min`
+  (`find_seq_least` ⟹ `least_factor_min`: `least_factor n` is `≤` every divisor `≥2`; plus
+  `least_factor_ge2`) and `strip-reverse` (`strip n n q = 1 ⟹ n = q^k`), plus `prime_dvd_pow`
+  (`prime | a^k ⟹ prime | a`) and `prime_factor_ex`. A prime factor of `a` and of `b` would each have to
+  equal `least_factor(ab)`, impossible when `gcd(a,b)=1`. Closed under the global context.
+- **The GENERAL von Mangoldt identity** `DirichletVonMangoldtGen` (**axiom-free — the payoff**):
+  **`∏_{d∣n} vexp(d) = n`** for all `n ≥ 1` (`vonmangoldt`), the multiplicative von Mangoldt identity now
+  *fully proven* (no longer only the reflective check). Proof by `DirichletPeel.mult_ind`: for
+  `n = p^v·m` (`p` prime, `p∤m`), the coprime divisor bijection (`divisors_mul_perm`) splits the product,
+  and `vexp_ppow` (`vexp(p^i)=p`) + `vexp_coprime` (`vexp(p^i·b)=1`, `b≥2`) evaluate every factor:
+  `∏_{d∣p^v·m}vexp = (∏_{d∣m}vexp)·∏_{i=1}^{v} p = m·p^v = n`. Uses a paired-product toolkit
+  (`prodp`/`prodp_list_prod`) to handle the `list_prod` from the bijection, and `gcd_ppow_coprime`.
+  Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
