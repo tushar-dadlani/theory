@@ -68,6 +68,23 @@ is axiom-free.
   = the quarantined classical-ℝ trio (`sig_forall_dec`, `sig_not_dec`, `functional_extensionality_dep`) —
   **not** axiom-free. (Bundle, not new mathematics — the ℝ-side companion of the axiom-free
   `DirichletMaster`.)
+- **De-quarantining ζ(2): a constructive real** `ZetaConstructive.zeta2c_cv` (**axiom-free**) — the start
+  of rebuilding the ζ arc without the classical-ℝ axioms. Diagnosis: the whole arc's three axioms enter
+  through a *single* door, `growing_cv` (completeness of the classical Dedekind reals) in
+  `ZetaConverge.zeta2_converges`; p-adic/"prime-based" completions live at the finite places and cannot
+  reach the archimedean ζ(2) (the repo's own `ProductFormulaQ` proves the orthogonality), so the correct
+  "different cut" is the **Cauchy cut with explicit modulus** — which is exactly Rocq's stdlib
+  `Reals.Cauchy.ConstructiveCauchyReals` (`CReal`), the axiom-free real that classical ℝ is *quotiented
+  from*. **`CRealCv`** builds an axiom-free convergence calculus on `CReal`: `cvQ a x` (a rational
+  sequence → a `CReal`) and the bridge `cvQ_of_regular` (a rational sequence with an explicit Cauchy
+  modulus has a `CReal` limit, via stdlib `CRealComplete`) — the constructive replacement for
+  `growing_cv`. **`ZetaConstructive`** then rebuilds **ζ(2) = Σ1/n² as an axiom-free `CReal`** `zeta2c`,
+  proving `zeta2c_cv : cvQ zpartQ zeta2c` — the rational partial sums `zpartQ` are shown *regular* by
+  porting the same telescoping estimate `1/(k+1)² ≤ 1/k − 1/(k+1)` to ℚ (`zpartQ_tele`/`zpartQ_cauchymod`).
+  `Print Assumptions zeta2c_cv` = **Closed under the global context**. This de-quarantines the arc's
+  foundational node; π²/6 stays out of scope (ζ(2) is a limit `zeta2c`, no value). **Next:** the ∑τ(n)/n²
+  = ζ(2)² port over `CReal` (needs a product-of-limits + squeeze layer), then evaluate stdlib-`CReal` vs a
+  hand-rolled real.
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
