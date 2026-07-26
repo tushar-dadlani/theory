@@ -82,9 +82,22 @@ is axiom-free.
   proving `zeta2c_cv : cvQ zpartQ zeta2c` — the rational partial sums `zpartQ` are shown *regular* by
   porting the same telescoping estimate `1/(k+1)² ≤ 1/k − 1/(k+1)` to ℚ (`zpartQ_tele`/`zpartQ_cauchymod`).
   `Print Assumptions zeta2c_cv` = **Closed under the global context**. This de-quarantines the arc's
-  foundational node; π²/6 stays out of scope (ζ(2) is a limit `zeta2c`, no value). **Next:** the ∑τ(n)/n²
-  = ζ(2)² port over `CReal` (needs a product-of-limits + squeeze layer), then evaluate stdlib-`CReal` vs a
-  hand-rolled real.
+  foundational node; π²/6 stays out of scope (ζ(2) is a limit `zeta2c`, no value).
+- **The axiom-free analytic ζ²** `ZetaSquareConstructive.zeta_two_sq_tau_constructive` (**axiom-free**) —
+  the de-quarantined counterpart of `ZetaSquareAnalytic`: **`cvQ DpartQ (zeta2c * zeta2c)`**, i.e.
+  ∑_{n≤N} τ(n)/n² → ζ(2)², now with **no** classical-ℝ axioms. The `CRealCv` convergence calculus is
+  extended with the analytic layer — `cvQ_squeeze` (two-sided) and `cvQ_sq` (square of a bounded
+  convergent, via the `(A+x)(A−x)` identity and `CReal_abs`-triangle) — both axiom-free on stdlib
+  `CReal`. The hyperbola combinatorics of `ZetaSquareAnalytic` is redone over ℚ/`qsum` (`qsum_prodsep`,
+  `qsum_perm`, `qsum_const`, the `qsum_incl_le_w` NoDup-domination stack; `pairbox_perm` /
+  `NoDup_flat_map_disjoint` copy across `nat`/list-only), giving `box_sq`, `box_lower`, `Spart_le_box`,
+  `divpairs_sum`, `Spart_eq_Dpart` over ℚ; then the squeeze `boxQ(⌊√N⌋) ≤ SpartQ ≤ boxQ` with both
+  bounds → ζ(2)² (via `cvQ_sq` on `SMQ → zeta2c` + `cvQ_reindex` with `Nat.sqrt`). `Print Assumptions
+  zeta_square_constructive` (the umbrella bundling `zeta2c_cv`, `Spart_eq_Dpart`, `SpartQ_cv`,
+  `zeta_two_sq_tau_constructive`) = **Closed under the global context**. The whole ζ² result is now
+  axiom-free — the ℝ-quarantined `ZetaMaster`/`ZetaSquareAnalytic` versions remain as the classical
+  parallel. Verdict on the "see what comes out" experiment: stdlib `CReal` was pleasant (only its
+  high-level API was touched), so no hand-roll was needed. Still out of scope: π²/6, general `s`.
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
