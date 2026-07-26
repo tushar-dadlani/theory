@@ -514,6 +514,7 @@ spectral-theory/DirichletVexpSem.v
 spectral-theory/DirichletVexpCoprime.v
 spectral-theory/DirichletVonMangoldtGen.v
 spectral-theory/DirichletMaster.v
+spectral-theory/DirichletZetaSquare.v
 spectral-theory/DirichletMod4.v
 spectral-theory/ProductFormulaQ.v
 spectral-theory/ProfiniteCRT.v

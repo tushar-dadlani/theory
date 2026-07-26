@@ -629,6 +629,23 @@ is axiom-free.
   `vexp_ppow`, `vexp_coprime`, and the general `vonmangoldt` (∏_{d∣n} vexp d = n). `Print Assumptions
   dirichlet_theory` = closed under the global context. (Bundle, not new mathematics — an at-a-glance
   statement of what the thread proves.)
+- **Zeta-squared at the coefficient level** `DirichletZetaSquare` (**axiom-free**): reads the Dirichlet
+  thread through the ζ-series dictionary (ζ↔`done`, 1/ζ↔`mu`, ζ²↔`done∗done`=`dtau`, ζ/ζ(2s)↔`|mu|`)
+  and proves the genuinely new companion identity for **ζ(s)²/ζ(2s)**. **Part A** makes ζ²↔τ explicit
+  (`zeta_sq_is_tau`: `dconv done done = dtau`; τ multiplicative; τ(p^k)=k+1; τ = #divisors — the
+  ordered-factorization/hyperbola count), all by reuse. **Part B** `musq n := Z.abs (mu n)` (squarefree
+  indicator) is multiplicative (`musq_mult`, from `mu_mult` + `Z.abs_mul`), with `musq p = 1`,
+  `musq (p^k)=0` (k≥2). **Part C** `two_om := |mu| ∗ done` (coefficients of ζ²/ζ(2s)) is multiplicative
+  and `two_om (p^k) = 2` for k≥1 (`divisors_ppow_sum`). **Part D — the main theorem**
+  `two_om_eq : two_om n = 2^ω(n)`: a self-contained boolean prime test `primeb` bridged to
+  `prime (Z.of_nat n)` via `Znumtheory.prime_alt`, `omega n := #(prime divisors)`, the peel-step
+  `omega (p^v·m) = S(omega m)` (a `NoDup_Permutation` of `filter primeb (divisors (p^v·m))` with
+  `p :: filter primeb (divisors m)`, using `prime_dvd_mult_nat`/`prime_dvd_pow`), then `mult_ind`. So
+  **(|mu|∗1)(n) = number of squarefree divisors = 2^(#distinct primes)**. **Part E**: a
+  `vm_compute` reflective cross-check `zsq_upto : zsq_check 100 = true` and a positional-`conj` umbrella
+  `zeta_square`. `Print Assumptions zeta_square` = closed under the global context. This is the
+  *algebraic* (coefficient-level) ζ²; the analytic statement ∑τ(n)/n² = ζ(2)² remains deferred (it would
+  bridge to the quarantined-Reals ζ(2) arc).
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
