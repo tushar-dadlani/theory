@@ -537,6 +537,18 @@ is axiom-free.
   `Σ over list_prod = nested Σ` (`sumf_list_prod`), an indicator factorisation (`ABeq = AeqA && BeqB`),
   and one Fubini swap — **no group axioms** at all (a pure identity of finite sums). Closed under the
   global context.
+- **Dirichlet convolution ring (part 1)** `DirichletConv` (**axiom-free**): arithmetic functions `ℕ → ℤ`
+  with `(f ∗ g)(n) = Σ_{d·e=n} f(d) g(e)` — convolution in the monoid `(ℕ_{>0}, ×)`, the number-theoretic
+  sibling of the group-algebra convolution (defined as an indicator double sum over `[1,n]`, so the
+  proofs mirror `HopfGroupAlgebra`). Delivers: `dconv_comm` (commutative, via a Fubini swap),
+  `dconv_eps_l`/`dconv_eps_r` (two-sided unit `ε(n)=[n=1]`), `dconv_distrib_l`/`_r` (distributive over
+  pointwise `+`), `dconv_as_div` (bridge to the standard divisor form `Σ_{d∣n} f(d) g(n/d)`), and the
+  concrete arithmetic payoff `phi_done_eq_id`: **`φ ∗ 1 = id`** — Euler's `Σ_{d∣n} φ(d) = n`
+  (`Totient.totient_divisor_sum`) recast as a Dirichlet-convolution identity. This is the axiom-free
+  connection between the Hopf/convolution thread and the arithmetic. Closed under the global context.
+  Remaining next installment: associativity (the deep ring axiom — a triple-factorisation sum) and
+  Möbius inversion (with `μ` defined by its recurrence `Σ_{d∣n} μ(d) = [n=1]`, giving `μ ∗ 1 = ε` by
+  construction, hence `f = f∗1 ⟹ f = (f∗1)∗μ`, and `φ = id ∗ μ`).
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the

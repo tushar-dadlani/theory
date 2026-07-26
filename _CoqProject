@@ -504,6 +504,7 @@ spectral-theory/HopfGrouplike.v
 spectral-theory/HopfGroupAlgebra.v
 spectral-theory/HopfGroupAlgebraGen.v
 spectral-theory/HopfGroupTensor.v
+spectral-theory/DirichletConv.v
 spectral-theory/DirichletMod4.v
 spectral-theory/ProductFormulaQ.v
 spectral-theory/ProfiniteCRT.v
