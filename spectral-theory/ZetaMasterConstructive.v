@@ -10,14 +10,15 @@
 (*  rational finite-sum bound:                                        *)
 (*                                                                    *)
 (*    (I)   ζ(2)=Σ1/n² exists as a CReal            (zeta2c_cv)       *)
-(*    (II)  finite Σ 1/mᵢ² is ≤ a ζ(2) partial sum  (recip_sq_...)    *)
+(*    (II)  finite Σ 1/mᵢ² ≤ ζ(2)                    (recip_sq_le_...) *)
 (*    (V)   ∑ τ(n)/n²  →  ζ(2)²                      (zeta_two_sq_...) *)
 (*                                                                    *)
-(*  `Print Assumptions zeta_arc_constructive` = Closed under the      *)
-(*  global context.  Movements (III) the Euler product and (IV) the   *)
-(*  primorial tower are NOT yet ported to `CReal` (they remain only   *)
-(*  in the quarantined `ZetaMaster`); the strict finite bound         *)
-(*  `≤ ζ(2)` awaits a monotone-limit (ε-)principle over `CReal`.      *)
+(*  Movement II is now the STRICT `≤ ζ(2)` form, via the monotone-    *)
+(*  limit ε-principle `CRealCv.cvQ_term_le` (proved from ℚ-density,   *)
+(*  `CRealQ_dense`).  `Print Assumptions zeta_arc_constructive` =      *)
+(*  Closed under the global context.  Movements (III) the Euler        *)
+(*  product and (IV) the primorial tower are NOT yet ported to         *)
+(*  `CReal` (they remain only in the quarantined `ZetaMaster`).       *)
 (* ================================================================= *)
 
 From Stdlib Require Import Reals.Cauchy.ConstructiveCauchyReals
@@ -87,15 +88,39 @@ Proof.
   split; [ apply Hpos; exact Hm | lia ].
 Qed.
 
+(* the ζ(2) partial sums are monotone, hence each is ≤ ζ(2) (via cvQ_term_le) *)
+Lemma SMQ_mono : forall m n, (m <= n)%nat -> SMQ m <= SMQ n.
+Proof.
+  intros m n; induction n as [|n IH]; intro H.
+  - assert (m = 0)%nat by lia; subst; apply Qle_refl.
+  - destruct (Nat.eq_dec m (S n)) as [->|Hne]; [ apply Qle_refl | ].
+    rewrite SMQ_S; apply Qle_trans with (SMQ n);
+      [ apply IH; lia | pose proof (qw_nonneg (S n)); lra ].
+Qed.
+
+Lemma SMQ_le_zeta2c : forall M, (inject_Q (SMQ M) <= zeta2c)%CReal.
+Proof. apply cvQ_term_le; [ apply SMQ_cv | apply SMQ_mono ]. Qed.
+
+(* strict form of movement II:  finite Σ 1/mᵢ²  ≤  ζ(2) *)
+Theorem recip_sq_le_zeta2c : forall L,
+  NoDup L -> (forall m, In m L -> (1 <= m)%nat) ->
+  (inject_Q (qsum (map qw L)) <= zeta2c)%CReal.
+Proof.
+  intros L Hnd Hpos.
+  apply CReal_le_trans with (inject_Q (SMQ (S (list_max L)))).
+  - apply inject_Q_le, recip_sq_partial_bound; assumption.
+  - apply SMQ_le_zeta2c.
+Qed.
+
 (* ================================================================= *)
 (*  THE UMBRELLA                                                      *)
 (* ================================================================= *)
 Theorem zeta_arc_constructive :
   (* (I) ζ(2) = Σ 1/n² exists as a constructive real *)
   cvQ zpartQ zeta2c /\
-  (* (II) finite reciprocal-square sums lie within the ζ(2) partial sums *)
+  (* (II) finite reciprocal-square sums are ≤ ζ(2) *)
   (forall L, NoDup L -> (forall m, In m L -> (1 <= m)%nat) ->
-      qsum (map qw L) <= SMQ (S (list_max L))) /\
+      (inject_Q (qsum (map qw L)) <= zeta2c)%CReal) /\
   (* the hyperbola sum converges to ζ(2)² and equals the τ Dirichlet sum *)
   cvQ SpartQ (zeta2c * zeta2c)%CReal /\
   (forall N, SpartQ N == DpartQ N) /\
@@ -103,7 +128,7 @@ Theorem zeta_arc_constructive :
   cvQ DpartQ (zeta2c * zeta2c)%CReal.
 Proof.
   exact (conj zeta2c_cv
-         (conj recip_sq_partial_bound
+         (conj recip_sq_le_zeta2c
          (conj SpartQ_cv
          (conj Spart_eq_Dpart
                zeta_two_sq_tau_constructive)))).

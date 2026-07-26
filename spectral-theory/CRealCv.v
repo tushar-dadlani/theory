@@ -157,8 +157,51 @@ Proof.
   rewrite <- inject_Q_mult; apply inject_Q_le; unfold Qle; simpl; lia.
 Qed.
 
+(* ----------------------------------------------------------------- *)
+(*  monotone term ≤ limit  (the ε-principle, via ℚ-density)           *)
+(* ----------------------------------------------------------------- *)
+Lemma Qle_1_Qden : forall d : Q, (0 < d)%Q -> (1 # Qden d <= d)%Q.
+Proof.
+  intros [dn dd] Hd; unfold Qlt in Hd; simpl in Hd; unfold Qle; simpl; nia.
+Qed.
+
+Lemma cvQ_term_le : forall (a : nat -> Q) (x : CReal),
+  cvQ a x -> (forall m n, (m <= n)%nat -> (a m <= a n)%Q) ->
+  forall n0, (inject_Q (a n0) <= x)%CReal.
+Proof.
+  intros a x Ha Hmono n0 Hlt.                       (* Hlt : x < inject_Q (a n0) *)
+  destruct (CRealQ_dense x (inject_Q (a n0)) Hlt) as [q [Hxq Hqa]].
+  apply lt_inject_Q in Hqa.                          (* Hqa : (q < a n0)%Q *)
+  destruct (CRealQ_dense x (inject_Q q) Hxq) as [q' [Hxq' Hq'q]].
+  apply lt_inject_Q in Hq'q.                          (* Hq'q : (q' < q)%Q *)
+  set (d := (q - q')%Q).
+  assert (Hd : (0 < d)%Q) by (unfold d; lra).
+  set (p := Qden d).
+  assert (H1p : (1 # p <= d)%Q) by (unfold p; apply Qle_1_Qden; exact Hd).
+  assert (Hq'pq : (q' + (1 # p) <= q)%Q) by (unfold d in H1p; lra).
+  destruct (Ha p) as [N HN].
+  set (m0 := Nat.max n0 N).
+  assert (Ham : (a n0 <= a m0)%Q) by (apply Hmono; lia).
+  assert (Hup : (inject_Q (a m0) <= x + inject_Q (1 # p))%CReal).
+  { pose proof (HN m0 ltac:(lia)) as Habs.
+    assert (Hd2 : (inject_Q (a m0) - x <= inject_Q (1 # p))%CReal)
+      by (eapply CReal_le_trans; [ apply CReal_le_abs | exact Habs ]).
+    assert (E : (inject_Q (a m0) == (inject_Q (a m0) - x) + x)%CReal) by ring.
+    rewrite E; eapply CReal_le_trans;
+      [ apply CReal_plus_le_compat; [ exact Hd2 | apply CRealLe_refl ] | ].
+    assert (Ec : (inject_Q (1 # p) + x == x + inject_Q (1 # p))%CReal) by ring.
+    rewrite Ec; apply CRealLe_refl. }
+  assert (Hfin : (inject_Q (a m0) < inject_Q q)%CReal).
+  { eapply CReal_le_lt_trans; [ exact Hup | ].
+    eapply CReal_lt_le_trans; [ apply CReal_plus_lt_compat_r; exact Hxq' | ].
+    rewrite <- inject_Q_plus; apply inject_Q_le; exact Hq'pq. }
+  apply lt_inject_Q in Hfin.
+  assert (Hn0q : (a n0 < q)%Q) by (apply Qle_lt_trans with (a m0); assumption).
+  apply (Qlt_irrefl q); apply Qlt_trans with (a n0); assumption.
+Qed.
+
 (* ================================================================= *)
 (*  END CRealCv.v                                                    *)
 (*  cvQ + cvQ_of_regular (the axiom-free completeness bridge) +       *)
-(*  eventually_eq + reindex + cvQ_squeeze + cvQ_sq.                   *)
+(*  eventually_eq + reindex + cvQ_squeeze + cvQ_sq + cvQ_term_le.     *)
 (* ================================================================= *)

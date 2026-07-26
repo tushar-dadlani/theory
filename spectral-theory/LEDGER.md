@@ -98,18 +98,23 @@ is axiom-free.
   axiom-free — the ℝ-quarantined `ZetaMaster`/`ZetaSquareAnalytic` versions remain as the classical
   parallel. Verdict on the "see what comes out" experiment: stdlib `CReal` was pleasant (only its
   high-level API was touched), so no hand-roll was needed. Still out of scope: π²/6, general `s`.
+- **The monotone-limit ε-principle** `CRealCv.cvQ_term_le` (**axiom-free**): a term of a monotone
+  rational sequence is ≤ its `CReal` limit — `cvQ a x → (a monotone) → ∀n, inject_Q (a n) ≤ x`. The
+  constructive replacement for `growing_ineq`. Proved cleanly via **ℚ-density** (`CRealQ_dense`:
+  `a<b → {q | a < inject_Q q < b}`) used twice — no raw-`seq`/`Qpower` dissection of `CRealLt`: from a
+  hypothetical `x < inject_Q (a n0)` get rationals `x < q' < q < a n0`, take the gap `p := Qden (q−q')`
+  (with `Qle_1_Qden`), and `cvQ` forces `a m < q` for large `m` while monotonicity gives `a n0 ≤ a m`,
+  contradiction.
 - **Axiom-free umbrella for the constructive ζ arc** `ZetaMasterConstructive.zeta_arc_constructive`
   (**axiom-free**): the constructive companion to `ZetaMaster`, bundling the movements rebuilt over
-  `CReal`: **(I)** ζ(2)=Σ1/n² exists (`zeta2c_cv`); **(II)** a *new* rational finite bound
-  `recip_sq_partial_bound` — a NoDup list of positive integers has `Σ 1/mᵢ²` ≤ the ζ(2) partial sum
-  `SMQ (S (list_max L))` (via a `qw`/nat `qsum_incl_le_qw` NoDup-domination stack); **(V)** ∑τ(n)/n² →
-  ζ(2)² (`zeta_two_sq_tau_constructive`), with the hyperbola sum `SpartQ_cv` and the τ identity
-  `Spart_eq_Dpart`. `Print Assumptions zeta_arc_constructive` = **Closed under the global context**.
-  Honestly partial vs the 5-movement classical `ZetaMaster`: movements **(III)** the Euler product and
-  **(IV)** the primorial tower are **not yet ported** to `CReal`, and movement II is the *rational*
-  "≤ partial sum" form — the strict "≤ ζ(2)" needs a monotone-limit (ε-)principle over `CReal`
-  (`cvQ_term_le`), which stdlib doesn't hand over cheaply (it needs raw-`seq` dissection of `CRealLt`)
-  and is deferred.
+  `CReal`: **(I)** ζ(2)=Σ1/n² exists (`zeta2c_cv`); **(II)** the finite reciprocal-square bound
+  `recip_sq_le_zeta2c` — a NoDup list of positive integers has **`Σ 1/mᵢ² ≤ ζ(2)`** (the strict form,
+  via `recip_sq_partial_bound`'s `qw`/nat `qsum_incl_le_qw` stack, then `SMQ_le_zeta2c` = `cvQ_term_le`
+  on the monotone partials); **(V)** ∑τ(n)/n² → ζ(2)² (`zeta_two_sq_tau_constructive`), with the
+  hyperbola sum `SpartQ_cv` and the τ identity `Spart_eq_Dpart`. `Print Assumptions
+  zeta_arc_constructive` = **Closed under the global context**. Remaining vs the 5-movement classical
+  `ZetaMaster`: movements **(III)** the Euler product and **(IV)** the primorial tower are **not yet
+  ported** to `CReal` (they remain only in the quarantined `ZetaMaster`).
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
