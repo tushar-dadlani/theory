@@ -380,6 +380,23 @@ Proof.
   rewrite Eq; apply inj_abs_le; apply Qabs_Qle_condition; split; lra.
 Qed.
 
+(* the full Euler factor product over any prime set is ≤ ζ(2) *)
+Theorem ZfactorQ_le_zeta2c : forall ps, Forall prime ps -> NoDup ps ->
+  (inject_Q (ZfactorQ ps) <= zeta2c)%CReal.
+Proof.
+  intros ps Hp Hnd; apply (cvQ_le_const (fun K => ZpartialQ ps K));
+    [ apply Zpartial_cv_Zfactor; exact Hp
+    | intro K; apply Ptrunc_le_zeta2c; assumption ].
+Qed.
+
+(* the ζ(2) partial sum is dominated by the Euler factor product over primes ≤ N *)
+Theorem zpartQ_le_ZfactorQ_primes : forall N,
+  zpartQ N <= ZfactorQ (primes_upto (S N)).
+Proof.
+  intro N; apply Qle_trans with (ZpartialQ (primes_upto (S N)) (S N));
+    [ apply zpartQ_le_Zpartial | apply ZpartialQ_le_ZfactorQ; apply primes_upto_Forall ].
+Qed.
+
 Theorem euler_product_constructive :
   cvQ (fun N => ZfactorQ (primes_upto (S N))) zeta2c.
 Proof.

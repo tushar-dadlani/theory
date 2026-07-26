@@ -130,8 +130,24 @@ is axiom-free.
   and `modulus_bound`. `CRealCv` gains `cvQ_squeeze_const_upper` + `cvQ_le_const`. Reuses the axiom-free
   ℚ machinery (`PrimonGas`/`EulerReindex`/factorization) verbatim; the truncated form
   `euler_product_trunc` (diagonal-truncated factors) is also kept. `Print Assumptions
-  euler_product_constructive` = **Closed under the global context**. Movement IV (primorial tower)
-  remains the last classical-only movement.
+  euler_product_constructive` = **Closed under the global context**.
+- **The primorial Euler tower, constructive** `PrimorialTowerConstructive` (**axiom-free**) — movement
+  IV ported to `CReal`, the last one. `cvQ_tower` is the constructive analogue of the classical (abstract)
+  `PrimorialZeta.tower_is_zeta2`: a **monotone** rational rung sequence whose rungs are each ≤ ζ(2) and
+  eventually dominate the ζ(2) partial sums converges to ζ(2) (proved from `zeta2c_cv` + `abs_le_neg`).
+  Its concrete instance `primorial_tower_zeta2` — the Euler factor product `∏_{p≤n} 1/(1−p⁻²)` over a
+  growing prime set → ζ(2) — verifies the three hypotheses: monotonicity via a `primes_upto` prefix
+  decomposition + `ZfactorQ_app` + `ZfactorQ_ge1` (each factor `efacQ p ≥ 1`); the ≤ ζ(2) rung bound via
+  the extracted `ZfactorQ_le_zeta2c`; domination via `zpartQ_le_ZfactorQ_primes`. `Print Assumptions` =
+  **Closed under the global context**.
+- **MASTER umbrella: the full axiom-free ζ(2) arc** `ZetaArcConstructive.zeta_arc_free` (**axiom-free**)
+  — the constructive companion to the quarantined `ZetaMaster.zeta_arc`, now covering **all five
+  movements** over `CReal`: (I) `zeta2c_cv`, (II) `recip_sq_le_zeta2c`, (III) `euler_product_constructive`,
+  (IV) `cvQ_tower`, (V) `zeta_two_sq_tau_constructive` — assembled by a positional `conj` term (a new
+  leaf file, to avoid the import cycle through `ZetaMasterConstructive`). `Print Assumptions
+  zeta_arc_free` = **Closed under the global context**. Every movement of the classical `ZetaMaster`
+  (which rests on `sig_forall_dec`/`sig_not_dec`/`functional_extensionality_dep`) is now reproved without
+  them. Still out of scope, as for the classical arc: the value π²/6 and general `s`.
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer

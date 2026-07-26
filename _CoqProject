@@ -576,6 +576,8 @@ spectral-theory/ZetaConstructive.v
 spectral-theory/ZetaSquareConstructive.v
 spectral-theory/ZetaMasterConstructive.v
 spectral-theory/EulerProductConstructive.v
+spectral-theory/PrimorialTowerConstructive.v
+spectral-theory/ZetaArcConstructive.v
 spectral-theory/AbelSummation.v
 spectral-theory/VonMangoldtGlobal.v
 spectral-theory/Chebyshev.v
