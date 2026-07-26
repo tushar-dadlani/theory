@@ -200,8 +200,58 @@ Proof.
   apply (Qlt_irrefl q); apply Qlt_trans with (a n0); assumption.
 Qed.
 
+(* ----------------------------------------------------------------- *)
+(*  squeeze with a constant CReal upper bound, and limit ≤ constant   *)
+(* ----------------------------------------------------------------- *)
+
+(* lo → L (from below), lo ≤ u pointwise, u ≤ L pointwise ⇒ u → L *)
+Lemma cvQ_squeeze_const_upper : forall (lo u : nat -> Q) (L : CReal),
+  cvQ lo L -> (forall n, (lo n <= u n)%Q) -> (forall n, (inject_Q (u n) <= L)%CReal) ->
+  cvQ u L.
+Proof.
+  intros lo u L Hlo Hle Hhi p; destruct (Hlo p) as [N HN]; exists N; intros n Hn.
+  apply CReal_abs_le; split.
+  - apply CReal_le_trans with (inject_Q (lo n) - L).
+    + apply abs_le_neg; exact (HN n Hn).
+    + apply CReal_plus_le_compat; [ apply inject_Q_le; apply Hle | apply CRealLe_refl ].
+  - apply CReal_le_trans with (inject_Q 0).
+    + assert (E : (inject_Q 0 == L - L)%CReal) by ring; rewrite E.
+      apply CReal_plus_le_compat; [ apply Hhi | apply CRealLe_refl ].
+    + apply inject_Q_le; unfold Qle; simpl; lia.
+Qed.
+
+(* if a → x and every term is ≤ c, then x ≤ c *)
+Lemma cvQ_le_const : forall (a : nat -> Q) (x c : CReal),
+  cvQ a x -> (forall n, (inject_Q (a n) <= c)%CReal) -> (x <= c)%CReal.
+Proof.
+  intros a x c Ha Hc Hlt.                              (* Hlt : c < x *)
+  destruct (CRealQ_dense c x Hlt) as [q [Hcq Hqx]].
+  destruct (CRealQ_dense (inject_Q q) x Hqx) as [q' [Hqq' Hq'x]].
+  apply lt_inject_Q in Hqq'.                            (* Hqq' : (q < q')%Q *)
+  set (d := (q' - q)%Q); assert (Hd : (0 < d)%Q) by (unfold d; lra).
+  set (pp := Qden d); assert (H1p : (1 # pp <= d)%Q) by (unfold pp; apply Qle_1_Qden; exact Hd).
+  destruct (Ha pp) as [N HN].
+  pose proof (HN N (Nat.le_refl N)) as Habs.
+  assert (Hxa : (x - inject_Q (a N) <= inject_Q (1 # pp))%CReal).
+  { eapply CReal_le_trans; [ | exact Habs ].
+    rewrite (CReal_abs_minus_sym (inject_Q (a N)) x); apply CReal_le_abs. }
+  assert (Hx : (x <= inject_Q (a N) + inject_Q (1 # pp))%CReal).
+  { assert (Ex : (x == (x - inject_Q (a N)) + inject_Q (a N))%CReal) by ring.
+    rewrite Ex; eapply CReal_le_trans;
+      [ apply CReal_plus_le_compat; [ exact Hxa | apply CRealLe_refl ] | ].
+    assert (Ec : (inject_Q (1 # pp) + inject_Q (a N) == inject_Q (a N) + inject_Q (1 # pp))%CReal) by ring.
+    rewrite Ec; apply CRealLe_refl. }
+  assert (Hchain : (inject_Q q' < inject_Q q + inject_Q (1 # pp))%CReal).
+  { eapply CReal_lt_le_trans; [ exact Hq'x | ].
+    eapply CReal_le_trans; [ exact Hx | ].
+    apply CReal_plus_le_compat; [ | apply CRealLe_refl ].
+    eapply CReal_le_trans; [ apply Hc | apply CRealLt_asym; exact Hcq ]. }
+  rewrite <- inject_Q_plus in Hchain; apply lt_inject_Q in Hchain.
+  unfold d in H1p; lra.
+Qed.
+
 (* ================================================================= *)
 (*  END CRealCv.v                                                    *)
-(*  cvQ + cvQ_of_regular (the axiom-free completeness bridge) +       *)
-(*  eventually_eq + reindex + cvQ_squeeze + cvQ_sq + cvQ_term_le.     *)
+(*  cvQ + cvQ_of_regular + eventually_eq + reindex + cvQ_squeeze +    *)
+(*  cvQ_sq + cvQ_term_le + cvQ_squeeze_const_upper + cvQ_le_const.    *)
 (* ================================================================= *)
