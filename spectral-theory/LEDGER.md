@@ -43,6 +43,20 @@ is axiom-free.
   bijection and squeezing between the ζ-partial-sums and `ζ(2)`. Honest scope: existence of the
   product limit `= ζ(2)` (itself an existence limit, **not** the value `π²/6`); general `s`,
   `−ζ'/ζ`, and zeta *zeros* are still absent.
+- **Analytic zeta-squared** `ZetaSquareAnalytic.zeta_square_analytic` (quarantined ℝ): the Dirichlet
+  series of the divisor function at `s=2` converges to ζ(2)²,
+  **`∑_{n≤N} τ(n)/n² → ζ(2)²`** (`zeta_two_sq_tau`, with ζ(2)² = `(proj1_sig zeta2_converges)²`). Proved
+  by the classical **Dirichlet hyperbola squeeze**: the ordered-factorization double sum
+  `Spart N = ∑_{a·b≤N} 1/(ab)²` (`zeta_two_sq_hyperbola`) is sandwiched
+  `box(⌊√N⌋) ≤ Spart N ≤ box(N)` with `box M = (∑_{a≤M} 1/a²)²`, and both bounds → ζ(2)² (via
+  `CV_mult` on the ζ(2) limit + a `Nat.sqrt` reindex), closed by a local `squeeze_const_upper`; the τ
+  labelling comes from `Spart N = ∑_{n≤N} τ(n)/n²` (`Spart_eq_Dpart`), a `Permutation` of the
+  hyperbola pairs with `⋃_{n≤N} {(d,n/d): d∣n}`. Reuses the ζ(2) arc (`RecipSquareBound.Rlsum`/
+  `seqsum_zpart`/`incl_sum_le`, `ZetaConverge.zeta2_converges`, `growing_ineq`) and the algebraic τ
+  (`DirichletDivisor.dtau_as_div`). This is the **analytic** counterpart of the axiom-free coefficient
+  identity `DirichletZetaSquare` (ζ²↔τ). `Print Assumptions` = the quarantined trio
+  (`sig_forall_dec`, `sig_not_dec`, `functional_extensionality_dep`) — **not** axiom-free. Honest scope:
+  convergence to ζ(2)² as a limit; the value `π²/6`, general `s`, and any complex-analytic ζ stay absent.
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
