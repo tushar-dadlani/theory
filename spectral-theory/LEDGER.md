@@ -527,6 +527,16 @@ is axiom-free.
   unconditionally (no representative guard). Non-vacuity is witnessed by a concrete instance —
   `ℤ/2ℤ = (bool, xorb, false, id)` — with `z2_associative`, `z2_unit` obtained by applying the general
   theorems, confirming the abstract hypotheses are jointly satisfiable. Closed under the global context.
+- **Monoidality: k[G×H] ≅ k[G]⊗k[H]** `HopfGroupTensor` (**axiom-free**): the group-algebra functor is
+  monoidal. The isomorphism is *currying* (`f : A×B → ℤ ↔ F : A → B → ℤ`); its content is that currying
+  is an algebra morphism: `gconv_prod_tensor` shows it carries the product-group convolution `gconvGH`
+  (over `list_prod eltsA eltsB`, with the componentwise `opAB`/`ABeq`) to the tensor-product convolution
+  `tconv` on `k[G]⊗k[H]`. `gunit_prod_tensor` shows the unit is a pure tensor (`e_{G×H} = e_G ⊗ e_H`), and
+  `tconv_elementary` shows `tconv` is genuinely the tensor product of the two convolutions — on
+  elementary tensors, `(u⊗v)⋆(u'⊗v') = (u⋆_A u')⊗(v⋆_B v')`. Purely combinatorial: needs only
+  `Σ over list_prod = nested Σ` (`sumf_list_prod`), an indicator factorisation (`ABeq = AeqA && BeqB`),
+  and one Fubini swap — **no group axioms** at all (a pure identity of finite sums). Closed under the
+  global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
