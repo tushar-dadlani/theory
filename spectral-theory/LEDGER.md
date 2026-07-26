@@ -577,6 +577,15 @@ is axiom-free.
   `phi_ppow`/`phi_ppow_nat` (`φ(p^k) = p^k − p^{k-1}`) — from `φ∗1=id` (`phi_done_eq_id`); `tau_ppow`
   (`τ(p^k) = k+1`, by counting divisors) and `sigma_ppow` (`σ(p^k) = Σ_{j≤k} p^j`). Closed under the
   global context.
+- **Von Mangoldt identity (multiplicative form)** `DirichletVonMangoldt` (**axiom-free, reflective**):
+  the additive `Σ_{d∣n} Λ(d) = log n` with `log` stripped by exponentiation — `∏_{d∣n} vexp(d) = n`,
+  where `vexp = exp∘Λ` (`vexp(p^k)=p` for `k≥1`, else `1`) is defined **computably** (least prime factor
+  `least_factor` + `strip`-out-all-`p`-factors). Sample `Example`s (`vexp 8 = 2`, `vexp 12 = 1`,
+  `vmprod 12 = 12`) hold by `reflexivity`, and `vonmangoldt_upto` **validates the identity by reflection**
+  for `1 ≤ n ≤ 100` (`vm_compute`). Honest boundary: this is computational validation, following the
+  repo's own reflective pattern (cf. `JacobiRHS.jacobi_upto`); the fully general proof reduces to unique
+  factorization / prime-power peeling over `nat`, a further infrastructure brick. Closed under the global
+  context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
