@@ -563,6 +563,12 @@ is axiom-free.
   and `μ∗1=ε` makes both remaining sums vanish, via `sumf_single_gen`); and **`phi_mult`** — φ is
   multiplicative, immediate from `φ = id ∗ μ` (`phi_mobius`) and `dconv_mult`. Closed under the global
   context.
+- **The divisor functions τ, σ, σ_k** `DirichletDivisor` (**axiom-free**): `τ = 1 ∗ 1` (`dtau`), `σ = id ∗ 1`
+  (`dsigma`), `σ_k = id_k ∗ 1` (`dsigmak`, with `id_k(n)=n^k`). Since `1`, `id`, `id_k` are multiplicative
+  (`did_mult`, `didk_mult` — `id_k` completely multiplicative), all three are multiplicative by
+  `dconv_mult`: `dtau_mult`, `dsigma_mult`, `dsigmak_mult`. Also their standard values via `dconv_as_div`:
+  `dtau_as_div` (`τ(n) = #divisors(n)`), `dsigma_as_div` (`σ(n) = Σ_{d∣n} d`), `dsigmak_as_div`
+  (`σ_k(n) = Σ_{d∣n} d^k`). Closed under the global context.
 - **r₂ as a ℤ[i] norm-count** `GaussianNormCount.r2_as_gnorm` (**axiom-free**): the bridge
   `r₂(n) = #{ z ∈ ℤ[i] : N(z) = n }` — R2Count's lattice-point count re-read in ℤ[i] under
   `(a,b) ↔ a+bi` (via `length_filter_map` + the definitional match of the two boxes). This is the
