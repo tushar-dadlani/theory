@@ -57,6 +57,17 @@ is axiom-free.
   identity `DirichletZetaSquare` (ζ²↔τ). `Print Assumptions` = the quarantined trio
   (`sig_forall_dec`, `sig_not_dec`, `functional_extensionality_dep`) — **not** axiom-free. Honest scope:
   convergence to ζ(2)² as a limit; the value `π²/6`, general `s`, and any complex-analytic ζ stay absent.
+- **MASTER umbrella for the ζ(2) arc** `ZetaMaster.zeta_arc` (quarantined ℝ): a single conjunction
+  bundling the headline results of the whole ζ(2)/analytic-ζ thread, as a curated index (each conjunct is
+  exactly the corresponding standalone theorem, assembled by a positional `conj` term). Five movements:
+  **(I)** ζ(2)=Σ1/n² converges (`zeta2_converges`); **(II)** finite reciprocal-square sums ≤ ζ(2)
+  (`recip_sq_nodup_bound`); **(III)** the Euler product ∏(1−p⁻²)⁻¹ → ζ(2) (`euler_product_zeta2`) and its
+  per-set bound (`euler_factor_le_zeta`); **(IV)** the primorial Euler tower → ζ(2) (`tower_is_zeta2`);
+  **(V)** the analytic ζ² (`zeta_two_sq_hyperbola`, `Spart_eq_Dpart`, `zeta_two_sq_tau`: ∑τ(n)/n² → ζ(2)²).
+  Everything is relative to the limit `proj1_sig zeta2_converges` (no π²/6). `Print Assumptions zeta_arc`
+  = the quarantined classical-ℝ trio (`sig_forall_dec`, `sig_not_dec`, `functional_extensionality_dep`) —
+  **not** axiom-free. (Bundle, not new mathematics — the ℝ-side companion of the axiom-free
+  `DirichletMaster`.)
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
