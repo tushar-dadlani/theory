@@ -249,6 +249,63 @@ is axiom-free.
   elementary Poisson formula — NOT the continuous `Σ_n f(n)=Σ_k f̂(k)` (which needs improper integrals
   + the blocked Fourier convergence) and NOT progress on the FE.  It closes the discrete-Fourier arc
   (`DFTInversion`/`Parseval`) with its Poisson identity.
+- **THE ALGEBRAIC NYQUIST–SHANNON BRIDGE** `BandlimitedInterp.nyquist_sampling` (**axiom-free**) —
+  the first genuine *discrete→continuous* sampling theorem that lands **below** the classical-ℝ
+  quarantine, via the isolation *bandwidth = polynomial degree*.  A signal band-limited to
+  bandwidth `N` is a degree-`<N` polynomial (`qdegle p (N-1)`); the theorem's two halves, over the
+  full evaluation continuum ℚ (every `x:Qc`): **(uniqueness / anti-aliasing)** `sampling_unique` —
+  two band-limited signals agreeing at more than their degree-many distinct nodes agree
+  **everywhere** (the samples pin the whole function), a one-step consequence of the ℚ[X]
+  polynomial identity theorem `QPolyPIT.poly_roots_eval` applied to their difference
+  (`qdegle_qsub`); **(existence / reconstruction)** `sampling_reconstruct` — for any distinct
+  nodes and prescribed sample values there is such a signal, built by an explicit **Newton
+  incremental interpolant** `newton` (each new node adds a correction `c·∏(X−bⱼ)` that vanishes on
+  the earlier nodes and, via the field inverse at the nonzero `∏(a−bⱼ)` — `pprod_ne`,
+  `Qcmult_inv_l` — hits the new sample), with the sharp degree bound `newton_degle` (`N` nodes ⟹
+  degree ≤ `N−1`).  `sampling_alias` is the constructive contrapositive (the offending node is
+  found by finite search on `Qc`'s decidable equality, `Forall_Exists_dec` — no classical logic).
+  Built entirely on the axiom-free ℚ[X] tower (`QPoly`/`QPolyDiv`/`QPolyMul`/`QPolyRoot`/`QPolyPIT`
+  over `Qc`), so `Print Assumptions nyquist_sampling` = **Closed under the global context**.  The
+  algebraic **sibling** of the finite trigonometric `WalshSampling` (same principle — #samples =
+  bandwidth, undersampling aliases, discrete data fixes a continuum — needing no complex analysis).
+  **Honest scope:** the ALGEBRAIC (polynomial-degree) Nyquist; the genuine *trigonometric* Nyquist
+  on `T=ℝ/ℤ` (band-limited = Fourier support in `[−N,N]`) needs a constructive Fourier analysis
+  over ℝ (constructive trig, improper integrals, L²) the repo does not build — `RootsOfUnity.w`/
+  `EulerFormula.Cexp` are classical `cos`/`sin`, and the only integral present is `FourierRL`'s
+  bounded `RiemannInt`.  The continuum here is ℚ, not the completed ℝ.  This is **rung 1** of the
+  discrete→continuous isolation ladder documented in `docs/BRIDGES.md`.
+- **AN AXIOM-FREE PRIMITIVE N-th ROOT OF UNITY** `QPolyQuot` (**axiom-free**) — the algebraic ζ that
+  replaces the transcendental `RootsOfUnity.w N = cos(2π/N)+i·sin(2π/N)` (which carries the
+  classical-ℝ quarantine axioms via `ComplexField`).  Working in the cyclotomic quotient
+  `R = ℚ[x]/(Φ_N)`, presented as a **setoid on `qpoly`** with equality `req a b := Φ_N | (a−b)` (the
+  repo's `qdivides` is functional, which makes the quotient laws cheap), we prove `zeta_pow_N`
+  (ζ^N=1), `zeta_pow_sub_unit` (**ζ^m−1 is a UNIT for 0<m<N**), `zeta_primitive` (ζ^m≠1), `wc_w_1`
+  (the inverse root ζ^{N−1}), and `one_neq_zero_R`.  The crux — primitivity needs **NO irreducibility
+  of Φ_N**: the unit ζ^m−1 comes from Bézout coprimality of Φ_N and X^m−1, which follows from `X^N−1`
+  being SQUAREFREE (`QPolySqfree.qsqfree_Xn1`) via the factorisation `X^N−1 = Φ_N·D_N` and
+  `qsqfree_mul_copr`, plus the gcd descent `d|X^m−1 ⇒ d|X^{gcd(m,N)}−1 | D_N` (general N, via
+  `Xn1Gcd.pdiv_gcd` + the `divisors g ⊆ properdivs N` sublist-product argument).  `Print Assumptions`
+  = **Closed under the global context**.
+- **ROOTS-OF-UNITY ORTHOGONALITY at ζ** `CycloOrthogonality.{cyclo_orth_vanish,r_orthogonality}`
+  (**axiom-free**) — the fact the whole DFT rests on, proved at ζ **without** instantiating the
+  abstract-field `AlgebraicOrthogonality.algebraic_orthogonality` (which needs a field / Φ_N
+  irreducible).  Instead the vanishing branch cancels by the EXPLICIT unit ζ^m−1 (Stage-1
+  `zeta_pow_sub_unit`) in the geometric identity `(ζ^m−1)·Σ_{k<N}ζ^{km}=ζ^{mN}−1≡0`.  Ships a small
+  `req` congruence toolkit (`req_refl/sym/trans`, `req_qmul`, `req_qadd`, `req_rpow`, `req_rsum`).
+  `Print Assumptions` = **Closed under the global context**.
+- **THE DISCRETE FOURIER CLUSTER, DE-QUARANTINED** (**axiom-free**) — the ζ from `QPolyQuot` + the
+  orthogonality from `CycloOrthogonality` give axiom-free algebraic companions, added **in-place**
+  alongside the (necessarily quarantined) classical-ℂ theorems: `DFTInversion.dft_inversion_R`
+  (F⁻¹F = id), `DFTConvolution.conv_theorem_R` (the DFT diagonalises cyclic convolution), and
+  `FinitePoisson.finite_poisson_R` (`Σ_{r<m} DFT_R(dm) f(r·d) = m·Σ_{a<d} f(a·m)`).  Each carries the
+  `req`-level finite-sum plumbing it needs (`rsum` swap/scale/delta/reindex, a fold↔permutation
+  bridge, root periodicity, the two-index `orthogonality_2_R`, and — for finite Poisson — a
+  generic-length geometric orthogonality with the generalized unit `zeta_sub_unit_gen`).  All three
+  `Print Assumptions` = **Closed under the global context**.  **Honest boundary:** the *identities*
+  port, but `Parseval.parseval_norm`/`plancherel` POSITIVITY (`|·|²≥0`) and `GaussSum`/
+  `QuadraticGaussSum` absolute values (`|g|²=p`) are **Archimedean** — ℚ(ζ_N) is not ordered — and
+  stay quarantined.  The C `dft_inversion`/`conv_theorem`/`finite_poisson` remain as the classical
+  companions (`C=ℝ×ℝ` inherently carries the axioms; a refactor cannot make *them* axiom-free).
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer

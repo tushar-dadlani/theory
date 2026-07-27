@@ -26,7 +26,13 @@
 (*  Uses the classical Reals axioms (quarantined, via C / trig).      *)
 (* ================================================================= *)
 
-From Stdlib Require Import Reals Arith Lia Lra.
+From Stdlib Require Import Reals Arith Lia Lra List QArith Qcanon.
+Import ListNotations.
+(* The axiom-free algebraic DFT (added below, section RDFT) lives over the
+   cyclotomic ring ℚ[x]/(Φ_N) from QPolyQuot; these bring in ζ, req, rpow,
+   rsum and the Stage-2 orthogonality.  Imported BEFORE the ℂ layer so that
+   ComplexField.C still wins, and R_scope is re-opened last for the ℂ code. *)
+Require Import QPoly QPolyEmbed QPolyCoeffPIT QPolyQuot CycloOrthogonality.
 Require Import ComplexField RootsOfUnity.   (* imported last: ComplexField.C wins over Reals' binomial C *)
 Open Scope R_scope.
 
@@ -257,6 +263,223 @@ Proof.
 Qed.
 
 Print Assumptions dft_inversion.
+
+(* ================================================================================= *)
+(*  THE AXIOM-FREE ALGEBRAIC DFT, over R = ℚ[x]/(Φ_N) with the primitive root ζ.      *)
+(*                                                                                    *)
+(*  Same theorem — F^{-1}F = id — but with the transcendental root w = e^{2πi/N}      *)
+(*  replaced by the algebraic ζ (QPolyQuot), so `Print Assumptions dft_inversion_R`   *)
+(*  = Closed under the global context.  Built directly on `req` and the Stage-2       *)
+(*  orthogonality `r_orthogonality`; the C proof above is the quarantined companion.  *)
+(* ================================================================================= *)
+
+Section RDFT.
+  Variable Nn : nat.
+  Hypothesis HN : (1 <= Nn)%nat.
+  Local Open Scope Qc_scope.
+
+  Notation Rq := (req Nn).
+
+  (* ---- req-level finite-sum plumbing (the algebraic analogues of the Csum_* above) ---- *)
+  Lemma rsum_zero : forall n, Rq (rsum (fun _ => []) n) [].
+  Proof.
+    induction n as [|n IH]; cbn [rsum].
+    - apply req_refl.
+    - apply (req_trans Nn _ (qadd [] []) _);
+        [ apply req_qadd; [ exact IH | apply req_refl ]
+        | apply req_of_qeval; intro x; rewrite qeval_add, !qeval_nil; ring ].
+  Qed.
+
+  Lemma rsum_add : forall g h n,
+    Rq (rsum (fun i => qadd (g i) (h i)) n) (qadd (rsum g n) (rsum h n)).
+  Proof.
+    induction n as [|n IH]; cbn [rsum].
+    - apply req_of_qeval; intro x; rewrite qeval_add, !qeval_nil; ring.
+    - apply (req_trans Nn _ (qadd (qadd (rsum g n) (rsum h n)) (qadd (g n) (h n))) _).
+      + apply req_qadd; [ exact IH | apply req_refl ].
+      + apply req_of_qeval; intro x; rewrite !qeval_add; ring.
+  Qed.
+
+  Lemma rsum_scale_l : forall c f n, Rq (qmul c (rsum f n)) (rsum (fun i => qmul c (f i)) n).
+  Proof.
+    intros c f n; induction n as [|n IH]; cbn [rsum].
+    - apply req_of_qeval; intro x; rewrite qeval_mul, !qeval_nil; ring.
+    - apply (req_trans Nn _ (qadd (qmul c (rsum f n)) (qmul c (f n))) _).
+      + apply req_of_qeval; intro x; rewrite qeval_mul, !qeval_add, !qeval_mul; ring.
+      + apply req_qadd; [ exact IH | apply req_refl ].
+  Qed.
+
+  Lemma rsum_scale_r : forall c f n, Rq (qmul (rsum f n) c) (rsum (fun i => qmul (f i) c) n).
+  Proof.
+    intros c f n; induction n as [|n IH]; cbn [rsum].
+    - apply req_of_qeval; intro x; rewrite qeval_mul, !qeval_nil; ring.
+    - apply (req_trans Nn _ (qadd (qmul (rsum f n) c) (qmul (f n) c)) _).
+      + apply req_of_qeval; intro x; rewrite qeval_mul, !qeval_add, !qeval_mul; ring.
+      + apply req_qadd; [ exact IH | apply req_refl ].
+  Qed.
+
+  Lemma rsum_ext_bounded : forall f g n,
+    (forall i, (i < n)%nat -> Rq (f i) (g i)) -> Rq (rsum f n) (rsum g n).
+  Proof.
+    intros f g n; induction n as [|n IH]; intro H; cbn [rsum].
+    - apply req_refl.
+    - apply req_qadd; [ apply IH; intros i Hi; apply H; lia | apply H; lia ].
+  Qed.
+
+  Lemma rsum_swap : forall (F : nat -> nat -> qpoly) n M,
+    Rq (rsum (fun m => rsum (fun l => F m l) M) n)
+       (rsum (fun l => rsum (fun m => F m l) n) M).
+  Proof.
+    intros F n M; induction n as [|n IH]; cbn [rsum].
+    - apply req_sym, rsum_zero.
+    - apply (req_trans Nn _
+        (qadd (rsum (fun l => rsum (fun m => F m l) n) M) (rsum (fun l => F n l) M)) _).
+      + apply req_qadd; [ exact IH | apply req_refl ].
+      + apply req_sym, rsum_add.
+  Qed.
+
+  Lemma rsum_delta : forall (v : nat -> qpoly) n k,
+    Rq (rsum (fun l => if (k =? l)%nat then v l else []) n)
+       (if (k <? n)%nat then v k else []).
+  Proof.
+    intros v n k; induction n as [|n IH]; cbn [rsum].
+    - apply req_refl.
+    - apply (req_trans Nn _
+        (qadd (if (k <? n)%nat then v k else []) (if (k =? n)%nat then v n else [])) _).
+      + apply req_qadd; [ exact IH | apply req_refl ].
+      + destruct (Nat.ltb_spec k n); destruct (Nat.eqb_spec k n);
+          destruct (Nat.ltb_spec k (S n)); try lia; subst;
+          apply req_of_qeval; intro x; rewrite qeval_add, ?qeval_nil; ring.
+  Qed.
+
+  (* ---- ζ periodicity and the generalized geometric orthogonality ---- *)
+  Lemma zeta_pow_periodic : forall a t, Rq (rpow zeta (a + Nn * t)) (rpow zeta a).
+  Proof.
+    intros a t.
+    apply (req_trans Nn _ (qmul (rpow zeta a) (rpow zeta (Nn * t))) _).
+    - apply req_of_qeval; intro x; rewrite qeval_mul, !qeval_rpow_zeta, <- Qcpow_add; reflexivity.
+    - apply (req_trans Nn _ (qmul (rpow zeta a) [1]) _).
+      + apply req_qmul_l.
+        apply (req_trans Nn _ (rpow (rpow zeta Nn) t) _).
+        * apply req_of_qeval; intro x;
+            rewrite (qeval_rpow (rpow zeta Nn) t), !qeval_rpow_zeta, <- Qcpow_mul; reflexivity.
+        * apply (req_trans Nn _ (rpow [1] t) _).
+          { apply req_rpow, zeta_pow_N; exact HN. }
+          { apply req_of_qeval; intro x; rewrite qeval_rpow, !qeval_one, Qcpow_1_l; reflexivity. }
+      + apply req_of_qeval; intro x; rewrite qeval_mul, qeval_one; ring.
+  Qed.
+
+  Lemma zeta_geom_sum : forall E,
+    Rq (rsum (fun m => rpow zeta (m * E)) Nn)
+       (if (E mod Nn =? 0)%nat then ofnatR Nn else []).
+  Proof.
+    intro E.
+    apply (req_trans Nn _ (rsum (fun m => rpow zeta (m * (E mod Nn))) Nn) _).
+    - apply rsum_ext_bounded; intros m _.
+      replace (m * E)%nat with (m * (E mod Nn) + Nn * (m * (E / Nn)))%nat
+        by (pose proof (Nat.div_mod_eq E Nn); nia).
+      apply zeta_pow_periodic.
+    - apply r_orthogonality; [ exact HN | apply Nat.mod_upper_bound; lia ].
+  Qed.
+
+  Lemma E_mod_iff : forall k l, (k < Nn)%nat -> (l < Nn)%nat ->
+    (((Nn - 1) * l + k) mod Nn =? 0)%nat = (k =? l)%nat.
+  Proof.
+    intros k l Hk Hl.
+    assert (HE : ((Nn - 1) * l + k + l = k + Nn * l)%nat) by (destruct Nn; [ lia | nia ]).
+    destruct (Nat.eqb_spec k l) as [-> | Hkl].
+    - replace ((Nn - 1) * l + l)%nat with (Nn * l)%nat by (destruct Nn; [ lia | nia ]).
+      rewrite Nat.mul_comm, Nat.Div0.mod_mul; reflexivity.
+    - apply Nat.eqb_neq; intro Hmod.
+      apply Nat.Lcm0.mod_divide in Hmod; destruct Hmod as [c Hc].
+      rewrite Hc in HE.
+      (* HE : c*Nn + l = k + Nn*l ; take both sides mod Nn *)
+      assert (Hll : (c * Nn + l) mod Nn = l)
+        by (rewrite Nat.add_comm, Nat.Div0.mod_add; apply Nat.mod_small; exact Hl).
+      assert (Hkk : (k + Nn * l) mod Nn = k)
+        by (rewrite (Nat.mul_comm Nn l), Nat.Div0.mod_add; apply Nat.mod_small; exact Hk).
+      rewrite HE, Hkk in Hll; exact (Hkl Hll).
+  Qed.
+
+  (* ---- the two-index orthogonality over R (analogue of orthogonality_2) ---- *)
+  Lemma orthogonality_2_R : forall k l, (k < Nn)%nat -> (l < Nn)%nat ->
+    Rq (rsum (fun m => qmul (rpow (rpow zeta (Nn - 1)) (m * l)) (rpow zeta (m * k))) Nn)
+       (if (k =? l)%nat then ofnatR Nn else []).
+  Proof.
+    intros k l Hk Hl.
+    apply (req_trans Nn _ (rsum (fun m => rpow zeta (m * ((Nn - 1) * l + k))) Nn) _).
+    - apply rsum_ext_bounded; intros m _.
+      apply req_of_qeval; intro x.
+      rewrite qeval_mul, (qeval_rpow (rpow zeta (Nn - 1)) (m * l)), !qeval_rpow_zeta.
+      rewrite <- !Qcpow_mul, <- Qcpow_add; f_equal; nia.
+    - pose proof (zeta_geom_sum ((Nn - 1) * l + k)) as Hg.
+      rewrite (E_mod_iff k l Hk Hl) in Hg; exact Hg.
+  Qed.
+
+  (* ---- the algebraic DFT, its inverse, and the inversion theorem ---- *)
+  Definition wcz : qpoly := rpow zeta (Nn - 1).                 (* the inverse root ζ^{N-1} *)
+  Definition invN : qpoly := qconst (/ qnat Nn).                (* the scalar 1/N in R *)
+
+  Lemma invN_spec : Rq (qmul invN (ofnatR Nn)) [1].
+  Proof.
+    assert (Hnz : qnat Nn <> 0) by (destruct Nn; [ lia | apply qnat_Sk_nz ]).
+    apply req_of_qeval; intro x.
+    unfold invN, ofnatR; rewrite qeval_mul, !qeval_const, qeval_one.
+    apply Qcmult_inv_l; exact Hnz.
+  Qed.
+
+  Definition DFT_R (f : nat -> qpoly) (m : nat) : qpoly :=
+    rsum (fun k => qmul (f k) (rpow wcz (m * k))) Nn.
+  Definition IDFT_R (g : nat -> qpoly) (k : nat) : qpoly :=
+    qmul invN (rsum (fun m => qmul (g m) (rpow zeta (m * k))) Nn).
+
+  Theorem dft_inversion_R : forall f k, (k < Nn)%nat -> Rq (IDFT_R (DFT_R f) k) (f k).
+  Proof.
+    intros f k Hk. unfold IDFT_R, DFT_R.
+    apply (req_trans Nn _ (qmul invN (qmul (f k) (ofnatR Nn))) _).
+    - apply req_qmul_l.
+      (* move ζ^{mk} inside the inner sum *)
+      apply (req_trans Nn _
+        (rsum (fun m => rsum (fun l =>
+           qmul (qmul (f l) (rpow wcz (m * l))) (rpow zeta (m * k))) Nn) Nn) _).
+      { apply rsum_ext_bounded; intros m _; apply rsum_scale_r. }
+      (* finite Fubini: swap the m- and l-sums *)
+      apply (req_trans Nn _
+        (rsum (fun l => rsum (fun m =>
+           qmul (qmul (f l) (rpow wcz (m * l))) (rpow zeta (m * k))) Nn) Nn) _).
+      { apply rsum_swap. }
+      (* for each l<N, factor f_l out and apply the two-index orthogonality *)
+      apply (req_trans Nn _
+        (rsum (fun l => qmul (f l) (if (k =? l)%nat then ofnatR Nn else [])) Nn) _).
+      { apply rsum_ext_bounded; intros l Hl.
+        apply (req_trans Nn _
+          (qmul (f l) (rsum (fun m => qmul (rpow wcz (m * l)) (rpow zeta (m * k))) Nn)) _).
+        - apply (req_trans Nn _
+            (rsum (fun m => qmul (f l) (qmul (rpow wcz (m * l)) (rpow zeta (m * k)))) Nn) _).
+          + apply rsum_ext_bounded; intros m _; apply req_of_qeval; intro x; rewrite !qeval_mul; ring.
+          + apply req_sym, rsum_scale_l.
+        - apply req_qmul_l; unfold wcz; apply orthogonality_2_R; [ exact Hk | exact Hl ]. }
+      (* push f_l through the delta *)
+      apply (req_trans Nn _
+        (rsum (fun l => if (k =? l)%nat then qmul (f l) (ofnatR Nn) else []) Nn) _).
+      { apply rsum_ext_bounded; intros l _.
+        destruct (k =? l)%nat;
+          [ apply req_refl | apply req_of_qeval; intro x; rewrite qeval_mul, qeval_nil; ring ]. }
+      (* extract the l=k term *)
+      apply (req_trans Nn _ (if (k <? Nn)%nat then qmul (f k) (ofnatR Nn) else []) _).
+      { apply rsum_delta. }
+      destruct (Nat.ltb_spec k Nn); [ apply req_refl | lia ].
+    - (* (1/N) · (f_k · N) ≡ f_k *)
+      apply (req_trans Nn _ (qmul (f k) (qmul invN (ofnatR Nn))) _).
+      + apply req_of_qeval; intro x; rewrite !qeval_mul; ring.
+      + apply (req_trans Nn _ (qmul (f k) [1]) _).
+        * apply req_qmul_l, invN_spec.
+        * apply req_of_qeval; intro x; rewrite qeval_mul, qeval_one; ring.
+  Qed.
+
+End RDFT.
+
+Print Assumptions dft_inversion_R.
 
 (* ================================================================= *)
 (*  END DFTInversion.v                                               *)

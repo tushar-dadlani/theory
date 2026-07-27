@@ -599,3 +599,6 @@ spectral-theory/INFProduct.v
 spectral-theory/ObserverTriad.v
 spectral-theory/ObserverSwap.v
 spectral-theory/ObserverSpectral.v
+spectral-theory/BandlimitedInterp.v
+spectral-theory/QPolyQuot.v
+spectral-theory/CycloOrthogonality.v
