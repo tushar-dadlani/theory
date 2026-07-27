@@ -171,6 +171,18 @@ is axiom-free.
   (`sin_eq_sinpow_Pcot`), (M3) `Σcot²(kπ/(2m+1))=m(2m−1)/3` (`cot_sq_sum`), (M4)
   `proj1_sig zeta2_converges = π²/6` (`basel`) — assembled by a positional `conj` term.
   `Print Assumptions basel_arc` = the quarantined classical-ℝ axioms only.
+- **The primon-gas phase transition** `HagedornTransition.hagedorn_transition` (quarantined ℝ) — the
+  Hagedorn transition of the Riemann/primon gas (which `PrimonGas` models by unique factorization) at
+  the critical temperature `b_c = 1`.  The partition function is the partial sum
+  `Zpart b N = Σ_{k≤N}(k+1)^(−b) → ζ(b)`.  **Subcritical `b>1`:** `Zpart_cv` — it is *finite*
+  (`growing_cv`: monotone + bounded, the upper bound via **Cauchy condensation** `Zpart b (2^m−1) ≤
+  1 + (1−r^m)/(1−r)`, `r = 2^{1−b} ∈ (0,1)`, from a dyadic block bound + `Rpower` algebra).
+  **Critical `b=1`:** `Zpart1_diverges` — it *diverges* (harmonic series unbounded, `H_{2^m} ≥ 1+m/2`
+  via a dyadic doubling `H_{2n+2} ≥ H_{n+1}+½`).  Bundled: `hagedorn_transition = (∀b>1, ∃l,
+  Un_cv (Zpart b) l) ∧ (∀M, ∃N, Zpart 1 N > M)`.  `Print Assumptions` = the quarantined classical-ℝ
+  axioms only.  This is the genuine, real-variable phase transition attached to ζ (non-analyticity of
+  the free energy at `β_c=1`); the *complex-analytic* boundary phenomena (Lindelöf μ, critical line,
+  zeros) remain out of scope — they need the contour machinery this stdlib-only repo does not build.
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
