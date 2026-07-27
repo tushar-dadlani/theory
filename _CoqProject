@@ -588,6 +588,7 @@ spectral-theory/ZetaContinuation.v
 spectral-theory/GammaFunction.v
 spectral-theory/FourierRL.v
 spectral-theory/FordCircles.v
+spectral-theory/FinitePoisson.v
 spectral-theory/AbelSummation.v
 spectral-theory/VonMangoldtGlobal.v
 spectral-theory/Chebyshev.v

@@ -238,6 +238,17 @@ is axiom-free.
   the geometric substrate of the Farey / modular / θ-function story (Ford circles = horocycles at the
   cusps of `PSL(2,ℤ)`); it is **not** the analytic theta transformation `θ(1/t)=√t·θ(t)`, which still
   needs Poisson/Fourier or contours.  The modular skeleton, honestly labelled.
+- **FINITE POISSON SUMMATION** `FinitePoisson.finite_poisson` (quarantined ℝ) — the discrete shadow
+  of Poisson, on the DFT cluster: for `N = d·m`, `Σ_{r<m} (DFT_N f)(r·d) = m · Σ_{a<d} f(a·m)`
+  (summing the DFT over the dual subgroup `{rd}` recovers `f` summed over the subgroup `{am}`).
+  Proof: swap the double sum (`Csum_swap`), pull `f(k)` out, and the inner geometric sum
+  `Σ_{r<m}(wc_N^{dk})^r` is `m` if `m∣k` and `0` otherwise (`orth_val`, via `sum_pow_eq_0/1` +
+  `wc`-primitivity — from `w_primitive` and `wc·w=1`, `Cpow_Cmul`); then the subgroup reindex
+  `k=am+b` keeps only `b=0` (`sum_multiples`, `Csum_delta`).  Quarantined via `ComplexField`
+  (`C=ℝ×ℝ`), so `Print Assumptions` shows the classical-ℝ axioms.  **Honest scope:** the FINITE,
+  elementary Poisson formula — NOT the continuous `Σ_n f(n)=Σ_k f̂(k)` (which needs improper integrals
+  + the blocked Fourier convergence) and NOT progress on the FE.  It closes the discrete-Fourier arc
+  (`DFTInversion`/`Parseval`) with its Poisson identity.
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
