@@ -183,6 +183,21 @@ is axiom-free.
   axioms only.  This is the genuine, real-variable phase transition attached to ζ (non-analyticity of
   the free energy at `β_c=1`); the *complex-analytic* boundary phenomena (Lindelöf μ, critical line,
   zeros) remain out of scope — they need the contour machinery this stdlib-only repo does not build.
+- **Analytic continuation of ζ to Re(s)>0 (real axis)** `ZetaContinuation.zeta_analytic_continuation`
+  (quarantined ℝ) — the Euler–Maclaurin/Abel continuation, the honest analytic successor to
+  `HagedornTransition` (the `b_c=1` divergence reappears as the pole at `s=1`).  With the closed-form
+  unit-interval integral `∫_n^{n+1}x^(−s)dx = ((n+1)^{1−s}−n^{1−s})/(1−s)` (so no step-function
+  integration), the term `gterm s n = (n+1)^{−s} − ∫_{n+1}^{n+2}x^{−s}dx` yields the **partial
+  identity** `zeta_EM_identity`: `Zpart s N = Σ_{n≤N} gterm s n + ((N+2)^{1−s}−1)/(1−s)`.  A **per-term
+  MVT bound** `0 ≤ gterm s n ≤ (n+1)^{−s}−(n+2)^{−s}` (`g_bound`, via `Rpower_deriv` + `MVT_cor2` +
+  `Rpower_negexp_antimono`) + a telescoping majorant give convergence of `Σ gterm s` for **all** `s>0`
+  (`gterm_cv`, `growing_cv`).  Hence `ζ̃(s) := 1/(s−1) + Σ gterm s` is defined on `(0,∞)∖{1}` and,
+  for `s>1`, **equals the Dirichlet value** `ζ(s)=Σn^{−s}` (`zeta_analytic_continuation`, via
+  `zeta_continuation_extends` + `Zpart_cv` + `UL_sequence`; the tail `(N+2)^{1−s}→0` from
+  `Rpower_neg_cv0`).  `Print Assumptions` = the quarantined classical-ℝ axioms only.  This is the
+  real-variable Euler–Maclaurin formula — the exact expression whose ℂ-version is the analytic
+  continuation; it does **not** prove holomorphy (no complex-analysis layer), and the functional
+  equation / μ-triangle / zeros stay out of scope.
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer

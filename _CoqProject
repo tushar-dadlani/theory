@@ -584,6 +584,7 @@ spectral-theory/BaselVieta.v
 spectral-theory/BaselZeta.v
 spectral-theory/BaselMaster.v
 spectral-theory/HagedornTransition.v
+spectral-theory/ZetaContinuation.v
 spectral-theory/AbelSummation.v
 spectral-theory/VonMangoldtGlobal.v
 spectral-theory/Chebyshev.v
