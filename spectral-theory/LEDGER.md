@@ -165,6 +165,12 @@ is axiom-free.
   quarantined classical-ℝ axioms only (no `Admitted`, no custom axioms). π²/6 is inherently
   classical (π is archimedean), so this is quarantined, not axiom-free. **Out of scope:** general
   ζ(2k), the sharp `ψ(x)∼x`, and any contour/zeros argument.
+- **MASTER umbrella for the Basel arc** `BaselMaster.basel_arc` (quarantined ℝ) — a single
+  conjunction bundling the four milestones: (M1) the squeeze `cot²x<1/x²<1+cot²x`
+  (`BaselTrig.cot_sq_bounds`), (M2) `sin((2m+1)θ)=sin^(2m+1)θ·Pcot(cot²θ)`
+  (`sin_eq_sinpow_Pcot`), (M3) `Σcot²(kπ/(2m+1))=m(2m−1)/3` (`cot_sq_sum`), (M4)
+  `proj1_sig zeta2_converges = π²/6` (`basel`) — assembled by a positional `conj` term.
+  `Print Assumptions basel_arc` = the quarantined classical-ℝ axioms only.
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
