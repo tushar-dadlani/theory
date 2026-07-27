@@ -213,6 +213,21 @@ is axiom-free.
   `Γ(s+1)=s·Γ(s)` needs `Rpower` + a poly≤exp bound for real `s`, and `Γ(½)=√π` needs the Gaussian
   integral — both beyond stdlib.  This is a pillar, **not** the functional equation (which also needs
   Poisson/theta summation).
+- **Riemann–Lebesgue (C¹): Fourier-convergence milestone F1** `FourierRL.RL_cv` (quarantined ℝ) —
+  `Un_cv (fun n => ∫_a^b g(t)·sin((n+½)t) dt) 0` for a stdlib `C1_fun` g, the first brick of
+  Fourier-series pointwise convergence (the route toward Poisson → the ζ FE, on top of the existing
+  `DirichletKernel`).  Proved by integration by parts through stdlib's **FTC**: `H(t)=−g(t)cos(λt)/λ`
+  is bundled as a `C1_fun` (`Hc1`) with derivative `H'=g·sin(λ·)−g'·cos(λ·)/λ` (`H_deriv`,
+  `Hval_cont`), so `FTC_Riemann` gives the IBP identity (`RL_ibp`), and `RiemannInt_P13/P17/P18/P19`
+  (linearity + `|∫f|≤∫|f|`) give the bound `|∫g·sin(λt)| ≤ (|g(a)|+|g(b)|+∫|g'|)/|λ|` (`RL_bound`),
+  whence `RL_cv`.  `Print Assumptions` = the quarantined classical-ℝ axioms only.  **Finding (the
+  honest report):** even F1 — the "easy" half — was a heavy stdlib-`RiemannInt` slog (`C1_fun`/`derive`
+  bookkeeping, all-implicit-arg plumbing on the `RiemannInt_P*` lemmas).  **F2** (the kernel
+  representation `S_n f − f = (1/2π)∫(f(x+t)−f(x))D_n(t)dt`) is the flagged high-risk step: it needs
+  change-of-variables + periodicity + sum/integral interchange, which stdlib `RiemannInt` lacks
+  cleanly — this is precisely where a Coquelicot dependency (its `RInt` substitution/Fubini lemmas)
+  would collapse the effort.  F3 (the removable singularity of `g(t)=(f(x+t)−f(x))/sin(t/2)`) then
+  needs `f∈C²`.
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
