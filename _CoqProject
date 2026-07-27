@@ -602,3 +602,4 @@ spectral-theory/ObserverSpectral.v
 spectral-theory/BandlimitedInterp.v
 spectral-theory/QPolyQuot.v
 spectral-theory/CycloOrthogonality.v
+spectral-theory/PadicUncountable.v

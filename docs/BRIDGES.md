@@ -129,3 +129,37 @@ here is ℚ (dense, the axiom-free substrate), not the completed ℝ.
 
 Rung 3 (π²/6, Gaussian integral, holomorphy, ζ zeros) stays quarantined by design — the ledger
 pins exactly where the classical-ℝ axioms re-enter.
+
+---
+
+## 5. Why the wall is there at all: Cantor's cardinality
+
+The isolation ladder above is, at bottom, a **stratification of ℝ by cardinality**, and Cantor's
+diagonal is the theorem that makes the wall unavoidable:
+
+- An **axiom-free** (= constructive) development can only ever *name* countably many reals — each
+  comes with a finite/countable certificate (a rational, an algebraic number like ζ_N, a Cauchy
+  sequence-with-modulus `CReal`). The countable side of the ladder (rungs 0–2) lives here.
+- **Cantor's diagonal** produces a real outside any countable list. So a genuinely complete ℝ (all
+  Cauchy sequences / all cuts) is **uncountable, `2^ℵ₀`**, and cannot be reached constructively.
+- That is *precisely why* ℝ must sit behind the three classical axioms (`sig_forall_dec`,
+  `sig_not_dec`, `functional_extensionality_dep`). `CRealCv` states the mechanism: classical ℝ is the
+  axiom-free `CReal` **quotiented by those axioms**. The recurring honest note — "ℝ=ℚ_∞ is the
+  separate archimedean factor needing the quarantined axioms" — is the *constructive shadow of the
+  uncountability of ℝ*.
+
+The repo already contains both halves of Cantor's theory:
+
+| side | cardinality | in the repo |
+|---|---|---|
+| countable ℵ₀ | ℚ, ℚ̄, {ps}-smooth numbers | `PrimeFactorizationExists.code_bijection_smooth` (ℕᵏ ↔ smooth numbers), Farey/Stern-Brocot + `FordCircles` (enumerate ℚ), `InvLimit.InvLim` (= ω+1, *proved* countable) |
+| Cantor's diagonal | \|A\| < \|2^A\| | `category-topos/CategoryInterval.cantor` (on `A→Prop`), `SelfReferentialTopos`, Lawvere fixed-point (unifies Cantor/Gödel/Turing) |
+| continuum 2^ℵ₀ | ℤ_p, ℝ | `PadicIntegers.Zp` (built as coherent sequences; classically a Cantor set), classical ℝ (quarantined) |
+
+**The formalized bridge** (`spectral-theory/PadicUncountable.v`): the two-adic instance wires
+`PadicIntegers.Zp` (p=2) to Cantor's diagonal. A binary stream is a coherent 2-adic residue
+sequence, so `{0,1}^ℕ ↪ ℤ₂` (`ofbits`), and running the diagonal on the 2-adic digits gives
+**`Zp2_uncountable`: no `ℕ → ℤ₂` is onto** — the repo's first machine-checked continuum-cardinality
+statement, **axiom-free** (the digits are `bool`, so the diagonal stays pointwise/constructive).
+ℤ₂ and ℝ=ℚ_∞ are the two completions of the countable ℚ, both jumping to `2^ℵ₀`; the 2-adic jump is
+proved outright, the archimedean one is what the quarantine pays for.

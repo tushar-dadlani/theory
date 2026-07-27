@@ -326,6 +326,21 @@ is axiom-free.
   `n=∏_p p^{v_p}` gives `Ẑ ≅ ∏_p ℤ_p`. Honest ceiling (same as ProductFormulaQ): this is the
   finite factor only; `ℝ=ℚ_∞` (the archimedean completion, hence Γ-factors/`ξ(s)`/functional
   equation/ζ special values) is the separate factor it never reaches.
+- **THE 2-ADIC INTEGERS ARE A CANTOR SET — the first continuum-cardinality result**
+  `PadicUncountable.Zp2_uncountable` (**axiom-free**): **no map `ℕ → ℤ₂` is surjective**, i.e.
+  `|ℤ₂| > ℵ₀ = |ℚ|`.  Wires the repo's existing p-adic carrier (`PadicIntegers.Zp` at `p=2` — the
+  inverse limit `lim ℤ/2ⁿ` of coherent residue sequences) to **Cantor's diagonal** (proved
+  abstractly on `A→Prop` as `category-topos/CategoryInterval.cantor`; here its Boolean/Turing
+  instance `stream_uncountable`).  At `p=2` the p-adic integers **are** the Cantor space: a binary
+  stream `ℕ→bool` is exactly a coherent 2-adic residue sequence, giving the injection
+  `{0,1}^ℕ ↪ ℤ₂` (`ofbits`, `ofbits_inj`) with its digit-reading retraction (`bit`, `bit_ofbits`);
+  Cantor's `¬ f x x` is then run on the 2-adic digits (`Zp2_uncountable`).  Because the digits are
+  `bool` (discrete-branching), the diagonal stays **pointwise/constructive** — no functional
+  extensionality, no classical axiom — so `Print Assumptions` = **Closed under the global context**.
+  This is the **cardinality shadow of the discrete↔continuous quarantine wall**: ℤ₂ and `ℝ=ℚ_∞` are
+  the two completions of the countable ℚ, and both jump to the continuum `2^ℵ₀`; the 2-adic jump is
+  proved outright here (axiom-free), while the archimedean jump is exactly what forces ℝ behind the
+  quarantined classical axioms.  (Contrast `InvLimit.InvLim`, proved to be the *countable* `ω+1`.)
 - **Local–global compatibility** `LocalGlobalCompat` (`fabs_is_recip` + `local_global_compat`):
   the valuation description of `𝔸_f` (`ProductFormulaQ.fabs = ∏_p |·|_p`) and the ring
   description (`ProfiniteCRT`: `Ẑ = lim ℤ/nℤ = ∏_p ℤ_p`) read the **same** exponents. Global:
