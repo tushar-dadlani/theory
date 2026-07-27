@@ -198,6 +198,21 @@ is axiom-free.
   real-variable Euler–Maclaurin formula — the exact expression whose ℂ-version is the analytic
   continuation; it does **not** prove holomorphy (no complex-analysis layer), and the functional
   equation / μ-triangle / zeros stay out of scope.
+- **The Gamma pillar (integer): the factorial integral** `GammaFunction.gamma_n_eq_factorial`
+  (quarantined ℝ) — `Γ(n+1) = ∫_0^∞ tⁿe^(−t)dt = n!`, one of the two pillars of the ζ functional
+  equation (the other, Poisson/theta, needs Fourier — not stdlib).  Built **without
+  integration-by-parts**, via the *recursive antiderivative* `A_n(t) = −tⁿe^(−t) + n·A_{n−1}(t)`,
+  whose derivative is `tⁿe^(−t)` (`Aanti_deriv`, simple induction + product rule), so the Newton
+  integral over `[0,N]` is `A_n(N) − A_n(0)` (`gam_newton` transparent, `newton_val`) with
+  `A_n(0) = −n!` (`Aanti_0`) and `A_n(N) → 0` (`Aanti_lim0`).  The one analytic input is the growth
+  limit `Nᵏe^(−N) → 0` (`poly_exp_cv0`), obtained from `exp x ≥ (x/(k+1))^(k+1)` (`exp_lb`, from
+  `exp_ineq1` + `exp(n·y)=(exp y)ⁿ` + `pow_incr` — no Taylor-series library).  Delivers
+  `Un_cv (fun N => NewtonInt (gam n) 0 (INR N) _) (INR (fact n))` and the integer recurrence
+  `gamma_recurrence : (n+1)! = (n+1)·n!` (the shadow of `Γ(s+1)=s·Γ(s)`).  `Print Assumptions` = the
+  quarantined classical-ℝ axioms only.  **Honest scope:** INTEGER Gamma (`tⁿ`, nat power); the real
+  `Γ(s+1)=s·Γ(s)` needs `Rpower` + a poly≤exp bound for real `s`, and `Γ(½)=√π` needs the Gaussian
+  integral — both beyond stdlib.  This is a pillar, **not** the functional equation (which also needs
+  Poisson/theta summation).
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
