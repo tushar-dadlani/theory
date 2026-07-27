@@ -228,6 +228,16 @@ is axiom-free.
   cleanly — this is precisely where a Coquelicot dependency (its `RInt` substitution/Fubini lemmas)
   would collapse the effort.  F3 (the removable singularity of `g(t)=(f(x+t)−f(x))/sin(t/2)`) then
   needs `f∈C²`.
+- **The Ford-circle tangency theorem** `FordCircles.ford_circles` (**axiom-free**) — the Ford circle at
+  a reduced `p/q` (q>0) is centred at `(p/q, 1/(2q²))` with radius `1/(2q²)`; the centre-distance
+  collapses exactly (`ford_identity`): `dist² = (r₁+r₂)² + ((ad−bc)²−1)/(b²d²)`.  Since `ad−bc∈ℤ`:
+  `ad−bc=±1` ⟺ Farey neighbours ⟹ externally **tangent** (`ford_tangent`); `ad≠bc` ⟹ **never
+  overlap** (`ford_no_overlap`, from `|ad−bc|≥1`); `|ad−bc|≥2` ⟹ strictly **disjoint**
+  (`ford_disjoint`).  Done entirely over **ℚ** (`inject_Z`, `field`, `nia`), so `Print Assumptions
+  ford_circles` = **Closed under the global context** — pure arithmetic, no classical Reals.  This is
+  the geometric substrate of the Farey / modular / θ-function story (Ford circles = horocycles at the
+  cusps of `PSL(2,ℤ)`); it is **not** the analytic theta transformation `θ(1/t)=√t·θ(t)`, which still
+  needs Poisson/Fourier or contours.  The modular skeleton, honestly labelled.
 - **Product formula over ℚ** `ProductFormulaQ.product_formula` (`_int` + `_Q`): Ostrowski's
   `∏_v |x|_v = 1` for nonzero rationals — for a positive integer `n`, `n = ∏_p p^{v_p(n)}`
   (via `code_surj`) so `|n|_∞·∏_p |n|_p = 1`; for `a/b` the quotient of the two integer
