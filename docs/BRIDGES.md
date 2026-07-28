@@ -203,3 +203,24 @@ The bridge — *read `+` as `⋁`, i.e. test the sum for nonzero* — is
 inverse — whereas `zeta_t` does. That gap **is** why Möbius inversion needs the group `(+)`
 (subtraction = inclusion–exclusion) and cannot live over the idempotent join `(⋁)`: strictly,
 Möbius/zeta is not a Galois connection but the *ring-linearized, invertible upgrade* of one.
+
+---
+
+## 7. The functional-equation skeleton (a fixed-point involution)
+
+The repo's north star, the ζ functional equation `ξ(s) = ξ(1−s)`, is *in shape* the invariance of a
+function under an **involution with one fixed point** — and that shape is now formalized axiom-free
+(`spectral-theory/FEInvolution.v`). Over ℚ, `refl s = 1−s` is an involution whose **unique fixed
+point is `s = 1/2` — the critical line** (`refl_fixed_unique`); centred there it is negation `u↦−u`
+(the self-adjoint `S²=I` reflection), and `F(1−s)=F(s)` is the FE shape (`FE_reflects`), self-dual at
+`1/2`. Its modular face — the theta symmetry under `S : τ↦−1/τ`, i.e. `a/b ↦ −b/a` on Ford/Farey
+indices — **preserves the tangency determinant `ad−bc`** (`Smod_preserves_det`), so it maps Farey
+neighbours to Farey neighbours and tangent Ford circles to tangent Ford circles (the `det=±1`
+condition is exactly `FordCircles.ford_tangent`'s hypothesis).
+
+Honest boundary: this is the *shape* — the involution, the fixed point (critical line), the
+self-duality, the modular symmetry — **not** the analytic `ξ(s)=ξ(1−s)`, which needs the self-dual
+invariant *value* `∫e^{−πx²}=√π=Γ(½)`, the irreducible archimedean residue. Just as `FordCircles` is
+the modular skeleton without the analytic θ-transformation, this is the functional-equation skeleton
+without the archimedean `√π` — the geometric form of the involution, with the value still behind the
+continuum wall.

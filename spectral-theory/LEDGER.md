@@ -238,6 +238,22 @@ is axiom-free.
   the geometric substrate of the Farey / modular / θ-function story (Ford circles = horocycles at the
   cusps of `PSL(2,ℤ)`); it is **not** the analytic theta transformation `θ(1/t)=√t·θ(t)`, which still
   needs Poisson/Fourier or contours.  The modular skeleton, honestly labelled.
+- **THE FUNCTIONAL-EQUATION SKELETON — a fixed-point involution** `FEInvolution` (**axiom-free**): the
+  ζ functional equation `ξ(s)=ξ(1−s)` *in shape* — invariance under an INVOLUTION with one fixed
+  point.  Over ℚ, `refl s := 1−s` is an involution (`refl_involution`) whose **unique fixed point is
+  `s = 1/2` — THE CRITICAL LINE** (`refl_fixed_unique`, `refl_fixed_iff`); in the critical-line-centred
+  coordinate it is **negation** `u ↦ −u` (`refl_is_negation`), the self-adjoint `S²=I` reflection whose
+  fixed locus is its `+1` axis; and a function with `F(1−s)=F(s)` satisfies the FE shape `F(s)=F(1−s)`
+  (`FE_reflects`), self-dual at `1/2` (`FE_selfdual_at_critical`).  The **modular face**: the theta
+  transformation `θ(1/t)=√t·θ(t)` is invariance under `S : τ↦−1/τ`, i.e. on a Ford/Farey index `a/b ↦
+  −b/a` = `(a,b)↦(−b,a)` (`Smod`); this **preserves the tangency determinant `ad−bc`**
+  (`Smod_preserves_det`), hence Farey neighbours ↦ Farey neighbours and tangent Ford circles ↦ tangent
+  Ford circles (`Smod_preserves_tangency` — the `det=±1` condition is exactly
+  `FordCircles.ford_tangent`'s hypothesis), with `S²=−I` acting trivially on ℚ (`Smod_sq`).  **Honest
+  boundary:** this is the SHAPE (involution, fixed point = critical line, self-duality, modular
+  symmetry) — **not** the analytic `ξ(s)=ξ(1−s)`, which needs the self-dual invariant VALUE
+  `∫e^{−πx²}=√π=Γ(½)`, the irreducible archimedean residue — exactly as `FordCircles` is the modular
+  skeleton without the analytic θ.  `Print Assumptions` = **Closed under the global context**.
 - **FINITE POISSON SUMMATION** `FinitePoisson.finite_poisson` (quarantined ℝ) — the discrete shadow
   of Poisson, on the DFT cluster: for `N = d·m`, `Σ_{r<m} (DFT_N f)(r·d) = m · Σ_{a<d} f(a·m)`
   (summing the DFT over the dual subgroup `{rd}` recovers `f` summed over the subgroup `{am}`).
