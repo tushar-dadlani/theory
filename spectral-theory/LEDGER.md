@@ -309,6 +309,23 @@ is axiom-free.
   of variables and Fubini (what the Gaussian `∫e^{−πx²}` and the Mellin transform actually need)
   build ON this; they are the rest of knot 1.  `Print Assumptions` = **Closed under the global
   context**.
+- **THE IMPROPER INTEGRAL ∫₀^∞ f, as a CReal** `ImproperIntegral.improper_integral_spec`
+  (**axiom-free**) — the range-extension of `CIntegral`'s `[0,1]` integral, the second knot-1 rail.
+  `∫₀^∞ f = Σ_{m≥0} ∫_m^{m+1} f`: each unit cell `∫_m^{m+1} f` is `cintegral` of the `m`-shifted
+  integrand `shift m := t ↦ f(m+t)`, which is Lipschitz with the **same** constant `L` (translation
+  preserves the bound, `shift_lip`), so it is a `CReal` (`cell m`).  The engine (`Section
+  CRealSeries`, reusable) is a **summable series of CReals**: given `|cell m| ≤ Bd m` (`Hcell`) and a
+  tail-summability modulus for the rational bound `Bd` (`Htail`), the partial sums `psum` are Cauchy
+  (`psum_diff_bound : |psum(i+d) − psum i| ≤ Σ_{i≤m<i+d} Bd m`, by CReal triangle induction;
+  `psum_cauchy`), and `ConstructiveRcomplete.CRealComplete` gives the limit `series_limit`.  The cell
+  magnitudes are controlled by `CIntegral.cintegral_abs_le` (the integral is ≤ its sup on the cell,
+  proved via `Rsum_abs_le` + `cvQ_le_const`/`cvQ_opp`).  Instantiated (`Section Improper`) at
+  `cell m := cintegral (shift m) L …`, `Bd` a summable decay bound (`Hbd`), giving
+  `improper_integral : CReal` with the convergence `improper_integral_spec`.  **Honest scope:** the
+  RANGE extension (the tails), for a Lipschitz integrand with a summable cell bound; `∫_ℝ f = ∫₀^∞ f +
+  ∫₀^∞ (f∘neg)`.  The remaining piece of knot 1 is the 2-D / change-of-variables step (the Gaussian
+  `∫e^{−πx²}=√π`, which discharges the `FEResidue` axiom).  `Print Assumptions` = **Closed under the
+  global context**.
 - **THE ALGEBRAIC NYQUIST–SHANNON BRIDGE** `BandlimitedInterp.nyquist_sampling` (**axiom-free**) —
   the first genuine *discrete→continuous* sampling theorem that lands **below** the classical-ℝ
   quarantine, via the isolation *bandwidth = polynomial degree*.  A signal band-limited to

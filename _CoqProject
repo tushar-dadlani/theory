@@ -610,3 +610,4 @@ spectral-theory/FEInvolution.v
 spectral-theory/FEResidue.v
 spectral-theory/PoissonLHS.v
 spectral-theory/CIntegral.v
+spectral-theory/ImproperIntegral.v

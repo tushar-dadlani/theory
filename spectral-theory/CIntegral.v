@@ -23,10 +23,23 @@
 (*  context).                                                         *)
 (* ================================================================= *)
 
+From Stdlib Require Import Reals.Cauchy.ConstructiveCauchyReals
+  Reals.Cauchy.ConstructiveCauchyRealsMult
+  Reals.Cauchy.ConstructiveCauchyAbs
+  Reals.Cauchy.ConstructiveRcomplete.
 From Stdlib Require Import QArith Qabs Lqa Lia List Arith ZArith.
 Require Import PrimonGas CRealCv.
 Import ListNotations.
 Open Scope Q_scope.
+
+(* negation of a convergent rational sequence *)
+Lemma cvQ_opp : forall a x, cvQ a x -> cvQ (fun n => (- a n)%Q) (- x)%CReal.
+Proof.
+  intros a x H p; destruct (H p) as [N HN]; exists N; intros n Hn.
+  assert (E : (inject_Q (- a n)%Q - (- x) == - (inject_Q (a n) - x))%CReal)
+    by (rewrite opp_inject_Q; ring).
+  rewrite E, CReal_abs_opp. apply HN; exact Hn.
+Qed.
 
 (* ----------------------------------------------------------------- *)
 (*  Order / qsum helpers.                                             *)
@@ -354,6 +367,49 @@ Section Integral.
   Definition cintegral := projT1 (cvQ_of_regular R R_regular).
   Theorem cintegral_cv : cvQ R cintegral.
   Proof. unfold cintegral; exact (projT2 (cvQ_of_regular R R_regular)). Qed.
+
+  (* ----- the integral is bounded by a sup bound on [0,1) ----- *)
+  Lemma sample_in : forall k j, (j < 2 ^ k)%nat -> (0 <= sample k j)%Q /\ (sample k j < 1)%Q.
+  Proof.
+    intros k j Hj; unfold sample; split.
+    - apply Qmult_le_0_compat; [ change 0 with (inject_Z 0); rewrite <- Zle_Qle; lia
+                               | apply Qlt_le_weak, mesh_pos ].
+    - unfold mesh. rewrite <- (Qmult_inv_r (pow2 k) (pow2_neq k)).
+      apply (proj2 (Qmult_lt_r _ _ (/ pow2 k) (Qinv_lt_0_compat _ (pow2_pos k)))).
+      unfold pow2; rewrite <- Zlt_Qlt; lia.
+  Qed.
+
+  Lemma Rsum_abs_le : forall Bd,
+    (forall t, (0 <= t)%Q -> (t < 1)%Q -> Qabs (f t) <= Bd) -> forall k, Qabs (R k) <= Bd.
+  Proof.
+    intros Bd Hb k. unfold R. rewrite Qabs_Qmult.
+    rewrite (Qabs_pos (mesh k)) by (apply Qlt_le_weak, mesh_pos).
+    apply Qle_trans with (mesh k * (pow2 k * Bd)).
+    - rewrite !(Qmult_comm (mesh k)). apply Qmult_le_compat_r; [ | apply Qlt_le_weak, mesh_pos ].
+      eapply Qle_trans; [ apply qabs_qsum | ]. rewrite map_map.
+      eapply Qle_trans.
+      { apply qsum_map_le with (b := fun _ => Bd). intros j Hj.
+        apply in_seq in Hj. destruct (sample_in k j) as [Hlo Hhi]; [ lia | ].
+        apply Hb; assumption. }
+      rewrite qsum_map_const_len, length_seq. unfold pow2. apply Qle_refl.
+    - apply qeq_le. rewrite Qmult_assoc, (Qmult_comm (mesh k) (pow2 k)), pow2_mesh. ring.
+  Qed.
+
+  Lemma cintegral_abs_le : forall Bd,
+    (forall t, (0 <= t)%Q -> (t < 1)%Q -> Qabs (f t) <= Bd) ->
+    (CReal_abs cintegral <= inject_Q Bd)%CReal.
+  Proof.
+    intros Bd Hb. pose proof (Rsum_abs_le Bd Hb) as Habs.
+    apply CReal_abs_le; split.
+    - assert (Hneg : (- cintegral <= inject_Q Bd)%CReal).
+      { apply (cvQ_le_const _ _ _ (cvQ_opp _ _ cintegral_cv)). intro k.
+        apply inject_Q_le.
+        pose proof (Habs k) as Hk; apply Qabs_Qle_condition in Hk; lra. }
+      pose proof (CReal_opp_ge_le_contravar (inject_Q Bd) (- cintegral) Hneg) as Hf.
+      assert (E : (- - cintegral == cintegral)%CReal) by ring. rewrite E in Hf. exact Hf.
+    - apply (cvQ_le_const _ _ _ cintegral_cv). intro k. apply inject_Q_le.
+      pose proof (Habs k) as Hk; apply Qabs_Qle_condition in Hk; lra.
+  Qed.
 
 End Integral.
 

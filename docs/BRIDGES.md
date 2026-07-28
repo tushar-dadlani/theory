@@ -269,3 +269,20 @@ This is the tool §8's Poisson right side (and the Gaussian integral, and the re
 What remains of knot 1 is built ON it: improper integrals `∫_ℝ` (the tails), 2-D integration + polar
 change of variables (the Gaussian `∫e^{−πx²}=√π`, which discharges the `FEResidue` axiom), and the
 Mellin transform (θ → ξ). The seed is now below the wall; the extensions are the next bricks.
+
+---
+
+## 10. Extending knot 1: the improper integral ∫₀^∞ f as a CReal
+
+`spectral-theory/ImproperIntegral.v` takes the [0,1] integral to the whole half-line, axiom-free.
+`∫₀^∞ f = Σ_{m≥0} ∫_m^{m+1} f`: each unit cell `∫_m^{m+1} f` is `cintegral` of the `m`-shifted
+integrand `t ↦ f(m+t)`, which is Lipschitz with the **same** constant (translation preserves the
+bound), so it is a CReal. The reusable engine (a **summable series of CReals**) shows that if
+`|cell m| ≤ Bd m` with `Bd` summable (an explicit tail modulus), the partial sums are Cauchy — the
+block bound `|psum(i+d) − psum i| ≤ Σ_{i≤m<i+d} Bd m` follows by a CReal triangle induction — and
+`CRealComplete` delivers the limit `improper_integral : CReal`. The cell magnitudes are pinned by a
+new `CIntegral.cintegral_abs_le` (the integral is ≤ its sup on the cell).
+
+`∫_ℝ f = ∫₀^∞ f + ∫₀^∞ (x ↦ f(−x))` — two applications. So the tails are now below the wall. The one
+remaining piece of knot 1 is the **2-D integral + polar change of variables** that computes the
+Gaussian `∫e^{−πx²} = √π` and thereby **discharges the `FEResidue` axiom**.
