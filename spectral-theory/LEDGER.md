@@ -326,6 +326,17 @@ is axiom-free.
   ∫₀^∞ (f∘neg)`.  The remaining piece of knot 1 is the 2-D / change-of-variables step (the Gaussian
   `∫e^{−πx²}=√π`, which discharges the `FEResidue` axiom).  `Print Assumptions` = **Closed under the
   global context**.
+- **A CONSTRUCTIVE π, axiom-free** `ConstructivePi.constructive_pi_cv` (**axiom-free**) — the repo's
+  first constructive π.  The Wallis / central-binomial ratio `4²ⁿ(n!)⁴/((2n)!²·n)` written as the
+  telescoping recursion `cπ₀=4, cπ_{k+1}=cπ_k·(1−1/(2k+3)²)` (no factorials, `mlt`/`mlt_compl`): it is
+  positive (`cpi_pos`), DECREASING (each factor `<1`, `mlt_lt1`), bounded in `[π,4]` (`cpi_le4`), and
+  Cauchy — the step `cπ_k−cπ_{k+1}=cπ_k/(2k+3)² ≤ 4/((2k+1)(2k+3))` telescopes (`cpi_step`, `cpi_tele`)
+  to the explicit modulus `N=Pos.to_nat p` (`cpi_regular`), fed to `CRealCv.cvQ_of_regular` for
+  `constructive_pi : CReal` with `cvQ cpi constructive_pi`.  Makes the **π side** of the FEResidue value
+  `Γ(½)²=π` a concrete construction rather than an abstract parameter.  **Honest scope:** this is the
+  Wallis limit, *classically equal* to π, taken here as its constructive definition; its identification
+  with the circle / analytic π is Wallis's theorem (classical, not formalized).  `Print Assumptions` =
+  **Closed under the global context**.
 - **THE ALGEBRAIC NYQUIST–SHANNON BRIDGE** `BandlimitedInterp.nyquist_sampling` (**axiom-free**) —
   the first genuine *discrete→continuous* sampling theorem that lands **below** the classical-ℝ
   quarantine, via the isolation *bandwidth = polynomial degree*.  A signal band-limited to
