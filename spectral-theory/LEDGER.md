@@ -279,6 +279,19 @@ is axiom-free.
   elementary Poisson formula — NOT the continuous `Σ_n f(n)=Σ_k f̂(k)` (which needs improper integrals
   + the blocked Fourier convergence) and NOT progress on the FE.  It closes the discrete-Fourier arc
   (`DFTInversion`/`Parseval`) with its Poisson identity.
+- **THE CONTINUOUS-POISSON LEFT SIDE, as a CReal** `PoissonLHS.poisson_lhs_cv` (**axiom-free**) — the
+  first brick prying at *knot 1* (constructive integration).  `finite_poisson_R` is the discrete
+  shadow of Poisson but lives over the ALGEBRAIC cyclotomic ring ℚ(ζ_N) — its roots of unity are not
+  reals, so it has **no literal CReal limit** (a genuine world-mismatch, stated in the header).  The
+  object it shadows is the CONTINUOUS Poisson `Σ_{n∈ℤ}f(n)=Σ_{k∈ℤ}f̂(k)`, whose LEFT side is a lattice
+  sum that IS a CReal.  We build it for the archetype `f(x)=1/(1+x²)` (classical identity
+  `Σ_{n∈ℤ}1/(1+n²)=π·coth π`): the bilateral partial sums `P N = 1 + 2·Σ_{n=1}^{N} 1/(1+n²)` are
+  rational, monotone, and Cauchy with the EXPLICIT modulus `N=2p` from the telescoping tail
+  `Σ_{n>i}1/(1+n²) ≤ 1/i` (via `1/(1+n²) ≤ 1/(n(n−1)) = 1/(n−1)−1/n`, `g_tele`/`tail_tele`), fed to
+  `CRealCv.cvQ_of_regular` to give `poisson_lhs : CReal` with `cvQ P poisson_lhs`.  **Honest boundary:**
+  this is the SUM side only; the Fourier RIGHT side `Σ_k f̂(k)`, `f̂(k)=π·e^{−2π|k|}`, needs the
+  constructive integral `f̂=∫f·e^{−2πikx}dx` (knot 1) — the next brick.  `Print Assumptions` = **Closed
+  under the global context**.
 - **THE ALGEBRAIC NYQUIST–SHANNON BRIDGE** `BandlimitedInterp.nyquist_sampling` (**axiom-free**) —
   the first genuine *discrete→continuous* sampling theorem that lands **below** the classical-ℝ
   quarantine, via the isolation *bandwidth = polynomial degree*.  A signal band-limited to

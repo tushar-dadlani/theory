@@ -232,3 +232,22 @@ reflection `Γ(s)Γ(1−s)=π/sin(πs)` at the fixed point `s=½`, i.e. `Γ(½)�
 global context`: `Print Assumptions` shows **exactly** this residue and **not** the classical-ℝ trio.
 The functional equation's whole archimedean cost is one number, honestly named — the template being
 `LandauerBound`'s isolation of `ln 2`, here `√π`.
+
+---
+
+## 8. Prying at knot 1: the continuous-Poisson LHS as a CReal
+
+The first concrete step into the constructive-integration knot (`spectral-theory/PoissonLHS.v`). An
+honest caveat first: `finite_poisson_R` is the *discrete shadow* of Poisson, but it lives over the
+**algebraic** cyclotomic ring ℚ(ζ_N) — its roots of unity aren't real numbers, so it has **no
+literal CReal limit**. The object it shadows is the *continuous* Poisson summation `Σ_{n∈ℤ}f(n) =
+Σ_{k∈ℤ}f̂(k)`, whose **left side is a lattice sum** that genuinely is a CReal.
+
+We build that LHS, axiom-free, for the archetype `f(x)=1/(1+x²)` (classical identity `Σ_{n∈ℤ}1/(1+n²)
+= π·coth π`): the bilateral partial sums `1 + 2·Σ_{n=1}^{N}1/(1+n²)` are rational, monotone, and
+Cauchy with the explicit modulus `N=2p` from the telescoping tail `Σ_{n>i}1/(1+n²) ≤ 1/i`, handed to
+`cvQ_of_regular` to yield `poisson_lhs : CReal`. Closed under the global context.
+
+Honest boundary: this is the **sum side only**. The Fourier right side `Σ_k f̂(k)` with
+`f̂(k)=π·e^{−2π|k|}` needs the constructive integral `f̂ = ∫f(x)e^{−2πikx}dx` — the core of knot 1,
+and the next brick. The lattice-sum LHS is now below the wall; the integral is what remains.

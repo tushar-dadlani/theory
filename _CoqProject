@@ -608,3 +608,4 @@ spectral-theory/DominatingModulus.v
 spectral-theory/CichonPoset.v
 spectral-theory/FEInvolution.v
 spectral-theory/FEResidue.v
+spectral-theory/PoissonLHS.v
