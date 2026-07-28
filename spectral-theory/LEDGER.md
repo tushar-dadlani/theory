@@ -341,6 +341,19 @@ is axiom-free.
   the two completions of the countable ℚ, and both jump to the continuum `2^ℵ₀`; the 2-adic jump is
   proved outright here (axiom-free), while the archimedean jump is exactly what forces ℝ behind the
   quarantined classical axioms.  (Contrast `InvLimit.InvLim`, proved to be the *countable* `ω+1`.)
+- **ℵ₀ < 𝔟 ≤ 𝔡 — cardinal invariants on the convergence modulus** `DominatingModulus`
+  (**axiom-free**): the first cardinal characteristics of the continuum strictly *inside* `(ℵ₀, 𝔠]`
+  (the endpoints being ℵ₀ from the countability engines and `𝔠 = |ℤ₂|` from `PadicUncountable`).  A
+  `CReal` (`CRealCv.cvQ_of_regular`) carries an explicit Cauchy **modulus** `precision ↦ index`
+  (≅ ℕ→ℕ); the eventual-domination order `f ≤* g := ∃N,∀n≥N, f n ≤ g n` on these moduli is the order
+  the **bounding** number 𝔟 (least ≤*-unbounded family) and **dominating** number 𝔡 (least ≤*-cofinal
+  family) live on.  `countable_family_bounded` — every countable family `{fᵢ}` is dominated by one
+  `g` (the windowed-max diagonal `g n = 1 + max_{i≤n} fᵢ n`) — gives **ℵ₀ < 𝔟**; `no_countable_
+  dominating` gives **ℵ₀ < 𝔡** (the strictly-larger gauge `S∘g` escapes any countable dominating
+  family).  Same "escape past every listed function" as Cantor's diagonal (which gave the top
+  endpoint), now on the modulus order; reading: no countable set of convergence gauges converges
+  every CReal.  `Print Assumptions` = **Closed under the global context**.  (Coq can't decide the
+  *values* 𝔟, 𝔡 — that needs forcing — only the ZFC-provable `> ℵ₀` backbone.)
 - **Local–global compatibility** `LocalGlobalCompat` (`fabs_is_recip` + `local_global_compat`):
   the valuation description of `𝔸_f` (`ProductFormulaQ.fabs = ∏_p |·|_p`) and the ring
   description (`ProfiniteCRT`: `Ẑ = lim ℤ/nℤ = ∏_p ℤ_p`) read the **same** exponents. Global:

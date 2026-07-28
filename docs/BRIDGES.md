@@ -164,6 +164,20 @@ statement, **axiom-free** (the digits are `bool`, so the diagonal stays pointwis
 ℤ₂ and ℝ=ℚ_∞ are the two completions of the countable ℚ, both jumping to `2^ℵ₀`; the 2-adic jump is
 proved outright, the archimedean one is what the quarantine pays for.
 
+**Between the endpoints — cardinal invariants** (`spectral-theory/DominatingModulus.v`). The
+characteristics of the continuum live in `(ℵ₀, 𝔠]`. The **bounding/dominating** numbers 𝔟, 𝔡 sit on
+the eventual-domination order `f ≤* g` of ℕ→ℕ — which is exactly the type of the `CReal` convergence
+**modulus** (`CRealCv.cvQ_of_regular`, a `precision ↦ index` function). Axiom-free backbone: the
+windowed-max diagonal `g n = 1 + max_{i≤n} fᵢ n` dominates any countable family, so
+`countable_family_bounded` ⟹ **ℵ₀ < 𝔟** and `no_countable_dominating` ⟹ **ℵ₀ < 𝔡** — the same "escape
+past every listed function" as Cantor's diagonal (which gave the top endpoint `𝔠 = |ℤ₂|`), now on the
+modulus order: *no countable set of convergence gauges converges every real*. (Coq gets the ZFC
+`> ℵ₀` backbone, not the independent values.) Other handles the repo already carries: the null ideal
+`𝓝` (cov/non) via the Cantor/p-adic measure (`TriadicMeasure`, `PadicUncountable`); the tower numbers
+𝔭, 𝔱 via the inverse-limit towers (`ChainTower`, `PadicIntegers`); and the **Cichoń diagram itself**
+as a finite Alexandrov poset — the repo's `PosetTopology`/`FiniteTopology` order-theory — with ℵ₀ at
+the bottom and `𝔠 = |ℤ₂|` at the top.
+
 ---
 
 ## 6. A companion bridge: order → ring (zeta = linearized Galois closure)

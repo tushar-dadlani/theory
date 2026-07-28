@@ -604,3 +604,4 @@ spectral-theory/QPolyQuot.v
 spectral-theory/CycloOrthogonality.v
 spectral-theory/PadicUncountable.v
 spectral-theory/ZetaClosureBridge.v
+spectral-theory/DominatingModulus.v
