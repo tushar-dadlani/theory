@@ -174,9 +174,13 @@ past every listed function" as Cantor's diagonal (which gave the top endpoint `�
 modulus order: *no countable set of convergence gauges converges every real*. (Coq gets the ZFC
 `> ℵ₀` backbone, not the independent values.) Other handles the repo already carries: the null ideal
 `𝓝` (cov/non) via the Cantor/p-adic measure (`TriadicMeasure`, `PadicUncountable`); the tower numbers
-𝔭, 𝔱 via the inverse-limit towers (`ChainTower`, `PadicIntegers`); and the **Cichoń diagram itself**
-as a finite Alexandrov poset — the repo's `PosetTopology`/`FiniteTopology` order-theory — with ℵ₀ at
-the bottom and `𝔠 = |ℤ₂|` at the top.
+𝔭, 𝔱 via the inverse-limit towers (`ChainTower`, `PadicIntegers`); and the **Cichoń diagram itself,
+now formalized** (`spectral-theory/CichonPoset.v`) as an axiom-free finite partial order —
+`cichon_poset`: the 12 characteristics with their 15 ZFC-provable `≤` arrows, proved reflexive/
+transitive/antisymmetric (antisymmetry via a rank linear extension), genuinely partial
+(`cov(𝒩) ⊥ add(ℳ)`, separated by an Alexandrov-open up-set), with `ℵ₁` the bottom (`bottom`),
+`𝔠 = |ℤ₂|` the top (`top`), and the interior edge `𝔟 ≤ 𝔡` (`b_le_d`) being exactly the
+`DominatingModulus` pair. The cardinality arc is thus one poset: `ℵ₀ < 𝔟 ≤ 𝔡 ≤ … ≤ 𝔠 = |ℤ₂|`.
 
 ---
 

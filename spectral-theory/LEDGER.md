@@ -354,6 +354,20 @@ is axiom-free.
   endpoint), now on the modulus order; reading: no countable set of convergence gauges converges
   every CReal.  `Print Assumptions` = **Closed under the global context**.  (Coq can't decide the
   *values* 𝔟, 𝔡 — that needs forcing — only the ZFC-provable `> ℵ₀` backbone.)
+- **THE CICHOŃ DIAGRAM AS A FINITE POSET** `CichonPoset.cichon_poset` (**axiom-free**): the diagram
+  of cardinal characteristics of the continuum (`ℵ₁, add(𝒩), add(ℳ), cov(𝒩), cov(ℳ), non(𝒩),
+  non(ℳ), 𝔟, 𝔡, cof(ℳ), cof(𝒩), 𝔠`) as a genuine finite partial order.  The 12 nodes (`Node`) and
+  the **15 covering arrows** (`arrow`, the ZFC-provable `≤` edges) generate the order `cle` = their
+  reflexive-transitive closure; `cichon_poset` proves it **reflexive, transitive, and ANTISYMMETRIC**
+  (antisymmetry via a `rank` linear extension — every arrow strictly increases rank, so a 2-cycle is
+  impossible).  It is genuinely PARTIAL, not a chain: `covN_addM_incomparable` shows `cov(𝒩) ⊥
+  add(ℳ)`, certified by an **up-set** (`upCovN` — an Alexandrov open in the sense of
+  `PosetTopology.Op`) that contains one but not the other, `cle` propagating membership upward
+  (`cle_up`).  Repo ties: `bottom` (`ℵ₁` is least) and `top` (`𝔠` is greatest) are the endpoints —
+  `𝔠 = 2^ℵ₀ = |ℤ₂|` from `PadicUncountable`, `ℵ₀ < everything` from the diagonals — and the interior
+  edge `b_le_d` (`𝔟 ≤ 𝔡`) is exactly the `DominatingModulus` pair.  So the whole cardinality arc is a
+  poset with ℵ₀ below the bottom, `𝔠 = |ℤ₂|` at the top, and 𝔟, 𝔡 pinned `> ℵ₀` in the interior.
+  `Print Assumptions` = **Closed under the global context**.
 - **Local–global compatibility** `LocalGlobalCompat` (`fabs_is_recip` + `local_global_compat`):
   the valuation description of `𝔸_f` (`ProductFormulaQ.fabs = ∏_p |·|_p`) and the ring
   description (`ProfiniteCRT`: `Ẑ = lim ℤ/nℤ = ∏_p ℤ_p`) read the **same** exponents. Global:
