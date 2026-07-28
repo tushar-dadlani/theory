@@ -1199,7 +1199,23 @@ is axiom-free.
   prime-power axis generators**, not the full interior lattice (see §3).
 - **p-adic ultrametric** `Padic`, `PadicMetric`: genuine ultrametric (norm / strong triangle).
 - **Order → topology** `PosetTopology`: genuine Alexandrov topology + `monotone ⇒ continuous`;
-  `FiniteTopology` a genuine finite instance; `ChainTower` a genuine inverse system.
+  `FiniteTopology` a genuine finite instance; `ChainTower` a genuine inverse system.  The Galois
+  connection `α ⊣ γ` (single biconditional `α x ≤ y ↔ x ≤ γ y`) is shown to generate the whole
+  closure calculus — unit/counit and the *derived* monotonicity of `α,γ`, then `cl=γ∘α` extensive/
+  monotone/idempotent (`cl_extensive`/`cl_monotone`/`cl_idempotent`).
+- **ZETA = THE LINEARIZED GALOIS CLOSURE** `ZetaClosureBridge.zeta_pos_iff_dclose` (**axiom-free**):
+  makes precise the slogan *Möbius/zeta is the ring-linearized, invertible version of a Galois
+  connection*.  On the single-prime chain both operators aggregate over the **same** down-set list
+  `seq 0 (S n)`; only the monoid differs.  The **Boolean/order layer** `dclose P n := existsb P
+  (seq 0 (S n)) = ⋁_{d≤n} P d` is a genuine **closure operator** (`dclose_extensive`/`_monotone`/
+  `_idempotent` — exactly the `PosetTopology.cl` laws a Galois connection yields), and the **additive/
+  ring layer** is `PosetMobiusFTC.zeta_t` on the indicator `ind P`.  The bridge — *reading `+` as `⋁`,
+  i.e. testing the sum for nonzero* — is `0 < zeta_t (ind P) n ↔ dclose P n = true`.  Capstone
+  contrast: `dclose_lossy` exhibits distinct predicates (`{1}` vs `{1,3}`) with **equal** closure
+  (`dclose_first_at_1`: the closure sees only the least true position), so the closure is
+  non-injective and has **no inverse** — whereas `zeta_t` is a bijection (`ftc_1`/`ftc_2`).  *That* is
+  why Möbius inversion needs the group `(+)` (subtraction = inclusion–exclusion) and cannot exist over
+  the idempotent join `(⋁)`.  `Print Assumptions` = **Closed under the global context**.
 - **Inverse limits** `InvLimit` (ω+1), `PadicIntegers` (`ℤ_p`), `PadicRing` (`ℤ_p` a commutative
   semiring): genuine, with the deferrals in §3.
 - **Analytic Euler factor / log-derivative** `EulerFactorR`, `VonMangoldtR`, `LadderDerivR`:

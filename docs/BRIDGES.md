@@ -163,3 +163,25 @@ sequence, so `{0,1}^ℕ ↪ ℤ₂` (`ofbits`), and running the diagonal on the 
 statement, **axiom-free** (the digits are `bool`, so the diagonal stays pointwise/constructive).
 ℤ₂ and ℝ=ℚ_∞ are the two completions of the countable ℚ, both jumping to `2^ℵ₀`; the 2-adic jump is
 proved outright, the archimedean one is what the quarantine pays for.
+
+---
+
+## 6. A companion bridge: order → ring (zeta = linearized Galois closure)
+
+A different (non-continuum) bridge in the same order-theory cluster, formalized in
+`spectral-theory/ZetaClosureBridge.v`. It makes precise the slogan *"Möbius/zeta is the
+ring-linearized, invertible version of a Galois connection."* On the single-prime divisibility chain,
+one operation — **aggregate over the down-set `{d ≤ n}`** — appears in two monoids:
+
+- **order / Boolean (`⋁`, idempotent):** `dclose P n = existsb P (seq 0 (S n))` is a genuine
+  *closure operator* (`dclose_extensive`/`_monotone`/`_idempotent` — the very laws
+  `PosetTopology.cl` gets from a **Galois connection** `α ⊣ γ`). Not invertible.
+- **additive / ring (`+`, a group):** `PosetMobiusFTC.zeta_t` on the indicator, invertible with
+  inverse the Möbius/backward-difference `mobius_t` (`ftc_1`/`ftc_2`).
+
+The bridge — *read `+` as `⋁`, i.e. test the sum for nonzero* — is
+**`zeta_pos_iff_dclose : 0 < zeta_t (ind P) n ↔ dclose P n = true`** (axiom-free). And
+`dclose_lossy` shows the closure is non-injective (distinct predicates, equal closure), so it has no
+inverse — whereas `zeta_t` does. That gap **is** why Möbius inversion needs the group `(+)`
+(subtraction = inclusion–exclusion) and cannot live over the idempotent join `(⋁)`: strictly,
+Möbius/zeta is not a Galois connection but the *ring-linearized, invertible upgrade* of one.
