@@ -251,3 +251,21 @@ Cauchy with the explicit modulus `N=2p` from the telescoping tail `Σ_{n>i}1/(1+
 Honest boundary: this is the **sum side only**. The Fourier right side `Σ_k f̂(k)` with
 `f̂(k)=π·e^{−2π|k|}` needs the constructive integral `f̂ = ∫f(x)e^{−2πikx}dx` — the core of knot 1,
 and the next brick. The lattice-sum LHS is now below the wall; the integral is what remains.
+
+---
+
+## 9. The core of knot 1: the constructive integral of a Lipschitz function
+
+`spectral-theory/CIntegral.v` builds the actual missing tool — a constructive Riemann integral on
+[0,1], axiom-free. For `f : ℚ→ℚ` that is `L`-Lipschitz, the dyadic Riemann sums `R_k =
+2^{−k}·Σ_{j<2^k} f(j·2^{−k})` are rational and Cauchy. The engine is the **doubling estimate** `|R_k −
+R_{k+1}| ≤ B_k − B_{k+1}` (`B_k = 2^{−k}·L/2`): one dyadic refinement is a sum-reindex into pairs,
+whose two children differ by one cell width `2^{−(k+1)}`, so each cell moves the sum by at most the
+Lipschitz variation over it. That **telescopes** to `|R_i − R_j| ≤ B_i − B_j`, giving the explicit
+modulus `N = L·p`, handed to `cvQ_of_regular` to yield `cintegral : CReal` with `cvQ R cintegral` —
+the value `∫₀¹ f`. Closed under the global context.
+
+This is the tool §8's Poisson right side (and the Gaussian integral, and the real Γ) was blocked on.
+What remains of knot 1 is built ON it: improper integrals `∫_ℝ` (the tails), 2-D integration + polar
+change of variables (the Gaussian `∫e^{−πx²}=√π`, which discharges the `FEResidue` axiom), and the
+Mellin transform (θ → ξ). The seed is now below the wall; the extensions are the next bricks.

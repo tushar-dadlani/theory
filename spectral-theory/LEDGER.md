@@ -292,6 +292,23 @@ is axiom-free.
   this is the SUM side only; the Fourier RIGHT side `Σ_k f̂(k)`, `f̂(k)=π·e^{−2π|k|}`, needs the
   constructive integral `f̂=∫f·e^{−2πikx}dx` (knot 1) — the next brick.  `Print Assumptions` = **Closed
   under the global context**.
+- **THE CONSTRUCTIVE RIEMANN INTEGRAL of a Lipschitz function on [0,1]** `CIntegral.cintegral_cv`
+  (**axiom-free**) — the CORE brick of knot 1, the tool the continuous Fourier side of Poisson, the
+  Gaussian integral `∫e^{−πx²}=√π` (the `FEResidue` axiom), and the real Γ all wait on.  For
+  `f : ℚ→ℚ` that is `L`-Lipschitz (integer `L`, `Hlip : |f x − f y| ≤ L·|x−y|`), the dyadic Riemann
+  sums `R k = 2^{−k}·Σ_{j<2^k} f(j·2^{−k})` (`R`) are rational and Cauchy.  The engine is the
+  **doubling estimate** `doubling : |R k − R(S k)| ≤ B k − B(S k)` (`B k = 2^{−k}·L/2`): one dyadic
+  refinement is a `qsum`-reindex into pairs (`qsum_pair`) whose two children are `sample k j` and
+  `sample k j + 2^{−(k+1)}` (`sample_even`/`sample_odd`), so each cell moves the sum by ≤ the
+  Lipschitz variation `L·2^{−(k+1)}` over that cell (`qabs_qsum` + `Hlip`, with `2^k·mesh k=1` from
+  `pow2_mesh`).  It **telescopes** (`tele`) to `|R i − R j| ≤ B i − B j`, giving the explicit modulus
+  `N = L·p` (`R_regular`, from `B_modulus : B(L·p) ≤ 1/p` via `2^{L·p} > L·p`, `pow2_ge`).
+  `CRealCv.cvQ_of_regular` then delivers `cintegral : CReal` with `cvQ R cintegral` — the value
+  `∫₀¹ f`, axiom-free.  **Honest scope:** left dyadic-endpoint sums on `[0,1]` for a Lipschitz
+  integrand — the constructive-integral SEED.  Improper integrals (`∫_ℝ`), higher dimension, change
+  of variables and Fubini (what the Gaussian `∫e^{−πx²}` and the Mellin transform actually need)
+  build ON this; they are the rest of knot 1.  `Print Assumptions` = **Closed under the global
+  context**.
 - **THE ALGEBRAIC NYQUIST–SHANNON BRIDGE** `BandlimitedInterp.nyquist_sampling` (**axiom-free**) —
   the first genuine *discrete→continuous* sampling theorem that lands **below** the classical-ℝ
   quarantine, via the isolation *bandwidth = polynomial degree*.  A signal band-limited to
