@@ -254,6 +254,20 @@ is axiom-free.
   symmetry) — **not** the analytic `ξ(s)=ξ(1−s)`, which needs the self-dual invariant VALUE
   `∫e^{−πx²}=√π=Γ(½)`, the irreducible archimedean residue — exactly as `FordCircles` is the modular
   skeleton without the analytic θ.  `Print Assumptions` = **Closed under the global context**.
+- **THE ONE HONEST MISSING AXIOM: √π = Γ(½)** `FEResidue.Gamma_half_is_sqrt_pi` (**uses one axiom, by
+  design**) — the single archimedean fact isolated.  Everything structural around the FE is axiom-free
+  and built: the `s↦1−s` involution with fixed point `1/2` (`FEInvolution`), the modular `S` preserving
+  Ford tangency, finite/algebraic Poisson (`finite_poisson_R`), integer Gamma (`GammaFunction`).  The
+  one fact the stdlib-only repo cannot prove — the Gaussian integral `∫e^{−πx²}=1` — surfaces as the
+  value of the FE-symmetric Gamma reflection `Γ(s)Γ(1−s)=π/sin(πs)` at the **self-dual fixed point
+  `s=1/2`**: `Γ(½)²=π`, i.e. `Γ(½)=√π`.  Isolated as a single `Axiom Gamma_half_selfdual`
+  (`Rmul GammaHalf GammaHalf = piR`) over an abstract archimedean carrier `R = ℚ_∞` (itself left a
+  `Parameter`, since the repo does not build it), with `Gamma_half_is_sqrt_pi` proving `Γ(½)` is the
+  positive `√π`, at `fe_fixed_point = FEInvolution.critical = 1/2`.  This is the ONE file in the arc
+  deliberately not `Closed under the global context`: `Print Assumptions` shows **exactly** the residue
+  (`Gamma_half_selfdual`, `GammaHalf_pos`, and the abstract carrier) and **NOT** the classical-ℝ trio
+  (`sig_forall_dec`/`sig_not_dec`/`functional_extensionality_dep`) — the FE's whole archimedean cost is
+  one number, honestly named.  (Template: `LandauerBound`'s isolation of `ln 2`; here it is `√π`.)
 - **FINITE POISSON SUMMATION** `FinitePoisson.finite_poisson` (quarantined ℝ) — the discrete shadow
   of Poisson, on the DFT cluster: for `N = d·m`, `Σ_{r<m} (DFT_N f)(r·d) = m · Σ_{a<d} f(a·m)`
   (summing the DFT over the dual subgroup `{rd}` recovers `f` summed over the subgroup `{am}`).

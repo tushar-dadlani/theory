@@ -607,3 +607,4 @@ spectral-theory/ZetaClosureBridge.v
 spectral-theory/DominatingModulus.v
 spectral-theory/CichonPoset.v
 spectral-theory/FEInvolution.v
+spectral-theory/FEResidue.v

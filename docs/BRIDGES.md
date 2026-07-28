@@ -224,3 +224,11 @@ invariant *value* `∫e^{−πx²}=√π=Γ(½)`, the irreducible archimedean re
 the modular skeleton without the analytic θ-transformation, this is the functional-equation skeleton
 without the archimedean `√π` — the geometric form of the involution, with the value still behind the
 continuum wall.
+
+**The residue, isolated** (`spectral-theory/FEResidue.v`). Since the shape is axiom-free and only the
+self-dual *value* is missing, we name it as **one axiom**: the value of the FE-symmetric Gamma
+reflection `Γ(s)Γ(1−s)=π/sin(πs)` at the fixed point `s=½`, i.e. `Γ(½)²=π` — `Γ(½)=√π`
+(`Gamma_half_is_sqrt_pi`). This is the single place in the arc deliberately *not* `Closed under the
+global context`: `Print Assumptions` shows **exactly** this residue and **not** the classical-ℝ trio.
+The functional equation's whole archimedean cost is one number, honestly named — the template being
+`LandauerBound`'s isolation of `ln 2`, here `√π`.
