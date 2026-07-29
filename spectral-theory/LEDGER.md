@@ -354,6 +354,19 @@ is axiom-free.
   (via `cvQ_opp` + `cvQ_le_const`), these are exactly `FEResidue`'s value relation — so its axiom is now
   a theorem.  **Honest boundary** unchanged: `√π` is the Wallis construction; `√π = ∫e^{−πx²}` stays
   classical.  `Print Assumptions` (all) = **Closed under the global context**.
+- **THE CENTRAL-BINOMIAL SANDWICH `4^M/(2M+1) ≤ C(2M,M) ≤ 4^M`** `CentralBinomialBound`
+  (**axiom-free**) — the first brick toward the Chebyshev prime bound `ψ(x) ≍ x`.  Since `C(2M,M) =
+  (2M)!/(M!)²`, we state it as pure ℕ factorial inequalities, avoiding binomial / Pascal / unimodality
+  entirely: `central_upper : (2M)! ≤ 4^M·(M!)²` and `central_lower : 4^M·(M!)² ≤ (2M+1)·(2M)!`.  Each
+  is a one-line induction — the factorial recurrence turns the step into `(2M+2)(2M+1) ≤ 4(M+1)²`
+  (upper) and `2(M+1) ≤ 2M+3` (lower), closed by `nia`; spot-checked at `M=3` (`central_bounds_M3`).
+  This is EXACTLY the numerical input the contour-free Chebyshev bound needs: with `D(N) = log(N!) −
+  2·log(⌊N/2⌋!) = log((2M)!/(M!)²)`, these give `(log2)·N − log(N+1) ≤ D(N) ≤ (log2)·N`, i.e. `D(N) ≍
+  N` — the estimate that, with `Chebyshev.order_swap_identity` (`Σ_{n≤N}log n = Σ_{d≤N}Λ(d)⌊N/d⌋`) and
+  the `T(N)−2T(⌊N/2⌋)` squeeze, yields `ψ(x) ≍ x`.  **Honest scope:** this bound is axiom-free (pure
+  ℕ); the *Chebyshev assembly on top* (the squeeze + dyadic telescoping) uses `ln`/ℝ and so will be
+  quarantined — and `ψ ≍ x` is the Chebyshev BOUND, not the PNT `ψ ~ x`.  `Print Assumptions` = **Closed
+  under the global context**.
 - **THE ALGEBRAIC NYQUIST–SHANNON BRIDGE** `BandlimitedInterp.nyquist_sampling` (**axiom-free**) —
   the first genuine *discrete→continuous* sampling theorem that lands **below** the classical-ℝ
   quarantine, via the isolation *bandwidth = polynomial degree*.  A signal band-limited to

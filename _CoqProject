@@ -613,3 +613,4 @@ spectral-theory/CIntegral.v
 spectral-theory/ImproperIntegral.v
 spectral-theory/ConstructivePi.v
 spectral-theory/ConstructiveSqrtPi.v
+spectral-theory/CentralBinomialBound.v
