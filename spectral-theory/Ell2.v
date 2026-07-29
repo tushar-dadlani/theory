@@ -1,23 +1,31 @@
 (* ================================================================= *)
 (*  Ell2.v  —  the infinite-dimensional real Hilbert space  ℓ².       *)
 (*                                                                    *)
-(*  STAGE 1 — ℓ² as a genuine (infinite-dimensional) real INNER-      *)
-(*  PRODUCT (pre-Hilbert) space.                                     *)
+(*  STAGES 1–2 — ℓ² as a genuine (infinite-dimensional) real NORMED   *)
+(*  INNER-PRODUCT space.                                              *)
 (*                                                                    *)
 (*  A vector is a real sequence f : ℕ → ℝ whose squares are summable  *)
 (*  (Σ f(n)² converges).  This file establishes:                     *)
-(*   • ℓ² is a vector space: it contains 0 and is closed under        *)
-(*     scalar multiplication and addition (Summable_scal/_plus);      *)
+(*   STAGE 1 (vector space + well-defined inner product):            *)
+(*   • ℓ² is a vector space: 0, scalar mult, addition                 *)
+(*     (Ell2_zero/_scal/_plus, closure via (f+g)² ≤ 2f²+2g²);         *)
 (*   • the inner product ⟨f,g⟩ = Σ f(n) g(n) is WELL-DEFINED — the    *)
-(*     series converges (absolutely), by comparison |fg| ≤ f²+g²      *)
-(*     and absolute-⇒-convergent (Ell2_ip_summable, ip);             *)
-(*   • ⟨·,·⟩ is symmetric (ip_sym) and ⟨f,f⟩ ≥ 0 (ip_diag_nonneg).    *)
+(*     series converges absolutely (Ell2_ip_summable, ip), via        *)
+(*     |fg| ≤ f²+g² and absolute-⇒-convergent (Stdlib cauchy_abs);    *)
+(*   • ⟨·,·⟩ symmetric (ip_sym), ⟨f,f⟩ ≥ 0 (ip_diag_nonneg).          *)
+(*   STAGE 2 (the full inner-product-space + normed structure):      *)
+(*   • bilinearity: ip_add_r, ip_scal_r (right; left via ip_sym);     *)
+(*   • positive-DEFINITENESS: ⟨f,f⟩ = 0 ⇒ f ≡ 0 (ip_diag_zero);       *)
+(*   • CAUCHY–SCHWARZ: ⟨f,g⟩² ≤ ⟨f,f⟩⟨g,g⟩ (ip_CS), via finite CS on  *)
+(*     partial sums (a nonnegative quadratic) + limit passage;        *)
+(*   • the NORM ‖f‖ = √⟨f,f⟩ and MINKOWSKI ‖f+g‖ ≤ ‖f‖+‖g‖            *)
+(*     (norm, norm_triangle).                                        *)
 (*                                                                    *)
-(*  The completeness axis is genuinely available: ℝ is complete       *)
-(*  (Stdlib R_complete), which is what a Riesz–Fischer proof of ℓ²-   *)
-(*  completeness (the Hilbert-space capstone) will run on.  That, and *)
-(*  Cauchy–Schwarz / Minkowski / full bilinearity / positive-         *)
-(*  definiteness, are the STAGE-2 follow-up.                          *)
+(*  STAGE 3 (the Hilbert capstone, still to do): COMPLETENESS         *)
+(*  (Riesz–Fischer) — every ℓ²-Cauchy sequence converges in ℓ².  The  *)
+(*  engine is on hand: ℝ is complete (Stdlib R_complete), giving the  *)
+(*  pointwise limits; it remains to show the candidate limit is in    *)
+(*  ℓ² and is the norm-limit.                                        *)
 (*                                                                    *)
 (*  Axiom footprint: the standard classical Reals axioms only (the    *)
 (*  quarantined Dedekind-reals + functional extensionality that any   *)
@@ -192,14 +200,222 @@ Proof.
   intro N; apply cond_pos_sum; intro n; nra.
 Qed.
 
+(* ================================================================= *)
+(*  STAGE 2 — the genuine inner-product-space axioms, Cauchy–Schwarz, *)
+(*  the norm and its triangle inequality (Minkowski).                *)
+(* ================================================================= *)
+
+(* the defining property of ip: the partial sums converge to it *)
+Lemma ip_spec : forall f g (Hf : Ell2 f) (Hg : Ell2 g),
+  Un_cv (fun N => sum_f_R0 (fun n => f n * g n) N) (ip f g Hf Hg).
+Proof. intros f g Hf Hg; unfold ip; exact (proj2_sig (Ell2_ip_summable f g Hf Hg)). Qed.
+
+(* the value of ip does not depend on the summability proofs *)
+Lemma ip_pi : forall f g (Hf Hf' : Ell2 f) (Hg Hg' : Ell2 g),
+  ip f g Hf Hg = ip f g Hf' Hg'.
+Proof. intros; exact (UL_sequence _ _ _ (ip_spec f g Hf Hg) (ip_spec f g Hf' Hg')). Qed.
+
+(* right-additivity: <f, g+h> = <f,g> + <f,h> *)
+Lemma ip_add_r :
+  forall f g h (Hf : Ell2 f) (Hg : Ell2 g) (Hh : Ell2 h)
+         (Hgh : Ell2 (fun n => g n + h n)),
+  ip f (fun n => g n + h n) Hf Hgh = (ip f g Hf Hg + ip f h Hf Hh)%R.
+Proof.
+  intros f g h Hf Hg Hh Hgh.
+  apply (UL_sequence (fun N => sum_f_R0 (fun n => f n * (g n + h n)) N)).
+  - apply ip_spec.
+  - apply (Un_cv_eq (fun N => sum_f_R0 (fun n => f n * g n) N
+                            + sum_f_R0 (fun n => f n * h n) N)).
+    + intro N; rewrite <- sum_f_R0_plus; apply sum_eq; intros; ring.
+    + apply CV_plus; apply ip_spec.
+Qed.
+
+(* right-homogeneity: <f, c*g> = c*<f,g> *)
+Lemma ip_scal_r :
+  forall f g c (Hf : Ell2 f) (Hg : Ell2 g) (Hcg : Ell2 (fun n => c * g n)),
+  ip f (fun n => c * g n) Hf Hcg = (c * ip f g Hf Hg)%R.
+Proof.
+  intros f g c Hf Hg Hcg.
+  apply (UL_sequence (fun N => sum_f_R0 (fun n => f n * (c * g n)) N)).
+  - apply ip_spec.
+  - apply (Un_cv_eq (fun N => c * sum_f_R0 (fun n => f n * g n) N)).
+    + intro N; rewrite <- sum_f_R0_scal; apply sum_eq; intros; ring.
+    + apply Un_cv_scal; apply ip_spec.
+Qed.
+
+(* a nonnegative term is <= the partial sum that contains it *)
+Lemma term_le_sum : forall u n, (forall k, 0 <= u k) -> u n <= sum_f_R0 u n.
+Proof.
+  intros u n Hp; destruct n; simpl.
+  - lra.
+  - pose proof (cond_pos_sum u n Hp); lra.
+Qed.
+
+(* positive-DEFINITENESS: <f,f> = 0 forces f = 0 identically *)
+Lemma ip_diag_zero : forall f (Hf : Ell2 f),
+  ip f f Hf Hf = 0 -> forall n, f n = 0.
+Proof.
+  intros f Hf H0 n.
+  assert (Hp : forall k, 0 <= f k * f k) by (intro k; nra).
+  assert (Hle : sum_f_R0 (fun k => f k * f k) n <= 0).
+  { rewrite <- H0; apply (sum_incr (fun k => f k * f k) n (ip f f Hf Hf));
+      [ apply ip_spec | exact Hp ]. }
+  pose proof (term_le_sum (fun k => f k * f k) n Hp).
+  assert (Hz : f n * f n = 0) by nra.
+  destruct (Rmult_integral _ _ Hz); assumption.
+Qed.
+
+(* ----------------------------------------------------------------- *)
+(*  CAUCHY–SCHWARZ.                                                   *)
+(* ----------------------------------------------------------------- *)
+
+(* Σ (f t − g)²  expanded over a partial sum *)
+Lemma sum_quad : forall f g t N,
+  sum_f_R0 (fun k => (f k * t - g k) * (f k * t - g k)) N
+  = (sum_f_R0 (fun k => f k * f k) N * (t * t)
+     - 2 * t * sum_f_R0 (fun k => f k * g k) N
+     + sum_f_R0 (fun k => g k * g k) N)%R.
+Proof. intros f g t N; induction N; simpl; [ ring | rewrite IHN; ring ]. Qed.
+
+(* any nonnegative term is <= the partial sum containing it *)
+Lemma term_le_sum_any : forall u N k,
+  (forall j, 0 <= u j) -> (k <= N)%nat -> u k <= sum_f_R0 u N.
+Proof.
+  intros u N; induction N; intros k Hp Hk; simpl.
+  - assert (k = 0)%nat by lia; subst; lra.
+  - destruct (Nat.eq_dec k (S N)) as [-> | Hne].
+    + pose proof (cond_pos_sum u N Hp); lra.
+    + assert (k <= N)%nat by lia; pose proof (IHN k Hp H); pose proof (Hp (S N)); lra.
+Qed.
+
+(* finite Cauchy–Schwarz on partial sums *)
+Lemma finite_CS : forall f g N,
+  (sum_f_R0 (fun k => f k * g k) N * sum_f_R0 (fun k => f k * g k) N
+   <= sum_f_R0 (fun k => f k * f k) N * sum_f_R0 (fun k => g k * g k) N)%R.
+Proof.
+  intros f g N.
+  set (A := sum_f_R0 (fun k => f k * f k) N).
+  set (B := sum_f_R0 (fun k => f k * g k) N).
+  set (C := sum_f_R0 (fun k => g k * g k) N).
+  assert (HA : 0 <= A) by (apply cond_pos_sum; intro; nra).
+  assert (Hquad : forall t, 0 <= A * (t * t) - 2 * t * B + C).
+  { intro t.
+    replace (A * (t * t) - 2 * t * B + C)
+      with (sum_f_R0 (fun k => (f k * t - g k) * (f k * t - g k)) N)
+      by (rewrite sum_quad; unfold A, B, C; ring).
+    apply cond_pos_sum; intro k.
+    pose proof (Rle_0_sqr (f k * t - g k)); unfold Rsqr in *; lra. }
+  destruct (Rle_lt_or_eq_dec 0 A HA) as [HApos | HA0].
+  - assert (Hne : A <> 0) by lra.
+    pose proof (Hquad (B / A)) as H.
+    replace (A * (B / A * (B / A)) - 2 * (B / A) * B + C)
+      with ((A * C - B * B) * / A) in H by (field; exact Hne).
+    pose proof (Rinv_0_lt_compat A HApos); nra.
+  - (* A = 0: every f k (k<=N) vanishes, so B = 0 *)
+    assert (HB0 : B = 0).
+    { unfold B; transitivity (sum_f_R0 (fun _ : nat => 0) N).
+      - apply sum_eq; intros k Hk.
+        assert (Hk2 : f k * f k <= A)
+          by (unfold A; apply (term_le_sum_any (fun j => f j * f j) N k);
+              [ intro; nra | exact Hk ]).
+        assert (f k * f k = 0) by nra.
+        destruct (Rmult_integral _ _ H); rewrite H0; ring.
+      - rewrite sum_cte; ring. }
+    rewrite HB0, <- HA0; nra.
+Qed.
+
+(* limit comparison: pointwise <= is preserved in the limit *)
+Lemma Un_cv_le : forall U V u v,
+  (forall n, U n <= V n) -> Un_cv U u -> Un_cv V v -> u <= v.
+Proof.
+  intros U V u v Hle HU HV.
+  destruct (Rle_or_lt u v) as [Hok | Hlt]; [ exact Hok | exfalso ].
+  destruct (HU ((u - v) / 2) ltac:(lra)) as [N1 H1].
+  destruct (HV ((u - v) / 2) ltac:(lra)) as [N2 H2].
+  specialize (H1 (max N1 N2) (Nat.le_max_l _ _)).
+  specialize (H2 (max N1 N2) (Nat.le_max_r _ _)).
+  specialize (Hle (max N1 N2)); unfold R_dist in *.
+  apply Rabs_def2 in H1; apply Rabs_def2 in H2; lra.
+Qed.
+
+(* CAUCHY–SCHWARZ for the inner product: ⟨f,g⟩² ≤ ⟨f,f⟩·⟨g,g⟩ *)
+Lemma ip_CS : forall f g (Hf : Ell2 f) (Hg : Ell2 g),
+  ((ip f g Hf Hg) ^ 2 <= ip f f Hf Hf * ip g g Hg Hg)%R.
+Proof.
+  intros f g Hf Hg.
+  replace ((ip f g Hf Hg) ^ 2) with (ip f g Hf Hg * ip f g Hf Hg) by ring.
+  apply (Un_cv_le
+           (fun N => sum_f_R0 (fun k => f k * g k) N * sum_f_R0 (fun k => f k * g k) N)
+           (fun N => sum_f_R0 (fun k => f k * f k) N * sum_f_R0 (fun k => g k * g k) N)).
+  - intro N; apply finite_CS.
+  - apply CV_mult; apply ip_spec.
+  - apply CV_mult; apply ip_spec.
+Qed.
+
+(* ----------------------------------------------------------------- *)
+(*  THE NORM and the triangle inequality (Minkowski).                *)
+(* ----------------------------------------------------------------- *)
+
+Definition norm (f : nat -> R) (Hf : Ell2 f) : R := sqrt (ip f f Hf Hf).
+
+Lemma norm_nonneg : forall f (Hf : Ell2 f), 0 <= norm f Hf.
+Proof. intros; apply sqrt_pos. Qed.
+
+(* parallelogram expansion: <f+g,f+g> = <f,f> + 2<f,g> + <g,g> *)
+Lemma ip_plus_self :
+  forall f g (Hf : Ell2 f) (Hg : Ell2 g) (Hfg : Ell2 (fun n => f n + g n)),
+  ip (fun n => f n + g n) (fun n => f n + g n) Hfg Hfg
+  = (ip f f Hf Hf + 2 * ip f g Hf Hg + ip g g Hg Hg)%R.
+Proof.
+  intros f g Hf Hg Hfg.
+  rewrite (ip_add_r (fun n => f n + g n) f g Hfg Hf Hg Hfg).
+  rewrite (ip_sym (fun n => f n + g n) f Hfg Hf).
+  rewrite (ip_sym (fun n => f n + g n) g Hfg Hg).
+  rewrite (ip_add_r f f g Hf Hf Hg Hfg).
+  rewrite (ip_add_r g f g Hg Hf Hg Hfg).
+  rewrite (ip_sym g f Hg Hf).
+  ring.
+Qed.
+
+(* Cauchy–Schwarz, square-root form: <f,g> ≤ √(<f,f>·<g,g>) *)
+Lemma ip_CS_sqrt : forall f g (Hf : Ell2 f) (Hg : Ell2 g),
+  ip f g Hf Hg <= sqrt (ip f f Hf Hf * ip g g Hg Hg).
+Proof.
+  intros f g Hf Hg.
+  apply Rle_trans with (sqrt ((ip f g Hf Hg) ^ 2)).
+  - rewrite <- Rsqr_pow2, sqrt_Rsqr_abs; apply Rle_abs.
+  - apply sqrt_le_1_alt, ip_CS.
+Qed.
+
+(* MINKOWSKI: ‖f+g‖ ≤ ‖f‖ + ‖g‖ *)
+Lemma norm_triangle :
+  forall f g (Hf : Ell2 f) (Hg : Ell2 g) (Hfg : Ell2 (fun n => f n + g n)),
+  norm (fun n => f n + g n) Hfg <= norm f Hf + norm g Hg.
+Proof.
+  intros f g Hf Hg Hfg.
+  apply Rsqr_incr_0.
+  - unfold norm.
+    rewrite Rsqr_sqrt by apply ip_diag_nonneg.
+    rewrite (ip_plus_self f g Hf Hg Hfg), Rsqr_plus.
+    rewrite (Rsqr_sqrt (ip f f Hf Hf)) by apply ip_diag_nonneg.
+    rewrite (Rsqr_sqrt (ip g g Hg Hg)) by apply ip_diag_nonneg.
+    pose proof (sqrt_mult (ip f f Hf Hf) (ip g g Hg Hg)
+                 (ip_diag_nonneg f Hf) (ip_diag_nonneg g Hg)) as Hm.
+    pose proof (ip_CS_sqrt f g Hf Hg); lra.
+  - apply norm_nonneg.
+  - apply Rplus_le_le_0_compat; apply norm_nonneg.
+Qed.
+
 Print Assumptions Ell2_ip_summable.
-Print Assumptions ip_sym.
+Print Assumptions ip_CS.
+Print Assumptions norm_triangle.
 
 (* ================================================================= *)
-(*  END Ell2.v (STAGE 1)                                             *)
-(*  ℓ² is a genuine infinite-dimensional real inner-product space:   *)
-(*  a vector space (0, scalar, +) with a well-defined symmetric,     *)
-(*  positive-semidefinite inner product Σ f g.  Completeness         *)
-(*  (Riesz–Fischer, on Stdlib's R_complete) + Cauchy–Schwarz +       *)
-(*  Minkowski + positive-definiteness are STAGE 2.                   *)
+(*  END Ell2.v (STAGES 1–2)                                          *)
+(*  ℓ² is a genuine infinite-dimensional real NORMED inner-product   *)
+(*  space: a vector space (0, scalar, +) with a symmetric, bilinear, *)
+(*  positive-DEFINITE inner product Σ f g satisfying Cauchy–Schwarz,  *)
+(*  and a norm ‖f‖ = √⟨f,f⟩ obeying the triangle inequality.  The     *)
+(*  remaining Hilbert capstone is completeness (Riesz–Fischer), on    *)
+(*  Stdlib's R_complete — STAGE 3.                                   *)
 (* ================================================================= *)
