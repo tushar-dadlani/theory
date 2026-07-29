@@ -337,6 +337,18 @@ is axiom-free.
   Wallis limit, *classically equal* to π, taken here as its constructive definition; its identification
   with the circle / analytic π is Wallis's theorem (classical, not formalized).  `Print Assumptions` =
   **Closed under the global context**.
+- **A CONSTRUCTIVE SQUARE ROOT, and a constructive √π** `ConstructiveSqrtPi.constructive_sqrt_pi_cv`
+  (**axiom-free**) — stdlib's constructive reals have NO square root, so we build one: rational
+  BISECTION `bis fuel lo hi a` on `[1,2]` with the explicit precision `|bis²−a| ≤ 4·(hi−lo)·(½)^fuel`
+  (`bis_prec`; the `4`-from-`hi≤2` bound makes the `(½)^fuel` telescope cleanly through the recursion,
+  `bis_range`).  Applied to the central-binomial π-approximants (`cpi n ∈ [2,4]`, `cpi_ge2`/`cpi_le4`),
+  it gives a rational sequence `sq n = bis n 1 2 (cpi n) → √π`, in `[1,2]` (`sq_range`), with
+  `|sq n² − cpi n| ≤ 4·half n` (`sq_prec`) and Cauchy (via `|sqᵢ−sqⱼ| ≤ |sqᵢ²−sqⱼ²|/2`, `sq_lip`, +
+  the `half`/`cpi` moduli, `sq_regular`), fed to `cvQ_of_regular` for `constructive_sqrt_pi : CReal`
+  with `cvQ sq constructive_sqrt_pi`.  This is the **√π side** of the FEResidue value `Γ(½)²=π`.  The
+  final wiring — `√π² == π` (via `cvQ_sq` + limit uniqueness) and rewriting `FEResidue`'s axiom into a
+  theorem — is the discharge step.  **Honest boundary** unchanged: `√π` is the Wallis construction;
+  `√π = ∫e^{−πx²}` stays classical.  `Print Assumptions` = **Closed under the global context**.
 - **THE ALGEBRAIC NYQUIST–SHANNON BRIDGE** `BandlimitedInterp.nyquist_sampling` (**axiom-free**) —
   the first genuine *discrete→continuous* sampling theorem that lands **below** the classical-ℝ
   quarantine, via the isolation *bandwidth = polynomial degree*.  A signal band-limited to
