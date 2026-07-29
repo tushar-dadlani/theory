@@ -616,3 +616,4 @@ spectral-theory/ConstructiveSqrtPi.v
 spectral-theory/CentralBinomialBound.v
 spectral-theory/ChebyshevBound.v
 spectral-theory/Ell2.v
+spectral-theory/Ell2Operator.v
