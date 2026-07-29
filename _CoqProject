@@ -629,3 +629,4 @@ spectral-theory/Ell2Basel.v
 spectral-theory/Ell2Euler.v
 spectral-theory/Ell2ZetaCont.v
 spectral-theory/JacobiTheta.v
+spectral-theory/DirichletIntegral.v
