@@ -627,3 +627,4 @@ spectral-theory/Ell2Zeta.v
 spectral-theory/Ell2ZetaConverge.v
 spectral-theory/Ell2Basel.v
 spectral-theory/Ell2Euler.v
+spectral-theory/Ell2ZetaCont.v
