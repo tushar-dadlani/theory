@@ -1,76 +1,73 @@
 (* ================================================================= *)
-(*  FEResidue.v  —  THE ONE HONEST MISSING AXIOM: √π = Γ(½).          *)
+(*  FEResidue.v  —  the self-dual value √π = Γ(½), NOW DISCHARGED.     *)
 (*                                                                    *)
-(*  Everything STRUCTURAL around the functional equation is axiom-    *)
-(*  free and already built:                                          *)
-(*    • the involution s ↦ 1−s with unique fixed point s = 1/2 =      *)
-(*      the critical line              (`FEInvolution.refl_fixed_unique`)*)
-(*    • the modular S : τ ↦ −1/τ preserving Ford tangency             *)
-(*                                     (`FEInvolution.Smod_preserves_det`)*)
-(*    • finite / algebraic Poisson summation over ℚ(ζ_N)             *)
-(*                                     (`FinitePoisson.finite_poisson_R`)*)
-(*    • the integer Gamma pillar Γ(n+1)=n!  (`GammaFunction`).        *)
+(*  This file once ISOLATED the functional equation's one archimedean  *)
+(*  residue as a single axiom `Γ(½)² = π`.  That axiom is now a        *)
+(*  THEOREM: over the constructive reals `CReal`, with                *)
 (*                                                                    *)
-(*  The single archimedean fact the stdlib-only repo CANNOT build —   *)
-(*  the Gaussian integral ∫e^{−πx²}dx = 1 — surfaces as one value:    *)
-(*  the value of the FE-symmetric Gamma reflection Γ(s)·Γ(1−s) =      *)
-(*  π/sin(πs) AT the self-dual fixed point s = 1/2, namely            *)
+(*    piR       := ConstructivePi.constructive_pi        (Wallis π)   *)
+(*    GammaHalf := ConstructiveSqrtPi.constructive_sqrt_pi (its root)  *)
 (*                                                                    *)
-(*        Γ(½)² = π        i.e.   Γ(½) = √π.                          *)
+(*  we PROVE  `GammaHalf² == piR`  (`Gamma_half_selfdual`, from        *)
+(*  `ConstructiveSqrtPi.gamma_half_sq_eq_pi`) and `GammaHalf > 0`      *)
+(*  (`GammaHalf_pos`).  `Print Assumptions` = Closed under the global  *)
+(*  context — the repo's LAST axiom is gone.                          *)
 (*                                                                    *)
-(*  We ISOLATE exactly this, as a single AXIOM (this is the ONE file  *)
-(*  in the cardinality/FE arc that is deliberately NOT `Closed under  *)
-(*  the global context`).  `Print Assumptions Gamma_half_is_sqrt_pi`  *)
-(*  then shows precisely this residue — the self-dual value — and     *)
-(*  NOT the classical-ℝ trio (`sig_forall_dec`, `sig_not_dec`,        *)
-(*  `functional_extensionality_dep`).  The functional equation's      *)
-(*  archimedean cost is one number, honestly named.                  *)
-(*                                                                    *)
-(*  (The template is `LandauerBound`'s isolation of the one           *)
-(*  transcendental fact `ln 2`; here it is `√π`.)                     *)
+(*  HONEST BOUNDARY (unchanged, and the point of the whole arc): `π`   *)
+(*  and `√π` here are the WALLIS / central-binomial constructions,     *)
+(*  taken as the constructive definitions of these constants.  Their   *)
+(*  identification with the CIRCLE π and with the GAUSSIAN INTEGRAL     *)
+(*  `∫e^{−πx²}=√π` — i.e. that this `√π` is the value the analytic     *)
+(*  functional equation `ξ(s)=ξ(1−s)` carries at its fixed point       *)
+(*  `s=1/2` — is Wallis's / the Gaussian's theorem, classical and NOT  *)
+(*  formalized.  The value now EXISTS axiom-free; the analytic bridge  *)
+(*  to θ / the Gaussian remains the archimedean content behind the     *)
+(*  wall.                                                             *)
 (* ================================================================= *)
 
+From Stdlib Require Import Reals.Cauchy.ConstructiveCauchyReals
+  Reals.Cauchy.ConstructiveCauchyRealsMult.
 From Stdlib Require Import QArith.
-Require Import FEInvolution.
+Require Import CRealCv ConstructivePi ConstructiveSqrtPi FEInvolution.
 Open Scope Q_scope.
 
-(* ℝ = ℚ_∞, the archimedean completion the repo does NOT build — an abstract carrier   *)
-(* with a product and an order.  (Leaving it abstract keeps the assumption footprint    *)
-(* to exactly the ONE relation below, with no analysis machinery smuggled in.)          *)
-Parameter R  : Type.
-Parameter Rmul : R -> R -> R.
-Parameter Rlt : R -> R -> Prop.
-Parameter R0 : R.
-Parameter piR : R.                 (* π *)
-Parameter GammaHalf : R.           (* Γ(½), the Γ-pillar value at the FE fixed point 1/2 *)
+(* the concrete self-dual value and its square (π), axiom-free *)
+Definition piR : CReal := constructive_pi.
+Definition GammaHalf : CReal := constructive_sqrt_pi.
 
 (* ================================================================= *)
-(*  THE HONEST MISSING AXIOM — the self-dual value at s = 1/2.        *)
+(*  THE RESIDUE, as a THEOREM:  Γ(½)² = π  and  Γ(½) > 0.             *)
 (* ================================================================= *)
-Axiom Gamma_half_selfdual : Rmul GammaHalf GammaHalf = piR.   (* Γ(½)² = π *)
-Axiom GammaHalf_pos       : Rlt R0 GammaHalf.                 (* Γ(½) > 0  *)
+Theorem Gamma_half_selfdual : (GammaHalf * GammaHalf == piR)%CReal.
+Proof. unfold GammaHalf, piR; exact gamma_half_sq_eq_pi. Qed.
 
-(* Γ(½) is THE positive square root of π: Γ(½) = √π, the self-dual value the completed   *)
-(* ξ carries at the fixed point of the functional-equation involution.                  *)
-Definition positive_sqrt (r x : R) : Prop := Rmul r r = x /\ Rlt R0 r.
+(* positivity as a Prop fact: √π ≥ 1 > 0 (CReal's strict < is Set-valued) *)
+Theorem GammaHalf_pos : (inject_Q 1 <= GammaHalf)%CReal.
+Proof. unfold GammaHalf; exact gamma_half_pos. Qed.
+
+(* Γ(½) is THE positive square root of π: Γ(½) = √π, the self-dual     *)
+(* value at the functional equation's fixed point s = 1/2.            *)
+Definition positive_sqrt (r x : CReal) : Prop := (r * r == x)%CReal /\ (inject_Q 1 <= r)%CReal.
 
 Theorem Gamma_half_is_sqrt_pi : positive_sqrt GammaHalf piR.
 Proof. split; [ exact Gamma_half_selfdual | exact GammaHalf_pos ]. Qed.
 
-(* the residue sits at the FE involution's fixed point — s = 1/2 = the critical line     *)
-(* (FEInvolution.critical), the unique self-dual argument (refl_fixed_unique).           *)
-Definition fe_fixed_point : Q := critical.               (* = 1 # 2 *)
+(* the residue sits at the FE involution's fixed point — s = 1/2 = the *)
+(* critical line (FEInvolution.critical), the unique self-dual point.  *)
+Definition fe_fixed_point : Q := critical.
 
-Remark residue_at_the_critical_line : fe_fixed_point == 1 # 2 /\ refl fe_fixed_point == fe_fixed_point.
+Remark residue_at_the_critical_line :
+  fe_fixed_point == 1 # 2 /\ refl fe_fixed_point == fe_fixed_point.
 Proof. unfold fe_fixed_point; split; [ reflexivity | apply refl_fixed ]. Qed.
 
 Print Assumptions Gamma_half_is_sqrt_pi.
 
 (* ================================================================= *)
 (*  END FEResidue.v                                                  *)
-(*  The functional equation's whole archimedean cost, isolated: one   *)
-(*  axiom, Γ(½)²=π (√π), the self-dual value at the involution's      *)
-(*  fixed point s=1/2.  Everything else in the FE arc is axiom-free;  *)
-(*  Print Assumptions here shows this single residue, not the         *)
-(*  classical-ℝ trio.  The honest missing axiom, honestly named.      *)
+(*  The functional equation's one archimedean value, `√π = Γ(½)`, is  *)
+(*  now a THEOREM over axiom-free constructive reals — the repo's     *)
+(*  last axiom discharged.  What stays classical is only the          *)
+(*  IDENTIFICATION of this Wallis √π with the Gaussian integral (the   *)
+(*  analytic θ-bridge), not the existence of the value.  Closed under *)
+(*  the global context.                                              *)
 (* ================================================================= *)

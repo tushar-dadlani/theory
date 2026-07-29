@@ -195,4 +195,130 @@ Definition constructive_sqrt_pi := projT1 (cvQ_of_regular sq sq_regular).
 Theorem constructive_sqrt_pi_cv : cvQ sq constructive_sqrt_pi.
 Proof. unfold constructive_sqrt_pi; exact (projT2 (cvQ_of_regular sq sq_regular)). Qed.
 
-Print Assumptions constructive_sqrt_pi_cv.
+(* ----------------------------------------------------------------- *)
+(*  discharging FEResidue:  √π² == π  and  √π > 0                     *)
+(* ----------------------------------------------------------------- *)
+
+Lemma cvQ_opp : forall a x, cvQ a x -> cvQ (fun n => (- a n)%Q) (- x)%CReal.
+Proof.
+  intros a x H p; destruct (H p) as [N HN]; exists N; intros n Hn.
+  assert (E : (inject_Q (- a n)%Q - (- x) == - (inject_Q (a n) - x))%CReal)
+    by (rewrite opp_inject_Q; ring).
+  rewrite E, CReal_abs_opp. apply HN; exact Hn.
+Qed.
+
+Lemma qeq_le_creal : forall a b : CReal, (a == b)%CReal -> (a <= b)%CReal.
+Proof. intros a b [_ H]; exact H. Qed.
+
+(* a perturbed sequence shares the limit *)
+Lemma cvQ_close : forall (a b : nat -> Q) x, cvQ a x ->
+  (forall p, exists N, forall n, (N <= n)%nat -> Qabs (b n - a n) <= 1 # p) -> cvQ b x.
+Proof.
+  intros a b x Ha Hcl p.
+  destruct (Ha (2 * p)%positive) as [N1 H1].
+  destruct (Hcl (2 * p)%positive) as [N2 H2].
+  exists (Nat.max N1 N2); intros n Hn.
+  assert (E : (inject_Q (b n) - x
+               == (inject_Q (b n) - inject_Q (a n)) + (inject_Q (a n) - x))%CReal) by ring.
+  rewrite E. eapply CReal_le_trans; [ apply CReal_abs_triang | ].
+  assert (Hba : (CReal_abs (inject_Q (b n) - inject_Q (a n)) <= inject_Q (1 # (2 * p)))%CReal).
+  { setoid_replace (inject_Q (b n) - inject_Q (a n))%CReal with (inject_Q (b n - a n))
+      by (rewrite inject_Q_diff; ring).
+    apply inj_abs_le, H2; lia. }
+  assert (Hax : (CReal_abs (inject_Q (a n) - x) <= inject_Q (1 # (2 * p)))%CReal) by (apply H1; lia).
+  eapply CReal_le_trans; [ apply CReal_plus_le_compat; [ exact Hba | exact Hax ] | ].
+  rewrite <- inject_Q_plus. apply inject_Q_le. unfold Qle; simpl; lia.
+Qed.
+
+(* limit uniqueness (the dense/archimedean argument) *)
+Lemma cvQ_le : forall a x y, cvQ a x -> cvQ a y -> (x <= y)%CReal.
+Proof.
+  intros a x y Hx Hy Hlt.
+  destruct (CRealQ_dense y x Hlt) as [q1 [Hyq1 Hq1x]].
+  destruct (CRealQ_dense (inject_Q q1) x Hq1x) as [q2 [Hq1q2 Hq2x]].
+  apply lt_inject_Q in Hq1q2.
+  set (d := (q2 - q1)%Q); assert (Hd : (0 < d)%Q) by (unfold d; lra).
+  set (p := Qden (d * (1 # 2))).
+  assert (H2p : (2 * (1 # p) <= d)%Q).
+  { assert (Hh : (1 # p <= d * (1 # 2))%Q) by (unfold p; apply Qle_1_Qden; unfold d; lra). lra. }
+  destruct (Hx p) as [N1 HN1]; destruct (Hy p) as [N2 HN2].
+  set (n := Nat.max N1 N2).
+  pose proof (HN1 n ltac:(unfold n; lia)) as A1; apply CReal_abs_def2 in A1; destruct A1 as [A1u A1l].
+  pose proof (HN2 n ltac:(unfold n; lia)) as A2; apply CReal_abs_def2 in A2; destruct A2 as [A2u A2l].
+  (* x ≤ a n + 1#p  and  a n − 1#p ≤ y  ⟹  x − y ≤ 2·1#p *)
+  assert (Hxa : (x <= inject_Q (a n) + inject_Q (1 # p))%CReal).
+  { setoid_replace x with (inject_Q (a n) - (inject_Q (a n) - x))%CReal by ring.
+    apply CReal_plus_le_compat; [ apply CRealLe_refl | ].
+    (* − (a n − x) ≤ 1#p  from  A1l : −1#p ≤ a n − x *)
+    rewrite <- (CReal_opp_involutive (inject_Q (1 # p))).
+    apply CReal_opp_ge_le_contravar; exact A1l. }
+  assert (Hay : (inject_Q (a n) - inject_Q (1 # p) <= y)%CReal).
+  { setoid_replace y with (inject_Q (a n) - (inject_Q (a n) - y))%CReal by ring.
+    apply CReal_plus_le_compat; [ apply CRealLe_refl | ].
+    apply CReal_opp_ge_le_contravar; exact A2u. }
+  assert (S1 : (x - y <= inject_Q (1 # p) + inject_Q (1 # p))%CReal).
+  { apply CReal_le_trans
+      with ((inject_Q (a n) + inject_Q (1 # p)) - (inject_Q (a n) - inject_Q (1 # p)))%CReal.
+    - apply CReal_plus_le_compat; [ exact Hxa | apply CReal_opp_ge_le_contravar; exact Hay ].
+    - apply qeq_le_creal; ring. }
+  (* x − y > inject_Q d ≥ 2·1#p *)
+  assert (S2 : (inject_Q (1 # p) + inject_Q (1 # p) < x - y)%CReal).
+  { apply CReal_le_lt_trans with (inject_Q q2 - inject_Q q1)%CReal.
+    - rewrite <- inject_Q_plus.
+      setoid_replace (inject_Q q2 - inject_Q q1)%CReal with (inject_Q (q2 - q1))
+        by (rewrite inject_Q_diff; ring).
+      apply inject_Q_le. unfold d in H2p; lra.
+    - apply CReal_lt_le_trans with (x - inject_Q q1)%CReal.
+      + setoid_replace (inject_Q q2 - inject_Q q1)%CReal
+          with (- inject_Q q1 + inject_Q q2)%CReal by ring.
+        setoid_replace (x - inject_Q q1)%CReal with (- inject_Q q1 + x)%CReal by ring.
+        apply CReal_plus_lt_compat_l; exact Hq2x.
+      + apply CReal_plus_le_compat;
+          [ apply CRealLe_refl | apply CReal_opp_ge_le_contravar, CRealLt_asym; exact Hyq1 ]. }
+  exact (CRealLt_asym _ _ (CReal_le_lt_trans _ _ _ S1 S2) (CReal_le_lt_trans _ _ _ S1 S2)).
+Qed.
+
+Lemma cvQ_unique : forall a x y, cvQ a x -> cvQ a y -> (x == y)%CReal.
+Proof. intros a x y Hx Hy; split; [ apply (cvQ_le a y x) | apply (cvQ_le a x y) ]; assumption. Qed.
+
+(* sq² converges both to √π² and to π, so they are equal *)
+Lemma sq_sq_cv_sqrt : cvQ (fun n => sq n * sq n) (constructive_sqrt_pi * constructive_sqrt_pi).
+Proof.
+  apply cvQ_sq; [ apply constructive_sqrt_pi_cv | ].
+  intro n; pose proof (sq_range n) as Hr.
+  rewrite Qabs_pos by lra; lra.
+Qed.
+
+Lemma sq_sq_cv_pi : cvQ (fun n => sq n * sq n) constructive_pi.
+Proof.
+  apply (cvQ_close cpi); [ apply constructive_pi_cv | ].
+  intro p. exists (4 * Pos.to_nat p)%nat. intros n Hn.
+  eapply Qle_trans; [ apply sq_prec | ].
+  assert (Hh : half n <= 1 # (4 * p)).
+  { eapply Qle_trans; [ apply half_le_over_n | ].
+    assert (E4 : (1 # (4 * p)) == / inject_Z (Z.pos (4 * p))) by reflexivity.
+    rewrite E4. apply qinv_anti;
+      [ change 0 with (inject_Z 0); rewrite <- Zlt_Qlt; lia | rewrite <- Zle_Qle; lia ]. }
+  apply Qle_trans with (4 * (1 # (4 * p)));
+    [ apply Qmult_le_l; [ reflexivity | exact Hh ] | unfold Qle; simpl; lia ].
+Qed.
+
+(* ================================================================= *)
+(*  THE DISCHARGE: FEResidue's value axiom, now a theorem.           *)
+(* ================================================================= *)
+Theorem gamma_half_sq_eq_pi :
+  (constructive_sqrt_pi * constructive_sqrt_pi == constructive_pi)%CReal.
+Proof. apply (cvQ_unique (fun n => sq n * sq n)); [ apply sq_sq_cv_sqrt | apply sq_sq_cv_pi ]. Qed.
+
+Theorem gamma_half_pos : (inject_Q 1 <= constructive_sqrt_pi)%CReal.
+Proof.
+  assert (H : (- constructive_sqrt_pi <= - inject_Q 1)%CReal).
+  { apply (cvQ_le_const _ _ _ (cvQ_opp _ _ constructive_sqrt_pi_cv)).
+    intro n. rewrite opp_inject_Q.
+    apply CReal_opp_ge_le_contravar, inject_Q_le. pose proof (sq_range n); lra. }
+  pose proof (CReal_opp_ge_le_contravar _ _ H) as H2.
+  rewrite !CReal_opp_involutive in H2. exact H2.
+Qed.
+
+Print Assumptions gamma_half_sq_eq_pi.
+Print Assumptions gamma_half_pos.

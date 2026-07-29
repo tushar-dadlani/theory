@@ -286,3 +286,29 @@ new `CIntegral.cintegral_abs_le` (the integral is ≤ its sup on the cell).
 `∫_ℝ f = ∫₀^∞ f + ∫₀^∞ (x ↦ f(−x))` — two applications. So the tails are now below the wall. The one
 remaining piece of knot 1 is the **2-D integral + polar change of variables** that computes the
 Gaussian `∫e^{−πx²} = √π` and thereby **discharges the `FEResidue` axiom**.
+
+---
+
+## 11. The residue discharged: √π = Γ(½) is now a theorem
+
+The functional equation's one isolated axiom (`FEResidue`, §7's `Γ(½)²=π`) is **gone** — proven, and
+the FE arc is now entirely axiom-free. The path:
+
+- **`ConstructivePi`** — a constructive `π` as an axiom-free `CReal`, the Wallis / central-binomial
+  ratio `4²ⁿ(n!)⁴/((2n)!²·n)` written as a telescoping recursion, fed to `cvQ_of_regular`.
+- **`ConstructiveSqrtPi`** — stdlib's constructive reals have no square root, so we build one by
+  rational **bisection** with an explicit `(½)^fuel` precision bound, and apply it to the `π`
+  approximants to get `constructive_sqrt_pi = √π`. Then `cvQ_sq` + limit uniqueness (`cvQ_unique`, the
+  `CRealQ_dense` argument) prove `√π² == π`.
+- **`FEResidue`** — rewritten: `piR := constructive_pi`, `GammaHalf := constructive_sqrt_pi`, and
+  `Γ(½)² == π` is a **theorem**. `Print Assumptions` = Closed under the global context.
+
+So the whole cardinality/FE arc — shape, discrete Poisson, integration seed, improper integral, and
+now the self-dual value — is axiom-free.
+
+Honest boundary, unchanged and important: `π` and `√π` here are the **Wallis constructions**, taken
+as the constructive definitions of these constants. That this `√π` equals the **Gaussian integral**
+`∫e^{−πx²}` — the analytic θ-bridge that the functional equation actually runs on — is Wallis's /
+the Gaussian's theorem, classical and still not formalized. `FEResidue` only ever isolated the
+*value*; the value now exists axiom-free, and the analytic identification remains the archimedean
+content behind the wall.

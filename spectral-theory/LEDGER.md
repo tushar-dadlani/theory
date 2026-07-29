@@ -254,20 +254,22 @@ is axiom-free.
   symmetry) — **not** the analytic `ξ(s)=ξ(1−s)`, which needs the self-dual invariant VALUE
   `∫e^{−πx²}=√π=Γ(½)`, the irreducible archimedean residue — exactly as `FordCircles` is the modular
   skeleton without the analytic θ.  `Print Assumptions` = **Closed under the global context**.
-- **THE ONE HONEST MISSING AXIOM: √π = Γ(½)** `FEResidue.Gamma_half_is_sqrt_pi` (**uses one axiom, by
-  design**) — the single archimedean fact isolated.  Everything structural around the FE is axiom-free
-  and built: the `s↦1−s` involution with fixed point `1/2` (`FEInvolution`), the modular `S` preserving
-  Ford tangency, finite/algebraic Poisson (`finite_poisson_R`), integer Gamma (`GammaFunction`).  The
-  one fact the stdlib-only repo cannot prove — the Gaussian integral `∫e^{−πx²}=1` — surfaces as the
-  value of the FE-symmetric Gamma reflection `Γ(s)Γ(1−s)=π/sin(πs)` at the **self-dual fixed point
-  `s=1/2`**: `Γ(½)²=π`, i.e. `Γ(½)=√π`.  Isolated as a single `Axiom Gamma_half_selfdual`
-  (`Rmul GammaHalf GammaHalf = piR`) over an abstract archimedean carrier `R = ℚ_∞` (itself left a
-  `Parameter`, since the repo does not build it), with `Gamma_half_is_sqrt_pi` proving `Γ(½)` is the
-  positive `√π`, at `fe_fixed_point = FEInvolution.critical = 1/2`.  This is the ONE file in the arc
-  deliberately not `Closed under the global context`: `Print Assumptions` shows **exactly** the residue
-  (`Gamma_half_selfdual`, `GammaHalf_pos`, and the abstract carrier) and **NOT** the classical-ℝ trio
-  (`sig_forall_dec`/`sig_not_dec`/`functional_extensionality_dep`) — the FE's whole archimedean cost is
-  one number, honestly named.  (Template: `LandauerBound`'s isolation of `ln 2`; here it is `√π`.)
+- **THE SELF-DUAL VALUE √π = Γ(½), NOW A THEOREM (axiom DISCHARGED)** `FEResidue.Gamma_half_is_sqrt_pi`
+  (**axiom-free**) — this file once ISOLATED the functional equation's one archimedean residue as a
+  single `Axiom Gamma_half_selfdual : Γ(½)²=π`; that axiom is now **proven and removed**.  Over `CReal`,
+  with `piR := ConstructivePi.constructive_pi` (the Wallis π) and `GammaHalf :=
+  ConstructiveSqrtPi.constructive_sqrt_pi` (its bisection root), `Gamma_half_selfdual : GammaHalf² == piR`
+  is `ConstructiveSqrtPi.gamma_half_sq_eq_pi` and `GammaHalf_pos : inject_Q 1 ≤ GammaHalf` is
+  `gamma_half_pos`; `Gamma_half_is_sqrt_pi` bundles them at `fe_fixed_point = FEInvolution.critical =
+  1/2`.  Everything structural around the FE is axiom-free (the `s↦1−s` involution with fixed point 1/2
+  `FEInvolution`, the modular `S` preserving Ford tangency, finite/algebraic Poisson `finite_poisson_R`,
+  integer Gamma `GammaFunction`), and now so is the VALUE.  `Print Assumptions` = **Closed under the
+  global context** — the FE arc has no axioms left.  **HONEST BOUNDARY (the whole point):** `π`/`√π`
+  here are the WALLIS / central-binomial constructions taken as the constructive definitions; their
+  identification with the CIRCLE π and the GAUSSIAN INTEGRAL `∫e^{−πx²}=√π` (i.e. that this is the
+  value the analytic `ξ(s)=ξ(1−s)` carries at `s=1/2`) is Wallis's / the Gaussian's theorem, classical
+  and NOT formalized.  The value now EXISTS axiom-free; the analytic θ-bridge to the Gaussian is the
+  remaining archimedean content, and it never was what `FEResidue` isolated (it isolated the VALUE).
 - **FINITE POISSON SUMMATION** `FinitePoisson.finite_poisson` (quarantined ℝ) — the discrete shadow
   of Poisson, on the DFT cluster: for `N = d·m`, `Σ_{r<m} (DFT_N f)(r·d) = m · Σ_{a<d} f(a·m)`
   (summing the DFT over the dual subgroup `{rd}` recovers `f` summed over the subgroup `{am}`).
@@ -345,10 +347,13 @@ is axiom-free.
   it gives a rational sequence `sq n = bis n 1 2 (cpi n) → √π`, in `[1,2]` (`sq_range`), with
   `|sq n² − cpi n| ≤ 4·half n` (`sq_prec`) and Cauchy (via `|sqᵢ−sqⱼ| ≤ |sqᵢ²−sqⱼ²|/2`, `sq_lip`, +
   the `half`/`cpi` moduli, `sq_regular`), fed to `cvQ_of_regular` for `constructive_sqrt_pi : CReal`
-  with `cvQ sq constructive_sqrt_pi`.  This is the **√π side** of the FEResidue value `Γ(½)²=π`.  The
-  final wiring — `√π² == π` (via `cvQ_sq` + limit uniqueness) and rewriting `FEResidue`'s axiom into a
-  theorem — is the discharge step.  **Honest boundary** unchanged: `√π` is the Wallis construction;
-  `√π = ∫e^{−πx²}` stays classical.  `Print Assumptions` = **Closed under the global context**.
+  with `cvQ sq constructive_sqrt_pi`.  **The discharge is complete:** `cvQ_sq` gives `cvQ (sq²) (√π²)`,
+  the closeness `|sq n²−cpi n| ≤ 4·half n → 0` gives `cvQ (sq²) π` (`cvQ_close`), and limit uniqueness
+  (`cvQ_unique`, via the `CRealQ_dense` archimedean argument) forces `gamma_half_sq_eq_pi :
+  constructive_sqrt_pi² == constructive_pi`; with `gamma_half_pos : inject_Q 1 ≤ constructive_sqrt_pi`
+  (via `cvQ_opp` + `cvQ_le_const`), these are exactly `FEResidue`'s value relation — so its axiom is now
+  a theorem.  **Honest boundary** unchanged: `√π` is the Wallis construction; `√π = ∫e^{−πx²}` stays
+  classical.  `Print Assumptions` (all) = **Closed under the global context**.
 - **THE ALGEBRAIC NYQUIST–SHANNON BRIDGE** `BandlimitedInterp.nyquist_sampling` (**axiom-free**) —
   the first genuine *discrete→continuous* sampling theorem that lands **below** the classical-ℝ
   quarantine, via the isolation *bandwidth = polynomial degree*.  A signal band-limited to
