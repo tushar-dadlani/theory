@@ -620,3 +620,4 @@ spectral-theory/Ell2Operator.v
 spectral-theory/Ell2Basis.v
 spectral-theory/Ell2Parseval.v
 spectral-theory/Ell2Reconstruct.v
+spectral-theory/Ell2Spectral.v
