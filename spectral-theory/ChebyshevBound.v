@@ -396,20 +396,61 @@ Proof.
   lra.
 Qed.
 
+(* ψ is nondecreasing (Λ ≥ 0), the ingredient that lifts the even lower  *)
+(* bound to every N.                                                       *)
+Lemma psi_succ : forall n, psi (S n) = (psi n + Lam (S n))%R.
+Proof.
+  intro n; unfold psi; rewrite seq_S, map_app, Rsum_app; cbn [map fold_right].
+  replace (1 + n)%nat with (S n) by lia; ring.
+Qed.
+
+Lemma psi_mono : forall a b, (a <= b)%nat -> (psi a <= psi b)%R.
+Proof.
+  intros a b Hab; induction Hab as [| b Hab IH].
+  - apply Rle_refl.
+  - rewrite psi_succ; pose proof (Lam_nonneg (S b)); lra.
+Qed.
+
+(* LOWER, all N: ψ(N) ≥ (N−1)·log2 − log(N+1).  For even N this is the      *)
+(* even witness (up to the harmless −log2 slack); for odd N it comes from   *)
+(* ψ(N) ≥ ψ(2⌊N/2⌋) = ψ(N−1) by monotonicity.                              *)
+Theorem psi_lower : forall N,
+  ((INR N - 1) * ln 2 - ln (INR (N + 1)) <= psi N)%R.
+Proof.
+  intro N.
+  pose proof (Nat.div_mod N 2 ltac:(lia)) as Hdm.
+  pose proof (Nat.mod_upper_bound N 2 ltac:(lia)) as Hmb.
+  assert (Hle : (2 * (N / 2) <= N)%nat) by lia.
+  pose proof (psi_mono (2 * (N / 2)) N Hle) as HM.
+  pose proof (psi_lower_even (N / 2)) as HE.
+  assert (Hln2 : (0 <= ln 2)%R) by (apply ln_ge0; lra).
+  assert (Ha : (INR N - 1 <= INR (2 * (N / 2)))%R).
+  { assert (Hn : (N <= 2 * (N / 2) + 1)%nat) by lia.
+    apply le_INR in Hn; rewrite plus_INR, INR_1 in Hn; lra. }
+  assert (Hprod : ((INR N - 1) * ln 2 <= INR (2 * (N / 2)) * ln 2)%R)
+    by (apply Rmult_le_compat_r; [ exact Hln2 | exact Ha ]).
+  assert (Hmono : (ln (INR (2 * (N / 2) + 1)) <= ln (INR (N + 1)))%R)
+    by (apply ln_le; [ apply lt_0_INR; lia | apply le_INR; lia ]).
+  lra.
+Qed.
+
 (* ================================================================= *)
-(*  THE CHEBYSHEV BOUND  ψ(x) ≍ x  (two-sided, explicit constants).  *)
+(*  THE CHEBYSHEV BOUND  ψ(x) ≍ x  (two-sided, all N, explicit consts).*)
 (*    0 < log2,                                                       *)
-(*    ψ(N)   ≤ (2·log2 + 2)·N            (all N),                     *)
-(*    ψ(2M)  ≥ (2M)·log2 − log(2M+1)     (even lower witness).        *)
+(*    ψ(N) ≤ (2·log2 + 2)·N              (all N),                     *)
+(*    ψ(N) ≥ (N−1)·log2 − log(N+1)       (all N),                     *)
+(*    ψ(2M) ≥ (2M)·log2 − log(2M+1)      (sharp even witness).        *)
 (* ================================================================= *)
 Theorem chebyshev_psi_bound :
   (0 < ln 2)%R
   /\ (forall N, (psi N <= INR N * (2 * ln 2 + 2))%R)
+  /\ (forall N, ((INR N - 1) * ln 2 - ln (INR (N + 1)) <= psi N)%R)
   /\ (forall M, (INR (2 * M) * ln 2 - ln (INR (2 * M + 1)) <= psi (2 * M))%R).
 Proof.
   repeat split.
   - rewrite <- ln_1; apply ln_increasing; lra.
   - exact psi_upper.
+  - exact psi_lower.
   - exact psi_lower_even.
 Qed.
 
