@@ -1,8 +1,8 @@
 (* ================================================================= *)
 (*  Ell2.v  —  the infinite-dimensional real Hilbert space  ℓ².       *)
 (*                                                                    *)
-(*  STAGES 1–2 — ℓ² as a genuine (infinite-dimensional) real NORMED   *)
-(*  INNER-PRODUCT space.                                              *)
+(*  STAGES 1–3 — ℓ² as a genuine (infinite-dimensional) real          *)
+(*  HILBERT space (complete normed inner-product space).             *)
 (*                                                                    *)
 (*  A vector is a real sequence f : ℕ → ℝ whose squares are summable  *)
 (*  (Σ f(n)² converges).  This file establishes:                     *)
@@ -21,11 +21,12 @@
 (*   • the NORM ‖f‖ = √⟨f,f⟩ and MINKOWSKI ‖f+g‖ ≤ ‖f‖+‖g‖            *)
 (*     (norm, norm_triangle).                                        *)
 (*                                                                    *)
-(*  STAGE 3 (the Hilbert capstone, still to do): COMPLETENESS         *)
-(*  (Riesz–Fischer) — every ℓ²-Cauchy sequence converges in ℓ².  The  *)
-(*  engine is on hand: ℝ is complete (Stdlib R_complete), giving the  *)
-(*  pointwise limits; it remains to show the candidate limit is in    *)
-(*  ℓ² and is the norm-limit.                                        *)
+(*   STAGE 3 (the Hilbert capstone): COMPLETENESS (Riesz–Fischer,     *)
+(*   Ell2_complete) — every ℓ²-Cauchy sequence converges in ℓ² to a   *)
+(*   limit that is itself in ℓ².  ℝ-completeness (Stdlib R_complete)   *)
+(*   yields the coordinatewise limits; a bounded-monotone argument    *)
+(*   (growing_cv) with a finite-sum/limit interchange puts the        *)
+(*   candidate limit in ℓ² and gives norm convergence.               *)
 (*                                                                    *)
 (*  Axiom footprint: the standard classical Reals axioms only (the    *)
 (*  quarantined Dedekind-reals + functional extensionality that any   *)
@@ -406,16 +407,221 @@ Proof.
   - apply Rplus_le_le_0_compat; apply norm_nonneg.
 Qed.
 
+(* ================================================================= *)
+(*  STAGE 3 — COMPLETENESS (Riesz–Fischer): ℓ² is a HILBERT space.   *)
+(*                                                                    *)
+(*  Every ℓ²-Cauchy sequence of vectors converges (in ℓ² norm) to a   *)
+(*  limit vector that is itself in ℓ².  Engine: ℝ is complete         *)
+(*  (Stdlib R_complete) gives the coordinatewise limits; a bounded-   *)
+(*  monotone argument (growing_cv) puts the candidate limit in ℓ².    *)
+(* ================================================================= *)
+
+(* one-step unfolding of a partial sum (definitional) *)
+Lemma sum_f_R0_S : forall u N, sum_f_R0 u (S N) = (sum_f_R0 u N + u (S N))%R.
+Proof. reflexivity. Qed.
+
+(* congruence for ℓ²-membership along pointwise equality *)
+Lemma Ell2_ext : forall f g, (forall n, f n = g n) -> Ell2 f -> Ell2 g.
+Proof.
+  intros f g Heq [l Hl]; exists l.
+  apply (Un_cv_eq (fun N => sum_f_R0 (fun n => (f n) ^ 2) N)); [ | exact Hl ].
+  intro N; apply sum_eq; intros i _; rewrite Heq; reflexivity.
+Qed.
+
+(* ℓ² is closed under differences *)
+Lemma Ell2_minus : forall f g, Ell2 f -> Ell2 g -> Ell2 (fun n => f n - g n).
+Proof.
+  intros f g Hf Hg.
+  apply (Ell2_ext (fun n => f n + (-1) * g n)); [ intro n; ring | ].
+  apply Ell2_plus; [ exact Hf | apply Ell2_scal; exact Hg ].
+Qed.
+
+(* a nonnegative series with bounded partial sums is summable *)
+Lemma Summable_of_bounded : forall u B,
+  (forall n, 0 <= u n) -> (forall N, sum_f_R0 u N <= B) -> Summable u.
+Proof.
+  intros u B Hpos Hbd; apply growing_cv.
+  - intro N; rewrite sum_f_R0_S; pose proof (Hpos (S N)); lra.
+  - unfold has_ub, EUn, bound, is_upper_bound.
+    exists B; intros r [i ->]; apply Hbd.
+Qed.
+
+(* one coordinate is dominated by the whole squared norm *)
+Lemma coord_le_ipdiag : forall f (Hf : Ell2 f) n, (f n) ^ 2 <= ip f f Hf Hf.
+Proof.
+  intros f Hf n; apply Rle_trans with (sum_f_R0 (fun k => f k * f k) n).
+  - replace ((f n) ^ 2) with (f n * f n) by ring.
+    apply (term_le_sum_any (fun k => f k * f k) n n); [ intro; nra | lia ].
+  - apply (sum_incr (fun k => f k * f k) n (ip f f Hf Hf)); [ apply ip_spec | intro; nra ].
+Qed.
+
+(* every partial sum of squares is <= the squared norm *)
+Lemma partial_le_ip : forall f (Hf : Ell2 f) N,
+  sum_f_R0 (fun n => (f n) ^ 2) N <= ip f f Hf Hf.
+Proof.
+  intros f Hf N.
+  rewrite (sum_eq (fun n => (f n) ^ 2) (fun n => f n * f n) N) by (intros; ring).
+  apply (sum_incr (fun n => f n * f n) N (ip f f Hf Hf)); [ apply ip_spec | intro; nra ].
+Qed.
+
+(* the square of a convergent sequence converges to the square *)
+Lemma Un_cv_sq : forall u l, Un_cv u l -> Un_cv (fun k => (u k) ^ 2) (l ^ 2).
+Proof.
+  intros u l H; apply (Un_cv_eq (fun k => u k * u k)); [ intro k; ring | ].
+  replace (l ^ 2) with (l * l) by ring; apply CV_mult; exact H.
+Qed.
+
+(* a FINITE sum of squares commutes with the coordinatewise limit *)
+Lemma finite_sum_sq_limit :
+  forall (d : nat -> nat -> R) (e : nat -> R) N,
+  (forall n, Un_cv (fun k => d k n) (e n)) ->
+  Un_cv (fun k => sum_f_R0 (fun n => (d k n) ^ 2) N)
+        (sum_f_R0 (fun n => (e n) ^ 2) N).
+Proof.
+  intros d e N Hpt; induction N; cbn [sum_f_R0].
+  - apply Un_cv_sq, Hpt.
+  - apply CV_plus; [ exact IHN | apply Un_cv_sq, Hpt ].
+Qed.
+
+(* a sequence eventually <= B has limit <= B *)
+Lemma Un_cv_le_const : forall U l B,
+  (exists K, forall k, (K <= k)%nat -> U k <= B) -> Un_cv U l -> l <= B.
+Proof.
+  intros U l B [K HK] Hcv; destruct (Rle_or_lt l B) as [Hok | Hlt]; [ exact Hok | exfalso ].
+  destruct (Hcv (l - B) ltac:(lra)) as [N HN].
+  specialize (HN (max N K) (Nat.le_max_l _ _)); specialize (HK (max N K) (Nat.le_max_r _ _)).
+  unfold R_dist in HN; apply Rabs_def2 in HN; lra.
+Qed.
+
+(* |a| < e  from  a² < e²  (e > 0) *)
+Lemma abs_lt_of_sq : forall a e, 0 < e -> a ^ 2 < e * e -> Rabs a < e.
+Proof.
+  intros a e He H.
+  assert (Ha : a ^ 2 = Rabs a * Rabs a) by (rewrite <- Rabs_mult, Rabs_pos_eq by nra; ring).
+  destruct (Rlt_le_dec (Rabs a) e) as [Hlt | Hge]; [ exact Hlt | exfalso ].
+  pose proof (Rabs_pos a); nra.
+Qed.
+
+(* every partial sum of (x_j − f)² is <= B, when the tail is B-bounded *)
+Lemma tail_partial_bound :
+  forall (x : nat -> nat -> R) (Hx : forall k, Ell2 (x k)) (f : nat -> R),
+    (forall n, Un_cv (fun k => x k n) (f n)) ->
+    forall j K B, (K <= j)%nat ->
+    (forall k, (K <= k)%nat ->
+       ip (fun n => x j n - x k n) (fun n => x j n - x k n)
+          (Ell2_minus (x j) (x k) (Hx j) (Hx k))
+          (Ell2_minus (x j) (x k) (Hx j) (Hx k)) <= B) ->
+    forall N, sum_f_R0 (fun n => (x j n - f n) ^ 2) N <= B.
+Proof.
+  intros x Hx f Hpt j K B Hj Hbd N.
+  apply (Un_cv_le_const (fun k => sum_f_R0 (fun n => (x j n - x k n) ^ 2) N)
+                        (sum_f_R0 (fun n => (x j n - f n) ^ 2) N) B).
+  - exists K; intros k Hk. eapply Rle_trans.
+    + apply (partial_le_ip (fun n => x j n - x k n)
+                           (Ell2_minus (x j) (x k) (Hx j) (Hx k)) N).
+    + apply Hbd; exact Hk.
+  - apply (finite_sum_sq_limit (fun k n => x j n - x k n) (fun n => x j n - f n) N).
+    intro n; apply (CV_minus (fun _ => x j n) (fun k => x k n) (x j n) (f n));
+      [ apply Un_cv_const | apply Hpt ].
+Qed.
+
+(* the tail x_j − f is in ℓ² *)
+Lemma Ell2_tail :
+  forall (x : nat -> nat -> R) (Hx : forall k, Ell2 (x k)) (f : nat -> R),
+    (forall n, Un_cv (fun k => x k n) (f n)) ->
+    forall j K B, (K <= j)%nat ->
+    (forall k, (K <= k)%nat ->
+       ip (fun n => x j n - x k n) (fun n => x j n - x k n)
+          (Ell2_minus (x j) (x k) (Hx j) (Hx k))
+          (Ell2_minus (x j) (x k) (Hx j) (Hx k)) <= B) ->
+    Ell2 (fun n => x j n - f n).
+Proof.
+  intros x Hx f Hpt j K B Hj Hbd.
+  apply (Summable_of_bounded (fun n => (x j n - f n) ^ 2) B).
+  - intro n; apply pow2_ge_0.
+  - apply (tail_partial_bound x Hx f Hpt j K B Hj Hbd).
+Qed.
+
+(* and its squared norm is <= B *)
+Lemma Ell2_tail_sqn :
+  forall (x : nat -> nat -> R) (Hx : forall k, Ell2 (x k)) (f : nat -> R),
+    (forall n, Un_cv (fun k => x k n) (f n)) ->
+    forall j K B, (K <= j)%nat ->
+    (forall k, (K <= k)%nat ->
+       ip (fun n => x j n - x k n) (fun n => x j n - x k n)
+          (Ell2_minus (x j) (x k) (Hx j) (Hx k))
+          (Ell2_minus (x j) (x k) (Hx j) (Hx k)) <= B) ->
+    forall (Hjf : Ell2 (fun n => x j n - f n)),
+      ip (fun n => x j n - f n) (fun n => x j n - f n) Hjf Hjf <= B.
+Proof.
+  intros x Hx f Hpt j K B Hj Hbd Hjf.
+  apply (Un_cv_le_const (fun N => sum_f_R0 (fun n => (x j n - f n) * (x j n - f n)) N)
+                        (ip (fun n => x j n - f n) (fun n => x j n - f n) Hjf Hjf) B).
+  - exists 0%nat; intros N _.
+    rewrite (sum_eq (fun n => (x j n - f n) * (x j n - f n))
+                    (fun n => (x j n - f n) ^ 2) N) by (intros; ring).
+    apply (tail_partial_bound x Hx f Hpt j K B Hj Hbd).
+  - apply ip_spec.
+Qed.
+
+(* RIESZ–FISCHER: ℓ² is complete.                                     *)
+(*  Cauchy and convergence are stated in squared-norm form            *)
+(*  (⟨u,u⟩ = ‖u‖²), which is equivalent to the norm form.             *)
+Theorem Ell2_complete :
+  forall (x : nat -> nat -> R) (Hx : forall k, Ell2 (x k)),
+    (forall eps, eps > 0 -> exists K, forall j k, (K <= j)%nat -> (K <= k)%nat ->
+       ip (fun n => x j n - x k n) (fun n => x j n - x k n)
+          (Ell2_minus (x j) (x k) (Hx j) (Hx k))
+          (Ell2_minus (x j) (x k) (Hx j) (Hx k)) < eps) ->
+    exists (f : nat -> R) (Hf : Ell2 f),
+      forall eps, eps > 0 -> exists K, forall k, (K <= k)%nat ->
+        ip (fun n => x k n - f n) (fun n => x k n - f n)
+           (Ell2_minus (x k) f (Hx k) Hf) (Ell2_minus (x k) f (Hx k) Hf) < eps.
+Proof.
+  intros x Hx Hcauchy.
+  (* Step A — coordinatewise Cauchy, hence a coordinatewise limit f *)
+  assert (Hcc : forall n, Cauchy_crit (fun k => x k n)).
+  { intros n eps Heps.
+    destruct (Hcauchy (eps * eps) ltac:(nra)) as [K HK].
+    exists K; intros p q Hp Hq; unfold R_dist.
+    apply abs_lt_of_sq; [ exact Heps | ].
+    eapply Rle_lt_trans.
+    - apply (coord_le_ipdiag (fun m => x p m - x q m)
+                             (Ell2_minus (x p) (x q) (Hx p) (Hx q)) n).
+    - apply (HK p q Hp Hq). }
+  set (f := fun n => proj1_sig (R_complete (fun k => x k n) (Hcc n))).
+  assert (Hpt : forall n, Un_cv (fun k => x k n) (f n))
+    by (intro n; exact (proj2_sig (R_complete (fun k => x k n) (Hcc n)))).
+  (* Step B — f ∈ ℓ² (subtract the tail x_{K0} − f from x_{K0}) *)
+  destruct (Hcauchy 1 Rlt_0_1) as [K0 HK0].
+  assert (HxK0f : Ell2 (fun n => x K0 n - f n)).
+  { apply (Ell2_tail x Hx f Hpt K0 K0 1); [ lia | ].
+    intros k Hk; left; apply HK0; [ lia | exact Hk ]. }
+  assert (Hf : Ell2 f).
+  { apply (Ell2_ext (fun n => x K0 n - (x K0 n - f n))); [ intro n; ring | ].
+    apply Ell2_minus; [ apply Hx | exact HxK0f ]. }
+  exists f, Hf.
+  (* Step C — norm convergence *)
+  intros eps Heps.
+  destruct (Hcauchy (eps / 2) ltac:(lra)) as [K HK].
+  exists K; intros k Hk.
+  pose proof (Ell2_tail_sqn x Hx f Hpt k K (eps / 2) Hk
+                (fun k' Hk' => Rlt_le _ _ (HK k k' Hk Hk'))
+                (Ell2_minus (x k) f (Hx k) Hf)) as Hb.
+  lra.
+Qed.
+
 Print Assumptions Ell2_ip_summable.
 Print Assumptions ip_CS.
 Print Assumptions norm_triangle.
+Print Assumptions Ell2_complete.
 
 (* ================================================================= *)
-(*  END Ell2.v (STAGES 1–2)                                          *)
-(*  ℓ² is a genuine infinite-dimensional real NORMED inner-product   *)
-(*  space: a vector space (0, scalar, +) with a symmetric, bilinear, *)
-(*  positive-DEFINITE inner product Σ f g satisfying Cauchy–Schwarz,  *)
-(*  and a norm ‖f‖ = √⟨f,f⟩ obeying the triangle inequality.  The     *)
-(*  remaining Hilbert capstone is completeness (Riesz–Fischer), on    *)
-(*  Stdlib's R_complete — STAGE 3.                                   *)
+(*  END Ell2.v (STAGES 1–3)                                          *)
+(*  ℓ² is a genuine infinite-dimensional real HILBERT space: a vector *)
+(*  space (0, scalar, +) with a symmetric, bilinear, positive-        *)
+(*  DEFINITE inner product Σ f g satisfying Cauchy–Schwarz, a norm    *)
+(*  ‖f‖ = √⟨f,f⟩ obeying the triangle inequality, and COMPLETENESS    *)
+(*  (Riesz–Fischer, Ell2_complete).  Axiom footprint: the standard    *)
+(*  classical-Reals + functional-extensionality axioms only.         *)
 (* ================================================================= *)
