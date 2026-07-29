@@ -320,5 +320,12 @@ Proof.
   rewrite !CReal_opp_involutive in H2. exact H2.
 Qed.
 
+(* Numerical certificate: sq₁₅ bisects √(cπ₁₅) ≈ √3.19 ≈ 1.79, en route  *)
+(* to √π ≈ 1.77245; this pins it into [1.77, 1.79], certifying the        *)
+(* bisection genuinely computes the square root and not something else.   *)
+Remark sq_is_numerically_sqrt_pi :
+  (Qle_bool (177 # 100) (sq 15) && Qle_bool (sq 15) (179 # 100)) = true.
+Proof. vm_compute. reflexivity. Qed.
+
 Print Assumptions gamma_half_sq_eq_pi.
 Print Assumptions gamma_half_pos.

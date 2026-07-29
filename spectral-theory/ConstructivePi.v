@@ -196,6 +196,14 @@ Definition constructive_pi := projT1 (cvQ_of_regular cpi cpi_regular).
 Theorem constructive_pi_cv : cvQ cpi constructive_pi.
 Proof. unfold constructive_pi; exact (projT2 (cvQ_of_regular cpi cpi_regular)). Qed.
 
+(* Numerical certificate: the limit really is π (≈ 3.14159), not merely  *)
+(* "some Cauchy limit satisfying the relations".  cπ decreases to π, so   *)
+(* cπ₁₅ ∈ (π, 4); this pins it into [3.14, 3.20], catching any bug in the *)
+(* recursion that the convergence proofs alone would not.                *)
+Remark cpi_is_numerically_pi :
+  (Qle_bool (314 # 100) (cpi 15) && Qle_bool (cpi 15) (320 # 100)) = true.
+Proof. vm_compute. reflexivity. Qed.
+
 Print Assumptions constructive_pi_cv.
 
 (* ================================================================= *)
