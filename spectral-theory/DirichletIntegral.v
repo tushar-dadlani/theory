@@ -1,25 +1,24 @@
 (* ================================================================= *)
-(*  DirichletIntegral.v  —  toward Fourier milestone F2: the mean of   *)
-(*  the Dirichlet kernel.                                             *)
+(*  DirichletIntegral.v  —  Fourier milestone F2 (normalisation): the  *)
+(*  Dirichlet kernel integrates to 2π.                               *)
 (*                                                                    *)
-(*  The analytic atom of Fourier-series normalisation:               *)
 (*    • sin(nπ) = 0                              (sin_nPI);           *)
 (*    • ∫_{-π}^{π} cos(k t) dt = 0  for k ≥ 1     (cos_int_0),         *)
 (*      the non-constant Fourier modes have zero mean over a period,   *)
-(*      via FTC with the antiderivative sin(kt)/k.                    *)
-(*                                                                    *)
-(*  cos_int_0 is the analytic atom of the Dirichlet-kernel            *)
-(*  normalisation ∫_{-π}^{π} D_N = 2π (so (1/2π)∫ D_N = 1) that the    *)
-(*  pointwise-convergence proof (F3) rests on; the remaining assembly  *)
-(*  of that kernel integral (Dsum continuity + RiemannInt linearity)   *)
-(*  is the next, mechanical step.                                    *)
+(*      via FTC with the antiderivative sin(kt)/k;                    *)
+(*    • ∫_{-π}^{π} D_N = 2π                       (dirichlet_integral),*)
+(*      hence (1/2π) ∫ D_N = 1 — the normalisation the pointwise-      *)
+(*      convergence proof (F3) rests on.  Proved by induction on N     *)
+(*      (Dsum_S) with RiemannInt linearity (P13), extensionality       *)
+(*      (P18), the constant integral (P15) and cos_int_0; the kernel   *)
+(*      is continuous (Rcossum_cont, Dsum_cont), hence integrable.     *)
 (*                                                                    *)
 (*  Built on stdlib RiemannInt / FTC_Riemann and FourierRL's C¹       *)
-(*  scaffolding (lam_mult_deriv, cos_lam_cont).                      *)
+(*  scaffolding (lam_mult_deriv, cos_lam_cont), plus DirichletKernel. *)
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra Lia.
-Require Import FourierRL.
+Require Import FourierRL DirichletKernel.
 Open Scope R_scope.
 
 (* sin(n·π) = 0 *)
@@ -76,5 +75,70 @@ Proof.
   rewrite Hval in FTC; exact FTC.
 Qed.
 
+(* ----------------------------------------------------------------- *)
+(*  Continuity / integrability of the Dirichlet kernel.              *)
+(* ----------------------------------------------------------------- *)
+
+Lemma INR_S_neq_0 : forall N, INR (S N) <> 0.
+Proof. intro N; rewrite S_INR; pose proof (pos_INR N); lra. Qed.
+
+Lemma Rcossum_cont : forall N x,
+  continuity_pt (fun t => Rsum (fun k => cos (INR k * t)) N) x.
+Proof.
+  induction N as [| N IH]; intro x.
+  - cbn [Rsum]; apply continuity_pt_const; intros a b; reflexivity.
+  - cbn [Rsum].
+    apply (continuity_pt_plus (fun t => Rsum (fun k => cos (INR k * t)) N)
+                              (fun t => cos (INR (S N) * t)) x).
+    + apply IH.
+    + apply cos_lam_cont.
+Qed.
+
+Lemma Dsum_cont : forall N x, continuity_pt (Dsum N) x.
+Proof.
+  intros N x; unfold Dsum.
+  apply (continuity_pt_plus (fun _ => 1)
+           (fun t => 2 * Rsum (fun k => cos (INR k * t)) N) x).
+  - apply continuity_pt_const; intros a b; reflexivity.
+  - apply (continuity_pt_scal (fun t => Rsum (fun k => cos (INR k * t)) N) 2 x).
+    apply Rcossum_cont.
+Qed.
+
+Lemma Dsum_RI : forall N, Riemann_integrable (Dsum N) (- PI) PI.
+Proof.
+  intro N; apply continuity_implies_RiemannInt;
+    [ pose proof PI_RGT_0; lra | intros x _; apply Dsum_cont ].
+Qed.
+
+Lemma cos_RI : forall k, Riemann_integrable (fun t => cos (INR k * t)) (- PI) PI.
+Proof.
+  intro k; apply continuity_implies_RiemannInt;
+    [ pose proof PI_RGT_0; lra | intros x _; apply cos_lam_cont ].
+Qed.
+
+(* THE KERNEL INTEGRAL: ∫_{-π}^{π} D_N = 2π  (so (1/2π) ∫ D_N = 1) *)
+Theorem dirichlet_integral : forall N, RiemannInt (Dsum_RI N) = 2 * PI.
+Proof.
+  induction N as [| N IH].
+  - assert (prc : Riemann_integrable (fct_cte 1) (- PI) PI)
+      by (apply continuity_implies_RiemannInt;
+          [ pose proof PI_RGT_0; lra
+          | intros x _; apply continuity_pt_const; intros a b; reflexivity ]).
+    assert (E : RiemannInt (Dsum_RI 0) = RiemannInt prc)
+      by (apply RiemannInt_P18;
+          [ pose proof PI_RGT_0; lra | intros x _; unfold Dsum, fct_cte; cbn [Rsum]; ring ]).
+    rewrite E, RiemannInt_P15; pose proof PI_RGT_0; lra.
+  - pose proof PI_RGT_0 as HPI.
+    assert (pr3 : Riemann_integrable (fun x => Dsum N x + 2 * cos (INR (S N) * x)) (- PI) PI).
+    { apply continuity_implies_RiemannInt; [ lra | intros x _; apply continuity_pt_plus;
+        [ apply Dsum_cont
+        | apply (continuity_pt_scal (fun t => cos (INR (S N) * t)) 2 x); apply cos_lam_cont ] ]. }
+    assert (E : RiemannInt (Dsum_RI (S N)) = RiemannInt pr3)
+      by (apply RiemannInt_P18; [ lra | intros x _; rewrite Dsum_S; ring ]).
+    rewrite E, (RiemannInt_P13 (Dsum_RI N) (cos_RI (S N)) pr3).
+    rewrite IH, (cos_int_0 (S N) (INR_S_neq_0 N) (cos_RI (S N))); ring.
+Qed.
+
 Print Assumptions sin_nPI.
 Print Assumptions cos_int_0.
+Print Assumptions dirichlet_integral.
