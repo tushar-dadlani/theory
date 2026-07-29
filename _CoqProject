@@ -625,3 +625,4 @@ spectral-theory/Ell2VonMangoldt.v
 spectral-theory/Ell2Primes.v
 spectral-theory/Ell2Zeta.v
 spectral-theory/Ell2ZetaConverge.v
+spectral-theory/Ell2Basel.v
