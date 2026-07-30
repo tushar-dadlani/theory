@@ -658,6 +658,7 @@ spectral-theory/GaussValue.v
 spectral-theory/GaussFull.v
 spectral-theory/GaussPiValue.v
 spectral-theory/GaussFourier.v
+spectral-theory/GaussDeriv.v
 spectral-theory/ArchimedeanTower.v
 spectral-theory/ArchimedeanCompletion.v
 spectral-theory/PadicValuation.v
