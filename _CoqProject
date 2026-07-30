@@ -643,3 +643,4 @@ spectral-theory/FourierSincCore.v
 spectral-theory/GaussPeriodization.v
 spectral-theory/GaussPeriodicity.v
 spectral-theory/WallisIntegral.v
+spectral-theory/ArchimedeanTower.v
