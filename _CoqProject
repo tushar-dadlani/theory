@@ -634,3 +634,4 @@ spectral-theory/FourierPartialSum.v
 spectral-theory/FourierKernelRep.v
 spectral-theory/FourierRLcos.v
 spectral-theory/FourierLocalize.v
+spectral-theory/FourierConverge.v
