@@ -633,3 +633,4 @@ spectral-theory/DirichletIntegral.v
 spectral-theory/FourierPartialSum.v
 spectral-theory/FourierKernelRep.v
 spectral-theory/FourierRLcos.v
+spectral-theory/FourierLocalize.v
