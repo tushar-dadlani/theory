@@ -661,6 +661,7 @@ spectral-theory/GaussFourier.v
 spectral-theory/GaussDeriv.v
 spectral-theory/GaussCauchy.v
 spectral-theory/GaussTransform.v
+spectral-theory/GaussDerivValue.v
 spectral-theory/ArchimedeanTower.v
 spectral-theory/ArchimedeanCompletion.v
 spectral-theory/PadicValuation.v
