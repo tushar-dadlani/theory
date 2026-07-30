@@ -631,3 +631,4 @@ spectral-theory/Ell2ZetaCont.v
 spectral-theory/JacobiTheta.v
 spectral-theory/DirichletIntegral.v
 spectral-theory/FourierPartialSum.v
+spectral-theory/FourierKernelRep.v
