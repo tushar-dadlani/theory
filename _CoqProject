@@ -654,6 +654,7 @@ spectral-theory/GaussSqrtStep.v
 spectral-theory/GaussImproper.v
 spectral-theory/LocalCoV.v
 spectral-theory/GaussUpperSubst.v
+spectral-theory/GaussValue.v
 spectral-theory/ArchimedeanTower.v
 spectral-theory/ArchimedeanCompletion.v
 spectral-theory/PadicValuation.v
