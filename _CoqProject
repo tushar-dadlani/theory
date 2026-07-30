@@ -640,3 +640,4 @@ spectral-theory/FourierRsum.v
 spectral-theory/FourierMode.v
 spectral-theory/FourierTrigPoly.v
 spectral-theory/FourierSincCore.v
+spectral-theory/GaussPeriodization.v
