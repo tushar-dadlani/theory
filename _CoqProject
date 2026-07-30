@@ -642,3 +642,4 @@ spectral-theory/FourierTrigPoly.v
 spectral-theory/FourierSincCore.v
 spectral-theory/GaussPeriodization.v
 spectral-theory/GaussPeriodicity.v
+spectral-theory/WallisIntegral.v
