@@ -644,3 +644,4 @@ spectral-theory/GaussPeriodization.v
 spectral-theory/GaussPeriodicity.v
 spectral-theory/WallisIntegral.v
 spectral-theory/ArchimedeanTower.v
+spectral-theory/ArchimedeanCompletion.v
