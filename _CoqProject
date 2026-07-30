@@ -639,3 +639,4 @@ spectral-theory/FourierCosSin.v
 spectral-theory/FourierRsum.v
 spectral-theory/FourierMode.v
 spectral-theory/FourierTrigPoly.v
+spectral-theory/FourierSincCore.v
