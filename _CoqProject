@@ -648,6 +648,7 @@ spectral-theory/WallisAsymptotics.v
 spectral-theory/GaussSqueeze.v
 spectral-theory/ChangeOfVariables.v
 spectral-theory/ContinuousCoV.v
+spectral-theory/GaussSubst.v
 spectral-theory/ArchimedeanTower.v
 spectral-theory/ArchimedeanCompletion.v
 spectral-theory/PadicValuation.v
