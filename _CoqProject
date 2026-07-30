@@ -635,3 +635,4 @@ spectral-theory/FourierKernelRep.v
 spectral-theory/FourierRLcos.v
 spectral-theory/FourierLocalize.v
 spectral-theory/FourierConverge.v
+spectral-theory/FourierCosSin.v
