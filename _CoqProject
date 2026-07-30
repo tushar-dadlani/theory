@@ -636,3 +636,5 @@ spectral-theory/FourierRLcos.v
 spectral-theory/FourierLocalize.v
 spectral-theory/FourierConverge.v
 spectral-theory/FourierCosSin.v
+spectral-theory/FourierRsum.v
+spectral-theory/FourierMode.v
