@@ -672,6 +672,7 @@ spectral-theory/GaussPeriodCoeff.v
 spectral-theory/GaussPeriodSum.v
 spectral-theory/GaussChasles.v
 spectral-theory/GaussPeriodInt.v
+spectral-theory/GaussCoeffValue.v
 spectral-theory/ArchimedeanTower.v
 spectral-theory/ArchimedeanCompletion.v
 spectral-theory/PadicValuation.v
