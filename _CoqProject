@@ -585,6 +585,7 @@ spectral-theory/BaselZeta.v
 spectral-theory/BaselZeta4.v
 spectral-theory/BaselZeta6.v
 spectral-theory/BaselZeta8.v
+spectral-theory/BaselZeta10.v
 spectral-theory/BaselZeta8Value.v
 spectral-theory/ZetaNeg7.v
 spectral-theory/BaselZeta6Value.v
