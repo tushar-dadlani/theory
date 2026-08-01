@@ -586,10 +586,14 @@ spectral-theory/BaselZeta4.v
 spectral-theory/BaselZeta6.v
 spectral-theory/BaselZeta8.v
 spectral-theory/BaselZeta10.v
+spectral-theory/BaselZeta12Poly.v
+spectral-theory/BaselZeta12.v
 spectral-theory/BaselZeta8Value.v
 spectral-theory/BaselZeta10Value.v
+spectral-theory/BaselZeta12Value.v
 spectral-theory/ZetaNeg7.v
 spectral-theory/ZetaNeg9.v
+spectral-theory/ZetaNeg11.v
 spectral-theory/BaselZeta6Value.v
 spectral-theory/ZetaNeg5.v
 spectral-theory/BaselZeta4Value.v
