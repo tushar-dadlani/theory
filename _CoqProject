@@ -700,6 +700,7 @@ spectral-theory/MellinCoV.v
 spectral-theory/MellinTailSeries.v
 spectral-theory/MellinHeadSeries.v
 spectral-theory/ZetaCompleted.v
+spectral-theory/GammaRecur.v
 spectral-theory/ArchimedeanTower.v
 spectral-theory/ArchimedeanCompletion.v
 spectral-theory/PadicValuation.v
