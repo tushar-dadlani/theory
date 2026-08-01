@@ -709,6 +709,7 @@ spectral-theory/ZetaValues.v
 spectral-theory/GammaHalf.v
 spectral-theory/ZetaZero.v
 spectral-theory/GammaContinuity.v
+spectral-theory/ZetaTrivialZeros.v
 spectral-theory/ArchimedeanTower.v
 spectral-theory/ArchimedeanCompletion.v
 spectral-theory/PadicValuation.v
