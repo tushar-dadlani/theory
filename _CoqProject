@@ -704,6 +704,7 @@ spectral-theory/GammaRecur.v
 spectral-theory/GammaExtend.v
 spectral-theory/XiReflection.v
 spectral-theory/XiTwoSided.v
+spectral-theory/ZetaValues.v
 spectral-theory/ArchimedeanTower.v
 spectral-theory/ArchimedeanCompletion.v
 spectral-theory/PadicValuation.v
