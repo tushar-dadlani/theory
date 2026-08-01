@@ -582,6 +582,7 @@ spectral-theory/BaselTrig.v
 spectral-theory/BaselCotPoly.v
 spectral-theory/BaselVieta.v
 spectral-theory/BaselZeta.v
+spectral-theory/BaselZeta4.v
 spectral-theory/BaselMaster.v
 spectral-theory/HagedornTransition.v
 spectral-theory/ZetaContinuation.v
