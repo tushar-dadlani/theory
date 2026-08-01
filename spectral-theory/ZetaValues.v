@@ -9,12 +9,12 @@
 (*                 at s=2.  The reflection forces                     *)
 (*                    π^{−1}·Γ(1)·ζ(2) = π^{1/2}·Γ_ext(−1/2)·ζ_ext(−1),*)
 (*                 and Γ_ext(−1/2)=−2·Γ(1/2) (GamN_FE at s=−1/2).      *)
-(*                 Discharging ζ(2)=π²/6 internally and given the two  *)
-(*                 classical Γ-values Γ(1)=1 and Γ(1/2)=√π, the π's   *)
-(*                 cancel and ζ_ext(−1)=−1/12.                        *)
-(*                 (Γ(1)=1 is provable in-system; Γ(1/2)=√π is the    *)
-(*                 Gaussian integral, left classical in this dev — so  *)
-(*                 both enter as hypotheses.)                          *)
+(*                 Discharging ζ(2)=π²/6 and Γ(1)=1 internally         *)
+(*                 (GammaOne.Gam_1) and given the one remaining        *)
+(*                 classical Γ-value Γ(1/2)=√π, the π's cancel and     *)
+(*                 ζ_ext(−1)=−1/12.  (Γ(1/2)=√π is the Gaussian        *)
+(*                 integral, left classical in this dev, so it is the  *)
+(*                 sole hypothesis.)                                   *)
 (*                                                                    *)
 (*   ζ(0) = −1/2 sits at the pole s=1 of the reflection (both sides    *)
 (*   singular); it needs a Laurent/limit analysis, not a substitution,*)
@@ -24,7 +24,7 @@
 
 From Stdlib Require Import Reals Rpower Lra Lia.
 Require Import Ell2Zeta Ell2Basel Ell2ZetaCont ZetaCompleted HagedornTransition
-        XiTwoSided GammaReal GammaExtend MellinTail.
+        XiTwoSided GammaReal GammaExtend GammaOne MellinTail.
 Open Scope R_scope.
 
 (* --- ζ(2) = π²/6 --- *)
@@ -70,11 +70,13 @@ Qed.
 
 (* --- ζ(−1) = −1/12, given Γ(1)=1 and Γ(1/2)=√π --- *)
 
-Theorem zeta_neg1 : forall (H1 : 0 < 1) (Hh : 0 < 1 / 2),
-  Gam 1 H1 = 1 -> Gam (1 / 2) Hh = Rpower PI (1 / 2) ->
+Theorem zeta_neg1 : forall (Hh : 0 < 1 / 2),
+  Gam (1 / 2) Hh = Rpower PI (1 / 2) ->
   zeta_ext (-1) = - (1 / 12).
 Proof.
-  intros H1 Hh HG1 HGh.
+  intros Hh HGh.
+  assert (H1 : 0 < 1) by lra.
+  pose proof (Gam_1 H1) as HG1.
   assert (Hs0 : 0 < 2) by lra.
   assert (Hs1 : (2:R) <> 1) by lra.
   assert (Hs2 : 0 < 2 / 2) by lra.
