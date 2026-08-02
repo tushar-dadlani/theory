@@ -741,6 +741,7 @@ spectral-theory/CexpFull.v
 spectral-theory/Holomorphic.v
 spectral-theory/CexpRemainder.v
 spectral-theory/CImproperIntegral.v
+spectral-theory/ThetaTailEntire.v
 spectral-theory/GammaOne.v
 spectral-theory/ZetaValues.v
 spectral-theory/GammaHalf.v
