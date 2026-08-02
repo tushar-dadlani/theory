@@ -242,11 +242,114 @@ Proof.
         [ apply T_spec | intros x _; apply wker_nonneg | exact HA ].
 Qed.
 
-Print Assumptions Cmod_wkerC.
-Print Assumptions Ccont_wkerC.
-Print Assumptions TC_agree.
-Print Assumptions lnk_wker_conv.
+(* ================================================================= *)
+(*  Group 2: the derivative integrand dkerC and its integral dTC.      *)
+(* ================================================================= *)
+
+Definition dkerC (z : C) (u : R) : C := Cmul (RtoC (ln (clamp u) / 2)) (wkerC z u).
+
+Lemma Cmod_dkerC : forall z u, Cmod (dkerC z u) = ln (clamp u) / 2 * wker (Re z) u.
+Proof.
+  intros z u; unfold dkerC.
+  rewrite Cmod_mul, Cmod_RtoC, Cmod_wkerC.
+  rewrite (Rabs_right (ln (clamp u) / 2)); [ reflexivity | ].
+  apply Rle_ge; unfold Rdiv; apply Rmult_le_pos; [ apply ln_clamp_nonneg | lra ].
+Qed.
+
+Lemma Ccont_dkerC : forall z, Ccont (dkerC z).
+Proof.
+  intro z; unfold dkerC; apply Ccont_mul; [ | apply Ccont_wkerC ].
+  apply Ccont_RtoC.
+  apply (continuity_mult (fun u => ln (clamp u)) (fun _ => / 2));
+    [ apply cont_lnclamp | apply continuity_const; red; intros; reflexivity ].
+Qed.
+
+Definition cont_dkerC_re (z : C) : continuity (fun u => Re (dkerC z u)) := proj1 (Ccont_dkerC z).
+Definition cont_dkerC_im (z : C) : continuity (fun u => Im (dkerC z u)) := proj2 (Ccont_dkerC z).
+
+Definition dTC_dom (z : C) (u : R) : R := ln (clamp u) / 2 * wker (Re z) u.
+
+Lemma cont_dTC_dom : forall z, continuity (dTC_dom z).
+Proof.
+  intro z; unfold dTC_dom.
+  apply (continuity_mult (fun u => ln (clamp u) / 2) (wker (Re z))); [ | apply cont_wker ].
+  apply (continuity_mult (fun u => ln (clamp u)) (fun _ => / 2));
+    [ apply cont_lnclamp | apply continuity_const; red; intros; reflexivity ].
+Qed.
+
+Lemma dTC_dom_conv : forall z,
+  { I | ImproperCv1 (dTC_dom z) (cont_RI _ (cont_dTC_dom z)) I }.
+Proof.
+  intro z; destruct (lnk_wker_conv (Re z) 1) as [I1 HI1].
+  exists (/ 2 * I1).
+  apply (improper_ext (fun u => / 2 * ((ln (clamp u)) ^ 1 * wker (Re z) u)) (dTC_dom z)
+           (fun a b => RI_scal (fun u => (ln (clamp u)) ^ 1 * wker (Re z) u) (/ 2) a b
+                          (cont_RI _ (cont_lnk_wker (Re z) 1) a b))
+           (cont_RI _ (cont_dTC_dom z)) (/ 2 * I1)).
+  - intros x _; unfold dTC_dom; rewrite pow_1; field.
+  - apply (improper_scal (fun u => (ln (clamp u)) ^ 1 * wker (Re z) u) (/ 2)
+             (cont_RI _ (cont_lnk_wker (Re z) 1)) _ I1 HI1).
+Qed.
+
+Definition dTC_sig (z : C) :
+  { I : C | CImp (dkerC z) (cont_RI _ (cont_dkerC_re z)) (cont_RI _ (cont_dkerC_im z)) I } :=
+  CImp_abs (dkerC z) (dTC_dom z) (cont_RI _ (cont_dTC_dom z)) (proj1_sig (dTC_dom_conv z))
+    (cont_dkerC_re z) (cont_dkerC_im z)
+    (fun x _ => Req_le _ _ (Cmod_dkerC z x)) (proj2_sig (dTC_dom_conv z)).
+
+Definition dTC (z : C) : C := proj1_sig (dTC_sig z).
+
+Lemma dTC_spec : forall z,
+  CImp (dkerC z) (cont_RI _ (cont_dkerC_re z)) (cont_RI _ (cont_dkerC_im z)) (dTC z).
+Proof. intro z; exact (proj2_sig (dTC_sig z)). Qed.
 
 (* ================================================================= *)
-(*  END ThetaTailEntire.v (part 3).                                   *)
+(*  Group 3: the multiplicative-shift algebra.                         *)
+(* ================================================================= *)
+
+Definition wshift (h : C) (u : R) : C := Cmul (Cmul h (RtoC (/ 2))) (RtoC (ln (clamp u))).
+
+Lemma wkerC_shift : forall z h u,
+  wkerC (Cadd z h) u = Cmul (wkerC z u) (Cexpf (wshift h u)).
+Proof.
+  intros z h u; unfold wkerC, wshift.
+  assert (HE : Cminus (Cmul (Cadd z h) (RtoC (/ 2))) C1
+             = Cadd (Cminus (Cmul z (RtoC (/ 2))) C1) (Cmul h (RtoC (/ 2)))) by ring.
+  rewrite HE, Cpw_split. unfold Cpw. ring.
+Qed.
+
+Lemma Cmod_wshift : forall h u, Cmod (wshift h u) = Cmod h * (ln (clamp u) / 2).
+Proof.
+  intros h u; unfold wshift.
+  rewrite !Cmod_mul, !Cmod_RtoC.
+  rewrite (Rabs_right (/ 2)) by lra.
+  rewrite (Rabs_right (ln (clamp u))) by (apply Rle_ge, ln_clamp_nonneg).
+  field.
+Qed.
+
+Definition remC (z h : C) (u : R) : C :=
+  Cminus (Cminus (wkerC (Cadd z h) u) (wkerC z u)) (Cmul h (dkerC z u)).
+
+Lemma remC_eq : forall z h u,
+  remC z h u = Cmul (wkerC z u) (Cminus (Cminus (Cexpf (wshift h u)) C1) (wshift h u)).
+Proof.
+  intros z h u; unfold remC, dkerC.
+  rewrite wkerC_shift.
+  assert (Hlin : Cmul h (Cmul (RtoC (ln (clamp u) / 2)) (wkerC z u))
+               = Cmul (wkerC z u) (wshift h u)).
+  { unfold wshift.
+    replace (RtoC (ln (clamp u) / 2)) with (Cmul (RtoC (/ 2)) (RtoC (ln (clamp u))))
+      by (rewrite <- RtoC_mul; f_equal; field).
+    ring. }
+  rewrite Hlin. ring.
+Qed.
+
+Print Assumptions Cmod_wkerC.
+Print Assumptions TC_agree.
+Print Assumptions lnk_wker_conv.
+Print Assumptions dTC_spec.
+Print Assumptions remC_eq.
+
+(* ================================================================= *)
+(*  END ThetaTailEntire.v (part 4).                                   *)
 (* ================================================================= *)
