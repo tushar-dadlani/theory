@@ -175,10 +175,78 @@ Proof.
       | apply improper_zero ].
 Qed.
 
+(* ================================================================= *)
+(*  Group 1: convergence of the ln-weighted tail ∫ (ln u)^k · wker s.  *)
+(* ================================================================= *)
+
+Lemma ln_clamp_nonneg : forall u, 0 <= ln (clamp u).
+Proof.
+  intro u; pose proof (clamp_ge1 u) as H1.
+  rewrite <- ln_1; destruct (Rle_lt_or_eq_dec 1 (clamp u) H1) as [Hlt | Heq].
+  - left; apply ln_increasing; [ lra | exact Hlt ].
+  - rewrite <- Heq; apply Rle_refl.
+Qed.
+
+Lemma ln_clamp_le : forall u, ln (clamp u) <= clamp u.
+Proof.
+  intro u; pose proof (clamp_pos u) as Hp.
+  destruct (Req_dec (ln (clamp u)) 0) as [H0 | Hne].
+  - rewrite H0; left; exact Hp.
+  - pose proof (exp_ineq1 (ln (clamp u)) Hne) as Hi.
+    rewrite exp_ln in Hi by exact Hp; lra.
+Qed.
+
+Lemma cont_pow : forall g k, continuity g -> continuity (fun u => (g u) ^ k).
+Proof.
+  intros g k Hg; induction k as [| k IH].
+  - apply (continuity_ext (fun _ => 1));
+      [ intro u; reflexivity | apply continuity_const; red; intros; reflexivity ].
+  - apply (continuity_ext (fun u => g u * (g u) ^ k));
+      [ intro u; reflexivity | exact (continuity_mult _ _ Hg IH) ].
+Qed.
+
+Lemma cont_lnk_wker : forall s k, continuity (fun u => (ln (clamp u)) ^ k * wker s u).
+Proof.
+  intros s k; apply (continuity_mult (fun u => (ln (clamp u)) ^ k) (wker s)).
+  - apply cont_pow, cont_lnclamp.
+  - apply cont_wker.
+Qed.
+
+Lemma lnk_wker_le : forall s k u, 1 <= u ->
+  (ln (clamp u)) ^ k * wker s u <= wker (s + 2 * INR k) u.
+Proof.
+  intros s k u Hu.
+  assert (Hpow : (ln (clamp u)) ^ k <= (clamp u) ^ k)
+    by (apply pow_incr; split; [ apply ln_clamp_nonneg | apply ln_clamp_le ]).
+  apply Rle_trans with ((clamp u) ^ k * wker s u).
+  - apply Rmult_le_compat_r; [ apply wker_nonneg | exact Hpow ].
+  - unfold wker.
+    rewrite <- Rpower_pow by apply clamp_pos.
+    rewrite <- Rmult_assoc, <- Rpower_plus.
+    replace (INR k + (s / 2 - 1)) with ((s + 2 * INR k) / 2 - 1) by field.
+    reflexivity.
+Qed.
+
+Lemma lnk_wker_conv : forall s k,
+  { I | ImproperCv1 (fun u => (ln (clamp u)) ^ k * wker s u)
+          (cont_RI _ (cont_lnk_wker s k)) I }.
+Proof.
+  intros s k; apply improper_bounded_cv.
+  - intros x _; apply Rmult_le_pos;
+      [ apply pow_le; apply ln_clamp_nonneg | apply wker_nonneg ].
+  - exists (T (s + 2 * INR k)); intros A HA.
+    apply Rle_trans with (pint1 (wker (s + 2 * INR k)) (wker_int (s + 2 * INR k)) A).
+    + unfold pint1; apply RiemannInt_P19;
+        [ exact HA | intros x Hx; apply lnk_wker_le; lra ].
+    + apply pint1_le_improper;
+        [ apply T_spec | intros x _; apply wker_nonneg | exact HA ].
+Qed.
+
 Print Assumptions Cmod_wkerC.
 Print Assumptions Ccont_wkerC.
 Print Assumptions TC_agree.
+Print Assumptions lnk_wker_conv.
 
 (* ================================================================= *)
-(*  END ThetaTailEntire.v (part 2).                                   *)
+(*  END ThetaTailEntire.v (part 3).                                   *)
 (* ================================================================= *)
