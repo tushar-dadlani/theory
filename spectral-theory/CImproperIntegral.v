@@ -4,7 +4,7 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra FunctionalExtensionality.
-Require Import ComplexField Cmodulus ImproperCv1.
+Require Import ComplexField Cmodulus ImproperCv1 MellinElem.
 Open Scope R_scope.
 
 (* scalar multiple preserves Riemann-integrability *)
@@ -191,6 +191,114 @@ Proof.
       * exact HRg.
 Qed.
 
+(* ================================================================= *)
+(*  Absolute convergence ⇒ convergence for the complex integral.      *)
+(* ================================================================= *)
+
+(* continuity ⇒ Riemann-integrable on any interval (both orders) *)
+Lemma cont_RI : forall h, continuity h -> forall x y, Riemann_integrable h x y.
+Proof.
+  intros h Hh x y; destruct (Rle_dec x y) as [H | H].
+  - apply continuity_implies_RiemannInt; [ exact H | intros u _; apply Hh ].
+  - apply RiemannInt_P1; apply continuity_implies_RiemannInt; [ lra | intros u _; apply Hh ].
+Qed.
+
+Lemma Cmod_Re : forall c, Rabs (Re c) <= Cmod c.
+Proof.
+  intro c; unfold Cmod; rewrite <- (sqrt_Rsqr_abs (Re c)).
+  apply sqrt_le_1_alt; unfold Rsqr, Cnorm2.
+  pose proof (Rle_0_sqr (Im c)); unfold Rsqr in *; lra.
+Qed.
+
+Lemma Cmod_Im : forall c, Rabs (Im c) <= Cmod c.
+Proof.
+  intro c; unfold Cmod; rewrite <- (sqrt_Rsqr_abs (Im c)).
+  apply sqrt_le_1_alt; unfold Rsqr, Cnorm2.
+  pose proof (Rle_0_sqr (Re c)); unfold Rsqr in *; lra.
+Qed.
+
+Lemma Rmax_0_eq : forall a, Rmax a 0 = (a + Rabs a) * / 2.
+Proof.
+  intro a; unfold Rmax, Rabs; destruct (Rle_dec a 0); destruct (Rcase_abs a); lra.
+Qed.
+
+Lemma cont_max0 : forall h, continuity h -> continuity (fun u => Rmax (h u) 0).
+Proof.
+  intros h Hh.
+  assert (Heq : (fun u => Rmax (h u) 0) = (fun u => (h u + Rabs (h u)) * / 2))
+    by (apply functional_extensionality; intro u; apply Rmax_0_eq).
+  rewrite Heq.
+  apply (continuity_mult (fun u => h u + Rabs (h u)) (fun _ => / 2)).
+  - apply (continuity_plus h (fun u => Rabs (h u))).
+    + exact Hh.
+    + exact (continuity_comp h Rabs Hh Rcontinuity_abs).
+  - apply continuity_const; red; intros; reflexivity.
+Qed.
+
+(* a signed continuous integrand dominated by an ImproperCv1 g is itself
+   ImproperCv1 — via the positive/negative-part split. *)
+Lemma abs_conv_component : forall h g Hg Ig (Hh : continuity h),
+  (forall x, 1 <= x -> Rabs (h x) <= g x) ->
+  ImproperCv1 g Hg Ig ->
+  { I : R | ImproperCv1 h (cont_RI h Hh) I }.
+Proof.
+  intros h g Hg Ig Hh Hbound HG.
+  assert (Hgpos : forall x, 1 <= x -> 0 <= g x)
+    by (intros x Hx; apply Rle_trans with (Rabs (h x)); [ apply Rabs_pos | apply Hbound; exact Hx ]).
+  pose (hp := fun u => Rmax (h u) 0).
+  pose (hm := fun u => Rmax (- h u) 0).
+  assert (Hchp : continuity hp) by (apply cont_max0; exact Hh).
+  assert (Hchm : continuity hm) by (apply cont_max0; exact (continuity_opp h Hh)).
+  assert (Hpp : forall x, 1 <= x -> 0 <= hp x) by (intros x _; apply Rmax_r).
+  assert (Hmp : forall x, 1 <= x -> 0 <= hm x) by (intros x _; apply Rmax_r).
+  assert (Hpg : forall x, 1 <= x -> hp x <= g x).
+  { intros x Hx; unfold hp; apply Rmax_lub.
+    - apply Rle_trans with (Rabs (h x)); [ apply Rle_abs | apply Hbound; exact Hx ].
+    - apply Hgpos; exact Hx. }
+  assert (Hmg : forall x, 1 <= x -> hm x <= g x).
+  { intros x Hx; unfold hm; apply Rmax_lub.
+    - apply Rle_trans with (Rabs (h x));
+        [ rewrite <- (Rabs_Ropp (h x)); apply Rle_abs | apply Hbound; exact Hx ].
+    - apply Hgpos; exact Hx. }
+  assert (Hpbnd : exists M, forall A, 1 <= A -> pint1 hp (cont_RI hp Hchp) A <= M).
+  { exists Ig; intros A HA; apply Rle_trans with (pint1 g Hg A).
+    - unfold pint1; apply RiemannInt_P19; [ exact HA | intros x Hx; apply Hpg; lra ].
+    - apply (pint1_le_improper g Hg Ig HG Hgpos A HA). }
+  assert (Hmbnd : exists M, forall A, 1 <= A -> pint1 hm (cont_RI hm Hchm) A <= M).
+  { exists Ig; intros A HA; apply Rle_trans with (pint1 g Hg A).
+    - unfold pint1; apply RiemannInt_P19; [ exact HA | intros x Hx; apply Hmg; lra ].
+    - apply (pint1_le_improper g Hg Ig HG Hgpos A HA). }
+  destruct (improper_bounded_cv hp (cont_RI hp Hchp) Hpp Hpbnd) as [Ip HIp].
+  destruct (improper_bounded_cv hm (cont_RI hm Hchm) Hmp Hmbnd) as [Im HIm].
+  exists (Ip - Im).
+  apply (improper_ext (fun u => hp u + (-1) * hm u) h
+           (fun a b => RiemannInt_P10 (-1) (cont_RI hp Hchp a b) (cont_RI hm Hchm a b))
+           (cont_RI h Hh) (Ip - Im)).
+  - intros x _; unfold hp, hm, Rmax;
+      destruct (Rle_dec (h x) 0); destruct (Rle_dec (- h x) 0); lra.
+  - replace (Ip - Im) with (Ip + (-1) * Im) by ring.
+    apply (improper_linear hp hm (-1) (cont_RI hp Hchp) (cont_RI hm Hchm)
+             (fun a b => RiemannInt_P10 (-1) (cont_RI hp Hchp a b) (cont_RI hm Hchm a b))
+             Ip Im HIp HIm).
+Qed.
+
+(* the complex integral of a continuous, absolutely-dominated integrand exists *)
+Lemma CImp_abs : forall f g Hg Ig
+    (Hre : continuity (fun u => Re (f u)))
+    (Him : continuity (fun u => Im (f u))),
+  (forall x, 1 <= x -> Cmod (f x) <= g x) ->
+  ImproperCv1 g Hg Ig ->
+  { I : C | CImp f (cont_RI _ Hre) (cont_RI _ Him) I }.
+Proof.
+  intros f g Hg Ig Hre Him Hbound HG.
+  destruct (abs_conv_component (fun u => Re (f u)) g Hg Ig Hre
+             (fun x Hx => Rle_trans _ _ _ (Cmod_Re (f x)) (Hbound x Hx)) HG) as [IR HIR].
+  destruct (abs_conv_component (fun u => Im (f u)) g Hg Ig Him
+             (fun x Hx => Rle_trans _ _ _ (Cmod_Im (f x)) (Hbound x Hx)) HG) as [II HII].
+  exists (mkC IR II); split; [ exact HIR | exact HII ].
+Qed.
+
 Print Assumptions CImp_triangle.
 Print Assumptions CImp_add.
 Print Assumptions CImp_cscal.
+Print Assumptions CImp_abs.
