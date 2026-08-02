@@ -739,6 +739,7 @@ spectral-theory/XiTwoSided.v
 spectral-theory/Cmodulus.v
 spectral-theory/CexpFull.v
 spectral-theory/Holomorphic.v
+spectral-theory/CexpRemainder.v
 spectral-theory/GammaOne.v
 spectral-theory/ZetaValues.v
 spectral-theory/GammaHalf.v
