@@ -10,7 +10,7 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra FunctionalExtensionality.
-Require Import ComplexField Cmodulus CexpFull EulerFormula
+Require Import ComplexField Cmodulus CexpFull EulerFormula CexpRemainder Holomorphic
         RiemannPsi MellinElem MellinTail ImproperCv1 CImproperIntegral.
 Open Scope R_scope.
 
@@ -344,12 +344,217 @@ Proof.
   rewrite Hlin. ring.
 Qed.
 
-Print Assumptions Cmod_wkerC.
-Print Assumptions TC_agree.
-Print Assumptions lnk_wker_conv.
-Print Assumptions dTC_spec.
-Print Assumptions remC_eq.
+(* ================================================================= *)
+(*  Group 4: the modulus bound on the remainder integrand.             *)
+(* ================================================================= *)
+
+Lemma Cmod_remC_le : forall z h u, 1 <= u -> Cmod h <= 1 ->
+  Cmod (remC z h u) <= Cmod h ^ 2 * (3 / 4) * ((ln (clamp u)) ^ 2 * wker (Re z + 1) u).
+Proof.
+  intros z h u Hu Hh.
+  rewrite remC_eq, Cmod_mul, Cmod_wkerC.
+  assert (HexpEq : exp (Cmod h * (ln (clamp u) / 2)) = Rpower (clamp u) (Cmod h / 2))
+    by (unfold Rpower; f_equal; field).
+  assert (Hexple : Rpower (clamp u) (Cmod h / 2) <= Rpower (clamp u) (1 / 2))
+    by (apply Rle_Rpower; [ apply clamp_ge1 | lra ]).
+  assert (Hfold : wker (Re z) u * Rpower (clamp u) (1 / 2) = wker (Re z + 1) u).
+  { unfold wker.
+    rewrite Rmult_assoc, (Rmult_comm (Psi (clamp u)) (Rpower (clamp u) (1 / 2))).
+    rewrite <- Rmult_assoc, <- Rpower_plus.
+    replace (Re z / 2 - 1 + 1 / 2) with ((Re z + 1) / 2 - 1) by field.
+    reflexivity. }
+  assert (Hcoef : 0 <= 3 * (Cmod h * (ln (clamp u) / 2)) ^ 2).
+  { apply Rmult_le_pos; [ lra | apply pow_le; apply Rmult_le_pos;
+      [ apply Cmod_nonneg | apply Rmult_le_pos; [ apply ln_clamp_nonneg | lra ] ] ]. }
+  apply Rle_trans with (wker (Re z) u * (3 * (Cmod (wshift h u)) ^ 2 * exp (Cmod (wshift h u)))).
+  - apply Rmult_le_compat_l; [ apply wker_nonneg | apply Cexpf_remainder ].
+  - rewrite Cmod_wshift, HexpEq.
+    apply Rle_trans with
+      (wker (Re z) u * (3 * (Cmod h * (ln (clamp u) / 2)) ^ 2 * Rpower (clamp u) (1 / 2))).
+    + apply Rmult_le_compat_l; [ apply wker_nonneg | ].
+      apply Rmult_le_compat_l; [ exact Hcoef | exact Hexple ].
+    + right. rewrite <- Hfold. field.
+Qed.
 
 (* ================================================================= *)
-(*  END ThetaTailEntire.v (part 4).                                   *)
+(*  Group 5: CImp assembly and convergence of ∫ Cmod(remC).            *)
+(* ================================================================= *)
+
+Lemma CImp_minus : forall f g Href Himf Hreg Himg Hrefg Himfg I J,
+  CImp f Href Himf I -> CImp g Hreg Himg J ->
+  CImp (fun u => Cminus (f u) (g u)) Hrefg Himfg (Cminus I J).
+Proof.
+  intros f g Href Himf Hreg Himg Hrefg Himfg I J [HRf HIf] [HRg HIg].
+  split.
+  - replace (Re (Cminus I J)) with (Re I + (-1) * Re J) by (simpl; ring).
+    apply (improper_ext (fun u => Re (f u) + (-1) * Re (g u))
+             (fun u => Re (Cminus (f u) (g u)))
+             (fun a b => RiemannInt_P10 (-1) (Href a b) (Hreg a b)) Hrefg (Re I + (-1) * Re J)).
+    + intros x _; simpl; ring.
+    + apply (improper_linear (fun u => Re (f u)) (fun u => Re (g u)) (-1) Href Hreg
+               (fun a b => RiemannInt_P10 (-1) (Href a b) (Hreg a b)) (Re I) (Re J) HRf HRg).
+  - replace (Im (Cminus I J)) with (Im I + (-1) * Im J) by (simpl; ring).
+    apply (improper_ext (fun u => Im (f u) + (-1) * Im (g u))
+             (fun u => Im (Cminus (f u) (g u)))
+             (fun a b => RiemannInt_P10 (-1) (Himf a b) (Himg a b)) Himfg (Im I + (-1) * Im J)).
+    + intros x _; simpl; ring.
+    + apply (improper_linear (fun u => Im (f u)) (fun u => Im (g u)) (-1) Himf Himg
+               (fun a b => RiemannInt_P10 (-1) (Himf a b) (Himg a b)) (Im I) (Im J) HIf HIg).
+Qed.
+
+Lemma Ccont_minus : forall a b, Ccont a -> Ccont b -> Ccont (fun u => Cminus (a u) (b u)).
+Proof.
+  intros a b [Har Hai] [Hbr Hbi]; split.
+  - apply (continuity_ext (fun u => Re (a u) - Re (b u)));
+      [ intro u; unfold Cminus, Cadd, Copp; simpl; ring | exact (continuity_minus _ _ Har Hbr) ].
+  - apply (continuity_ext (fun u => Im (a u) - Im (b u)));
+      [ intro u; unfold Cminus, Cadd, Copp; simpl; ring | exact (continuity_minus _ _ Hai Hbi) ].
+Qed.
+
+Lemma Ccont_remC : forall z h, Ccont (remC z h).
+Proof.
+  intros z h; unfold remC.
+  apply Ccont_minus.
+  - apply Ccont_minus; apply Ccont_wkerC.
+  - apply Ccont_mul; [ apply Ccont_const | apply Ccont_dkerC ].
+Qed.
+
+Lemma cont_Cmod_remC : forall z h, continuity (fun u => Cmod (remC z h u)).
+Proof.
+  intros z h.
+  assert (Hcn : continuity (fun u => Cnorm2 (remC z h u))).
+  { apply (continuity_ext (fun u => Re (remC z h u) * Re (remC z h u)
+                                  + Im (remC z h u) * Im (remC z h u)));
+      [ intro w; reflexivity | ].
+    apply continuity_plus; apply continuity_mult;
+      first [ exact (proj1 (Ccont_remC z h)) | exact (proj2 (Ccont_remC z h)) ]. }
+  intro u; apply (continuity_pt_comp (fun u => Cnorm2 (remC z h u)) sqrt u);
+    [ apply Hcn | apply continuity_pt_sqrt; apply Cnorm2_nonneg ].
+Qed.
+
+Lemma cont_remC_dom : forall z h,
+  continuity (fun u => Cmod h ^ 2 * (3 / 4) * ((ln (clamp u)) ^ 2 * wker (Re z + 1) u)).
+Proof.
+  intros z h.
+  apply (continuity_mult (fun _ => Cmod h ^ 2 * (3 / 4))
+                         (fun u => (ln (clamp u)) ^ 2 * wker (Re z + 1) u));
+    [ apply continuity_const; red; intros; reflexivity | apply cont_lnk_wker ].
+Qed.
+
+Lemma remC_dom_conv : forall z h,
+  ImproperCv1 (fun u => Cmod h ^ 2 * (3 / 4) * ((ln (clamp u)) ^ 2 * wker (Re z + 1) u))
+    (cont_RI _ (cont_remC_dom z h))
+    (Cmod h ^ 2 * (3 / 4) * proj1_sig (lnk_wker_conv (Re z + 1) 2)).
+Proof.
+  intros z h.
+  apply (improper_scal (fun u => (ln (clamp u)) ^ 2 * wker (Re z + 1) u) (Cmod h ^ 2 * (3 / 4))
+           (cont_RI _ (cont_lnk_wker (Re z + 1) 2)) (cont_RI _ (cont_remC_dom z h))
+           (proj1_sig (lnk_wker_conv (Re z + 1) 2)) (proj2_sig (lnk_wker_conv (Re z + 1) 2))).
+Qed.
+
+Lemma remC_CImp : forall z h,
+  CImp (remC z h) (cont_RI _ (proj1 (Ccont_remC z h))) (cont_RI _ (proj2 (Ccont_remC z h)))
+    (Cminus (Cminus (TC (Cadd z h)) (TC z)) (Cmul h (dTC z))).
+Proof.
+  intros z h; unfold remC.
+  apply (CImp_minus
+           (fun u => Cminus (wkerC (Cadd z h) u) (wkerC z u))
+           (fun u => Cmul h (dkerC z u))
+           (cont_RI _ (proj1 (Ccont_minus _ _ (Ccont_wkerC (Cadd z h)) (Ccont_wkerC z))))
+           (cont_RI _ (proj2 (Ccont_minus _ _ (Ccont_wkerC (Cadd z h)) (Ccont_wkerC z))))
+           (cont_RI _ (proj1 (Ccont_mul _ _ (Ccont_const h) (Ccont_dkerC z))))
+           (cont_RI _ (proj2 (Ccont_mul _ _ (Ccont_const h) (Ccont_dkerC z))))
+           (cont_RI _ (proj1 (Ccont_remC z h)))
+           (cont_RI _ (proj2 (Ccont_remC z h)))
+           (Cminus (TC (Cadd z h)) (TC z)) (Cmul h (dTC z))).
+  - apply (CImp_minus (wkerC (Cadd z h)) (wkerC z)
+             (cont_RI _ (cont_wkerC_re (Cadd z h))) (cont_RI _ (cont_wkerC_im (Cadd z h)))
+             (cont_RI _ (cont_wkerC_re z)) (cont_RI _ (cont_wkerC_im z))
+             (cont_RI _ (proj1 (Ccont_minus _ _ (Ccont_wkerC (Cadd z h)) (Ccont_wkerC z))))
+             (cont_RI _ (proj2 (Ccont_minus _ _ (Ccont_wkerC (Cadd z h)) (Ccont_wkerC z))))
+             (TC (Cadd z h)) (TC z));
+      apply TC_spec.
+  - apply (CImp_cscal h (dkerC z)
+             (cont_RI _ (cont_dkerC_re z)) (cont_RI _ (cont_dkerC_im z))
+             (cont_RI _ (proj1 (Ccont_mul _ _ (Ccont_const h) (Ccont_dkerC z))))
+             (cont_RI _ (proj2 (Ccont_mul _ _ (Ccont_const h) (Ccont_dkerC z))))
+             (dTC z));
+      apply dTC_spec.
+Qed.
+
+Lemma Cmod_remC_conv : forall z h, Cmod h <= 1 ->
+  { J | ImproperCv1 (fun u => Cmod (remC z h u)) (cont_RI _ (cont_Cmod_remC z h)) J }.
+Proof.
+  intros z h Hh; apply improper_bounded_cv.
+  - intros x _; apply Cmod_nonneg.
+  - exists (Cmod h ^ 2 * (3 / 4) * proj1_sig (lnk_wker_conv (Re z + 1) 2)); intros A HA.
+    apply Rle_trans with
+      (pint1 (fun u => Cmod h ^ 2 * (3 / 4) * ((ln (clamp u)) ^ 2 * wker (Re z + 1) u))
+             (cont_RI _ (cont_remC_dom z h)) A).
+    + unfold pint1; apply RiemannInt_P19;
+        [ exact HA | intros x Hx; apply Cmod_remC_le; [ lra | exact Hh ] ].
+    + apply pint1_le_improper; [ apply remC_dom_conv | | exact HA ].
+      intros x _; apply Rmult_le_pos;
+        [ apply Rmult_le_pos; [ apply pow_le; apply Cmod_nonneg | lra ]
+        | apply Rmult_le_pos; [ apply pow_le; apply ln_clamp_nonneg | apply wker_nonneg ] ].
+Qed.
+
+(* ================================================================= *)
+(*  Group 6: TC is entire.                                             *)
+(* ================================================================= *)
+
+Lemma TC_deriv_bound : forall z h, Cmod h <= 1 ->
+  Cmod (Cminus (Cminus (TC (Cadd z h)) (TC z)) (Cmul (dTC z) h))
+  <= Cmod h ^ 2 * (3 / 4) * proj1_sig (lnk_wker_conv (Re z + 1) 2).
+Proof.
+  intros z h Hh.
+  replace (Cmul (dTC z) h) with (Cmul h (dTC z)) by ring.
+  destruct (Cmod_remC_conv z h Hh) as [J HJ].
+  apply Rle_trans with J.
+  - apply (CImp_triangle _ _ _ _ _ _ (remC_CImp z h) HJ).
+  - apply (improper_mono (fun u => Cmod (remC z h u))
+             (fun u => Cmod h ^ 2 * (3 / 4) * ((ln (clamp u)) ^ 2 * wker (Re z + 1) u))
+             (cont_RI _ (cont_Cmod_remC z h)) (cont_RI _ (cont_remC_dom z h))
+             J (Cmod h ^ 2 * (3 / 4) * proj1_sig (lnk_wker_conv (Re z + 1) 2))).
+    + intros x Hx; apply Cmod_remC_le; [ lra | exact Hh ].
+    + exact HJ.
+    + exact (remC_dom_conv z h).
+Qed.
+
+Lemma TC_entire : forall z, is_Cderiv TC z (dTC z).
+Proof.
+  intros z eps Heps.
+  assert (HL2 : 0 <= proj1_sig (lnk_wker_conv (Re z + 1) 2)).
+  { destruct (lnk_wker_conv (Re z + 1) 2) as [L2 HL2]; simpl.
+    apply (improper_nonneg (fun u => (ln (clamp u)) ^ 2 * wker (Re z + 1) u)
+             (cont_RI _ (cont_lnk_wker (Re z + 1) 2)) L2);
+      [ intros x _; apply Rmult_le_pos;
+          [ apply pow_le; apply ln_clamp_nonneg | apply wker_nonneg ]
+      | exact HL2 ]. }
+  set (K := 3 / 4 * proj1_sig (lnk_wker_conv (Re z + 1) 2)).
+  assert (HK : 0 <= K) by (unfold K; apply Rmult_le_pos; [ lra | exact HL2 ]).
+  assert (Hd : 0 < eps / (K + 1)) by (apply Rdiv_lt_0_compat; lra).
+  exists (Rmin 1 (eps / (K + 1))).
+  split.
+  - unfold Rmin; destruct (Rle_dec 1 (eps / (K + 1))); lra.
+  - intros h Hlt.
+    assert (Hh1 : Cmod h <= 1) by (pose proof (Rmin_l 1 (eps / (K + 1))); lra).
+    assert (Hlt2 : Cmod h < eps / (K + 1)) by (pose proof (Rmin_r 1 (eps / (K + 1))); lra).
+    apply Rle_trans with (Cmod h ^ 2 * (3 / 4) * proj1_sig (lnk_wker_conv (Re z + 1) 2)).
+    + apply TC_deriv_bound; exact Hh1.
+    + assert (HcK : Cmod h * (K + 1) < eps).
+      { apply Rlt_le_trans with (eps / (K + 1) * (K + 1));
+          [ apply Rmult_lt_compat_r; [ lra | exact Hlt2 ] | right; field; lra ]. }
+      pose proof (Cmod_nonneg h) as Hcm.
+      assert (Hsq : 0 <= Cmod h ^ 2) by (apply pow_le; apply Cmod_nonneg).
+      unfold K in HcK. nra.
+Qed.
+
+Print Assumptions Cmod_wkerC.
+Print Assumptions TC_agree.
+Print Assumptions dTC_spec.
+Print Assumptions TC_entire.
+
+(* ================================================================= *)
+(*  END ThetaTailEntire.v (part 5).                                   *)
 (* ================================================================= *)
