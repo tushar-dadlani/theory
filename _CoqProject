@@ -736,6 +736,9 @@ spectral-theory/GammaRecur.v
 spectral-theory/GammaExtend.v
 spectral-theory/XiReflection.v
 spectral-theory/XiTwoSided.v
+spectral-theory/Cmodulus.v
+spectral-theory/CexpFull.v
+spectral-theory/Holomorphic.v
 spectral-theory/GammaOne.v
 spectral-theory/ZetaValues.v
 spectral-theory/GammaHalf.v
