@@ -757,6 +757,7 @@ spectral-theory/CZetaTerm2.v
 spectral-theory/CZetaDeriv.v
 spectral-theory/CZetaDeriv2.v
 spectral-theory/CZeta.v
+spectral-theory/CZetaHolo.v
 spectral-theory/GammaOne.v
 spectral-theory/ZetaValues.v
 spectral-theory/GammaHalf.v
