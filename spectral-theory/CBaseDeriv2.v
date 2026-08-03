@@ -47,8 +47,37 @@ Proof.
   - apply Im_Cmul_deriv; exact Ht.
 Qed.
 
+(* the algebraic heart of the knot: with B = 1/onems, the six terms of
+   d/dt(d2sGC) collapse (via onems·B = 1 and RtoC coefficient cancellation)
+   to a·a·Q.  Q = t^{-s}, onems = 1-s, a = ln t. *)
+Lemma d2sGC_cancel : forall (Q onems : C) (a : R), onems <> C0 ->
+  Cadd (Cadd
+    (Cadd (Cmul (RtoC (2 * a)) (Cmul Q (Cinv onems)))
+          (Cmul (RtoC (a * a)) (Cmul (Cmul onems Q) (Cinv onems))))
+    (Cadd (Cmul (RtoC (-2)) (Cmul Q (Cmul (Cinv onems) (Cinv onems))))
+          (Cmul (RtoC (-2 * a)) (Cmul (Cmul onems Q) (Cmul (Cinv onems) (Cinv onems))))))
+    (Cadd (Cmul (RtoC 0) (Cmul Q (Cmul (Cinv onems) (Cmul (Cinv onems) (Cinv onems)))))
+          (Cmul (RtoC 2) (Cmul (Cmul onems Q) (Cmul (Cinv onems) (Cmul (Cinv onems) (Cinv onems))))))
+  = Cmul (RtoC (a * a)) Q.
+Proof.
+  intros Q onems a H.
+  replace (RtoC (2 * a)) with (Cmul (Cadd C1 C1) (RtoC a))
+    by (unfold RtoC, C1, Cadd, Cmul; apply Ceq; cbn; ring).
+  replace (RtoC (-2 * a)) with (Cmul (Copp (Cadd C1 C1)) (RtoC a))
+    by (unfold RtoC, C1, Copp, Cadd, Cmul; apply Ceq; cbn; ring).
+  replace (RtoC (a * a)) with (Cmul (RtoC a) (RtoC a))
+    by (rewrite <- RtoC_mul; reflexivity).
+  replace (RtoC 2) with (Cadd C1 C1)
+    by (unfold RtoC, C1, Cadd; apply Ceq; cbn; ring).
+  replace (RtoC (-2)) with (Copp (Cadd C1 C1))
+    by (unfold RtoC, C1, Copp, Cadd; apply Ceq; cbn; ring).
+  replace (RtoC 0) with C0 by (unfold RtoC, C0; apply Ceq; cbn; ring).
+  field; exact H.
+Qed.
+
 Print Assumptions base_deriv_term_Re.
+Print Assumptions d2sGC_cancel.
 
 (* ================================================================= *)
-(*  END CBaseDeriv2.v (part 1: per-term base derivative).             *)
+(*  END CBaseDeriv2.v (part 2: the cancellation identity).            *)
 (* ================================================================= *)
