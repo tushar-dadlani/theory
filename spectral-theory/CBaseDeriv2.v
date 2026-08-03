@@ -75,9 +75,32 @@ Proof.
   field; exact H.
 Qed.
 
+(* t^{1-s} = t · t^{-s} *)
+Lemma Cpw_onems : forall s t, 0 < t ->
+  Cpw t (Cminus C1 s) = Cmul (RtoC t) (Cpw t (Copp s)).
+Proof.
+  intros s t Ht.
+  replace (Cminus C1 s) with (Cadd C1 (Copp s)) by ring.
+  rewrite Cpw_split; f_equal.
+  change (Cpw t C1) with (Cpw t (RtoC 1)); rewrite Cpw_RtoC; f_equal.
+  unfold Rpower; rewrite Rmult_1_l, exp_ln by exact Ht; reflexivity.
+Qed.
+
+(* absorb the 1/t from a t-derivative against the t from t^{1-s} = t·t^{-s} *)
+Lemma combine_real : forall r t Q K, t <> 0 ->
+  Cmul (RtoC (r * / t)) (Cmul (Cmul (RtoC t) Q) K) = Cmul (RtoC r) (Cmul Q K).
+Proof.
+  intros r t Q K Ht.
+  replace (Cmul (RtoC (r * / t)) (Cmul (Cmul (RtoC t) Q) K))
+    with (Cmul (Cmul (RtoC (r * / t)) (RtoC t)) (Cmul Q K)) by ring.
+  rewrite <- RtoC_mul.
+  replace (r * / t * t) with r by (field; exact Ht); reflexivity.
+Qed.
+
 Print Assumptions base_deriv_term_Re.
 Print Assumptions d2sGC_cancel.
+Print Assumptions Cpw_onems.
 
 (* ================================================================= *)
-(*  END CBaseDeriv2.v (part 2: the cancellation identity).            *)
+(*  END CBaseDeriv2.v (part 3: Cpw/real plumbing).                    *)
 (* ================================================================= *)
