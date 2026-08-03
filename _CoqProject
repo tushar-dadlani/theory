@@ -744,6 +744,7 @@ spectral-theory/CImproperIntegral.v
 spectral-theory/ThetaTailEntire.v
 spectral-theory/RiemannXiEntire.v
 spectral-theory/CSeries.v
+spectral-theory/CPower.v
 spectral-theory/GammaOne.v
 spectral-theory/ZetaValues.v
 spectral-theory/GammaHalf.v
