@@ -7,8 +7,8 @@
 (*  |w·x^{w-1}| = |w|·x^{Re w-1}.  Axiom-clean.                        *)
 (* ================================================================= *)
 
-From Stdlib Require Import Reals Lra FunctionalExtensionality.
-Require Import ComplexField Cmodulus CexpFull CPowBase.
+From Stdlib Require Import Reals Lra Lia FunctionalExtensionality.
+Require Import ComplexField Cmodulus CexpFull CPowBase CSeries.
 Open Scope R_scope.
 
 (* modulus of the base derivative  w·x^{w-1} *)
@@ -139,8 +139,82 @@ Proof.
   reflexivity.
 Qed.
 
-Print Assumptions ReGC_deriv.
+(* ================================================================= *)
+(*  Part 3: the double-MVT bound  |gtermC s n| <= 2|s|·(n+1)^{-Re s-1}. *)
+(* ================================================================= *)
+
+Lemma Re_gtermC_bound : forall s n, 0 <= Re s -> Cminus C1 s <> C0 ->
+  Rabs (Re (gtermC s n)) <= Cmod s * Rpower (INR (S n)) (- Re s - 1).
+Proof.
+  intros s n Hs0 Hs1.
+  set (a := INR (S n)); set (b := INR (S (S n))).
+  assert (Ha : 0 < a) by (unfold a; apply lt_0_INR; lia).
+  assert (Hab : a < b) by (unfold a, b; apply lt_INR; lia).
+  assert (Hba1 : b - a = 1) by (unfold a, b; rewrite (S_INR (S n)); ring).
+  destruct (MVT_cor2 (fun t => Re (GC s t)) (fun t => Re (gC s t)) a b Hab
+             (fun c Hc => ReGC_deriv s c (Rlt_le_trans 0 a c Ha (proj1 Hc)) Hs1))
+    as [xi [Hxi [Hxia Hxib]]].
+  rewrite Hba1, Rmult_1_r in Hxi.
+  destruct (MVT_cor2 (fun t => Re (gC s t)) (fun t => Re (gderivC s t)) a xi Hxia
+             (fun c Hc => RegC_deriv s c (Rlt_le_trans 0 a c Ha (proj1 Hc))))
+    as [zeta [Hzeta [Hza Hzx]]].
+  assert (Hval : Re (gtermC s n) = - (Re (gderivC s zeta) * (xi - a))).
+  { unfold gtermC; fold a b; rewrite !Re_Cminus, Hxi; lra. }
+  rewrite Hval, Rabs_Ropp, Rabs_mult.
+  apply Rle_trans with (Cmod (gderivC s zeta) * 1).
+  - apply Rmult_le_compat.
+    + apply Rabs_pos.
+    + apply Rabs_pos.
+    + apply Cmod_Re_le.
+    + rewrite (Rabs_right (xi - a)) by (apply Rle_ge; lra); lra.
+  - rewrite Rmult_1_r, Cmod_gderivC.
+    apply Rmult_le_compat_l; [ apply Cmod_nonneg | ].
+    replace (- Re s - 1) with (- (Re s + 1)) by ring.
+    apply Rpow_negexp_anti; [ exact Ha | lra | lra ].
+Qed.
+
+Lemma Im_gtermC_bound : forall s n, 0 <= Re s -> Cminus C1 s <> C0 ->
+  Rabs (Im (gtermC s n)) <= Cmod s * Rpower (INR (S n)) (- Re s - 1).
+Proof.
+  intros s n Hs0 Hs1.
+  set (a := INR (S n)); set (b := INR (S (S n))).
+  assert (Ha : 0 < a) by (unfold a; apply lt_0_INR; lia).
+  assert (Hab : a < b) by (unfold a, b; apply lt_INR; lia).
+  assert (Hba1 : b - a = 1) by (unfold a, b; rewrite (S_INR (S n)); ring).
+  destruct (MVT_cor2 (fun t => Im (GC s t)) (fun t => Im (gC s t)) a b Hab
+             (fun c Hc => ImGC_deriv s c (Rlt_le_trans 0 a c Ha (proj1 Hc)) Hs1))
+    as [xi [Hxi [Hxia Hxib]]].
+  rewrite Hba1, Rmult_1_r in Hxi.
+  destruct (MVT_cor2 (fun t => Im (gC s t)) (fun t => Im (gderivC s t)) a xi Hxia
+             (fun c Hc => ImgC_deriv s c (Rlt_le_trans 0 a c Ha (proj1 Hc))))
+    as [zeta [Hzeta [Hza Hzx]]].
+  assert (Hval : Im (gtermC s n) = - (Im (gderivC s zeta) * (xi - a))).
+  { unfold gtermC; fold a b; rewrite !Im_Cminus, Hxi; lra. }
+  rewrite Hval, Rabs_Ropp, Rabs_mult.
+  apply Rle_trans with (Cmod (gderivC s zeta) * 1).
+  - apply Rmult_le_compat.
+    + apply Rabs_pos.
+    + apply Rabs_pos.
+    + apply Cmod_Im_le.
+    + rewrite (Rabs_right (xi - a)) by (apply Rle_ge; lra); lra.
+  - rewrite Rmult_1_r, Cmod_gderivC.
+    apply Rmult_le_compat_l; [ apply Cmod_nonneg | ].
+    replace (- Re s - 1) with (- (Re s + 1)) by ring.
+    apply Rpow_negexp_anti; [ exact Ha | lra | lra ].
+Qed.
+
+Lemma Cmod_gtermC_bound : forall s n, 0 <= Re s -> Cminus C1 s <> C0 ->
+  Cmod (gtermC s n) <= 2 * (Cmod s * Rpower (INR (S n)) (- Re s - 1)).
+Proof.
+  intros s n Hs0 Hs1.
+  eapply Rle_trans; [ apply Cmod_le_sum | ].
+  pose proof (Re_gtermC_bound s n Hs0 Hs1) as HR.
+  pose proof (Im_gtermC_bound s n Hs0 Hs1) as HI.
+  lra.
+Qed.
+
+Print Assumptions Cmod_gtermC_bound.
 
 (* ================================================================= *)
-(*  END CZetaTerm.v (part 2).                                          *)
+(*  END CZetaTerm.v (part 3).                                          *)
 (* ================================================================= *)
