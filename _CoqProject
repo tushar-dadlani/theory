@@ -769,3 +769,5 @@ spectral-theory/ArchimedeanTower.v
 spectral-theory/ArchimedeanCompletion.v
 spectral-theory/PadicValuation.v
 spectral-theory/ArchimedeanConcrete.v
+spectral-theory/ZetaXiLink.v
+spectral-theory/ZetaFunctionalEq.v
