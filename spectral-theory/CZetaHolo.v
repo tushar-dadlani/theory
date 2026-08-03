@@ -250,5 +250,99 @@ Qed.
 Print Assumptions seg_ne1.
 
 (* ================================================================= *)
-(*  END CZetaHolo.v (parts 1-3).                                      *)
+(*  Part 4: the Cseries assembly -> zetaC_holo.                        *)
+(* ================================================================= *)
+
+(* a nonneg real series dominated by a convergent one converges, to a
+   limit no larger. *)
+Lemma Rseries_le_cv : forall (a b : nat -> R) Sb,
+  (forall n, 0 <= a n) -> (forall n, a n <= b n) -> Un_cv (sum_f_R0 b) Sb ->
+  { Sa | Un_cv (sum_f_R0 a) Sa /\ Sa <= Sb }.
+Proof.
+  intros a b Sb Ha0 Hab HSb.
+  assert (Hb0 : forall n, 0 <= b n) by (intro n; apply Rle_trans with (a n); auto).
+  assert (Hbnd : forall N, sum_f_R0 a N <= Sb).
+  { intro N. apply Rle_trans with (sum_f_R0 b N); [ apply sum_Rle; intros; auto | ].
+    apply (growing_ineq (sum_f_R0 b) Sb);
+      [ intro M; rewrite tech5; pose proof (Hb0 (S M)); lra | exact HSb ]. }
+  assert (Hgrow : Un_growing (sum_f_R0 a))
+    by (intro N; rewrite tech5; pose proof (Ha0 (S N)); lra).
+  assert (Hub : has_ub (sum_f_R0 a))
+    by (unfold has_ub, bound, is_upper_bound, EUn; exists Sb;
+        intros y [N Hy]; rewrite Hy; apply Hbnd).
+  destruct (growing_cv (sum_f_R0 a) Hgrow Hub) as [Sa HSa].
+  exists Sa; split; [ exact HSa | ].
+  apply Rnot_lt_le; intro Hlt.
+  destruct (HSa (Sa - Sb) ltac:(lra)) as [N HN].
+  pose proof (HN N (Nat.le_refl N)) as HNN.
+  unfold R_dist in HNN; apply Rabs_def2 in HNN.
+  pose proof (Hbnd N); lra.
+Qed.
+
+(* the segment-uniform weight:  q = Re z/2,  M = Cmod z + 1 *)
+Definition Wsummand (z : C) (n : nat) : R :=
+  (2 * ln (INR (S (S n))) + ln (INR (S (S n))) * ln (INR (S (S n))) * (Cmod z + 1))
+  * Rpower (INR (S n)) (- (Re z / 2) - 1).
+
+Lemma seg_d2_bound : forall z h n t, 0 <= t <= 1 -> 0 < Re z ->
+  Cmod h < Re z / 2 -> Cmod h < Cmod (Cminus z C1) / 2 -> Cmod h < 1 ->
+  Cmod (d2gtermC (Cadd z (Cmul (RtoC t) h)) n) <= 2 * Wsummand z n.
+Proof.
+  intros z h n t Ht Hz Hh1 Hh2 Hh3.
+  set (s' := Cadd z (Cmul (RtoC t) h)).
+  assert (HRe : Re z / 2 <= Re s') by (apply seg_Re; assumption).
+  assert (Hne : Cminus C1 s' <> C0) by (apply seg_ne1; assumption).
+  assert (Hlnb : 0 <= ln (INR (S (S n))))
+    by (rewrite <- ln_1; apply ln_le'; [ lra | rewrite <- INR_1; apply le_INR; lia ]).
+  assert (HsM : Cmod s' <= Cmod z + 1).
+  { unfold s'. eapply Rle_trans; [ apply Cmod_triangle | ].
+    assert (Cmod (Cmul (RtoC t) h) <= Cmod h).
+    { rewrite Cmod_mul, Cmod_RtoC, (Rabs_right t) by lra.
+      apply Rle_trans with (1 * Cmod h); [ apply Rmult_le_compat_r; [ apply Cmod_nonneg | lra ] | lra ]. }
+    lra. }
+  eapply Rle_trans; [ apply Cmod_d2gtermC_bound; [ lra | exact Hne ] | ].
+  apply Rmult_le_compat_l; [ lra | ].
+  unfold d2bound, Wsummand.
+  apply Rmult_le_compat.
+  - apply Rplus_le_le_0_compat; [ lra | apply Rmult_le_pos;
+      [ apply Rmult_le_pos; assumption | apply Cmod_nonneg ] ].
+  - apply Rlt_le; unfold Rpower; apply exp_pos.
+  - apply Rplus_le_compat_l; apply Rmult_le_compat_l;
+      [ apply Rmult_le_pos; assumption | exact HsM ].
+  - apply Rle_Rpower; [ rewrite <- INR_1; apply le_INR; lia | lra ].
+Qed.
+
+Lemma seg_pt_1 : forall z h, Cadd z (Cmul (RtoC 1) h) = Cadd z h.
+Proof. intros z h; unfold Cadd, Cmul, RtoC; apply Ceq; cbn; ring. Qed.
+Lemma seg_pt_0 : forall z h, Cadd z (Cmul (RtoC 0) h) = z.
+Proof. intros z h; unfold Cadd, Cmul, RtoC; apply Ceq; cbn; ring. Qed.
+
+(* the per-term remainder bound with the segment-uniform weight *)
+Lemma Rn_bound : forall z h n, 0 < Re z ->
+  Cmod h < Re z / 2 -> Cmod h < Cmod (Cminus z C1) / 2 -> Cmod h < 1 ->
+  Cmod (Cminus (Cminus (gtermC (Cadd z h) n) (gtermC z n)) (Cmul (dgtermC z n) h))
+    <= 4 * Wsummand z n * (Cmod h * Cmod h).
+Proof.
+  intros z h n Hz Hh1 Hh2 Hh3.
+  assert (Hseg : forall t, 0 <= t <= 1 -> Cminus C1 (Cadd z (Cmul (RtoC t) h)) <> C0)
+    by (intros t Ht; apply seg_ne1; assumption).
+  assert (HW0 : 0 <= 2 * Wsummand z n).
+  { pose proof (seg_d2_bound z h n 0 ltac:(lra) Hz Hh1 Hh2 Hh3) as H.
+    eapply Rle_trans; [ apply Cmod_nonneg | exact H ]. }
+  assert (Hbd : forall t, 0 <= t <= 1 -> Cmod (d2gtermC (Cadd z (Cmul (RtoC t) h)) n) <= 2 * Wsummand z n)
+    by (intros t Ht; apply seg_d2_bound; assumption).
+  pose proof (remainder_Re z h n Hseg (2 * Wsummand z n) HW0 Hbd) as HRe.
+  pose proof (remainder_Im z h n Hseg (2 * Wsummand z n) HW0 Hbd) as HIm.
+  rewrite seg_pt_1, seg_pt_0 in HRe, HIm.
+  eapply Rle_trans; [ apply Cmod_le_sum | ].
+  rewrite !Re_Cminus, !Im_Cminus.
+  replace (4 * Wsummand z n * (Cmod h * Cmod h))
+    with (2 * Wsummand z n * (Cmod h * Cmod h) + 2 * Wsummand z n * (Cmod h * Cmod h)) by ring.
+  apply Rplus_le_compat; assumption.
+Qed.
+
+Print Assumptions Rn_bound.
+
+(* ================================================================= *)
+(*  END CZetaHolo.v (parts 1-4b).                                     *)
 (* ================================================================= *)
