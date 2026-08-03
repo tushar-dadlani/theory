@@ -739,6 +739,7 @@ spectral-theory/XiTwoSided.v
 spectral-theory/Cmodulus.v
 spectral-theory/CexpFull.v
 spectral-theory/Holomorphic.v
+spectral-theory/CDeriv.v
 spectral-theory/CexpRemainder.v
 spectral-theory/CImproperIntegral.v
 spectral-theory/ThetaTailEntire.v
