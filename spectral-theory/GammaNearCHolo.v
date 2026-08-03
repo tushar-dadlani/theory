@@ -166,9 +166,89 @@ Lemma dgnearC_spec : forall z (Hz : 0 < Re z),
   CImp0 (dgnkC z) (Hre_dgnkC z) (Him_dgnkC z) (dgnearC z Hz).
 Proof. intros z Hz; exact (proj2_sig (dgnearC_sig z Hz)). Qed.
 
+(* --- Part 2: shift, remainder, and the crux modulus bound --- *)
+
+Lemma exp_le' : forall a b, a <= b -> exp a <= exp b.
+Proof.
+  intros a b H; destruct (Rle_lt_or_eq_dec a b H) as [Hlt | Heq];
+    [ left; apply exp_increasing; exact Hlt | subst; apply Rle_refl ].
+Qed.
+
+(* Rpower u is ANTItone in the exponent for 0 < u <= 1 (ln u <= 0). *)
+Lemma Rpower_antitone : forall u a b, 0 < u -> u <= 1 -> a <= b -> Rpower u b <= Rpower u a.
+Proof.
+  intros u a b Hu Hu1 Hab.
+  assert (Hln : ln u <= 0).
+  { destruct (Rle_lt_or_eq_dec u 1 Hu1) as [Hlt | Heq];
+      [ rewrite <- ln_1; left; apply ln_increasing; lra | subst; rewrite ln_1; lra ]. }
+  unfold Rpower; apply exp_le'.
+  rewrite (Rmult_comm b (ln u)), (Rmult_comm a (ln u)).
+  apply Rmult_le_compat_neg_l; [ exact Hln | exact Hab ].
+Qed.
+
+Definition gnshift (h : C) (u : R) : C := Cmul h (RtoC (ln u)).
+
+Lemma Cmod_gnshift : forall h u, Cmod (gnshift h u) = Cmod h * Rabs (ln u).
+Proof. intros h u; unfold gnshift; rewrite Cmod_mul, Cmod_RtoC; reflexivity. Qed.
+
+Lemma gnkC_shift : forall z h u, gnkC (Cadd z h) u = Cmul (gnkC z u) (Cexpf (gnshift h u)).
+Proof.
+  intros z h u; unfold gnkC, gnshift.
+  assert (HE : Cminus (Cadd z h) C1 = Cadd (Cminus z C1) h) by ring.
+  rewrite HE, Cpw_split. unfold Cpw. ring.
+Qed.
+
+Definition remGnC (z h : C) (u : R) : C :=
+  Cminus (Cminus (gnkC (Cadd z h) u) (gnkC z u)) (Cmul h (dgnkC z u)).
+
+Lemma remGnC_eq : forall z h u,
+  remGnC z h u = Cmul (gnkC z u) (Cminus (Cminus (Cexpf (gnshift h u)) C1) (gnshift h u)).
+Proof.
+  intros z h u; unfold remGnC, dgnkC.
+  rewrite gnkC_shift.
+  assert (Hlin : Cmul h (Cmul (RtoC (ln u)) (gnkC z u)) = Cmul (gnkC z u) (gnshift h u))
+    by (unfold gnshift; ring).
+  rewrite Hlin. ring.
+Qed.
+
+Lemma Cmod_remGnC_le : forall z h u, 0 < u -> u <= 1 -> Cmod h <= Re z / 2 ->
+  Cmod (remGnC z h u) <= Cmod h ^ 2 * 3 * ((ln u) ^ 2 * gnk (Re z / 2) 1 u).
+Proof.
+  intros z h u Hu Hu1 Hh.
+  rewrite remGnC_eq, Cmod_mul, Cmod_gnkC.
+  assert (Hln : ln u <= 0).
+  { destruct (Rle_lt_or_eq_dec u 1 Hu1) as [Hlt | Heq];
+      [ rewrite <- ln_1; left; apply ln_increasing; lra | subst; rewrite ln_1; lra ]. }
+  assert (HexpEq : exp (Cmod h * Rabs (ln u)) = Rpower u (- Cmod h))
+    by (rewrite (Rabs_left1 (ln u)) by exact Hln; unfold Rpower; f_equal; ring).
+  assert (Hexple : Rpower u (- Cmod h) <= Rpower u (- (Re z / 2)))
+    by (apply Rpower_antitone; [ exact Hu | exact Hu1 | lra ]).
+  assert (Hfold : gnk (Re z) 1 u * Rpower u (- (Re z / 2)) = gnk (Re z / 2) 1 u).
+  { unfold gnk.
+    rewrite Rmult_assoc, (Rmult_comm (exp (- (1 * u))) (Rpower u (- (Re z / 2)))).
+    rewrite <- Rmult_assoc, <- Rpower_plus.
+    replace (Re z - 1 + - (Re z / 2)) with (Re z / 2 - 1) by field; reflexivity. }
+  assert (Hcoef : 0 <= 3 * (Cmod h * Rabs (ln u)) ^ 2).
+  { apply Rmult_le_pos; [ lra | apply pow_le; apply Rmult_le_pos;
+      [ apply Cmod_nonneg | apply Rabs_pos ] ]. }
+  apply Rle_trans with (gnk (Re z) 1 u * (3 * (Cmod (gnshift h u)) ^ 2 * exp (Cmod (gnshift h u)))).
+  - apply Rmult_le_compat_l; [ apply gnk_nonneg | apply Cexpf_remainder ].
+  - rewrite Cmod_gnshift, HexpEq.
+    apply Rle_trans with
+      (gnk (Re z) 1 u * (3 * (Cmod h * Rabs (ln u)) ^ 2 * Rpower u (- (Re z / 2)))).
+    + apply Rmult_le_compat_l; [ apply gnk_nonneg | ].
+      apply Rmult_le_compat_l; [ exact Hcoef | exact Hexple ].
+    + right. rewrite <- Hfold.
+      replace ((Cmod h * Rabs (ln u)) ^ 2) with (Cmod h ^ 2 * (ln u) ^ 2)
+        by (rewrite Rpow_mult_distr; f_equal;
+            pose proof (Rsqr_abs (ln u)); unfold Rsqr in *; nra).
+      ring.
+Qed.
+
 Print Assumptions ln2_gnk_conv.
 Print Assumptions dgnearC_spec.
+Print Assumptions Cmod_remGnC_le.
 
 (* ================================================================= *)
-(*  END GammaNearCHolo.v Part 1 (dominators + derivative kernel).      *)
+(*  END GammaNearCHolo.v Parts 1-2 (dominators, kernel, remainder).    *)
 (* ================================================================= *)
