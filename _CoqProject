@@ -748,6 +748,7 @@ spectral-theory/CSeries.v
 spectral-theory/CPower.v
 spectral-theory/CPowBase.v
 spectral-theory/CZetaTerm.v
+spectral-theory/CZetaDeriv.v
 spectral-theory/CZeta.v
 spectral-theory/GammaOne.v
 spectral-theory/ZetaValues.v
