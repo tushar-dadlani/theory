@@ -68,8 +68,79 @@ Proof.
              (Re (Cmul w (Cpw x (Cminus w C1))))); apply Re_Cpw_deriv; exact Hx.
 Qed.
 
-Print Assumptions Re_Cmul_deriv.
+(* ================================================================= *)
+(*  Part 2: the complex EM term, its antiderivative relations, and     *)
+(*  real-analysis helpers for the double-MVT bound.                    *)
+(* ================================================================= *)
+
+Definition gC (s : C) (x : R) : C := Cpw x (Copp s).
+Definition GC (s : C) (x : R) : C := Cmul (Cpw x (Cminus C1 s)) (Cinv (Cminus C1 s)).
+Definition gderivC (s : C) (x : R) : C := Cmul (Copp s) (Cpw x (Cminus (Copp s) C1)).
+Definition gtermC (s : C) (n : nat) : C :=
+  Cminus (gC s (INR (S n))) (Cminus (GC s (INR (S (S n)))) (GC s (INR (S n)))).
+
+Lemma Re_Cminus : forall a b, Re (Cminus a b) = Re a - Re b.
+Proof. intros a b; unfold Cminus, Cadd, Copp; cbn [Re]; ring. Qed.
+
+Lemma Im_Cminus : forall a b, Im (Cminus a b) = Im a - Im b.
+Proof. intros a b; unfold Cminus, Cadd, Copp; cbn [Im]; ring. Qed.
+
+Lemma exp_le : forall a b, a <= b -> exp a <= exp b.
+Proof.
+  intros a b H; destruct (Rle_lt_or_eq_dec a b H) as [Hlt | Heq];
+    [ left; apply exp_increasing; exact Hlt | rewrite Heq; apply Rle_refl ].
+Qed.
+
+(* x^{-e} is antitone in the base for e>=0 *)
+Lemma Rpow_negexp_anti : forall x y e, 0 < x -> x <= y -> 0 <= e ->
+  Rpower y (- e) <= Rpower x (- e).
+Proof.
+  intros x y e Hx Hxy He; unfold Rpower; apply exp_le.
+  assert (Hln : ln x <= ln y).
+  { destruct (Rle_lt_or_eq_dec x y Hxy) as [Hlt | Heq];
+      [ left; apply ln_increasing; [ exact Hx | exact Hlt ] | rewrite Heq; apply Rle_refl ]. }
+  apply Rmult_le_compat_neg_l; [ lra | exact Hln ].
+Qed.
+
+(* the antiderivative relation  Re/Im (G)' = Re/Im (g), where the Cinv
+   factor cancels the (1-s) from the base derivative of x^{1-s} *)
+Lemma ReGC_deriv : forall s x, 0 < x -> Cminus C1 s <> C0 ->
+  derivable_pt_lim (fun t => Re (GC s t)) x (Re (gC s x)).
+Proof.
+  intros s x Hx Hs; unfold GC, gC.
+  replace (Re (Cpw x (Copp s)))
+    with (Re (Cmul (Cmul (Cminus C1 s) (Cpw x (Cminus (Cminus C1 s) C1))) (Cinv (Cminus C1 s))))
+    by (f_equal; replace (Cminus (Cminus C1 s) C1) with (Copp s) by ring; field; exact Hs).
+  apply Re_Cmul_deriv; exact Hx.
+Qed.
+
+Lemma ImGC_deriv : forall s x, 0 < x -> Cminus C1 s <> C0 ->
+  derivable_pt_lim (fun t => Im (GC s t)) x (Im (gC s x)).
+Proof.
+  intros s x Hx Hs; unfold GC, gC.
+  replace (Im (Cpw x (Copp s)))
+    with (Im (Cmul (Cmul (Cminus C1 s) (Cpw x (Cminus (Cminus C1 s) C1))) (Cinv (Cminus C1 s))))
+    by (f_equal; replace (Cminus (Cminus C1 s) C1) with (Copp s) by ring; field; exact Hs).
+  apply Im_Cmul_deriv; exact Hx.
+Qed.
+
+Lemma RegC_deriv : forall s x, 0 < x ->
+  derivable_pt_lim (fun t => Re (gC s t)) x (Re (gderivC s x)).
+Proof. intros s x Hx; unfold gC, gderivC; apply Re_Cpw_deriv; exact Hx. Qed.
+
+Lemma ImgC_deriv : forall s x, 0 < x ->
+  derivable_pt_lim (fun t => Im (gC s t)) x (Im (gderivC s x)).
+Proof. intros s x Hx; unfold gC, gderivC; apply Im_Cpw_deriv; exact Hx. Qed.
+
+Lemma Cmod_gderivC : forall s x, Cmod (gderivC s x) = Cmod s * Rpower x (- Re s - 1).
+Proof.
+  intros s x; unfold gderivC; rewrite Cmod_wCpw, Cmod_opp.
+  replace (Re (Copp s) - 1) with (- Re s - 1) by (unfold Copp; cbn [Re]; ring).
+  reflexivity.
+Qed.
+
+Print Assumptions ReGC_deriv.
 
 (* ================================================================= *)
-(*  END CZetaTerm.v (part 1).                                          *)
+(*  END CZetaTerm.v (part 2).                                          *)
 (* ================================================================= *)
