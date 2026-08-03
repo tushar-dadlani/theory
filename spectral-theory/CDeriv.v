@@ -182,9 +182,87 @@ Proof.
   - nra.
 Qed.
 
+(* constant (complex) scalar times a holomorphic factor *)
+Lemma Cderiv_cscal : forall c G z dG,
+  is_Cderiv G z dG -> is_Cderiv (fun w => Cmul c (G w)) z (Cmul c dG).
+Proof.
+  intros c G z dG HG.
+  replace (Cmul c dG) with (Cadd (Cmul C0 (G z)) (Cmul c dG)) by ring.
+  apply (Cderiv_mul (fun _ => c) G z C0 dG); [ apply Cderiv_const | exact HG ].
+Qed.
+
+(* the general chain rule *)
+Lemma Cderiv_comp : forall F G z dF dG,
+  is_Cderiv F (G z) dF -> is_Cderiv G z dG ->
+  is_Cderiv (fun w => F (G w)) z (Cmul dF dG).
+Proof.
+  intros F G z dF dG HF HG eps Heps.
+  set (DF := Cmod dF); set (DG := Cmod dG).
+  assert (HDF : 0 <= DF) by apply Cmod_nonneg.
+  assert (HDG : 0 <= DG) by apply Cmod_nonneg.
+  set (eG := Rmin 1 (eps / (2 * (DF + 1)))).
+  set (eF := Rmin 1 (eps / (2 * (DG + 2)))).
+  assert (HeG : 0 < eG) by (apply Rmin_glb_lt; [ lra | apply Rdiv_lt_0_compat; lra ]).
+  assert (HeF : 0 < eF) by (apply Rmin_glb_lt; [ lra | apply Rdiv_lt_0_compat; lra ]).
+  destruct (HF eF HeF) as [dlF [HdlF HF']].
+  destruct (HG eG HeG) as [dlG [HdlG HG']].
+  set (del := Rmin dlG (dlF / (DG + 1))).
+  assert (Hd : 0 < del)
+    by (apply Rmin_glb_lt; [ exact HdlG | apply Rdiv_lt_0_compat; [ exact HdlF | lra ] ]).
+  exists del; split; [ exact Hd | ].
+  intros h Hh.
+  set (mh := Cmod h); assert (Hmh : 0 <= mh) by apply Cmod_nonneg.
+  assert (HhG : mh < dlG) by (eapply Rlt_le_trans; [ exact Hh | apply Rmin_l ]).
+  remember (Cminus (G (Cadd z h)) (G z)) as k eqn:Hk.
+  pose proof (HG' h HhG) as HRG; rewrite <- Hk in HRG.
+  assert (Hkmod : Cmod k <= (DG + 1) * mh).
+  { replace k with (Cadd (Cmul dG h) (Cminus k (Cmul dG h))) by ring.
+    eapply Rle_trans; [ apply Cmod_triangle | ]; rewrite Cmod_mul; fold DG mh.
+    apply Rle_trans with (DG * mh + eG * mh);
+      [ apply Rplus_le_compat_l; exact HRG | ].
+    pose proof (Rmin_l 1 (eps / (2 * (DF + 1)))) as HeGle; fold eG in HeGle; nra. }
+  assert (HkF : Cmod k < dlF).
+  { apply Rle_lt_trans with ((DG + 1) * mh); [ exact Hkmod | ].
+    apply Rlt_le_trans with ((DG + 1) * (dlF / (DG + 1)));
+      [ apply Rmult_lt_compat_l;
+          [ lra | eapply Rlt_le_trans; [ exact Hh | apply Rmin_r ] ]
+      | right; field; lra ]. }
+  pose proof (HF' k HkF) as HRF.
+  assert (Hgk : G (Cadd z h) = Cadd (G z) k) by (rewrite Hk; ring).
+  rewrite Hgk.
+  replace (Cminus (Cminus (F (Cadd (G z) k)) (F (G z))) (Cmul (Cmul dF dG) h))
+    with (Cadd (Cmul dF (Cminus k (Cmul dG h)))
+               (Cminus (Cminus (F (Cadd (G z) k)) (F (G z))) (Cmul dF k))) by ring.
+  eapply Rle_trans; [ apply Cmod_triangle | ]; rewrite Cmod_mul; fold DF.
+  assert (Hb1 : DF * (eG * mh) <= eps / 2 * mh).
+  { replace (DF * (eG * mh)) with (DF * eG * mh) by ring.
+    apply Rmult_le_compat_r; [ exact Hmh | ].
+    apply Rle_trans with (DF * (eps / (2 * (DF + 1))));
+      [ apply Rmult_le_compat_l; [ exact HDF | apply Rmin_r ] | ].
+    apply Rmult_le_reg_r with (2 * (DF + 1)); [ lra | ].
+    replace (DF * (eps / (2 * (DF + 1))) * (2 * (DF + 1))) with (eps * DF) by (field; lra).
+    replace (eps / 2 * (2 * (DF + 1))) with (eps * (DF + 1)) by (field; lra).
+    nra. }
+  assert (Hb2 : eF * Cmod k <= eps / 2 * mh).
+  { apply Rle_trans with (eF * ((DG + 1) * mh));
+      [ apply Rmult_le_compat_l; [ apply Rlt_le; exact HeF | exact Hkmod ] | ].
+    replace (eF * ((DG + 1) * mh)) with (eF * (DG + 1) * mh) by ring.
+    apply Rmult_le_compat_r; [ exact Hmh | ].
+    apply Rle_trans with (eps / (2 * (DG + 2)) * (DG + 1));
+      [ apply Rmult_le_compat_r; [ lra | apply Rmin_r ] | ].
+    apply Rle_trans with (eps / (2 * (DG + 2)) * (DG + 2));
+      [ apply Rmult_le_compat_l; [ apply Rlt_le; apply Rdiv_lt_0_compat; lra | lra ]
+      | right; field; lra ]. }
+  apply Rle_trans with (eps / 2 * mh + eps / 2 * mh); [ | lra ].
+  apply Rplus_le_compat.
+  - apply Rle_trans with (DF * (eG * mh)); [ apply Rmult_le_compat_l; [ exact HDF | exact HRG ] | exact Hb1 ].
+  - apply Rle_trans with (eF * Cmod k); [ exact HRF | exact Hb2 ].
+Qed.
+
 Print Assumptions Cderiv_inv.
 Print Assumptions Cderiv_mul.
+Print Assumptions Cderiv_comp.
 
 (* ================================================================= *)
-(*  END CDeriv.v (part 2).                                            *)
+(*  END CDeriv.v (part 3).                                            *)
 (* ================================================================= *)
