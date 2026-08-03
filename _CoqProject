@@ -774,3 +774,4 @@ spectral-theory/ZetaFunctionalEq.v
 spectral-theory/GammaTailC.v
 spectral-theory/CImpZero.v
 spectral-theory/GammaNearC.v
+spectral-theory/GammaNearCHolo.v
