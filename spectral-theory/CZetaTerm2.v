@@ -125,8 +125,136 @@ Proof.
   lra.
 Qed.
 
+(* ================================================================= *)
+(*  Part B: summability of d2bound (the (ln)^2-weighted p-series).     *)
+(* ================================================================= *)
+
+(* ln x <= (1/d) x^d  for x>=1, d>0   (via 1+u <= exp u) *)
+Lemma ln_le_rpow : forall d x, 0 < d -> 1 <= x -> ln x <= / d * Rpower x d.
+Proof.
+  intros d x Hd Hx.
+  assert (H1 : 1 + d * ln x <= Rpower x d) by (unfold Rpower; apply exp_ineq1_le).
+  apply Rle_trans with (/ d * (1 + d * ln x)).
+  - replace (/ d * (1 + d * ln x)) with (/ d + ln x) by (field; lra).
+    assert (0 < / d) by (apply Rinv_0_lt_compat; exact Hd); lra.
+  - apply Rmult_le_compat_l; [ apply Rlt_le; apply Rinv_0_lt_compat; exact Hd | exact H1 ].
+Qed.
+
+Lemma Rpower_base_le : forall c x y, 0 <= c -> 0 < x -> x <= y -> Rpower x c <= Rpower y c.
+Proof.
+  intros c x y Hc Hx Hxy; unfold Rpower; apply exp_le.
+  apply Rmult_le_compat_l; [ exact Hc | apply ln_le'; assumption ].
+Qed.
+
+Lemma Rpower_mult_distr : forall x y z, 0 < x -> 0 < y ->
+  Rpower (x * y) z = Rpower x z * Rpower y z.
+Proof.
+  intros x y z Hx Hy; unfold Rpower.
+  rewrite ln_mult by assumption; rewrite Rmult_plus_distr_l, exp_plus; reflexivity.
+Qed.
+
+(* the weighted p-series:  sum  (n+2)^c (n+1)^{-p}  converges for c+1 < p *)
+Lemma lnpow_pseries_cv : forall c p, 0 <= c -> c + 1 < p ->
+  { T | Un_cv (sum_f_R0 (fun n => Rpower (INR (S (S n))) c * Rpower (INR (S n)) (- p))) T }.
+Proof.
+  intros c p Hc Hcp.
+  destruct (pseries_cv (p - c) ltac:(lra)) as [T' HT'].
+  set (conv := fun n => Rpower (INR (S n)) (- (p - c))).
+  assert (Hp2 : 0 <= Rpower 2 c) by (apply Rlt_le; unfold Rpower; apply exp_pos).
+  assert (Hbound : forall n, Rpower (INR (S (S n))) c * Rpower (INR (S n)) (- p)
+                            <= Rpower 2 c * conv n).
+  { intro n; unfold conv.
+    assert (Hsn : 0 < INR (S n)) by (apply lt_0_INR; lia).
+    assert (Hle : INR (S (S n)) <= 2 * INR (S n)).
+    { rewrite (S_INR (S n)); assert (1 <= INR (S n)) by (rewrite <- INR_1; apply le_INR; lia); lra. }
+    apply Rle_trans with (Rpower (2 * INR (S n)) c * Rpower (INR (S n)) (- p)).
+    - apply Rmult_le_compat_r; [ apply Rlt_le; unfold Rpower; apply exp_pos | ].
+      apply Rpower_base_le; [ exact Hc | apply lt_0_INR; lia | exact Hle ].
+    - rewrite (Rpower_mult_distr 2 (INR (S n)) c ltac:(lra) Hsn), Rmult_assoc.
+      apply Rmult_le_compat_l; [ exact Hp2 | ].
+      rewrite <- Rpower_plus; replace (c + - p) with (- (p - c)) by ring; apply Rle_refl. }
+  assert (Hterm0 : forall n, 0 <= Rpower (INR (S (S n))) c * Rpower (INR (S n)) (- p))
+    by (intro n; apply Rmult_le_pos; apply Rlt_le; unfold Rpower; apply exp_pos).
+  apply growing_cv.
+  - intro N; rewrite tech5; pose proof (Hterm0 (S N)); lra.
+  - unfold has_ub, bound, is_upper_bound, EUn.
+    exists (Rpower 2 c * T'); intros y [N Hy]; rewrite Hy; clear Hy y.
+    apply Rle_trans with (sum_f_R0 (fun n => Rpower 2 c * conv n) N).
+    + apply sum_Rle; intros i _; apply Hbound.
+    + replace (fun n => Rpower 2 c * conv n) with (fun n => conv n * Rpower 2 c)
+        by (apply functional_extensionality; intro n; ring).
+      rewrite <- scal_sum; apply Rmult_le_compat_l; [ exact Hp2 | ].
+      apply (growing_ineq (sum_f_R0 conv) T'); [ | exact HT' ].
+      intro M; rewrite tech5.
+      assert (0 <= conv (S M)) by (unfold conv; apply Rlt_le; unfold Rpower; apply exp_pos); lra.
+Qed.
+
+(* the defining bound of d2gtermC is summable on Re s > 0 *)
+Lemma d2bound_sum_cv : forall s, 0 < Re s -> { T | Un_cv (sum_f_R0 (d2bound s)) T }.
+Proof.
+  intros s Hs.
+  set (c := Re s / 2).
+  assert (Hc : 0 <= c) by (unfold c; lra).
+  destruct (lnpow_pseries_cv c (Re s + 1) Hc ltac:(unfold c; lra)) as [T' HT'].
+  set (term := fun n => Rpower (INR (S (S n))) c * Rpower (INR (S n)) (- (Re s + 1))).
+  set (K := 4 / Re s + Cmod s * (4 / Re s) * (4 / Re s)).
+  assert (HK : 0 <= K) by (unfold K; pose proof (Cmod_nonneg s);
+    apply Rplus_le_le_0_compat; [ | apply Rmult_le_pos; [ apply Rmult_le_pos | ] ];
+    try assumption; apply Rlt_le; apply Rdiv_lt_0_compat; lra).
+  assert (Hd0 : forall n, 0 <= d2bound s n).
+  { intro n; unfold d2bound.
+    assert (Hb1 : 1 <= INR (S (S n))) by (rewrite <- INR_1; apply le_INR; lia).
+    assert (0 <= ln (INR (S (S n)))) by (rewrite <- ln_1; apply ln_le'; lra).
+    apply Rmult_le_pos; [ | apply Rlt_le; unfold Rpower; apply exp_pos ].
+    apply Rplus_le_le_0_compat; [ apply Rmult_le_pos; lra
+      | apply Rmult_le_pos; [ apply Rmult_le_pos; assumption | apply Cmod_nonneg ] ]. }
+  assert (Hbound : forall n, d2bound s n <= K * term n).
+  { intro n; unfold d2bound, term.
+    set (b := INR (S (S n))).
+    assert (Hb1 : 1 <= b) by (unfold b; rewrite <- INR_1; apply le_INR; lia).
+    assert (Hlnb0 : 0 <= ln b) by (rewrite <- ln_1; apply ln_le'; lra).
+    assert (Hlin : ln b <= 2 / Re s * Rpower b c).
+    { replace (2 / Re s) with (/ c) by (unfold c; field; lra).
+      apply ln_le_rpow; [ unfold c; lra | exact Hb1 ]. }
+    assert (Hsq : ln b * ln b <= (4 / Re s) * (4 / Re s) * Rpower b c).
+    { assert (Hq : ln b <= 4 / Re s * Rpower b (Re s / 4)).
+      { replace (4 / Re s) with (/ (Re s / 4)) by (field; lra).
+        apply ln_le_rpow; [ lra | exact Hb1 ]. }
+      apply Rle_trans with ((4 / Re s * Rpower b (Re s / 4)) * (4 / Re s * Rpower b (Re s / 4))).
+      - apply Rmult_le_compat; assumption.
+      - replace ((4 / Re s * Rpower b (Re s / 4)) * (4 / Re s * Rpower b (Re s / 4)))
+          with ((4 / Re s) * (4 / Re s) * (Rpower b (Re s / 4) * Rpower b (Re s / 4))) by ring.
+        rewrite <- Rpower_plus; replace (Re s / 4 + Re s / 4) with c by (unfold c; field).
+        apply Rle_refl. }
+    replace (- Re s - 1) with (- (Re s + 1)) by ring.
+    rewrite <- Rmult_assoc.
+    apply Rmult_le_compat_r; [ apply Rlt_le; unfold Rpower; apply exp_pos | ].
+    unfold K.
+    replace ((4 / Re s + Cmod s * (4 / Re s) * (4 / Re s)) * Rpower b c)
+      with ((4 / Re s * Rpower b c) + Cmod s * ((4 / Re s) * (4 / Re s) * Rpower b c)) by ring.
+    apply Rplus_le_compat.
+    - apply Rle_trans with (2 * (2 / Re s * Rpower b c));
+        [ apply Rmult_le_compat_l; lra | apply Req_le; field; lra ].
+    - rewrite (Rmult_comm (ln b * ln b) (Cmod s)).
+      apply Rmult_le_compat_l; [ apply Cmod_nonneg | exact Hsq ]. }
+  apply growing_cv.
+  - intro N; rewrite tech5; pose proof (Hd0 (S N)); lra.
+  - unfold has_ub, bound, is_upper_bound, EUn.
+    exists (K * T'); intros y [N Hy]; rewrite Hy; clear Hy y.
+    apply Rle_trans with (sum_f_R0 (fun n => K * term n) N).
+    + apply sum_Rle; intros i _; apply Hbound.
+    + replace (fun n => K * term n) with (fun n => term n * K)
+        by (apply functional_extensionality; intro n; ring).
+      rewrite <- scal_sum; apply Rmult_le_compat_l; [ exact HK | ].
+      apply (growing_ineq (sum_f_R0 term) T'); [ | exact HT' ].
+      intro M; rewrite tech5.
+      assert (0 <= term (S M)) by (unfold term; apply Rmult_le_pos; apply Rlt_le;
+        unfold Rpower; apply exp_pos); lra.
+Qed.
+
 Print Assumptions Cmod_d2gtermC_bound.
+Print Assumptions d2bound_sum_cv.
 
 (* ================================================================= *)
-(*  END CZetaTerm2.v (part A: the (ln)^2 double-MVT bound).           *)
+(*  END CZetaTerm2.v (item 3b: (ln)^2 double-MVT bound + summability). *)
 (* ================================================================= *)
