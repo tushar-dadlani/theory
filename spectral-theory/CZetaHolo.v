@@ -9,7 +9,7 @@
 (*  uniform bound B_n on Cmod(d2gtermC) over the segment.  Axiom-clean. *)
 (* ================================================================= *)
 
-From Stdlib Require Import Reals Lra Lia.
+From Stdlib Require Import Reals Lra Lia FunctionalExtensionality.
 Require Import ComplexField Cmodulus CexpFull Holomorphic CexpRemainder
                CSeries CDeriv CDerivLine CBaseDeriv CBaseDeriv2
                CZetaTerm CZetaTerm2 CZetaDeriv2.
@@ -119,5 +119,81 @@ End Remainder.
 Print Assumptions remainder_Re.
 
 (* ================================================================= *)
-(*  END CZetaHolo.v (part 1: per-term second-order remainder bound).  *)
+(*  Part 2: the uniform (ln)^2-weighted p-series with free parameters. *)
+(* ================================================================= *)
+
+(* generalizes d2bound_sum_cv to an arbitrary exponent q>0 and
+   coefficient M>=0 (needed for the segment-uniform bound). *)
+Lemma weighted_pseries_cv : forall q M, 0 < q -> 0 <= M ->
+  { T | Un_cv (sum_f_R0 (fun n =>
+    (2 * ln (INR (S (S n))) + ln (INR (S (S n))) * ln (INR (S (S n))) * M)
+    * Rpower (INR (S n)) (- q - 1))) T }.
+Proof.
+  intros q M Hq HM.
+  set (c := q / 2).
+  assert (Hc : 0 <= c) by (unfold c; lra).
+  destruct (lnpow_pseries_cv c (q + 1) Hc ltac:(unfold c; lra)) as [T' HT'].
+  set (term := fun n => Rpower (INR (S (S n))) c * Rpower (INR (S n)) (- (q + 1))).
+  set (K := 4 / q + M * (4 / q) * (4 / q)).
+  assert (HK : 0 <= K) by (unfold K;
+    apply Rplus_le_le_0_compat; [ | apply Rmult_le_pos; [ apply Rmult_le_pos | ] ];
+    try assumption; apply Rlt_le; apply Rdiv_lt_0_compat; lra).
+  set (d2 := fun n =>
+    (2 * ln (INR (S (S n))) + ln (INR (S (S n))) * ln (INR (S (S n))) * M)
+    * Rpower (INR (S n)) (- q - 1)).
+  assert (Hd0 : forall n, 0 <= d2 n).
+  { intro n; unfold d2.
+    assert (Hb1 : 1 <= INR (S (S n))) by (rewrite <- INR_1; apply le_INR; lia).
+    assert (0 <= ln (INR (S (S n)))) by (rewrite <- ln_1; apply ln_le'; lra).
+    apply Rmult_le_pos; [ | apply Rlt_le; unfold Rpower; apply exp_pos ].
+    apply Rplus_le_le_0_compat; [ apply Rmult_le_pos; lra
+      | apply Rmult_le_pos; [ apply Rmult_le_pos; assumption | assumption ] ]. }
+  assert (Hbound : forall n, d2 n <= K * term n).
+  { intro n; unfold d2, term.
+    set (b := INR (S (S n))).
+    assert (Hb1 : 1 <= b) by (unfold b; rewrite <- INR_1; apply le_INR; lia).
+    assert (Hlnb0 : 0 <= ln b) by (rewrite <- ln_1; apply ln_le'; lra).
+    assert (Hlin : ln b <= 2 / q * Rpower b c).
+    { replace (2 / q) with (/ c) by (unfold c; field; lra).
+      apply ln_le_rpow; [ unfold c; lra | exact Hb1 ]. }
+    assert (Hsq : ln b * ln b <= (4 / q) * (4 / q) * Rpower b c).
+    { assert (Hqq : ln b <= 4 / q * Rpower b (q / 4)).
+      { replace (4 / q) with (/ (q / 4)) by (field; lra).
+        apply ln_le_rpow; [ lra | exact Hb1 ]. }
+      apply Rle_trans with ((4 / q * Rpower b (q / 4)) * (4 / q * Rpower b (q / 4))).
+      - apply Rmult_le_compat; assumption.
+      - replace ((4 / q * Rpower b (q / 4)) * (4 / q * Rpower b (q / 4)))
+          with ((4 / q) * (4 / q) * (Rpower b (q / 4) * Rpower b (q / 4))) by ring.
+        rewrite <- Rpower_plus; replace (q / 4 + q / 4) with c by (unfold c; field).
+        apply Rle_refl. }
+    replace (- q - 1) with (- (q + 1)) by ring.
+    rewrite <- Rmult_assoc.
+    apply Rmult_le_compat_r; [ apply Rlt_le; unfold Rpower; apply exp_pos | ].
+    unfold K.
+    replace ((4 / q + M * (4 / q) * (4 / q)) * Rpower b c)
+      with ((4 / q * Rpower b c) + M * ((4 / q) * (4 / q) * Rpower b c)) by ring.
+    apply Rplus_le_compat.
+    - apply Rle_trans with (2 * (2 / q * Rpower b c));
+        [ apply Rmult_le_compat_l; lra | apply Req_le; field; lra ].
+    - rewrite (Rmult_comm (ln b * ln b) M).
+      apply Rmult_le_compat_l; [ exact HM | exact Hsq ]. }
+  apply growing_cv.
+  - intro N; rewrite tech5; pose proof (Hd0 (S N)); unfold d2 in *; lra.
+  - unfold has_ub, bound, is_upper_bound, EUn.
+    exists (K * T'); intros y [N Hy]; rewrite Hy; clear Hy y.
+    apply Rle_trans with (sum_f_R0 (fun m => K * term m) N).
+    + apply sum_Rle; intros i _; apply Hbound.
+    + replace (fun m => K * term m) with (fun m => term m * K)
+        by (apply functional_extensionality; intro m; ring).
+      rewrite <- scal_sum; apply Rmult_le_compat_l; [ exact HK | ].
+      apply (growing_ineq (sum_f_R0 term) T'); [ | exact HT' ].
+      intro M0; rewrite tech5.
+      assert (0 <= term (S M0)) by (unfold term; apply Rmult_le_pos; apply Rlt_le;
+        unfold Rpower; apply exp_pos); lra.
+Qed.
+
+Print Assumptions weighted_pseries_cv.
+
+(* ================================================================= *)
+(*  END CZetaHolo.v (parts 1-2).                                      *)
 (* ================================================================= *)
