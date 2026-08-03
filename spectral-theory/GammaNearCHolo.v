@@ -9,7 +9,8 @@
 
 From Stdlib Require Import Reals Lra Lia FunctionalExtensionality.
 Require Import ComplexField Cmodulus CexpFull CexpRemainder CPowBase Holomorphic
-        GammaReal GammaFunction ImproperCv0 ImproperCv1 CImproperIntegral CImpZero GammaNearC.
+        GammaReal GammaFunction GammaContinuity ImproperCv0 ImproperCv1 CImproperIntegral
+        CImpZero GammaNearC.
 Open Scope R_scope.
 
 (* --- the crux calculus (validated) --- *)
@@ -70,6 +71,13 @@ Qed.
 Lemma cont_ln : forall t, 0 < t -> continuity_pt ln t.
 Proof.
   intros t Ht; apply derivable_continuous_pt; exists (/ t); apply derivable_pt_lim_ln; exact Ht.
+Qed.
+
+Lemma continuity_pt_ext : forall f g t,
+  (forall x, f x = g x) -> continuity_pt f t -> continuity_pt g t.
+Proof.
+  intros f g t H Hf; assert (Heq : f = g) by (apply functional_extensionality; exact H);
+    subst; exact Hf.
 Qed.
 
 Lemma cont_ln2_gnk : forall s t, 0 < t -> continuity_pt (fun u => (ln u) ^ 2 * gnk s 1 u) t.
@@ -245,10 +253,206 @@ Proof.
       ring.
 Qed.
 
-Print Assumptions ln2_gnk_conv.
-Print Assumptions dgnearC_spec.
+(* --- Part 3: the total wrapper, CImp0 assembly, and gnearC_entire --- *)
+
+(* proof-irrelevance of gnearC (both are the CImp0 value of gnkC z) *)
+Lemma gnearC_pirr : forall z (H1 H2 : 0 < Re z), gnearC z H1 = gnearC z H2.
+Proof.
+  intros z H1 H2.
+  destruct (gnearC_spec z H1) as [HRe1 HIm1]; destruct (gnearC_spec z H2) as [HRe2 HIm2].
+  apply Ceq.
+  - apply (improper_unique0 (fun u => Re (gnkC z u)) (Hre_gnkC z) (fun u => Re (gnkC z u))
+             (Hre_gnkC z) (Re (gnearC z H1)) (Re (gnearC z H2)));
+      [ intros; reflexivity | exact HRe1 | exact HRe2 ].
+  - apply (improper_unique0 (fun u => Im (gnkC z u)) (Him_gnkC z) (fun u => Im (gnkC z u))
+             (Him_gnkC z) (Im (gnearC z H1)) (Im (gnearC z H2)));
+      [ intros; reflexivity | exact HIm1 | exact HIm2 ].
+Qed.
+
+(* the TOTAL wrapper *)
+Definition gnearCt (z : C) : C :=
+  match Rlt_dec 0 (Re z) with left Hz => gnearC z Hz | right _ => C0 end.
+
+Lemma gnearCt_val : forall z (Hz : 0 < Re z), gnearCt z = gnearC z Hz.
+Proof.
+  intros z Hz; unfold gnearCt; destruct (Rlt_dec 0 (Re z)) as [Hz' | Hn];
+    [ exact (gnearC_pirr z Hz' Hz) | exfalso; lra ].
+Qed.
+
+(* --- Ccont0: both components continuous on (0,∞) --- *)
+Definition Ccont0 (k : R -> C) : Prop :=
+  (forall t, 0 < t -> continuity_pt (fun u => Re (k u)) t) /\
+  (forall t, 0 < t -> continuity_pt (fun u => Im (k u)) t).
+
+Lemma Ccont0_const : forall c, Ccont0 (fun _ => c).
+Proof. intro c; split; intros t _; apply continuity_pt_const; red; intros; reflexivity. Qed.
+
+Lemma Ccont0_minus : forall a b, Ccont0 a -> Ccont0 b -> Ccont0 (fun u => Cminus (a u) (b u)).
+Proof.
+  intros a b [Har Hai] [Hbr Hbi]; split; intros t Ht.
+  - apply (continuity_pt_ext (fun u => Re (a u) - Re (b u)));
+      [ intro u; unfold Cminus, Cadd, Copp; cbn; ring | apply continuity_pt_minus; auto ].
+  - apply (continuity_pt_ext (fun u => Im (a u) - Im (b u)));
+      [ intro u; unfold Cminus, Cadd, Copp; cbn; ring | apply continuity_pt_minus; auto ].
+Qed.
+
+Lemma Ccont0_mul : forall a b, Ccont0 a -> Ccont0 b -> Ccont0 (fun u => Cmul (a u) (b u)).
+Proof.
+  intros a b [Har Hai] [Hbr Hbi]; split; intros t Ht.
+  - apply (continuity_pt_ext (fun u => Re (a u) * Re (b u) - Im (a u) * Im (b u)));
+      [ intro u; unfold Cmul; cbn; ring
+      | apply continuity_pt_minus; apply continuity_pt_mult; auto ].
+  - apply (continuity_pt_ext (fun u => Re (a u) * Im (b u) + Im (a u) * Re (b u)));
+      [ intro u; unfold Cmul; cbn; ring
+      | apply continuity_pt_plus; apply continuity_pt_mult; auto ].
+Qed.
+
+Lemma Ccont0_gnkC : forall z, Ccont0 (gnkC z).
+Proof. intro z; split; [ apply cont_Re_gnkC | apply cont_Im_gnkC ]. Qed.
+Lemma Ccont0_dgnkC : forall z, Ccont0 (dgnkC z).
+Proof. intro z; split; [ apply cont_Re_dgnkC | apply cont_Im_dgnkC ]. Qed.
+
+Lemma Ccont0_remGnC : forall z h, Ccont0 (remGnC z h).
+Proof.
+  intros z h; unfold remGnC; apply Ccont0_minus.
+  - apply Ccont0_minus; apply Ccont0_gnkC.
+  - apply Ccont0_mul; [ apply Ccont0_const | apply Ccont0_dgnkC ].
+Qed.
+
+Lemma cont_Cmod_remGnC : forall z h t, 0 < t -> continuity_pt (fun u => Cmod (remGnC z h u)) t.
+Proof.
+  intros z h t Ht.
+  assert (Hcn : continuity_pt (fun u => Cnorm2 (remGnC z h u)) t).
+  { apply (continuity_pt_ext (fun u => Re (remGnC z h u) * Re (remGnC z h u)
+                                     + Im (remGnC z h u) * Im (remGnC z h u)));
+      [ intro w; reflexivity | ].
+    apply continuity_pt_plus; apply continuity_pt_mult;
+      first [ apply (proj1 (Ccont0_remGnC z h)); exact Ht
+            | apply (proj2 (Ccont0_remGnC z h)); exact Ht ]. }
+  apply (continuity_pt_comp (fun u => Cnorm2 (remGnC z h u)) sqrt t);
+    [ exact Hcn | apply continuity_pt_sqrt; apply Cnorm2_nonneg ].
+Qed.
+
+(* the CImp0 of remGnC identifies the increment *)
+Lemma remGnC_CImp0 : forall z h (Hz : 0 < Re z) (Hzh : 0 < Re (Cadd z h)),
+  CImp0 (remGnC z h) (cont_pos_RI _ (proj1 (Ccont0_remGnC z h)))
+    (cont_pos_RI _ (proj2 (Ccont0_remGnC z h)))
+    (Cminus (Cminus (gnearC (Cadd z h) Hzh) (gnearC z Hz)) (Cmul h (dgnearC z Hz))).
+Proof.
+  intros z h Hz Hzh; unfold remGnC.
+  apply (CImp0_minus
+           (fun u => Cminus (gnkC (Cadd z h) u) (gnkC z u)) (fun u => Cmul h (dgnkC z u))
+           (cont_pos_RI _ (proj1 (Ccont0_minus _ _ (Ccont0_gnkC (Cadd z h)) (Ccont0_gnkC z))))
+           (cont_pos_RI _ (proj2 (Ccont0_minus _ _ (Ccont0_gnkC (Cadd z h)) (Ccont0_gnkC z))))
+           (cont_pos_RI _ (proj1 (Ccont0_mul _ _ (Ccont0_const h) (Ccont0_dgnkC z))))
+           (cont_pos_RI _ (proj2 (Ccont0_mul _ _ (Ccont0_const h) (Ccont0_dgnkC z))))
+           (cont_pos_RI _ (proj1 (Ccont0_remGnC z h)))
+           (cont_pos_RI _ (proj2 (Ccont0_remGnC z h)))
+           (Cminus (gnearC (Cadd z h) Hzh) (gnearC z Hz)) (Cmul h (dgnearC z Hz))).
+  - apply (CImp0_minus (gnkC (Cadd z h)) (gnkC z)
+             (Hre_gnkC (Cadd z h)) (Him_gnkC (Cadd z h)) (Hre_gnkC z) (Him_gnkC z)
+             (cont_pos_RI _ (proj1 (Ccont0_minus _ _ (Ccont0_gnkC (Cadd z h)) (Ccont0_gnkC z))))
+             (cont_pos_RI _ (proj2 (Ccont0_minus _ _ (Ccont0_gnkC (Cadd z h)) (Ccont0_gnkC z))))
+             (gnearC (Cadd z h) Hzh) (gnearC z Hz));
+      [ apply (gnearC_spec (Cadd z h) Hzh) | apply (gnearC_spec z Hz) ].
+  - apply (CImp0_cscal h (dgnkC z) (Hre_dgnkC z) (Him_dgnkC z)
+             (cont_pos_RI _ (proj1 (Ccont0_mul _ _ (Ccont0_const h) (Ccont0_dgnkC z))))
+             (cont_pos_RI _ (proj2 (Ccont0_mul _ _ (Ccont0_const h) (Ccont0_dgnkC z))))
+             (dgnearC z Hz));
+      apply (dgnearC_spec z Hz).
+Qed.
+
+(* convergence of ∫ Cmod(remGnC), bounded by |h|^2·3·L *)
+Lemma Cmod_remGnC_conv : forall z h (Hz : 0 < Re z), Cmod h <= Re z / 2 ->
+  { J | ImproperCv0 (fun u => Cmod (remGnC z h u)) (cont_pos_RI _ (cont_Cmod_remGnC z h)) J }.
+Proof.
+  intros z h Hz Hh; assert (Hz2 : 0 < Re z / 2) by lra.
+  apply improper_bounded_cv0.
+  - intros x _ _; apply Cmod_nonneg.
+  - exists (Cmod h ^ 2 * 3 * proj1_sig (ln2_gnk_conv (Re z / 2) Hz2)); intros A HA HA1.
+    apply Rle_trans with
+      (rint01 (fun u => Cmod h ^ 2 * 3 * ((ln u) ^ 2 * gnk (Re z / 2) 1 u))
+         (fun x y Hx Hxy => RI_scal _ (Cmod h ^ 2 * 3) x y (cont_pos_RI _ (cont_ln2_gnk (Re z / 2)) x y Hx Hxy)) A).
+    + rewrite (rint01_val (fun u => Cmod (remGnC z h u)) _ A HA HA1),
+        (rint01_val (fun u => Cmod h ^ 2 * 3 * ((ln u) ^ 2 * gnk (Re z / 2) 1 u)) _ A HA HA1).
+      apply RiemannInt_P19; [ exact HA1 | intros x Hx; apply Cmod_remGnC_le; lra ].
+    + rewrite (rint01_val (fun u => Cmod h ^ 2 * 3 * ((ln u) ^ 2 * gnk (Re z / 2) 1 u)) _ A HA HA1).
+      rewrite (RiemannInt_scal01 (fun u => (ln u) ^ 2 * gnk (Re z / 2) 1 u) (Cmod h ^ 2 * 3) A
+                 (cont_pos_RI _ (cont_ln2_gnk (Re z / 2)) A 1 HA HA1) _ HA1).
+      apply Rmult_le_compat_l.
+      * apply Rmult_le_pos; [ apply pow_le; apply Cmod_nonneg | lra ].
+      * rewrite <- (rint01_val (fun u => (ln u) ^ 2 * gnk (Re z / 2) 1 u)
+                     (cont_pos_RI _ (cont_ln2_gnk (Re z / 2))) A HA HA1).
+        apply (rint01_le_improper (fun u => (ln u) ^ 2 * gnk (Re z / 2) 1 u)
+                 (cont_pos_RI _ (cont_ln2_gnk (Re z / 2))) _
+                 (proj2_sig (ln2_gnk_conv (Re z / 2) Hz2)));
+          [ intros x Hx Hx1; apply Rmult_le_pos; [ apply ln2_nonneg | apply gnk_nonneg ]
+          | exact HA | exact HA1 ].
+Qed.
+
+Lemma gnearC_deriv_bound : forall z h (Hz : 0 < Re z) (Hzh : 0 < Re (Cadd z h)),
+  Cmod h <= Re z / 2 ->
+  Cmod (Cminus (Cminus (gnearC (Cadd z h) Hzh) (gnearC z Hz)) (Cmul (dgnearC z Hz) h))
+  <= Cmod h ^ 2 * 3 * proj1_sig (ln2_gnk_conv (Re z / 2) (Rlt_gt 0 (Re z / 2) ltac:(lra))).
+Proof.
+  intros z h Hz Hzh Hh.
+  replace (Cmul (dgnearC z Hz) h) with (Cmul h (dgnearC z Hz)) by ring.
+  destruct (Cmod_remGnC_conv z h Hz Hh) as [J HJ].
+  apply Rle_trans with J.
+  - apply (CImp0_triangle _ _ _ _ _ _ (remGnC_CImp0 z h Hz Hzh) HJ).
+  - apply (improper_mono0 (fun u => Cmod (remGnC z h u)) (cont_pos_RI _ (cont_Cmod_remGnC z h))
+             (fun u => Cmod h ^ 2 * 3 * ((ln u) ^ 2 * gnk (Re z / 2) 1 u))
+             (fun x y Hx Hxy => RI_scal _ (Cmod h ^ 2 * 3) x y (cont_pos_RI _ (cont_ln2_gnk (Re z / 2)) x y Hx Hxy))
+             J (Cmod h ^ 2 * 3 * proj1_sig (ln2_gnk_conv (Re z / 2) (Rlt_gt 0 (Re z / 2) ltac:(lra))))
+             HJ).
+    + (* the dominator's ImproperCv0 value = |h|^2·3·L *)
+      apply (improper_scal0 (fun u => (ln u) ^ 2 * gnk (Re z / 2) 1 u) (Cmod h ^ 2 * 3)
+               (cont_pos_RI _ (cont_ln2_gnk (Re z / 2)))
+               (fun x y Hx Hxy => RI_scal _ (Cmod h ^ 2 * 3) x y (cont_pos_RI _ (cont_ln2_gnk (Re z / 2)) x y Hx Hxy))
+               (proj1_sig (ln2_gnk_conv (Re z / 2) (Rlt_gt 0 (Re z / 2) ltac:(lra)))));
+        exact (proj2_sig (ln2_gnk_conv (Re z / 2) (Rlt_gt 0 (Re z / 2) ltac:(lra)))).
+    + intros x Hx Hx1; apply Cmod_remGnC_le; lra.
+Qed.
+
+Theorem gnearC_entire : forall z (Hz : 0 < Re z), is_Cderiv gnearCt z (dgnearC z Hz).
+Proof.
+  intros z Hz eps Heps.
+  set (L := proj1_sig (ln2_gnk_conv (Re z / 2) (Rlt_gt 0 (Re z / 2) ltac:(lra)))).
+  assert (HL : 0 <= L).
+  { unfold L; destruct (ln2_gnk_conv (Re z / 2) _) as [L0 HL0]; simpl.
+    apply (improper_nonneg0 (fun u => (ln u) ^ 2 * gnk (Re z / 2) 1 u)
+             (cont_pos_RI _ (cont_ln2_gnk (Re z / 2))) L0);
+      [ intros x Hx Hx1; apply Rmult_le_pos; [ apply ln2_nonneg | apply gnk_nonneg ] | exact HL0 ]. }
+  set (K := 3 * L).
+  assert (HK : 0 <= K) by (unfold K; lra).
+  assert (Hd : 0 < eps / (K + 1)) by (apply Rdiv_lt_0_compat; lra).
+  exists (Rmin (Re z / 2) (Rmin 1 (eps / (K + 1)))); split.
+  - repeat apply Rmin_glb_lt; lra.
+  - intros h Hlt.
+    assert (Hgate : Cmod h <= Re z / 2)
+      by (apply Rlt_le; apply Rlt_le_trans with (Rmin (Re z / 2) (Rmin 1 (eps / (K + 1)))); [ exact Hlt | apply Rmin_l ]).
+    assert (Hh1 : Cmod h <= 1)
+      by (apply Rlt_le; apply Rlt_le_trans with (Rmin (Re z / 2) (Rmin 1 (eps / (K + 1))));
+          [ exact Hlt | eapply Rle_trans; [ apply Rmin_r | apply Rmin_l ] ]).
+    assert (Hlt2 : Cmod h < eps / (K + 1))
+      by (apply Rlt_le_trans with (Rmin (Re z / 2) (Rmin 1 (eps / (K + 1))));
+          [ exact Hlt | eapply Rle_trans; [ apply Rmin_r | apply Rmin_r ] ]).
+    assert (Hzh : 0 < Re (Cadd z h)).
+    { assert (HR : Re (Cadd z h) = Re z + Re h) by (unfold Cadd; cbn; ring).
+      pose proof (Cmod_Re h) as HRh; pose proof (Rle_abs (Re h)) as U;
+        pose proof (Rle_abs (- Re h)) as W; rewrite Rabs_Ropp in W; rewrite HR; lra. }
+    rewrite (gnearCt_val (Cadd z h) Hzh), (gnearCt_val z Hz).
+    apply Rle_trans with (Cmod h ^ 2 * 3 * L).
+    + exact (gnearC_deriv_bound z h Hz Hzh Hgate).
+    + assert (HcK : Cmod h * (K + 1) < eps).
+      { apply Rlt_le_trans with (eps / (K + 1) * (K + 1));
+          [ apply Rmult_lt_compat_r; [ lra | exact Hlt2 ] | right; field; lra ]. }
+      pose proof (Cmod_nonneg h) as Hcm; unfold K in HcK; nra.
+Qed.
+
 Print Assumptions Cmod_remGnC_le.
+Print Assumptions gnearC_entire.
 
 (* ================================================================= *)
-(*  END GammaNearCHolo.v Parts 1-2 (dominators, kernel, remainder).    *)
+(*  END GammaNearCHolo.v (gnearC is holomorphic on Re z > 0).          *)
 (* ================================================================= *)
