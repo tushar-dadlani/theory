@@ -213,8 +213,92 @@ Proof.
   lra.
 Qed.
 
-Print Assumptions Cmod_gtermC_bound.
+(* ================================================================= *)
+(*  Part 4: convergence — the p-series and hence zeta on the strip.    *)
+(* ================================================================= *)
+
+Lemma Rpow1 : forall y, Rpower 1 y = 1.
+Proof. intro y; unfold Rpower; rewrite ln_1, Rmult_0_r, exp_0; reflexivity. Qed.
+
+Lemma Un_cv_const : forall c : R, Un_cv (fun _ => c) c.
+Proof.
+  intros c eps Heps; exists 0%nat; intros n _; unfold R_dist.
+  replace (c - c) with 0 by ring; rewrite Rabs_R0; exact Heps.
+Qed.
+
+Lemma sum_tele : forall (u : nat -> R) N,
+  sum_f_R0 (fun n => u n - u (S n)) N = u 0%nat - u (S N).
+Proof.
+  intros u N; induction N as [| N IH]; [ cbn [sum_f_R0]; reflexivity | ].
+  rewrite tech5, IH; ring.
+Qed.
+
+Lemma pseries_cv : forall p, 1 < p ->
+  { T | Un_cv (sum_f_R0 (fun n => Rpower (INR (S n)) (- p))) T }.
+Proof.
+  intros p Hp.
+  set (q := p - 1); assert (Hq : 0 < q) by (unfold q; lra).
+  assert (Hqi : 0 < / q) by (apply Rinv_0_lt_compat; exact Hq).
+  assert (Ha0 : forall n, 0 <= Rpower (INR (S n)) (- p))
+    by (intro n; apply Rlt_le; unfold Rpower; apply exp_pos).
+  set (t := fun n => Rpower (INR (S n)) (- q)).
+  assert (Ht0 : forall n, 0 <= t n)
+    by (intro n; unfold t; apply Rlt_le; unfold Rpower; apply exp_pos).
+  assert (Ht00 : t 0%nat = 1) by (unfold t; rewrite INR_1, Rpow1; reflexivity).
+  assert (Habound : forall n, Rpower (INR (S (S n))) (- p) <= (t n - t (S n)) / q).
+  { intro n.
+    assert (Hu : 0 < INR (S n)) by (apply lt_0_INR; lia).
+    assert (Huv : INR (S n) < INR (S (S n))) by (apply lt_INR; lia).
+    assert (Hvu1 : INR (S (S n)) - INR (S n) = 1) by (rewrite (S_INR (S n)); ring).
+    assert (Hd : forall c, INR (S n) <= c <= INR (S (S n)) ->
+                 derivable_pt_lim (fun y => Rpower y (- q)) c (- q * Rpower c (- p))).
+    { intros c Hc; replace (- p) with (- q - 1) by (unfold q; ring).
+      apply Rpow_deriv; apply Rlt_le_trans with (INR (S n)); [ exact Hu | apply (proj1 Hc) ]. }
+    destruct (MVT_cor2 (fun y => Rpower y (- q)) (fun y => - q * Rpower y (- p))
+               (INR (S n)) (INR (S (S n))) Huv Hd) as [xi [Hxi [Hxu Hxv]]].
+    rewrite Hvu1, Rmult_1_r in Hxi.
+    assert (Hxipos : 0 < xi) by (apply Rlt_trans with (INR (S n)); [ exact Hu | exact Hxu ]).
+    assert (Htt : t n - t (S n) = q * Rpower xi (- p)) by (unfold t; nra).
+    rewrite Htt; replace (q * Rpower xi (- p) / q) with (Rpower xi (- p)) by (field; lra).
+    apply Rpow_negexp_anti; [ exact Hxipos | lra | lra ]. }
+  apply growing_cv.
+  - intro N; rewrite tech5; pose proof (Ha0 (S N)); lra.
+  - unfold has_ub, bound, is_upper_bound, EUn.
+    exists (1 + / q); intros y [N Hy]; rewrite Hy; clear Hy y.
+    destruct N as [| N].
+    + cbn [sum_f_R0]; rewrite INR_1, Rpow1; lra.
+    + rewrite decomp_sum by lia; rewrite INR_1, Rpow1; apply Rplus_le_compat_l.
+      apply Rle_trans with (sum_f_R0 (fun i => (t i - t (S i)) / q) N).
+      * apply sum_Rle; intros i _; apply Habound.
+      * replace (fun i => (t i - t (S i)) / q) with (fun i => (t i - t (S i)) * / q)
+          by (apply functional_extensionality; intro i; unfold Rdiv; reflexivity).
+        rewrite <- scal_sum, sum_tele, Ht00.
+        pose proof (Ht0 (S N)); nra.
+Qed.
+
+(* zeta's defining series converges on the strip *)
+Lemma gtermC_cv : forall s, 0 < Re s -> Cminus C1 s <> C0 ->
+  { Z | Cseries_cv (gtermC s) Z }.
+Proof.
+  intros s Hs0 Hs1.
+  apply (Cseries_abs_cv (gtermC s)
+           (fun n => 2 * (Cmod s * Rpower (INR (S n)) (- Re s - 1)))).
+  - intro n; apply Cmod_gtermC_bound; [ lra | exact Hs1 ].
+  - destruct (pseries_cv (Re s + 1) ltac:(lra)) as [T HT].
+    exists (2 * Cmod s * T).
+    replace (sum_f_R0 (fun n => 2 * (Cmod s * Rpower (INR (S n)) (- Re s - 1))))
+      with (fun N => 2 * Cmod s * sum_f_R0 (fun n => Rpower (INR (S n)) (- (Re s + 1))) N).
+    + apply (CV_mult (fun _ => 2 * Cmod s)
+               (sum_f_R0 (fun n => Rpower (INR (S n)) (- (Re s + 1)))) (2 * Cmod s) T);
+        [ apply Un_cv_const | exact HT ].
+    + apply functional_extensionality; intro N.
+      rewrite (scal_sum (fun n => Rpower (INR (S n)) (- (Re s + 1))) N (2 * Cmod s)).
+      apply sum_eq; intros i _.
+      replace (- (Re s + 1)) with (- Re s - 1) by ring; ring.
+Qed.
+
+Print Assumptions gtermC_cv.
 
 (* ================================================================= *)
-(*  END CZetaTerm.v (part 3).                                          *)
+(*  END CZetaTerm.v (part 4).                                          *)
 (* ================================================================= *)
