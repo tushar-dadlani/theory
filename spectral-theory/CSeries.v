@@ -8,7 +8,7 @@
 (*  Dirichlet/Euler-Maclaurin zeta on the critical strip.  Axiom-clean.*)
 (* ================================================================= *)
 
-From Stdlib Require Import Reals Lra.
+From Stdlib Require Import Reals Lra FunctionalExtensionality.
 Require Import ComplexField Cmodulus.
 Open Scope R_scope.
 
@@ -157,8 +157,65 @@ Proof.
   - exact HT.
 Qed.
 
+(* --- absolute convergence implies convergence --- *)
+
+(* real: via the c⁺/c⁻ split, each part nonneg, bounded, monotone-convergent *)
+Lemma Rseries_abs_cv : forall c b,
+  (forall n, Rabs (c n) <= b n) ->
+  { T | Un_cv (sum_f_R0 b) T } ->
+  { S | Un_cv (sum_f_R0 c) S }.
+Proof.
+  intros c b Hbound [T HT].
+  assert (Hbpos : forall n, 0 <= b n)
+    by (intro n; apply Rle_trans with (Rabs (c n)); [ apply Rabs_pos | apply Hbound ]).
+  set (cp := fun k => Rmax (c k) 0).
+  set (cm := fun k => Rmax (- c k) 0).
+  assert (Hsplit : forall k, c k = cp k - cm k)
+    by (intro k; unfold cp, cm, Rmax;
+        destruct (Rle_dec (c k) 0); destruct (Rle_dec (- c k) 0); lra).
+  assert (Hcpb : forall n, cp n <= b n).
+  { intro n; unfold cp; apply Rmax_lub;
+      [ apply Rle_trans with (Rabs (c n)); [ apply Rle_abs | apply Hbound ] | apply Hbpos ]. }
+  assert (Hcmb : forall n, cm n <= b n).
+  { intro n; unfold cm; apply Rmax_lub;
+      [ apply Rle_trans with (Rabs (c n));
+          [ rewrite <- Rabs_Ropp; apply Rle_abs | apply Hbound ]
+      | apply Hbpos ]. }
+  assert (HbT : forall n, sum_f_R0 b n <= T)
+    by (apply growing_ineq; [ intro n; simpl; pose proof (Hbpos (S n)); lra | exact HT ]).
+  assert (Hpartb : forall g : nat -> R,
+            (forall n, g n <= b n) -> (forall n, 0 <= g n) -> { L | Un_cv (sum_f_R0 g) L }).
+  { intros g Hgb Hg0; apply growing_cv.
+    - intro n; simpl; pose proof (Hg0 (S n)); lra.
+    - exists T; intros x [n ->]; apply Rle_trans with (sum_f_R0 b n);
+        [ apply sum_Rle; intros i _; apply Hgb | apply HbT ]. }
+  destruct (Hpartb cp Hcpb (fun n => Rmax_r (c n) 0)) as [Sp HSp].
+  destruct (Hpartb cm Hcmb (fun n => Rmax_r (- c n) 0)) as [Sm HSm].
+  exists (Sp - Sm).
+  assert (Heq : sum_f_R0 c = fun N => sum_f_R0 cp N - sum_f_R0 cm N).
+  { apply functional_extensionality; intro N.
+    rewrite <- minus_sum; apply sum_eq; intros i _; apply Hsplit. }
+  rewrite Heq; apply CV_minus; [ exact HSp | exact HSm ].
+Qed.
+
+(* complex: dominated by a convergent real series ⇒ the complex series converges *)
+Lemma Cseries_abs_cv : forall a b,
+  (forall n, Cmod (a n) <= b n) ->
+  { T | Un_cv (sum_f_R0 b) T } ->
+  { S | Cseries_cv a S }.
+Proof.
+  intros a b Hbound HT.
+  destruct (Rseries_abs_cv (fun k => Re (a k)) b
+             (fun n => Rle_trans _ _ _ (Cmod_Re_le (a n)) (Hbound n)) HT) as [SR HSR].
+  destruct (Rseries_abs_cv (fun k => Im (a k)) b
+             (fun n => Rle_trans _ _ _ (Cmod_Im_le (a n)) (Hbound n)) HT) as [SI HSI].
+  exists (mkC SR SI).
+  rewrite Cseries_cv_comp; simpl; split; [ exact HSR | exact HSI ].
+Qed.
+
 Print Assumptions CUn_cv_comp.
 Print Assumptions Cseries_triangle.
+Print Assumptions Cseries_abs_cv.
 
 (* ================================================================= *)
 (*  END CSeries.v (part 1).                                            *)
