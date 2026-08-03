@@ -195,5 +195,60 @@ Qed.
 Print Assumptions weighted_pseries_cv.
 
 (* ================================================================= *)
-(*  END CZetaHolo.v (parts 1-2).                                      *)
+(*  Part 3: the segment stays in the domain {Re > Re z/2, <> 1}.       *)
+(* ================================================================= *)
+
+Lemma Cmod_rev_triangle : forall a b, Cmod a - Cmod b <= Cmod (Cadd a b).
+Proof.
+  intros a b.
+  pose proof (Cmod_triangle (Cadd a b) (Copp b)) as H.
+  rewrite Cmod_opp in H.
+  replace (Cadd (Cadd a b) (Copp b)) with a in H by ring; lra.
+Qed.
+
+Lemma Cmod_C0 : Cmod C0 = 0.
+Proof.
+  unfold Cmod, Cnorm2, C0; cbn; replace (0 * 0 + 0 * 0) with 0 by ring; apply sqrt_0.
+Qed.
+
+Lemma Cmod_gt0_ne0 : forall c, 0 < Cmod c -> c <> C0.
+Proof. intros c H Heq; rewrite Heq, Cmod_C0 in H; lra. Qed.
+
+Lemma seg_Re : forall z h t, 0 <= t <= 1 -> Cmod h < Re z / 2 ->
+  Re z / 2 <= Re (Cadd z (Cmul (RtoC t) h)).
+Proof.
+  intros z h t Ht Hh.
+  assert (HRe : Re (Cadd z (Cmul (RtoC t) h)) = Re z + t * Re h)
+    by (rewrite Re_Cadd, Re_RtoC_mul; reflexivity).
+  rewrite HRe.
+  pose proof (Cmod_Re_le h) as Hrh.
+  assert (Habs : Rabs (t * Re h) <= Cmod h).
+  { rewrite Rabs_mult, (Rabs_right t) by lra.
+    apply Rle_trans with (1 * Cmod h);
+      [ apply Rmult_le_compat; [ lra | apply Rabs_pos | lra | exact Hrh ] | lra ]. }
+  pose proof (Rle_abs (t * Re h)) as U.
+  pose proof (Rle_abs (- (t * Re h))) as W; rewrite Rabs_Ropp in W.
+  lra.
+Qed.
+
+Lemma seg_ne1 : forall z h t, 0 <= t <= 1 -> Cmod h < Cmod (Cminus z C1) / 2 ->
+  Cminus C1 (Cadd z (Cmul (RtoC t) h)) <> C0.
+Proof.
+  intros z h t Ht Hh.
+  apply Cmod_gt0_ne0.
+  assert (Heq : Cminus C1 (Cadd z (Cmul (RtoC t) h))
+              = Copp (Cadd (Cminus z C1) (Cmul (RtoC t) h)))
+    by (unfold Cminus, Cadd, Copp, Cmul, RtoC, C1; apply Ceq; cbn; ring).
+  rewrite Heq, Cmod_opp.
+  assert (Hmul : Cmod (Cmul (RtoC t) h) <= Cmod h).
+  { rewrite Cmod_mul, Cmod_RtoC, (Rabs_right t) by lra.
+    apply Rle_trans with (1 * Cmod h); [ apply Rmult_le_compat_r; [ apply Cmod_nonneg | lra ] | lra ]. }
+  pose proof (Cmod_rev_triangle (Cminus z C1) (Cmul (RtoC t) h)) as Hrt.
+  pose proof (Cmod_nonneg h); lra.
+Qed.
+
+Print Assumptions seg_ne1.
+
+(* ================================================================= *)
+(*  END CZetaHolo.v (parts 1-3).                                      *)
 (* ================================================================= *)
