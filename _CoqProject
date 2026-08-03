@@ -772,3 +772,4 @@ spectral-theory/ArchimedeanConcrete.v
 spectral-theory/ZetaXiLink.v
 spectral-theory/ZetaFunctionalEq.v
 spectral-theory/GammaTailC.v
+spectral-theory/CImpZero.v
