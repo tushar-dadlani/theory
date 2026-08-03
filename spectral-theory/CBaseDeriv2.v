@@ -97,10 +97,139 @@ Proof.
   replace (r * / t * t) with r by (field; exact Ht); reflexivity.
 Qed.
 
+Lemma RtoC0_mul : forall x, Cmul (RtoC 0) x = C0.
+Proof. intro x; unfold Cmul, RtoC, C0; apply Ceq; cbn; ring. Qed.
+
+(* the raw base derivative of d2sGC, as produced by base_deriv_term *)
+Definition dd2sGC (s : C) (t : R) : C :=
+  Cadd (Cadd
+    (Cadd (Cmul (RtoC (2 * ln t * / t)) (Cmul (Cpw t (Cminus C1 s)) (Cinv (Cminus C1 s))))
+          (Cmul (RtoC (ln t * ln t))
+                (Cmul (Cmul (Cminus C1 s) (Cpw t (Cminus (Cminus C1 s) C1))) (Cinv (Cminus C1 s)))))
+    (Cadd (Cmul (RtoC (-2 * / t))
+                (Cmul (Cpw t (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))))
+          (Cmul (RtoC (-2 * ln t))
+                (Cmul (Cmul (Cminus C1 s) (Cpw t (Cminus (Cminus C1 s) C1)))
+                      (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))))))
+    (Cadd (Cmul (RtoC 0)
+                (Cmul (Cpw t (Cminus C1 s))
+                      (Cmul (Cinv (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s))))))
+          (Cmul (RtoC 2)
+                (Cmul (Cmul (Cminus C1 s) (Cpw t (Cminus (Cminus C1 s) C1)))
+                      (Cmul (Cinv (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s))))))).
+
+Lemma dd_eq : forall s t, 0 < t -> Cminus C1 s <> C0 -> dd2sGC s t = d2k (Copp s) t.
+Proof.
+  intros s t Ht Hs; assert (Ht0 : t <> 0) by lra; unfold dd2sGC.
+  assert (HP1 : Cpw t (Cminus (Cminus C1 s) C1) = Cpw t (Copp s)) by (f_equal; ring).
+  rewrite !HP1, !(Cpw_onems s t Ht).
+  rewrite (combine_real (2 * ln t) t (Cpw t (Copp s)) (Cinv (Cminus C1 s)) Ht0).
+  rewrite (combine_real (-2) t (Cpw t (Copp s))
+             (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s))) Ht0).
+  replace (Cmul (RtoC 0)
+             (Cmul (Cmul (RtoC t) (Cpw t (Copp s)))
+                   (Cmul (Cinv (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s))))))
+    with (Cmul (RtoC 0)
+             (Cmul (Cpw t (Copp s))
+                   (Cmul (Cinv (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s))))))
+    by (rewrite !RtoC0_mul; reflexivity).
+  apply (d2sGC_cancel (Cpw t (Copp s)) (Cminus C1 s) (ln t) Hs).
+Qed.
+
+Lemma Re_Cadd : forall a b, Re (Cadd a b) = Re a + Re b.
+Proof. intros a b; unfold Cadd; reflexivity. Qed.
+Lemma Im_Cadd : forall a b, Im (Cadd a b) = Im a + Im b.
+Proof. intros a b; unfold Cadd; reflexivity. Qed.
+Lemma Re_RtoC_mul : forall r c, Re (Cmul (RtoC r) c) = r * Re c.
+Proof. intros r c; unfold Cmul, RtoC; cbn; ring. Qed.
+Lemma Im_RtoC_mul : forall r c, Im (Cmul (RtoC r) c) = r * Im c.
+Proof. intros r c; unfold Cmul, RtoC; cbn; ring. Qed.
+
+(* the second s-derivative of GC = t^{1-s}/(1-s):  A''B + 2A'B' + AB''
+   = (ln t)^2 A B - 2 ln t A B^2 + 2 A B^3,  A = t^{1-s}, B = 1/(1-s). *)
+Definition d2sGC (s : C) (t : R) : C :=
+  Cadd (Cadd
+    (Cmul (RtoC (ln t * ln t)) (Cmul (Cpw t (Cminus C1 s)) (Cinv (Cminus C1 s))))
+    (Cmul (RtoC (-2 * ln t))
+          (Cmul (Cpw t (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s))))))
+    (Cmul (RtoC 2)
+          (Cmul (Cpw t (Cminus C1 s))
+                (Cmul (Cinv (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))))).
+
+(* THE KNOT: d/dt (d2s GC) = d2s gC = (ln t)^2 t^{-s}, componentwise. *)
+Lemma base_deriv_d2sGC_Re : forall s t, 0 < t -> Cminus C1 s <> C0 ->
+  derivable_pt_lim (fun u => Re (d2sGC s u)) t (Re (d2k (Copp s) t)).
+Proof.
+  intros s t Ht Hs.
+  rewrite <- (dd_eq s t Ht Hs).
+  assert (Hfun : (fun u => Re (d2sGC s u))
+    = (fun u =>
+        Re (Cmul (RtoC (ln u * ln u)) (Cmul (Cpw u (Cminus C1 s)) (Cinv (Cminus C1 s))))
+      + Re (Cmul (RtoC (-2 * ln u))
+              (Cmul (Cpw u (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))))
+      + Re (Cmul (RtoC 2)
+              (Cmul (Cpw u (Cminus C1 s))
+                    (Cmul (Cinv (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))))))).
+  { apply functional_extensionality; intro u; unfold d2sGC; rewrite !Re_Cadd; reflexivity. }
+  rewrite Hfun.
+  replace (Re (dd2sGC s t)) with (
+    ((2 * ln t * / t) * Re (Cmul (Cpw t (Cminus C1 s)) (Cinv (Cminus C1 s)))
+     + (ln t * ln t) * Re (Cmul (Cmul (Cminus C1 s) (Cpw t (Cminus (Cminus C1 s) C1))) (Cinv (Cminus C1 s))))
+    + ((-2 * / t) * Re (Cmul (Cpw t (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s))))
+     + (-2 * ln t) * Re (Cmul (Cmul (Cminus C1 s) (Cpw t (Cminus (Cminus C1 s) C1))) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))))
+    + (0 * Re (Cmul (Cpw t (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))))
+     + 2 * Re (Cmul (Cmul (Cminus C1 s) (Cpw t (Cminus (Cminus C1 s) C1))) (Cmul (Cinv (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))))))
+    by (unfold dd2sGC; rewrite !Re_Cadd, !Re_RtoC_mul; ring).
+  apply derivable_pt_lim_plus; [ apply derivable_pt_lim_plus | ].
+  - apply (base_deriv_term_Re (fun u => ln u * ln u) (2 * ln t * / t)
+             (Cinv (Cminus C1 s)) s t Ht (dln_sq t Ht)).
+  - apply (base_deriv_term_Re (fun u => -2 * ln u) (-2 * / t)
+             (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s))) s t Ht).
+    apply (derivable_pt_lim_scal ln (-2) t (/ t)); apply derivable_pt_lim_ln; exact Ht.
+  - apply (base_deriv_term_Re (fun u => 2) 0
+             (Cmul (Cinv (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))) s t Ht).
+    apply (derivable_pt_lim_const 2 t).
+Qed.
+
+Lemma base_deriv_d2sGC_Im : forall s t, 0 < t -> Cminus C1 s <> C0 ->
+  derivable_pt_lim (fun u => Im (d2sGC s u)) t (Im (d2k (Copp s) t)).
+Proof.
+  intros s t Ht Hs.
+  rewrite <- (dd_eq s t Ht Hs).
+  assert (Hfun : (fun u => Im (d2sGC s u))
+    = (fun u =>
+        Im (Cmul (RtoC (ln u * ln u)) (Cmul (Cpw u (Cminus C1 s)) (Cinv (Cminus C1 s))))
+      + Im (Cmul (RtoC (-2 * ln u))
+              (Cmul (Cpw u (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))))
+      + Im (Cmul (RtoC 2)
+              (Cmul (Cpw u (Cminus C1 s))
+                    (Cmul (Cinv (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))))))).
+  { apply functional_extensionality; intro u; unfold d2sGC; rewrite !Im_Cadd; reflexivity. }
+  rewrite Hfun.
+  replace (Im (dd2sGC s t)) with (
+    ((2 * ln t * / t) * Im (Cmul (Cpw t (Cminus C1 s)) (Cinv (Cminus C1 s)))
+     + (ln t * ln t) * Im (Cmul (Cmul (Cminus C1 s) (Cpw t (Cminus (Cminus C1 s) C1))) (Cinv (Cminus C1 s))))
+    + ((-2 * / t) * Im (Cmul (Cpw t (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s))))
+     + (-2 * ln t) * Im (Cmul (Cmul (Cminus C1 s) (Cpw t (Cminus (Cminus C1 s) C1))) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))))
+    + (0 * Im (Cmul (Cpw t (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))))
+     + 2 * Im (Cmul (Cmul (Cminus C1 s) (Cpw t (Cminus (Cminus C1 s) C1))) (Cmul (Cinv (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))))))
+    by (unfold dd2sGC; rewrite !Im_Cadd, !Im_RtoC_mul; ring).
+  apply derivable_pt_lim_plus; [ apply derivable_pt_lim_plus | ].
+  - apply (base_deriv_term_Im (fun u => ln u * ln u) (2 * ln t * / t)
+             (Cinv (Cminus C1 s)) s t Ht (dln_sq t Ht)).
+  - apply (base_deriv_term_Im (fun u => -2 * ln u) (-2 * / t)
+             (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s))) s t Ht).
+    apply (derivable_pt_lim_scal ln (-2) t (/ t)); apply derivable_pt_lim_ln; exact Ht.
+  - apply (base_deriv_term_Im (fun u => 2) 0
+             (Cmul (Cinv (Cminus C1 s)) (Cmul (Cinv (Cminus C1 s)) (Cinv (Cminus C1 s)))) s t Ht).
+    apply (derivable_pt_lim_const 2 t).
+Qed.
+
 Print Assumptions base_deriv_term_Re.
 Print Assumptions d2sGC_cancel.
-Print Assumptions Cpw_onems.
+Print Assumptions dd_eq.
+Print Assumptions base_deriv_d2sGC_Re.
 
 (* ================================================================= *)
-(*  END CBaseDeriv2.v (part 3: Cpw/real plumbing).                    *)
+(*  END CBaseDeriv2.v (item 3a: the knot d/dt(d2s GC) = d2s gC).       *)
 (* ================================================================= *)
