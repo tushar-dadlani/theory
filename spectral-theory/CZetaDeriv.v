@@ -40,7 +40,19 @@ Proof.
              replace (Cadd (Cmul (Copp C1) s) C1) with (Cminus C1 s) by ring; exact Hs.
 Qed.
 
+(* the 1/(s-1) head of zetaC is holomorphic *)
+Lemma zetaC_head_holo : forall s, Cminus s C1 <> C0 ->
+  exists d, is_Cderiv (fun w => Cinv (Cminus w C1)) s d.
+Proof.
+  intros s Hs; eexists.
+  apply (is_Cderiv_ext (fun w => Cinv (Cadd (Cmul C1 w) (Copp C1)))).
+  - intro w; f_equal; ring.
+  - apply Cderiv_comp_affine; apply Cderiv_inv;
+      replace (Cadd (Cmul C1 s) (Copp C1)) with (Cminus s C1) by ring; exact Hs.
+Qed.
+
 Print Assumptions gtermC_holo.
+Print Assumptions zetaC_head_holo.
 
 (* ================================================================= *)
 (*  END CZetaDeriv.v (part 1).                                         *)
