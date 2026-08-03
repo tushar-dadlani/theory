@@ -745,6 +745,7 @@ spectral-theory/CImproperIntegral.v
 spectral-theory/ThetaTailEntire.v
 spectral-theory/RiemannXiEntire.v
 spectral-theory/CSeries.v
+spectral-theory/CSeriesLin.v
 spectral-theory/CPower.v
 spectral-theory/CPowBase.v
 spectral-theory/CZetaTerm.v
