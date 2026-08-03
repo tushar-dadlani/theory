@@ -11,8 +11,8 @@
 
 From Stdlib Require Import Reals Lra Lia FunctionalExtensionality.
 Require Import ComplexField Cmodulus CexpFull Holomorphic CexpRemainder
-               CSeries CDeriv CDerivLine CBaseDeriv CBaseDeriv2
-               CZetaTerm CZetaTerm2 CZetaDeriv2.
+               CSeries CSeriesLin CDeriv CDerivLine CBaseDeriv CBaseDeriv2
+               CZetaTerm CZetaTerm2 CZetaDeriv CZetaDeriv2 CZetaDeriv3 CZeta.
 Open Scope R_scope.
 
 (* derivative of  w |-> F w · c  (c constant) is  dF · c *)
@@ -341,8 +341,150 @@ Proof.
   apply Rplus_le_compat; assumption.
 Qed.
 
-Print Assumptions Rn_bound.
+Lemma Wsummand_nonneg : forall z n, 0 <= Wsummand z n.
+Proof.
+  intros z n; unfold Wsummand.
+  assert (0 <= ln (INR (S (S n))))
+    by (rewrite <- ln_1; apply ln_le'; [ lra | rewrite <- INR_1; apply le_INR; lia ]).
+  apply Rmult_le_pos; [ | apply Rlt_le; unfold Rpower; apply exp_pos ].
+  apply Rplus_le_le_0_compat; [ lra | apply Rmult_le_pos;
+    [ apply Rmult_le_pos; assumption | pose proof (Cmod_nonneg z); lra ] ].
+Qed.
+
+Lemma Un_cv_nonneg : forall u l, Un_cv u l -> (forall n, 0 <= u n) -> 0 <= l.
+Proof.
+  intros u l Hcv Hu; apply Rnot_lt_le; intro Hlt.
+  destruct (Hcv (- l) ltac:(lra)) as [N HN].
+  pose proof (HN N (Nat.le_refl N)) as H; unfold R_dist in H.
+  apply Rabs_def2 in H; pose proof (Hu N); lra.
+Qed.
+
+(* the sum S(w) = sum gtermC(w,.) is differentiable at z with derivative
+   D = sum dgtermC(z,.), stated over the convergence witnesses. *)
+Lemma sum_deriv : forall z (H0 : 0 < Re z) (H1 : Cminus C1 z <> C0),
+  forall eps, 0 < eps -> exists del, 0 < del /\
+    forall h Vzh Vz, Cmod h < del ->
+      Cseries_cv (gtermC (Cadd z h)) Vzh -> Cseries_cv (gtermC z) Vz ->
+      Cmod (Cminus (Cminus Vzh Vz) (Cmul (proj1_sig (dgtermC_cv z H0 H1)) h)) <= eps * Cmod h.
+Proof.
+  intros z H0 H1 eps Heps.
+  destruct (dgtermC_cv z H0 H1) as [D HD]; cbn [proj1_sig].
+  destruct (weighted_pseries_cv (Re z / 2) (Cmod z + 1) ltac:(lra)
+             ltac:(pose proof (Cmod_nonneg z); lra)) as [T HT].
+  assert (HTsum : Un_cv (sum_f_R0 (Wsummand z)) T) by exact HT.
+  assert (HT0 : 0 <= T).
+  { apply (Un_cv_nonneg (sum_f_R0 (Wsummand z))); [ exact HTsum | ].
+    intro N; induction N; [ simpl; apply Wsummand_nonneg
+      | rewrite tech5; pose proof (Wsummand_nonneg z (S N)); lra ]. }
+  assert (Hz1 : 0 < Cmod (Cminus z C1))
+    by (apply Cmod_pos_ne0; intro Hc;
+        apply H1; replace (Cminus C1 z) with (Copp (Cminus z C1)) by ring;
+        rewrite Hc; unfold Copp, C0; apply Ceq; cbn; ring).
+  set (del := Rmin (Re z / 2) (Rmin (Cmod (Cminus z C1) / 2) (Rmin 1 (eps / (4 * T + 1))))).
+  assert (Hdiv : 0 < eps / (4 * T + 1)) by (apply Rdiv_lt_0_compat; lra).
+  exists del; split.
+  { unfold del; repeat apply Rmin_glb_lt; lra. }
+  intros h Vzh Vz Hh HVzh HVz.
+  assert (Hh1 : Cmod h < Re z / 2) by (apply Rlt_le_trans with del; [ exact Hh | apply Rmin_l ]).
+  assert (Hh2 : Cmod h < Cmod (Cminus z C1) / 2)
+    by (apply Rlt_le_trans with del; [ exact Hh | eapply Rle_trans; [ apply Rmin_r | apply Rmin_l ] ]).
+  assert (Hh3 : Cmod h < 1)
+    by (apply Rlt_le_trans with del; [ exact Hh
+        | eapply Rle_trans; [ apply Rmin_r | eapply Rle_trans; [ apply Rmin_r | apply Rmin_l ] ] ]).
+  assert (Hh4 : Cmod h < eps / (4 * T + 1))
+    by (apply Rlt_le_trans with del; [ exact Hh
+        | eapply Rle_trans; [ apply Rmin_r | eapply Rle_trans; [ apply Rmin_r | apply Rmin_r ] ] ]).
+  (* the remainder series *)
+  assert (Hcs : Cseries_cv (fun n => Cmul (dgtermC z n) h) (Cmul D h)).
+  { replace (fun n => Cmul (dgtermC z n) h) with (fun n => Cmul h (dgtermC z n))
+      by (apply functional_extensionality; intro n; ring).
+    replace (Cmul D h) with (Cmul h D) by ring.
+    apply Cseries_cv_cscal; exact HD. }
+  assert (HR : Cseries_cv
+    (fun n => Cminus (Cminus (gtermC (Cadd z h) n) (gtermC z n)) (Cmul (dgtermC z n) h))
+    (Cminus (Cminus Vzh Vz) (Cmul D h))).
+  { apply Cseries_cv_minus; [ apply Cseries_cv_minus; assumption | exact Hcs ]. }
+  (* the absolute-value series is dominated by 4 (Cmod h)^2 Wsummand *)
+  assert (Hb_cv : Un_cv (sum_f_R0 (fun n => 4 * Wsummand z n * (Cmod h * Cmod h)))
+                        (4 * (Cmod h * Cmod h) * T)).
+  { replace (fun n => 4 * Wsummand z n * (Cmod h * Cmod h))
+      with (fun n => 4 * (Cmod h * Cmod h) * Wsummand z n)
+      by (apply functional_extensionality; intro n; ring).
+    replace (sum_f_R0 (fun n => 4 * (Cmod h * Cmod h) * Wsummand z n))
+      with (fun N => 4 * (Cmod h * Cmod h) * sum_f_R0 (Wsummand z) N)
+      by (apply functional_extensionality; intro N;
+          rewrite (scal_sum (Wsummand z) N (4 * (Cmod h * Cmod h))); apply sum_eq; intros; ring).
+    apply (CV_mult (fun _ => 4 * (Cmod h * Cmod h)) (sum_f_R0 (Wsummand z)) _ T);
+      [ apply Un_cv_const | exact HTsum ]. }
+  destruct (Rseries_le_cv
+    (fun n => Cmod (Cminus (Cminus (gtermC (Cadd z h) n) (gtermC z n)) (Cmul (dgtermC z n) h)))
+    (fun n => 4 * Wsummand z n * (Cmod h * Cmod h))
+    (4 * (Cmod h * Cmod h) * T)
+    (fun n => Cmod_nonneg _)
+    (fun n => Rn_bound z h n H0 Hh1 Hh2 Hh3)
+    Hb_cv) as [Sa [HSa HSale]].
+  eapply Rle_trans; [ apply (Cseries_triangle _ _ Sa HR HSa) | ].
+  eapply Rle_trans; [ exact HSale | ].
+  assert (Hkey : (4 * T + 1) * Cmod h < eps).
+  { apply Rlt_le_trans with ((4 * T + 1) * (eps / (4 * T + 1)));
+      [ apply Rmult_lt_compat_l; lra | apply Req_le; field; lra ]. }
+  pose proof (Cmod_nonneg h); nra.
+Qed.
+
+(* the 1/(s-1) head derivative, explicit *)
+Lemma head_deriv : forall z, Cminus z C1 <> C0 ->
+  is_Cderiv (fun w => Cinv (Cminus w C1)) z
+    (Cmul C1 (Copp (Cinv (Cmul (Cminus z C1) (Cminus z C1))))).
+Proof.
+  intros z Hz.
+  apply (is_Cderiv_ext (fun w => Cinv (Cadd (Cmul C1 w) (Copp C1)))).
+  - intro w; f_equal; ring.
+  - eapply is_Cderiv_eq.
+    + apply Cderiv_comp_affine; apply Cderiv_inv;
+        replace (Cadd (Cmul C1 z) (Copp C1)) with (Cminus z C1) by ring; exact Hz.
+    + replace (Cadd (Cmul C1 z) (Copp C1)) with (Cminus z C1) by ring; reflexivity.
+Qed.
 
 (* ================================================================= *)
-(*  END CZetaHolo.v (parts 1-4b).                                     *)
+(*  THE THEOREM: zetaC is holomorphic on the strip 0 < Re z, z <> 1.   *)
+(* ================================================================= *)
+Theorem zetaC_holo : forall z (H0 : 0 < Re z) (H1 : Cminus C1 z <> C0),
+  exists D, forall eps, 0 < eps -> exists del, 0 < del /\
+    forall h (K0 : 0 < Re (Cadd z h)) (K1 : Cminus C1 (Cadd z h) <> C0),
+      Cmod h < del ->
+      Cmod (Cminus (Cminus (zetaC (Cadd z h) K0 K1) (zetaC z H0 H1)) (Cmul D h))
+        <= eps * Cmod h.
+Proof.
+  intros z H0 H1.
+  assert (H1' : Cminus z C1 <> C0)
+    by (intro Hc; apply H1; replace (Cminus C1 z) with (Copp (Cminus z C1)) by ring;
+        rewrite Hc; unfold Copp, C0; apply Ceq; cbn; ring).
+  set (Dhead := Cmul C1 (Copp (Cinv (Cmul (Cminus z C1) (Cminus z C1))))).
+  exists (Cadd Dhead (proj1_sig (dgtermC_cv z H0 H1))).
+  intros eps Heps.
+  destruct (head_deriv z H1' (eps / 2) ltac:(lra)) as [delh [Hdelh Hhead]].
+  destruct (sum_deriv z H0 H1 (eps / 2) ltac:(lra)) as [dels [Hdels Hsum]].
+  exists (Rmin delh dels); split; [ apply Rmin_glb_lt; assumption | ].
+  intros h K0 K1 Hh.
+  assert (Hh_h : Cmod h < delh) by (apply Rlt_le_trans with (Rmin delh dels); [ exact Hh | apply Rmin_l ]).
+  assert (Hh_s : Cmod h < dels) by (apply Rlt_le_trans with (Rmin delh dels); [ exact Hh | apply Rmin_r ]).
+  unfold zetaC.
+  set (A1 := Cinv (Cminus (Cadd z h) C1)); set (A2 := Cinv (Cminus z C1)).
+  set (B1 := proj1_sig (gtermC_cv (Cadd z h) K0 K1)); set (B2 := proj1_sig (gtermC_cv z H0 H1)).
+  set (Ds := proj1_sig (dgtermC_cv z H0 H1)).
+  replace (Cminus (Cminus (Cadd A1 B1) (Cadd A2 B2)) (Cmul (Cadd Dhead Ds) h))
+    with (Cadd (Cminus (Cminus A1 A2) (Cmul Dhead h)) (Cminus (Cminus B1 B2) (Cmul Ds h)))
+    by ring.
+  eapply Rle_trans; [ apply Cmod_triangle | ].
+  replace (eps * Cmod h) with (eps / 2 * Cmod h + eps / 2 * Cmod h) by field.
+  apply Rplus_le_compat.
+  - apply (Hhead h Hh_h).
+  - apply (Hsum h B1 B2 Hh_s); [ exact (proj2_sig (gtermC_cv (Cadd z h) K0 K1))
+                               | exact (proj2_sig (gtermC_cv z H0 H1)) ].
+Qed.
+
+Print Assumptions zetaC_holo.
+
+(* ================================================================= *)
+(*  END CZetaHolo.v  —  zeta is holomorphic on the critical strip.     *)
 (* ================================================================= *)
