@@ -786,3 +786,4 @@ spectral-theory/ZetaZeroPairing.v
 spectral-theory/ZetaZeroQuadruple.v
 spectral-theory/ZetaCriticalLine.v
 spectral-theory/LogGeomSeries.v
+spectral-theory/EulerFactorLog.v
