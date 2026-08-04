@@ -89,6 +89,32 @@ Qed.
 Print Assumptions selberg_sum_eq.
 
 (* ================================================================= *)
+(*  the Mobius hyperbola identity  Sum_{d<=N} mu(d) floor(N/d) = 1     *)
+(* ================================================================= *)
+
+Lemma Rls_seq_const : forall (c : R) a k, Rls (seq a k) (fun _ => c) = c * INR k.
+Proof.
+  intros c a k; revert a; induction k as [|k IH]; intro a.
+  - unfold Rls; simpl; ring.
+  - rewrite Rls_seq_cons, IH, S_INR; ring.
+Qed.
+
+Theorem mu_hyperbola : forall N, (1 <= N)%nat ->
+  Rls (seq 1 N) (fun d => IZR (mu d) * INR (N / d)%nat) = 1.
+Proof.
+  intros N HN.
+  rewrite (Rls_ext _ (fun d => IZR (mu d) * INR (N / d)%nat)
+             (fun d => Rls (seq 1 (N / d)%nat) (fun _ => IZR (mu d))) (seq 1 N))
+    by (intros d _; rewrite Rls_seq_const; ring).
+  rewrite <- (hyperbola_swap (fun d _ => IZR (mu d)) N).
+  rewrite (Rls_ext _ _ (fun n => if Nat.eqb n 1 then 1 else 0) (seq 1 N))
+    by (intros n Hn; apply in_seq in Hn; apply mu_real_sum; lia).
+  apply Rls_sift0; [ apply seq_NoDup | apply in_seq; lia ].
+Qed.
+
+Print Assumptions mu_hyperbola.
+
+(* ================================================================= *)
 (*  END SelbergSum.v (part 1: hyperbola swap + summatory reduction)    *)
 (*  Sum_{n<=N} Lam2(n) = Sum_{d<=N} mu(d) * S(floor(N/d)),             *)
 (*  S(y) = Sum_{m<=y} ln^2 m.  Remaining (Step 2d): the S(y) asymptotic *)
