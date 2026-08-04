@@ -790,3 +790,4 @@ spectral-theory/EulerFactorLog.v
 spectral-theory/CEulerProductFull.v
 spectral-theory/ThreeFourOne.v
 spectral-theory/ZetaLineNonzero.v
+spectral-theory/PrimePowerReindex.v
