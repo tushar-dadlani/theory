@@ -781,3 +781,4 @@ spectral-theory/EulerProductZetaCont.v
 spectral-theory/CPowMul.v
 spectral-theory/CDirichlet.v
 spectral-theory/CEulerFactorSmooth.v
+spectral-theory/CEulerProductZeta.v
