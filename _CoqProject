@@ -795,3 +795,4 @@ spectral-theory/ChebyshevPrime.v
 spectral-theory/MertensVonMangoldt.v
 spectral-theory/RealMobius.v
 spectral-theory/MuLog.v
+spectral-theory/SelbergSymmetry.v
