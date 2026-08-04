@@ -800,3 +800,4 @@ spectral-theory/SelbergSum.v
 spectral-theory/SumLogSq.v
 spectral-theory/SelbergEndgame.v
 spectral-theory/SelbergRForm.v
+spectral-theory/StirlingSharp.v
