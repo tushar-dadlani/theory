@@ -784,3 +784,4 @@ spectral-theory/CEulerFactorSmooth.v
 spectral-theory/CEulerProductZeta.v
 spectral-theory/ZetaZeroPairing.v
 spectral-theory/ZetaZeroQuadruple.v
+spectral-theory/ZetaCriticalLine.v
