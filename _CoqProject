@@ -792,3 +792,4 @@ spectral-theory/ThreeFourOne.v
 spectral-theory/ZetaLineNonzero.v
 spectral-theory/PrimePowerReindex.v
 spectral-theory/ChebyshevPrime.v
+spectral-theory/MertensVonMangoldt.v
