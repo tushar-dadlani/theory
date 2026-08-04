@@ -778,4 +778,5 @@ spectral-theory/GammaNearCHolo.v
 spectral-theory/GammaC.v
 spectral-theory/EulerReindexR.v
 spectral-theory/EulerProductZetaCont.v
+spectral-theory/CPowMul.v
 spectral-theory/CDirichlet.v

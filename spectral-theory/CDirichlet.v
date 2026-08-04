@@ -19,7 +19,7 @@
 
 From Stdlib Require Import Reals Lra Lia.
 Require Import ComplexField Cmodulus CexpFull CSeries CZetaTerm CZeta
-        CDeriv ZetaContinuation.
+        CDeriv ZetaContinuation CPowMul.
 Open Scope R_scope.
 
 (* ================================================================= *)
@@ -80,20 +80,12 @@ Proof.
 Qed.
 
 (* ================================================================= *)
-(*  2.  Cpw 1 w = 1, and GC s 1 = 1/(1-s)                             *)
+(*  2.  GC s 1 = 1/(1-s)  (using Cpw_one from CPowMul)                 *)
 (* ================================================================= *)
-
-Lemma Cpw_base1 : forall w, Cpw 1 w = C1.
-Proof.
-  intro w; unfold Cpw.
-  replace (RtoC (ln 1)) with C0 by (rewrite ln_1; reflexivity).
-  replace (Cmul w C0) with C0 by ring.
-  change C0 with (RtoC 0); rewrite Cexpf_RtoC, exp_0; reflexivity.
-Qed.
 
 Lemma GC_one : forall s, GC s (INR 1) = Cinv (Cminus C1 s).
 Proof.
-  intro s; unfold GC; rewrite INR_1, Cpw_base1; ring.
+  intro s; unfold GC; rewrite INR_1, Cpw_one; ring.
 Qed.
 
 (* ================================================================= *)
