@@ -796,3 +796,4 @@ spectral-theory/MertensVonMangoldt.v
 spectral-theory/RealMobius.v
 spectral-theory/MuLog.v
 spectral-theory/SelbergSymmetry.v
+spectral-theory/SelbergSum.v
