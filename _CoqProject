@@ -799,3 +799,4 @@ spectral-theory/SelbergSymmetry.v
 spectral-theory/SelbergSum.v
 spectral-theory/SumLogSq.v
 spectral-theory/SelbergEndgame.v
+spectral-theory/SelbergRForm.v
