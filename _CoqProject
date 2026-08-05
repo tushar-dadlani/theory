@@ -822,3 +822,4 @@ spectral-theory/LnLimits.v
 spectral-theory/LnLnLimits.v
 spectral-theory/RatioLimit.v
 spectral-theory/PiUpperAssembly.v
+spectral-theory/PNTConditional.v
