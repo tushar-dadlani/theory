@@ -86,6 +86,17 @@ Proof. intros [|a]; unfold ae; simpl; try reflexivity; rewrite gop_id_l; reflexi
 Lemma adj_card : length aelts = S (length gelts).
 Proof. unfold aelts; simpl; rewrite length_map; reflexivity. Qed.
 
+(* ---- the honest negative:  Adj G is NOT a group ----
+   AZero has no inverse (aop _ AZero = AZero <> ae), so Brick 1's GroupPart --
+   inv, ginv, the inversion antipode -- cannot be instantiated on Adj G.  This
+   is the structural reason a monoid algebra with an absorbing zero is a
+   bialgebra but never Hopf, i.e. why the {I,N,F} thread never produced one. *)
+Lemma adj_no_inverse : ~ exists inv : Adj -> Adj, forall x, aop (inv x) x = ae.
+Proof.
+  intros [inv H]; specialize (H AZero); unfold ae in H.
+  destruct (inv AZero); simpl in H; discriminate.
+Qed.
+
 End ZeroAdjunction.
 
 Print Assumptions aop_assoc.
