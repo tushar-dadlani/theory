@@ -812,3 +812,4 @@ spectral-theory/WsumEval.v
 spectral-theory/SymHyperbola.v
 spectral-theory/PartB.v
 spectral-theory/SelbergMainTerm.v
+spectral-theory/SelbergPsiForm.v
