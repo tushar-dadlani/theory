@@ -47,8 +47,66 @@ Proof.
   intros e He; apply in_seq in He; rewrite Nat.div_div by lia; reflexivity.
 Qed.
 
+Lemma Rls_minus' : forall (l : list nat) (f g : nat -> R),
+  Rls l (fun x => f x - g x) = Rls l f - Rls l g.
+Proof.
+  induction l as [|a l IH]; intros f g; [ rewrite !Rls_nil2; ring | ].
+  rewrite !Rls_cons, IH; ring.
+Qed.
+
+(* Reindex + Lam_2 substitution: the double sum = the Lam_2 sum minus the
+   Lam*log sum (which will cancel against the log-gap expansion). *)
+Lemma star_reindex : forall N, (1 <= N)%nat ->
+  Rls (seq 1 N) (fun d => Lam d / INR d *
+      Rls (seq 1 (N / d)%nat) (fun e => Lam e / INR e * Vrem (N / (d * e))%nat))
+  = Rls (seq 1 N) (fun n => Lam2 n / INR n * Vrem (N / n)%nat)
+    - Rls (seq 1 N) (fun n => Lam n * ln (INR n) / INR n * Vrem (N / n)%nat).
+Proof.
+  intros N HN.
+  rewrite (selberg2_reindex N Vrem), <- Rls_minus'.
+  apply Rls_ext; intros n Hn; apply in_seq in Hn.
+  assert (Hconv : Rls (divisors n) (fun d => Lam d * Lam (n / d)%nat)
+                  = Lam2 n - Lam n * ln (INR n)) by (unfold Lam2; ring).
+  rewrite Hconv; field; apply not_0_INR; lia.
+Qed.
+
+(* The per-term log gap: |ln(floor(N/d)) - (ln N - ln d)| <= ln 2. *)
+Lemma log_floor_diff : forall N d, (1 <= d)%nat -> (d <= N)%nat ->
+  Rabs (ln (INR (N / d)%nat) - (ln (INR N) - ln (INR d))) <= ln 2.
+Proof.
+  intros N d Hd1 HdN.
+  assert (Hd0 : 0 < INR d) by (apply lt_0_INR; lia).
+  assert (HN0 : 0 < INR N) by (apply lt_0_INR; lia).
+  assert (Hl2p : 0 < ln 2) by (rewrite <- ln_1; apply ln_increasing; lra).
+  set (m := (N / d)%nat).
+  assert (Hm1 : (1 <= m)%nat)
+    by (unfold m; pose proof (Nat.Div0.div_mod N d);
+        pose proof (Nat.mod_upper_bound N d ltac:(lia)); nia).
+  assert (Hm0 : 0 < INR m) by (apply lt_0_INR; lia).
+  assert (Hlndiv : ln (INR N) - ln (INR d) = ln (INR N / INR d)).
+  { unfold Rdiv; rewrite (ln_mult (INR N) (/ INR d) HN0 (Rinv_0_lt_compat _ Hd0)),
+      (ln_Rinv (INR d) Hd0); ring. }
+  rewrite Hlndiv.
+  assert (Hupper : INR m <= INR N / INR d).
+  { apply Rmult_le_reg_r with (INR d); [ exact Hd0 | ].
+    replace (INR N / INR d * INR d) with (INR N) by (field; lra).
+    rewrite <- mult_INR; apply le_INR; unfold m; pose proof (Nat.Div0.div_mod N d); nia. }
+  assert (Hlower : INR N / INR d < 2 * INR m).
+  { apply Rmult_lt_reg_r with (INR d); [ exact Hd0 | ].
+    replace (INR N / INR d * INR d) with (INR N) by (field; lra).
+    replace (2 * INR m * INR d) with (INR (2 * m * d)) by (rewrite !mult_INR; simpl; ring).
+    apply lt_INR; unfold m; pose proof (Nat.Div0.div_mod N d);
+      pose proof (Nat.mod_upper_bound N d ltac:(lia)); nia. }
+  assert (Hl1 : ln (INR m) <= ln (INR N / INR d)) by (apply ln_le; [ exact Hm0 | exact Hupper ]).
+  assert (Hl2 : ln (INR N / INR d) <= ln (INR m) + ln 2).
+  { apply Rle_trans with (ln (2 * INR m)).
+    - apply ln_le; [ apply Rdiv_lt_0_compat; assumption | left; exact Hlower ].
+    - rewrite (ln_mult 2 (INR m)) by lra; lra. }
+  apply Rabs_le; split; lra.
+Qed.
+
 Print Assumptions selberg_iterate_bound.
 
 (* ================================================================= *)
-(*  END StarInequality.v (part 1: the engine step)                    *)
+(*  END StarInequality.v (parts 1-3: engine + reindex + log-gap)      *)
 (* ================================================================= *)
