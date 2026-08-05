@@ -23,7 +23,7 @@ From Stdlib Require Import ZArith Arith Lia List.
 Import ListNotations.
 Open Scope Z_scope.
 
-Section GroupAlgebra.
+Section MonoidAlgebra.
 
 (* ---- the abstract finite abelian group ---- *)
 Variable A : Type.
@@ -34,22 +34,13 @@ Hypothesis elts_nodup : NoDup elts.
 Hypothesis elts_all : forall x, In x elts.
 Variable op : A -> A -> A.
 Variable e : A.
-Variable inv : A -> A.
 Hypothesis op_assoc : forall x y z, op (op x y) z = op x (op y z).
 Hypothesis op_comm : forall x y, op x y = op y x.
 Hypothesis op_id_l : forall x, op e x = x.
-Hypothesis op_inv_l : forall x, op (inv x) x = e.
 
-(* ---- derived group facts ---- *)
+(* ---- derived monoid facts ---- *)
 Lemma op_id_r : forall x, op x e = x.
 Proof. intro x; rewrite op_comm; apply op_id_l. Qed.
-
-Lemma inv_involutive : forall x, inv (inv x) = x.
-Proof.
-  intro x.
-  rewrite <- (op_id_r (inv (inv x))), <- (op_inv_l x), <- op_assoc, op_inv_l.
-  apply op_id_l.
-Qed.
 
 Lemma Aeq_refl : forall x, Aeq x x = true.
 Proof. intro x; destruct (Aeq_spec x x) as [_|Hne]; [ reflexivity | exfalso; apply Hne; reflexivity ]. Qed.
@@ -156,7 +147,6 @@ Proof. intros F; unfold dsum; apply bigsum_swap. Qed.
 Definition gunit : A -> Z := fun g => if Aeq e g then 1 else 0.
 Definition gconv (a b : A -> Z) : A -> Z :=
   fun g => dsum (fun x y => if Aeq (op x y) g then a x * b y else 0).
-Definition ginv (a : A -> Z) : A -> Z := fun g => a (inv g).
 Definition dot (a phi : A -> Z) : Z := bigsum (fun g => a g * phi g).
 Definition delta (m : A) : A -> Z := fun k => if Aeq m k then 1 else 0.
 
@@ -206,30 +196,6 @@ Qed.
 
 Theorem counit_augmentation : forall a, dot a (fun _ => 1) = bigsum a.
 Proof. intros a; unfold dot; apply sumf_ext; intros; ring. Qed.
-
-(* ================================================================= *)
-(*  THE ANTIPODE AXIOM:  m∘(S⊗id)∘Δ = η∘ε                            *)
-(* ================================================================= *)
-Definition SidDelta (a : A -> Z) : A -> Z :=
-  fun g => bigsum (fun x => if Aeq (op (inv x) x) g then a x else 0).
-
-Theorem antipode_axiom : forall a g,
-  SidDelta a g = (if Aeq e g then bigsum a else 0).
-Proof.
-  intros a g; unfold SidDelta.
-  transitivity (bigsum (fun x => if Aeq e g then a x else 0)).
-  { apply sumf_ext; intros x _; rewrite op_inv_l; reflexivity. }
-  destruct (Aeq e g).
-  - apply sumf_ext; intros; reflexivity.
-  - transitivity (bigsum (fun _ : A => 0%Z)).
-    + apply sumf_ext; intros; reflexivity.
-    + unfold bigsum; apply sumf_zero.
-Qed.
-
-Corollary antipode_is_eps_unit : forall a g, SidDelta a g = gunit g * bigsum a.
-Proof.
-  intros a g; rewrite antipode_axiom; unfold gunit; destruct (Aeq e g); ring.
-Qed.
 
 (* ================================================================= *)
 (*  CONVOLUTION RING AXIOMS  and  S² = id  (unconditional)           *)
@@ -329,10 +295,50 @@ Proof.
   rewrite dot_L, dot_R; reflexivity.
 Qed.
 
+(* ================================================================= *)
+(*  GROUP PART:  the inversion antipode needs op_inv_l                *)
+(* ================================================================= *)
+Section GroupPart.
+Variable inv : A -> A.
+Hypothesis op_inv_l : forall x, op (inv x) x = e.
+
+Lemma inv_involutive : forall x, inv (inv x) = x.
+Proof.
+  intro x.
+  rewrite <- (op_id_r (inv (inv x))), <- (op_inv_l x), <- op_assoc, op_inv_l.
+  apply op_id_l.
+Qed.
+
+Definition ginv (a : A -> Z) : A -> Z := fun g => a (inv g).
+
+(* THE ANTIPODE AXIOM:  m∘(S⊗id)∘Δ = η∘ε *)
+Definition SidDelta (a : A -> Z) : A -> Z :=
+  fun g => bigsum (fun x => if Aeq (op (inv x) x) g then a x else 0).
+
+Theorem antipode_axiom : forall a g,
+  SidDelta a g = (if Aeq e g then bigsum a else 0).
+Proof.
+  intros a g; unfold SidDelta.
+  transitivity (bigsum (fun x => if Aeq e g then a x else 0)).
+  { apply sumf_ext; intros x _; rewrite op_inv_l; reflexivity. }
+  destruct (Aeq e g).
+  - apply sumf_ext; intros; reflexivity.
+  - transitivity (bigsum (fun _ : A => 0%Z)).
+    + apply sumf_ext; intros; reflexivity.
+    + unfold bigsum; apply sumf_zero.
+Qed.
+
+Corollary antipode_is_eps_unit : forall a g, SidDelta a g = gunit g * bigsum a.
+Proof.
+  intros a g; rewrite antipode_axiom; unfold gunit; destruct (Aeq e g); ring.
+Qed.
+
 Theorem ginv_involutive : forall a g, ginv (ginv a) g = a g.
 Proof. intros a g; unfold ginv; rewrite inv_involutive; reflexivity. Qed.
 
-End GroupAlgebra.
+End GroupPart.
+
+End MonoidAlgebra.
 
 Print Assumptions product_coproduct_duality.
 Print Assumptions antipode_axiom.
