@@ -816,3 +816,4 @@ spectral-theory/SelbergPsiForm.v
 spectral-theory/ErdosSelberg.v
 spectral-theory/PsiThetaTail.v
 spectral-theory/ThetaLimit.v
+spectral-theory/ThetaPiBound.v
