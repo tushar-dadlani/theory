@@ -114,7 +114,27 @@ Proof.
   exact HRn.
 Qed.
 
+(* The negative analog: a negative excursion of height a (< 1) at n0 forces
+   Vrem m >= a/2 BACKWARD across [ (2-2a)/(2-a) * n0, n0 ] (Rem_mono_ub_back). *)
+Theorem spike_block_neg : forall n0 m a,
+  0 < a -> (1 <= m)%nat -> Rem n0 <= - a * INR n0 ->
+  (m <= n0)%nat -> 2 * (1 - a) * INR n0 <= (2 - a) * INR m ->
+  a / 2 <= Vrem m.
+Proof.
+  intros n0 m a Ha Hm Hspike Hle Hblock.
+  assert (HmR : 0 < INR m) by (apply lt_0_INR; lia).
+  pose proof (pos_INR n0) as Hn0R.
+  assert (H2 : Rem m <= Rem n0 + (INR n0 - INR m)) by (apply Rem_mono_ub_back; exact Hle).
+  assert (HRm : Rem m <= - (a / 2) * INR m) by nra.
+  assert (HRmneg : Rem m <= 0) by nra.
+  unfold Vrem; rewrite (Rabs_left1 (Rem m)) by exact HRmneg.
+  apply Rmult_le_reg_r with (INR m); [ exact HmR | ].
+  replace (- Rem m / INR m * INR m) with (- Rem m) by (field; lra).
+  nra.
+Qed.
+
 Print Assumptions smeas_markov.
+Print Assumptions spike_block_neg.
 
 (* ================================================================= *)
 (*  END ScaleMeasure.v  —  RUNG 3b: the scale-measure primitive.       *)
