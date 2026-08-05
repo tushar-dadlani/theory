@@ -830,3 +830,4 @@ spectral-theory/SelbergAverage.v
 spectral-theory/ScaleMeasure.v
 spectral-theory/SelbergAverageSigned.v
 spectral-theory/SelbergCollapse.v
+spectral-theory/PsiAsymp.v
