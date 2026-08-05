@@ -814,3 +814,4 @@ spectral-theory/PartB.v
 spectral-theory/SelbergMainTerm.v
 spectral-theory/SelbergPsiForm.v
 spectral-theory/ErdosSelberg.v
+spectral-theory/PsiThetaTail.v
