@@ -836,3 +836,4 @@ spectral-theory/LogHarmonic.v
 spectral-theory/SmoothingLemma.v
 spectral-theory/Slog2Swap.v
 spectral-theory/SelbergIterate.v
+spectral-theory/StarInequality.v
