@@ -833,3 +833,4 @@ spectral-theory/SelbergCollapse.v
 spectral-theory/PsiAsymp.v
 spectral-theory/MertensTail.v
 spectral-theory/LogHarmonic.v
+spectral-theory/SmoothingLemma.v
