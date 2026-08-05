@@ -807,3 +807,4 @@ spectral-theory/MobiusMertens.v
 spectral-theory/MobiusBound.v
 spectral-theory/MobiusOverD.v
 spectral-theory/EulerMaclaurin.v
+spectral-theory/MajorantSum.v
