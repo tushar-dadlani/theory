@@ -105,8 +105,72 @@ Proof.
   apply Rabs_le; split; lra.
 Qed.
 
-Print Assumptions selberg_iterate_bound.
+Lemma Rls_scal_r : forall (l : list nat) (g : nat -> R) (c : R),
+  Rls l (fun x => g x * c) = Rls l g * c.
+Proof.
+  induction l as [|a l IH]; intros g c; [ rewrite !Rls_nil2; ring | ].
+  rewrite !Rls_cons, IH; ring.
+Qed.
+
+Theorem star_inequality : forall N, (1 <= N)%nat ->
+  Vrem N * (ln (INR N) * ln (INR N))
+  <= Rls (seq 1 N) (fun n => Lam2 n / INR n * Vrem (N / n)%nat)
+     + (88 + 3 * Kup + 1) * ln (INR N)
+     + (88 + 3 * Kup + 1) * msum N
+     + (Kup - 1) * ln 2 * msum N.
+Proof.
+  intros N HN.
+  assert (Hl2p : 0 <= ln 2) by (rewrite <- ln_1; left; apply ln_increasing; lra).
+  assert (HK1 : 0 <= Kup - 1) by (unfold Kup; lra).
+  assert (Hln0 : 0 <= ln (INR N))
+    by (rewrite <- ln_1; apply ln_le;
+        [ lra | replace 1 with (INR 1) by (simpl; ring); apply le_INR; lia ]).
+  pose proof (selberg_average N HN) as HS1.
+  pose proof (selberg_iterate_bound N HN) as Hiter.
+  pose proof (star_reindex N HN) as Hreindex.
+  set (E1 := Rls (seq 1 N) (fun d => Lam d / INR d * Vrem (N / d)%nat *
+              (ln (INR (N / d)%nat) - (ln (INR N) - ln (INR d))))).
+  assert (HLGT :
+    Rls (seq 1 N) (fun d => Lam d / INR d * (Vrem (N / d)%nat * ln (INR (N / d)%nat)))
+    = ln (INR N) * Rls (seq 1 N) (fun d => Lam d / INR d * Vrem (N / d)%nat)
+      - Rls (seq 1 N) (fun n => Lam n * ln (INR n) / INR n * Vrem (N / n)%nat)
+      + E1).
+  { unfold E1; rewrite Rls_scal, <- Rls_minus', <- Rls_add.
+    apply Rls_ext; intros d Hd; apply in_seq in Hd; field; apply not_0_INR; lia. }
+  assert (HE1 : Rabs E1 <= (Kup - 1) * ln 2 * msum N).
+  { unfold E1; eapply Rle_trans; [ apply Rls_abs | ].
+    eapply Rle_trans; [ apply Rls_le with (g := fun d => Lam d / INR d * ((Kup - 1) * ln 2)) | ].
+    - intros d Hd; apply in_seq in Hd.
+      assert (Hq1 : (1 <= N / d)%nat)
+        by (pose proof (Nat.Div0.div_mod N d); pose proof (Nat.mod_upper_bound N d ltac:(lia)); nia).
+      assert (Hdd : 0 <= Lam d / INR d)
+        by (apply Rmult_le_pos; [ apply Lam_nonneg | left; apply Rinv_0_lt_compat; apply lt_0_INR; lia ]).
+      pose proof (Vrem_nonneg (N / d)%nat) as HVp.
+      pose proof (Vrem_bound (N / d)%nat Hq1) as HVb.
+      pose proof (log_floor_diff N d ltac:(lia) ltac:(lia)) as Hgap.
+      pose proof (Rabs_pos (ln (INR (N / d)%nat) - (ln (INR N) - ln (INR d)))) as Hgp.
+      rewrite Rabs_mult, Rabs_mult.
+      rewrite (Rabs_right (Lam d / INR d)) by (apply Rle_ge; exact Hdd).
+      rewrite (Rabs_right (Vrem (N / d)%nat)) by (apply Rle_ge; exact HVp).
+      assert (Hvg : Vrem (N / d)%nat * Rabs (ln (INR (N / d)%nat) - (ln (INR N) - ln (INR d)))
+                    <= (Kup - 1) * ln 2) by nra.
+      replace (Lam d / INR d * Vrem (N / d)%nat *
+                 Rabs (ln (INR (N / d)%nat) - (ln (INR N) - ln (INR d))))
+        with (Lam d / INR d * (Vrem (N / d)%nat *
+                 Rabs (ln (INR (N / d)%nat) - (ln (INR N) - ln (INR d))))) by ring.
+      apply Rmult_le_compat_l; [ exact Hdd | exact Hvg ].
+    - rewrite Rls_scal_r, <- msum_Rls; apply Req_le; ring. }
+  assert (Hmult : Vrem N * (ln (INR N) * ln (INR N)) - (88 + 3 * Kup + 1) * ln (INR N)
+                <= ln (INR N) * Rls (seq 1 N) (fun d => Lam d / INR d * Vrem (N / d)%nat)).
+  { pose proof (Rmult_le_compat_l (ln (INR N)) (Vrem N * ln (INR N))
+                 (Rls (seq 1 N) (fun d => Lam d / INR d * Vrem (N / d)%nat) + (88 + 3 * Kup + 1))
+                 Hln0 HS1) as H; nra. }
+  assert (HE1abs : - E1 <= Rabs E1) by (rewrite <- Rabs_Ropp; apply Rle_abs).
+  lra.
+Qed.
+
+Print Assumptions star_inequality.
 
 (* ================================================================= *)
-(*  END StarInequality.v (parts 1-3: engine + reindex + log-gap)      *)
+(*  END StarInequality.v  —  Vrem N ln^2 N <= Sum(Lam2/n)Vrem(N/n)+O(lnN)*)
 (* ================================================================= *)
