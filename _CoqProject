@@ -802,3 +802,4 @@ spectral-theory/SelbergEndgame.v
 spectral-theory/SelbergRForm.v
 spectral-theory/StirlingSharp.v
 spectral-theory/SumLogSqRatio.v
+spectral-theory/HarmonicSum.v
