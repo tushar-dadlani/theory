@@ -839,3 +839,4 @@ spectral-theory/SelbergIterate.v
 spectral-theory/StarInequality.v
 spectral-theory/MonoidAlgebraZero.v
 spectral-theory/AdjBoolINF.v
+spectral-theory/AdjProduct.v
