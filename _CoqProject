@@ -818,3 +818,4 @@ spectral-theory/PsiThetaTail.v
 spectral-theory/ThetaLimit.v
 spectral-theory/ThetaPiBound.v
 spectral-theory/PiUpperSplit.v
+spectral-theory/LnLimits.v
