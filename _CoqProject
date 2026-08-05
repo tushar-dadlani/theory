@@ -834,3 +834,4 @@ spectral-theory/PsiAsymp.v
 spectral-theory/MertensTail.v
 spectral-theory/LogHarmonic.v
 spectral-theory/SmoothingLemma.v
+spectral-theory/Slog2Swap.v
