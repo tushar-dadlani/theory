@@ -826,3 +826,4 @@ spectral-theory/PNTConditional.v
 spectral-theory/FunctionFieldPNT.v
 spectral-theory/LimSup.v
 spectral-theory/RemSpike.v
+spectral-theory/SelbergAverage.v
