@@ -813,3 +813,4 @@ spectral-theory/SymHyperbola.v
 spectral-theory/PartB.v
 spectral-theory/SelbergMainTerm.v
 spectral-theory/SelbergPsiForm.v
+spectral-theory/ErdosSelberg.v
