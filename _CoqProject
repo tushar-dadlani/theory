@@ -806,3 +806,4 @@ spectral-theory/HarmonicSum.v
 spectral-theory/MobiusMertens.v
 spectral-theory/MobiusBound.v
 spectral-theory/MobiusOverD.v
+spectral-theory/EulerMaclaurin.v
