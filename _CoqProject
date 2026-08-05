@@ -808,3 +808,4 @@ spectral-theory/MobiusBound.v
 spectral-theory/MobiusOverD.v
 spectral-theory/EulerMaclaurin.v
 spectral-theory/MajorantSum.v
+spectral-theory/WsumEval.v
