@@ -848,3 +848,4 @@ spectral-theory/ZmodUnitsCyclic.v
 spectral-theory/SelbergDip.v
 spectral-theory/LimInf.v
 spectral-theory/SelbergSignedExtremes.v
+spectral-theory/SelbergPin.v
