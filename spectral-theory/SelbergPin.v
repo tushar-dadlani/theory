@@ -14,7 +14,7 @@ From Stdlib Require Import Reals Lra Lia Arith Lists.List.
 Import ListNotations.
 Require Import Chebyshev ChebyshevBound ChebyshevPrime VonMangoldtGlobal
         RealMobius MobiusOverD SelbergEndgame SelbergAverage SelbergAverageSigned
-        PsiAsymp LimSup LimInf SelbergSignedExtremes
+        PsiAsymp LimSup LimInf SelbergSignedExtremes LnLimits
         MertensVonMangoldt MertensTail SmoothingLemma SelbergDip.
 Open Scope R_scope.
 
@@ -97,8 +97,113 @@ Proof.
   lra.
 Qed.
 
-Print Assumptions sum_upper.
+Lemma Rls_opp : forall (l : list nat) (f : nat -> R), Rls l (fun d => - f d) = - Rls l f.
+Proof.
+  induction l as [|a l IH]; intros f;
+    [ rewrite !Rls_nil2; ring | rewrite !Rls_cons, IH; ring ].
+Qed.
 
 (* ================================================================= *)
-(*  END SelbergPin.v (part 1: sum_upper).  Pin theorem to follow.       *)
+(*  THE PIN:  0 < alpha  ->  V = alpha  /\  v = - alpha.               *)
+(* ================================================================= *)
+Theorem signed_pin : forall V v alpha,
+  is_limsup Vsig V -> is_liminf Vsig v -> is_limsup Vrem alpha -> 0 < alpha ->
+  V = alpha /\ v = - alpha.
+Proof.
+  intros V v alpha HV Hv Halpha Hapos.
+  pose proof (V_le_alpha V alpha HV Halpha) as HVa.
+  pose proof (negalpha_le_v v alpha Hv Halpha) as Hva.
+  pose proof (alpha_eq_max V v alpha HV Hv Halpha) as Hmax.
+  set (Csig := (88 + 3 * Kup + 1) + (Kup - 1) * Kup).
+  assert (Hbnd : forall n, Rabs (Vsig n) <= Kup - 1)
+    by (intros n; rewrite <- Vrem_eq_absVsig; apply Vrem_bound_all).
+  destruct (Rle_or_lt (- v) V) as [Hcase | Hcase].
+  - (* -v <= V : alpha = V; prove v = -alpha via a +spike *)
+    assert (HaV : Rmax V (- v) = V)
+      by (apply Rle_antisym; [ apply Rmax_lub; [ lra | exact Hcase ] | apply Rmax_l ]).
+    assert (HeV : alpha = V) by (rewrite Hmax; exact HaV).
+    split; [ symmetry; exact HeV | ].
+    apply Rle_antisym; [ | exact Hva ].
+    destruct (Rle_or_lt v (- alpha)) as [Hg | Hb]; [ exact Hg | exfalso ].
+    set (eps := (v + alpha) / 4).
+    assert (Heps : 0 < eps) by (unfold eps; lra).
+    assert (Hlimopp : is_limsup (fun n => - Vsig n) (- v))
+      by (apply (proj1 (is_liminf_opp Vsig v)); exact Hv).
+    assert (Hbndopp : forall n, Rabs (- Vsig n) <= Kup - 1)
+      by (intros n; rewrite Rabs_Ropp; apply Hbnd).
+    destruct (sum_upper (fun n => - Vsig n) (- v) (Kup - 1) Hlimopp Hbndopp eps Heps)
+      as [K1 [C1 HC1]].
+    destruct (cv_infty_ln (2 * (C1 + Csig) / (v + alpha))) as [Nln HNln].
+    destruct HV as [_ HV_io].
+    destruct (HV_io eps Heps (Nat.max (Nat.max K1 Nln) 2)) as [k [Hk Hspike]].
+    assert (Hk1 : (1 <= k)%nat) by lia.
+    assert (HlnN : 0 < ln (INR k)) by (apply ln_INR_pos; lia).
+    pose proof (selberg_average_signed k Hk1) as Hpin. fold Csig in Hpin.
+    set (S := Rls (seq 1 k) (fun d => Lam d / INR d * Vsig (k / d)%nat)) in *.
+    pose proof (HC1 k ltac:(lia)) as HC1k; cbn beta in HC1k.
+    assert (Hrls : Rls (seq 1 k) (fun d => Lam d / INR d * (- Vsig (k / d)%nat)) = - S)
+      by (unfold S; rewrite <- Rls_opp; apply Rls_ext; intros d _; ring).
+    rewrite Hrls in HC1k.
+    assert (Hlnk : 2 * (C1 + Csig) / (v + alpha) < ln (INR k)) by (apply HNln; lia).
+    pose proof (Rle_abs (Vsig k * ln (INR k) + S)) as Hup.
+    assert (Hsp : alpha - eps < Vsig k) by (rewrite HeV; exact Hspike).
+    assert (HVk : (alpha - eps) * ln (INR k) < Vsig k * ln (INR k))
+      by (apply Rmult_lt_compat_r; [ exact HlnN | exact Hsp ]).
+    assert (HPbound : (alpha - eps) * ln (INR k) < Csig - S)
+      by (apply Rlt_le_trans with (Vsig k * ln (INR k)); [ exact HVk | lra ]).
+    assert (Hcombine : (alpha - eps) * ln (INR k)
+                       < Csig + (- v + eps) * ln (INR k) + C1) by lra.
+    assert (Hderiv : (v + alpha) / 2 * ln (INR k) < C1 + Csig).
+    { replace ((v + alpha) / 2 * ln (INR k))
+        with ((alpha - eps) * ln (INR k) - (- v + eps) * ln (INR k))
+        by (unfold eps; field).
+      lra. }
+    assert (HMeq : (v + alpha) / 2 * (2 * (C1 + Csig) / (v + alpha)) = C1 + Csig)
+      by (field; lra).
+    assert (Hcontra : C1 + Csig < (v + alpha) / 2 * ln (INR k))
+      by (rewrite <- HMeq; apply Rmult_lt_compat_l; [ lra | exact Hlnk ]).
+    lra.
+  - (* V < -v : alpha = -v; prove V = alpha via a -spike *)
+    assert (Hav0 : Rmax V (- v) = - v)
+      by (apply Rle_antisym; [ apply Rmax_lub; [ lra | apply Rle_refl ] | apply Rmax_r ]).
+    assert (Hev : alpha = - v) by (rewrite Hmax; exact Hav0).
+    split; [ | lra ].
+    apply Rle_antisym; [ exact HVa | ].
+    destruct (Rle_or_lt alpha V) as [Hg | Hb]; [ exact Hg | exfalso ].
+    set (eps := (alpha - V) / 4).
+    assert (Heps : 0 < eps) by (unfold eps; lra).
+    destruct (sum_upper Vsig V (Kup - 1) HV Hbnd eps Heps) as [K1 [C1 HC1]].
+    destruct (cv_infty_ln (2 * (C1 + Csig) / (alpha - V))) as [Nln HNln].
+    destruct Hv as [_ Hv_io].
+    destruct (Hv_io eps Heps (Nat.max (Nat.max K1 Nln) 2)) as [k [Hk Hspike]].
+    assert (Hk1 : (1 <= k)%nat) by lia.
+    assert (HlnN : 0 < ln (INR k)) by (apply ln_INR_pos; lia).
+    pose proof (selberg_average_signed k Hk1) as Hpin. fold Csig in Hpin.
+    pose proof (HC1 k ltac:(lia)) as HC1k; cbn beta in HC1k.
+    set (S := Rls (seq 1 k) (fun d => Lam d / INR d * Vsig (k / d)%nat)) in *.
+    assert (Hlnk : 2 * (C1 + Csig) / (alpha - V) < ln (INR k)) by (apply HNln; lia).
+    pose proof (Rle_abs (- (Vsig k * ln (INR k) + S))) as Hlo; rewrite Rabs_Ropp in Hlo.
+    assert (Hsp : Vsig k < - alpha + eps) by (assert (v = - alpha) by lra; lra).
+    assert (HVk : Vsig k * ln (INR k) < (- alpha + eps) * ln (INR k))
+      by (apply Rmult_lt_compat_r; [ exact HlnN | exact Hsp ]).
+    assert (HScombine : - ((V + eps) * ln (INR k) + (- alpha + eps) * ln (INR k))
+                        < C1 + Csig) by lra.
+    assert (Hderiv : (alpha - V) / 2 * ln (INR k) < C1 + Csig).
+    { replace ((alpha - V) / 2 * ln (INR k))
+        with (- ((V + eps) * ln (INR k) + (- alpha + eps) * ln (INR k)))
+        by (unfold eps; field).
+      exact HScombine. }
+    assert (HMeq : (alpha - V) / 2 * (2 * (C1 + Csig) / (alpha - V)) = C1 + Csig)
+      by (field; lra).
+    assert (Hcontra : C1 + Csig < (alpha - V) / 2 * ln (INR k))
+      by (rewrite <- HMeq; apply Rmult_lt_compat_l; [ lra | exact Hlnk ]).
+    lra.
+Qed.
+
+Print Assumptions signed_pin.
+
+(* ================================================================= *)
+(*  END SelbergPin.v  —  V = -v = alpha (the signed symmetry the       *)
+(*  dead-ended avg_below route could not see).  Next: the degree-2      *)
+(*  self-improvement (star_inequality + smoothing) => alpha = 0.        *)
 (* ================================================================= *)
