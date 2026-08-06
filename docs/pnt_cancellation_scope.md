@@ -112,6 +112,40 @@ Status: needs faithful reconstruction from a reference *before* formalizing —
 it is a multi-page case analysis with explicit constants, not a reduction to
 existing tools. This is where "elementary PNT is hard" actually lives.
 
+#### The band-occupancy route (`SelbergDynamics.v`): sound bricks, BUT the
+#### assembly hits a PNT-level obstruction — the crossing-ratio bound is FALSE.
+
+A concrete attempt at (a)/(b) via "σ spends positive log-measure in a band"
+produced these SOUND, TRUE, axiom-clean lemmas (they are NOT dead-ends — each
+is a valid theorem):
+- `Rem_step` : `Rem(N+1) = Rem N + Λ(N+1) − 1` (exact discrete σ-dynamics).
+- `plateau_pos/neg` : an excursion `Vsig y ≥ b` forces `Vsig t ≥ b'` for all
+  `t·(1+b') ≤ y·(1+b)` — excursions have positive multiplicative width.
+- `crossing_band` : `Rem` drops ≤ 1/step, so a downward crossing of level `L`
+  lands in the unit band `[L−1,L)` — no level is skipped.
+- `band_logmeasure` : hence the band `[A,A+n)` is hit at `≥ n` distinct indices
+  during a crossing, with `Σ_{band} 1/k ≥ n/M`.
+- `sigma_crossing_dip` : a `+c → −c` crossing over `(N1,N2]` gives band `|σ|<c`
+  with `Σ_{band} 1/k ≥ n/N2`, `n ≤ 2c·N1`.
+
+But turning the per-crossing dip `≈ 2c·N1/N2` into a positive *fraction* of
+`ln x` requires a crossing-ratio UPPER bound `N2/N1 ≤ C`. **That bound is
+false.** The crossing gives only the LOWER bound `N2/N1 ≥ (1+c)/(1−c)`
+(spacing); `psi_upper` never enters because `Vsig N2 < −c` means
+`ψ(N2) < (1−c)N2 < Kup·N2` (below the Chebyshev ceiling). And for `c ≤ Kup−1`,
+`σ ≥ c ⟺ ψ(N)/N ≥ 1+c` is fully consistent with `ψ(N)/N ≤ Kup` over an
+UNBOUNDED multiplicative range — i.e. `σ` can plateau *above* the band for
+arbitrarily long, so the first crossing below `−c` is unbounded and the dip
+`2c·N1/N2 → 0`. The same defeats the `|σ| < α−δ` band (the high region
+`ψ/N ≈ Kup` can persist). This above-band persistence is ruled out only by
+`ψ(N)/N → 1` — i.e. **PNT itself**, not Chebyshev.
+
+Conclusion: the band-occupancy bricks are sound but do NOT assemble into the
+contraction with Chebyshev alone; the *reason* a local/geometric dip argument
+cannot close is precisely the PNT-level fact it is trying to prove. The genuine
+degree-2 Selberg density accounting (b) — which does not go through a fixed
+band or a ratio bound — is still required, and remains the wall.
+
 ### S3 — iterate to zero  (easy, given S2)
 
 `α ≤ (1−c)α` with `c>0` and `α ≥ 0` ⟹ `α = 0`. One-liner over the `LimSup`
