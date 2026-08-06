@@ -143,5 +143,34 @@ Proof.
   intros n Hn; symmetry; exact (lam_conv_one n Hn).
 Qed.
 
+(* ================================================================= *)
+(*  4.  SUMMATORY BRIDGE  L(x) = sum_{d<=x} [d square] * M(x/d).        *)
+(*  (via lam = 1_square * mu and the plain divisor hyperbola).          *)
+(* ================================================================= *)
+From Stdlib Require Import Reals Lra.
+Require Import RealMobius SelbergSum.
+Open Scope R_scope.
+
+Definition Mert (x : nat) : R := Rls (seq 1 x) (fun n => IZR (mu n)).
+
+Theorem L_mertens : forall x,
+  Llam x = Rls (seq 1 x) (fun d => IZR (sqind d) * Mert (x / d)%nat).
+Proof.
+  intro x; unfold Llam.
+  rewrite (Rls_ext _ (fun n => IZR (lam n))
+             (fun n => Rls (VonMangoldtGlobal.divisors n)
+                          (fun d => IZR (sqind d) * IZR (mu (n / d)%nat)))
+             (seq 1 x)).
+  - rewrite (hyperbola_swap (fun d m => IZR (sqind d) * IZR (mu m)) x).
+    apply Rls_ext; intros d _.
+    rewrite <- (Rls_scal _ (IZR (sqind d)) (fun m => IZR (mu m)) (seq 1 (x / d)%nat)).
+    unfold Mert; reflexivity.
+  - intros n Hn; apply in_seq in Hn.
+    rewrite (lam_eq_sq_conv_mu n ltac:(lia)), (dconv_as_div sqind mu n ltac:(lia)), IZR_sumf.
+    change (Totient.divisors n) with (VonMangoldtGlobal.divisors n).
+    apply Rls_ext; intros d _; rewrite mult_IZR; reflexivity.
+Qed.
+
 Print Assumptions lam_conv_one.
 Print Assumptions lam_eq_sq_conv_mu.
+Print Assumptions L_mertens.
