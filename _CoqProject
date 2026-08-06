@@ -844,3 +844,4 @@ spectral-theory/ZmodMultCounterex.v
 spectral-theory/ZmodMultMonoid.v
 spectral-theory/LegendreMonoidHom.v
 spectral-theory/PrimorialMonoidAlgebra.v
+spectral-theory/ZmodUnitsCyclic.v
