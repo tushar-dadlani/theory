@@ -4,19 +4,23 @@
 (*                                                                    *)
 (*  lambda(n) = (-1)^Omega(n) built by smallest-prime-factor recursion  *)
 (*  (spf, from VonMangoldtGlobal): lambda(1)=1, lambda(n)=-lambda(n/spf n). *)
-(*  The ONE structural fact the dyadic filter needs is                  *)
-(*    lam_2m : lambda(2m) = -lambda(m)   (spf(2m) = 2),                 *)
-(*  i.e. the sign flips at the prime 2 -- NOT full multiplicativity     *)
-(*  (which is FTA-strength).  From it, the concrete dyadic identity     *)
+(*  We prove lambda is a genuine COMPLETELY-multiplicative sign:         *)
+(*    lam_1, lam_sign, lam_2, and                                       *)
+(*    lam_mult : lambda(m*n) = lambda(m)*lambda(n)  for ALL m,n         *)
+(*      (= Omega-additivity), via lam_prime_step : lambda(p*n)=-lambda(n)  *)
+(*      for p prime (peel one prime), then peel primes off m.           *)
+(*  Hence lambda INSTANTIATES LiouvilleSign's abstract sign character:   *)
+(*    tosym_lam_hom, val_tosym_lam : lambda = val o tosym_lam, a hom     *)
+(*    into the {I,N} = Z/2 sign group -- the {I,N,F} thread is now the   *)
+(*    real Liouville sign.  And the prime-2 special case lam_2m gives    *)
+(*    the concrete dyadic identity                                       *)
 (*    L_split_lam : L(x) = L_odd(x) - L(x/2)                            *)
-(*  holds for the real Liouville L(x) = sum_{n<=x} lambda(n), reusing    *)
-(*  the even-number reindex from LiouvilleSign.  This makes the         *)
-(*  abstract g = val o tosym story CONCRETE, and states PNT = the mean   *)
-(*  of lambda going to 0 (liouville_pnt_lam) -- the parity boundary.    *)
+(*  for the real L(x) = sum_{n<=x} lambda(n).  PNT = the mean of lambda   *)
+(*  going to 0 (liouville_pnt_lam) -- the remaining parity boundary.    *)
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra Lia Arith Lists.List ZArith Wf_nat.
-Require Import RealMobius VonMangoldtGlobal LiouvilleSign.
+Require Import RealMobius VonMangoldtGlobal LiouvilleSign INFMonoid.
 Import ListNotations.
 
 (* ---- lambda by smallest-prime-factor recursion (fuel = n) ---- *)
@@ -107,6 +111,95 @@ Proof.
 Qed.
 
 (* ================================================================= *)
+(*  COMPLETE MULTIPLICATIVITY  lambda(mn) = lambda(m) lambda(n)         *)
+(*  = Omega-additivity.  The crux is lambda(p*n) = -lambda(n) for p     *)
+(*  prime (peel one prime), then peel primes off m.                    *)
+(* ================================================================= *)
+Open Scope nat_scope.
+
+Lemma nprime_ge2 : forall p, nprime p -> 2 <= p.
+Proof. intros p [H _]; exact H. Qed.
+
+Lemma prime_div_eq : forall p q, nprime p -> Nat.divide q p -> 2 <= q -> q = p.
+Proof. intros p q [_ Hpd] Hd Hq; destruct (Hpd q Hd) as [E | E]; [ lia | exact E ]. Qed.
+
+(* peel one prime: lambda(p*n) = -lambda(n) *)
+Lemma lam_prime_step : forall p, nprime p ->
+  forall n, 1 <= n -> lam (p * n) = Z.opp (lam n).
+Proof.
+  intros p Hp; induction n as [n IH] using (well_founded_induction lt_wf); intro Hn.
+  pose proof (nprime_ge2 p Hp) as Hp2.
+  assert (Hpn2 : 2 <= p * n) by nia.
+  rewrite (lam_unfold (p * n) Hpn2).
+  remember (spf (p * n)) as q eqn:Hqdef.
+  assert (Hqdvd : Nat.divide q (p * n)) by (rewrite Hqdef; apply spf_divides; exact Hpn2).
+  assert (Hqp : nprime q) by (rewrite Hqdef; apply spf_nprime; exact Hpn2).
+  pose proof (nprime_ge2 q Hqp) as Hq2.
+  assert (Hqle : q <= p).
+  { destruct (Nat.le_gt_cases q p) as [H | H]; [ exact H | exfalso ].
+    rewrite Hqdef in H; apply (spf_least (p * n) p Hpn2 Hp2 H); exists n; ring. }
+  destruct (Nat.eq_dec q p) as [Eq | Neq].
+  - assert (Hpnq : p * n / q = n) by (rewrite Eq, Nat.mul_comm; apply Nat.div_mul; lia).
+    rewrite Hpnq; reflexivity.
+  - assert (Hqltp : q < p) by lia.
+    assert (Hqn : Nat.divide q n).
+    { destruct (nprime_euclid q p n Hqp Hqdvd) as [Hqp' | Hqn']; [ exfalso | exact Hqn' ].
+      pose proof (prime_div_eq p q Hp Hqp' Hq2); lia. }
+    destruct Hqn as [k Hk].
+    assert (Hk1 : 1 <= k) by (destruct k; [ simpl in Hk; lia | lia ]).
+    assert (Hn2 : 2 <= n) by nia.
+    assert (Hnq : n / q = k) by (rewrite Hk; apply Nat.div_mul; lia).
+    assert (Hdiv : p * n / q = p * k)
+      by (rewrite Hk; replace (p * (k * q)) with (p * k * q) by ring;
+          apply Nat.div_mul; lia).
+    rewrite Hdiv.
+    assert (Hklt : k < n) by nia.
+    rewrite (IH k Hklt Hk1), (lam_unfold n Hn2).
+    assert (Hspf : spf n = q).
+    { assert (Hd1 : Nat.divide (spf n) (p * n))
+        by (apply Nat.divide_trans with n; [ apply spf_divides; exact Hn2 | exists p; ring ]).
+      assert (Hs2 : 2 <= spf n) by (apply spf_ge2; exact Hn2).
+      destruct (Nat.lt_trichotomy (spf n) q) as [Hlt | [Heq | Hgt]].
+      - exfalso; rewrite Hqdef in Hlt;
+          apply (spf_least (p * n) (spf n) Hpn2 Hs2 Hlt); exact Hd1.
+      - exact Heq.
+      - exfalso; apply (spf_least n q Hn2 Hq2 Hgt); exists k; exact Hk. }
+    rewrite Hspf, Hnq; ring.
+Qed.
+
+(* peel primes off m: complete multiplicativity *)
+Theorem lam_mult : forall m n, 1 <= m -> 1 <= n -> lam (m * n) = (lam m * lam n)%Z.
+Proof.
+  intro m; induction m as [m IH] using (well_founded_induction lt_wf); intros n Hm Hn.
+  destruct (Nat.le_gt_cases m 1) as [Hle | Hgt].
+  - assert (m = 1) by lia; subst m; rewrite Nat.mul_1_l, lam_1; ring.
+  - assert (Hm2 : 2 <= m) by lia.
+    pose proof (spf_nprime m Hm2) as Hsp.
+    pose proof (nprime_ge2 (spf m) Hsp) as Hsp2.
+    pose proof (spf_divides m Hm2) as [j Hj].
+    assert (Hj1 : 1 <= j) by (destruct j; [ simpl in Hj; lia | lia ]).
+    assert (Hjlt : j < m) by nia.
+    assert (Hlm : lam m = Z.opp (lam j))
+      by (replace m with (spf m * j) by nia; apply (lam_prime_step (spf m) Hsp j Hj1)).
+    replace (m * n) with (spf m * (j * n)) by nia.
+    rewrite (lam_prime_step (spf m) Hsp (j * n) ltac:(nia)),
+            (IH j Hjlt n Hj1 Hn), Hlm; ring.
+Qed.
+
+(* ================================================================= *)
+(*  lambda NOW INSTANTIATES LiouvilleSign's abstract sign character:   *)
+(*  lambda = val o tosym_lam, a hom into the {I,N} = Z/2 sign group.    *)
+(* ================================================================= *)
+Definition tosym_lam : nat -> Sym := tosym lam.
+
+Theorem tosym_lam_hom : forall m n, 1 <= m -> 1 <= n ->
+  tosym_lam (m * n) = op (tosym_lam m) (tosym_lam n).
+Proof. exact (tosym_hom lam lam_mult lam_sign). Qed.
+
+Theorem val_tosym_lam : forall n, 1 <= n -> val (tosym_lam n) = lam n.
+Proof. exact (val_tosym lam lam_sign). Qed.
+
+(* ================================================================= *)
 (*  THE CONCRETE PRIME-2 DYADIC IDENTITY for the real Liouville sum.   *)
 (* ================================================================= *)
 Open Scope R_scope.
@@ -139,22 +232,22 @@ Qed.
 (* ---- PNT, stated as the Liouville mean: the parity boundary ----
    PNT (psi ~ x, i.e. our alpha = 0 in SelbergPin, or PsiAsymp's Un_cv
    Vrem 0) is classically EQUIVALENT to this mean vanishing (both <->
-   zeta(1+it) <> 0).  What this file delivers is the STRUCTURE:
-     - lambda is a genuine sign character: lam_1, lam_sign, lam_2
-       (hypotheses g1, gsign, g2 of LiouvilleSign's abstract Section Sign);
-     - the prime-2 self-reference lam_2m + L_split_lam, needing ONLY
-       lambda(2m) = -lambda(m), NOT full multiplicativity.
-   What it does NOT deliver:
-     - full complete-multiplicativity lambda(mn)=lambda(m)lambda(n) (the
-       4th hypothesis gmult, hence tosym for lambda): that is Omega-
-       additivity Omega(mn)=Omega(m)+Omega(n), FTA/valuation-additivity
-       strength, absent from the repo;
+   zeta(1+it) <> 0).  What this file delivers is the FULL algebraic
+   STRUCTURE:
+     - lambda satisfies ALL FOUR hypotheses of Section Sign: lam_1,
+       lam_mult (complete multiplicativity = Omega-additivity), lam_sign,
+       lam_2 -- so lambda = val o tosym_lam factors through the {I,N}
+       sign group (tosym_lam_hom, val_tosym_lam);
+     - the prime-2 self-reference lam_2m + L_split_lam.
+   What it does NOT deliver -- the genuine remaining gap:
      - the CANCELLATION liouville_pnt_lam itself: Sum lambda(n) = o(x),
        proven nowhere (PsiAsymp.pnt_of_avg_below is only conditional on
-       avg_below).  This is the genuine gap -- the parity problem. *)
+       avg_below).  This is the parity problem = alpha = 0.  The sign
+       STRUCTURE is entirely here; the mean-zero CANCELLATION is not. *)
 Definition liouville_pnt_lam : Prop := Un_cv (fun x => Llam x / INR x) 0.
 
-Print Assumptions lam_2m.
+Print Assumptions lam_mult.
+Print Assumptions tosym_lam_hom.
 Print Assumptions L_split_lam.
 
 (* ================================================================= *)
