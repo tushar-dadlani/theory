@@ -860,3 +860,4 @@ spectral-theory/CZetaDerivDirichlet.v
 spectral-theory/CListSum.v
 spectral-theory/CHyperbolaSwap.v
 spectral-theory/CDirichletExhaustion.v
+spectral-theory/CDirichletTail.v
