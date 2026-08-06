@@ -202,6 +202,26 @@ Qed.
 
 Print Assumptions signed_pin.
 
+(* the sign oscillation: Vsig exceeds +alpha/2 and drops below -alpha/2
+   infinitely often -- the input to the zero-crossing / range-average step. *)
+Corollary sign_oscillation : forall V v alpha,
+  is_limsup Vsig V -> is_liminf Vsig v -> is_limsup Vrem alpha -> 0 < alpha ->
+  (forall N, exists k, (N <= k)%nat /\ alpha / 2 < Vsig k)
+  /\ (forall N, exists k, (N <= k)%nat /\ Vsig k < - (alpha / 2)).
+Proof.
+  intros V v alpha HV Hv Halpha Hapos.
+  destruct (signed_pin V v alpha HV Hv Halpha Hapos) as [HVe Hve].
+  split.
+  - intros N; destruct HV as [_ HVio].
+    destruct (HVio (alpha / 2) ltac:(lra) N) as [k [Hk Hgt]].
+    exists k; split; [ exact Hk | rewrite <- HVe in Hgt; lra ].
+  - intros N; destruct Hv as [_ Hvio].
+    destruct (Hvio (alpha / 2) ltac:(lra) N) as [k [Hk Hlt]].
+    exists k; split; [ exact Hk | rewrite Hve in Hlt; lra ].
+Qed.
+
+Print Assumptions sign_oscillation.
+
 (* ================================================================= *)
 (*  END SelbergPin.v  —  V = -v = alpha (the signed symmetry the       *)
 (*  dead-ended avg_below route could not see).  Next: the degree-2      *)
