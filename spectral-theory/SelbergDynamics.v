@@ -101,8 +101,51 @@ Proof.
   assert (Hbt : b' * INR t = (1 + b') * INR t - INR t) by ring; lra.
 Qed.
 
+(* ================================================================= *)
+(*  3.  BAND OCCUPANCY (the sound core): during a downward crossing     *)
+(*  Rem cannot skip a level, so it visits EVERY level it crosses.       *)
+(* ================================================================= *)
+
+(* Rem drops by at most 1 per step (the down-drift is -1, jumps are up). *)
+Lemma Rem_no_big_drop : forall N, Rem N - 1 <= Rem (S N).
+Proof. intro N; pose proof (Rem_step N); pose proof (Lam_nonneg (S N)); lra. Qed.
+
+(* Interval version of the no-skip crossing. *)
+Lemma crossing_band_d : forall d N L,
+  Rem N >= L -> Rem (N + d)%nat < L ->
+  exists k, (N < k <= N + d)%nat /\ L - 1 <= Rem k /\ Rem k < L.
+Proof.
+  induction d as [|d IH]; intros N L H0 Hd.
+  - rewrite Nat.add_0_r in Hd; exfalso; lra.
+  - destruct (Rle_lt_dec L (Rem (S N))) as [Hge | Hlt].
+    + assert (Hd' : Rem (S N + d)%nat < L)
+        by (replace (S N + d)%nat with (N + S d)%nat by lia; exact Hd).
+      destruct (IH (S N) L (Rle_ge _ _ Hge) Hd') as [k [Hk [Hk1 Hk2]]].
+      exists k; split; [ lia | split; assumption ].
+    + exists (S N); split; [ lia | ].
+      pose proof (Rem_no_big_drop N); split; [ lra | exact Hlt ].
+Qed.
+
+(* No downward skip: between a point with Rem >= L and a later point     *)
+(* with Rem < L there is a point INSIDE the unit band [L-1, L).  Applied *)
+(* at every integer level L in (A,B] this gives >= B-A DISTINCT points   *)
+(* with Rem in [A,B) (disjoint unit bands => distinct points): the band  *)
+(* [A,B) is occupied at >= (B-A) indices during any crossing of it --    *)
+(* the elementary heart of band occupancy (no jump control needed).      *)
+Theorem crossing_band : forall N M L, (N <= M)%nat ->
+  Rem N >= L -> Rem M < L ->
+  exists k, (N < k <= M)%nat /\ L - 1 <= Rem k /\ Rem k < L.
+Proof.
+  intros N M L HNM H0 HM.
+  assert (Hd : Rem (N + (M - N))%nat < L)
+    by (replace (N + (M - N))%nat with M by lia; exact HM).
+  destruct (crossing_band_d (M - N) N L H0 Hd) as [k [Hk Hr]].
+  exists k; split; [ replace (N + (M - N))%nat with M in Hk by lia; lia | exact Hr ].
+Qed.
+
 Print Assumptions Rem_step.
 Print Assumptions plateau_pos.
+Print Assumptions crossing_band.
 
 (* ================================================================= *)
 (*  END SelbergDynamics.v  —  the sound, non-PNT-hard core of S2:       *)
