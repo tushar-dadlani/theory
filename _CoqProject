@@ -850,3 +850,4 @@ spectral-theory/LimInf.v
 spectral-theory/SelbergSignedExtremes.v
 spectral-theory/SelbergPin.v
 spectral-theory/LiouvilleSign.v
+spectral-theory/GroupLike.v
