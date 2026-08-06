@@ -842,3 +842,4 @@ spectral-theory/AdjBoolINF.v
 spectral-theory/AdjProduct.v
 spectral-theory/ZmodMultCounterex.v
 spectral-theory/ZmodMultMonoid.v
+spectral-theory/LegendreMonoidHom.v
