@@ -171,6 +171,64 @@ Print Assumptions grouplike_iff_delta.
 Print Assumptions group_algebra_ratio_one.
 
 (* ================================================================= *)
+(*  THE GROUP-LIKES FORM A MONOID  ~=  (M, op)  UNDER CONVOLUTION.     *)
+(*  The "operators" are literally the group: delta_m * delta_n =       *)
+(*  delta_{m op n} (gconv_delta), unit delta_e (gunit_delta), and the  *)
+(*  correspondence m <-> delta_m is bijective (grouplike_iff_delta +   *)
+(*  delta_distinct).                                                   *)
+(* ================================================================= *)
+Section GroupLikeMonoid.
+
+Variable A : Type.
+Variable Aeq : A -> A -> bool.
+Hypothesis Aeq_spec : forall x y, reflect (x = y) (Aeq x y).
+Variable elts : list A.
+Hypothesis elts_nodup : NoDup elts.
+Hypothesis elts_all : forall x, In x elts.
+Variable op : A -> A -> A.
+Variable e : A.
+
+(* group-likes are CLOSED under convolution, and convolve as M multiplies *)
+Theorem grouplike_gconv_closed : forall a b,
+  grouplike A Aeq elts a -> grouplike A Aeq elts b ->
+  grouplike A Aeq elts (gconv A Aeq elts op a b).
+Proof.
+  intros a b Ha Hb.
+  apply (grouplike_iff_delta A Aeq Aeq_spec elts elts_nodup a) in Ha.
+  apply (grouplike_iff_delta A Aeq Aeq_spec elts elts_nodup b) in Hb.
+  destruct Ha as [m [Hm Hma]]; destruct Hb as [n [Hn Hnb]].
+  apply (grouplike_iff_delta A Aeq Aeq_spec elts elts_nodup).
+  exists (op m n); split; [ apply elts_all | ]; intros k.
+  transitivity (gconv A Aeq elts op (delta A Aeq m) (delta A Aeq n) k).
+  - unfold gconv, dsum, bigsum;
+      apply sumf_ext; intros x _; apply sumf_ext; intros y _;
+      rewrite Hma, Hnb; reflexivity.
+  - exact (gconv_delta A Aeq Aeq_spec elts elts_nodup elts_all op m n k).
+Qed.
+
+(* the full monoid iso  (M, op, e)  ~=  (group-likes, gconv, delta_e) *)
+Theorem grouplike_monoid_iso :
+  (* hom: convolution of deltas mirrors M's product *)
+  (forall m n k, gconv A Aeq elts op (delta A Aeq m) (delta A Aeq n) k
+                 = delta A Aeq (op m n) k)
+  (* unit: the algebra unit is delta of the monoid identity *)
+  /\ (forall k, gunit A Aeq e k = delta A Aeq e k)
+  (* the deltas are exactly the group-likes, and the map is closed *)
+  /\ (forall m, In m elts -> grouplike A Aeq elts (delta A Aeq m))
+  /\ (forall a b, grouplike A Aeq elts a -> grouplike A Aeq elts b ->
+        grouplike A Aeq elts (gconv A Aeq elts op a b)).
+Proof.
+  split; [ intros m n k; exact (gconv_delta A Aeq Aeq_spec elts elts_nodup elts_all op m n k) | ].
+  split; [ intros k; exact (gunit_delta A Aeq e k) | ].
+  split; [ intros m Hm; exact (delta_grouplike A Aeq Aeq_spec elts elts_nodup m Hm) | ].
+  exact grouplike_gconv_closed.
+Qed.
+
+End GroupLikeMonoid.
+
+Print Assumptions grouplike_monoid_iso.
+
+(* ================================================================= *)
 (*  END GroupLike.v  —  in Z[M] the group-likes ARE the group M        *)
 (*  (a basis, ratio 1) and there are no primitives: the rigid          *)
 (*  "operand = operator" case of the bialgebra decomposition.          *)

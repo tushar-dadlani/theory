@@ -251,6 +251,40 @@ Qed.
 Theorem gconv_unit_r : forall a g, gconv a gunit g = a g.
 Proof. intros a g; rewrite gconv_comm; apply gconv_unit_l. Qed.
 
+(* The group-like elements (deltas) are CLOSED under convolution and       *)
+(* multiply exactly as M does:  delta_m * delta_n = delta_{m op n}.        *)
+(* Hence  m |-> delta_m  is a monoid hom (M, op) -> (grouplikes, gconv),    *)
+(* with unit  gunit = delta_e  (gunit_delta): the operators ARE the group. *)
+Lemma gunit_delta : forall g, gunit g = delta e g.
+Proof. reflexivity. Qed.
+
+Theorem gconv_delta : forall m n g,
+  gconv (delta m) (delta n) g = delta (op m n) g.
+Proof.
+  intros m n g; unfold gconv, delta, dsum, bigsum.
+  rewrite (sumf_single elts m
+    (fun x => sumf elts (fun y =>
+       if Aeq (op x y) g then (if Aeq m x then 1 else 0) * (if Aeq n y then 1 else 0) else 0))).
+  - (* x = m *)
+    rewrite (sumf_single elts n
+      (fun y => if Aeq (op m y) g
+                then (if Aeq m m then 1 else 0) * (if Aeq n y then 1 else 0) else 0)).
+    + rewrite !Aeq_refl; change (if true then 1%Z else 0%Z) with 1%Z;
+        destruct (Aeq (op m n) g); ring.
+    + exact elts_nodup.
+    + apply elts_all.
+    + intros y _ Hyn.
+      destruct (Aeq_spec n y) as [E|_]; [ exfalso; apply Hyn; symmetry; exact E | ].
+      change (if false then 1%Z else 0%Z) with 0%Z; destruct (Aeq (op m y) g); ring.
+  - exact elts_nodup.
+  - apply elts_all.
+  - intros x _ Hxm.
+    destruct (Aeq_spec m x) as [E|_]; [ exfalso; apply Hxm; symmetry; exact E | ].
+    transitivity (sumf elts (fun _ : A => 0%Z)); [ | apply sumf_zero ].
+    apply sumf_ext; intros y _.
+    change (if false then 1%Z else 0%Z) with 0%Z; destruct (Aeq (op x y) g); ring.
+Qed.
+
 (* ASSOCIATIVITY via the duality: both associations pair identically  *)
 (* with every φ (= Σ_{x,y,z} a_x b_y c_z φ_{x(yz)}); extract coeffs.  *)
 Lemma dot_R : forall a b c phi,
