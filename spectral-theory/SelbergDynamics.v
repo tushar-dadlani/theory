@@ -21,9 +21,10 @@
 (*  with |Vsig| < alpha - c and hence the contraction alpha <= (1-c)alpha.*)
 (* ================================================================= *)
 
-From Stdlib Require Import Reals Lra Lia Arith.
+From Stdlib Require Import Reals Lra Lia Arith List.
 Require Import Chebyshev ChebyshevBound SelbergEndgame SelbergAverageSigned
-        VonMangoldtGlobal.
+        VonMangoldtGlobal RealMobius MobiusOverD.
+Import ListNotations.
 Open Scope R_scope.
 
 (* ================================================================= *)
@@ -143,9 +144,69 @@ Proof.
   exists k; split; [ replace (N + (M - N))%nat with M in Hk by lia; lia | exact Hr ].
 Qed.
 
+(* ================================================================= *)
+(*  4.  COUNT -> LOG-MEASURE: the band [A, A+n) is hit at n distinct    *)
+(*  indices during a crossing, so its log-measure sum_{band} 1/k >= n/M.*)
+(* ================================================================= *)
+
+(* n distinct indices in (N,M], each with Rem in the band [A, A+n).     *)
+Lemma band_witnesses : forall n N M A, (N <= M)%nat ->
+  Rem N >= A + INR n -> Rem M < A ->
+  exists l, NoDup l /\ length l = n /\
+    (forall k, In k l -> (N < k <= M)%nat /\ A <= Rem k /\ Rem k < A + INR n).
+Proof.
+  induction n as [|n IH]; intros N M A HNM HN HM.
+  - exists nil; split; [ constructor | split; [ reflexivity | intros k Hk; contradiction ] ].
+  - rewrite S_INR in HN; pose proof (pos_INR n) as Hn0.
+    destruct (crossing_band N M (A + INR n + 1) HNM ltac:(lra) ltac:(lra))
+      as [k0 [Hk0 [Hk0a Hk0b]]].
+    destruct (IH N M A HNM ltac:(lra) HM) as [l0 [Hnd [Hlen Hprops]]].
+    exists (k0 :: l0); split; [ | split ].
+    + constructor; [ intro Hin; destruct (Hprops k0 Hin) as [_ [_ Hlt]]; lra | exact Hnd ].
+    + simpl; rewrite Hlen; reflexivity.
+    + intros k [<- | Hin].
+      * split; [ exact Hk0 | rewrite S_INR; split; lra ].
+      * destruct (Hprops k Hin) as [Hkr [Hka Hkb]];
+          split; [ exact Hkr | rewrite S_INR; split; lra ].
+Qed.
+
+(* a length-n list of indices in [1,M] has inverse-sum >= n/M *)
+Lemma sum_inv_ge : forall l M, (forall k, In k l -> (1 <= k <= M)%nat) ->
+  Rls l (fun k => / INR k) >= INR (length l) * / INR M.
+Proof.
+  induction l as [|a l IH]; intros M Hl.
+  - simpl; rewrite Rls_nil2, Rmult_0_l; lra.
+  - assert (Ha : (1 <= a <= M)%nat) by (apply Hl; left; reflexivity).
+    assert (HaP : 0 < INR a) by (apply lt_0_INR; lia).
+    assert (HMP : 0 < INR M) by (apply lt_0_INR; lia).
+    rewrite Rls_cons; simpl (length (a :: l)); rewrite S_INR.
+    assert (Hinv : / INR M <= / INR a)
+      by (apply Rinv_le_contravar; [ exact HaP | apply le_INR; lia ]).
+    assert (HIH : Rls l (fun k => / INR k) >= INR (length l) * / INR M)
+      by (apply IH; intros k Hk; apply Hl; right; exact Hk).
+    replace ((INR (length l) + 1) * / INR M)
+      with (/ INR M + INR (length l) * / INR M) by ring; lra.
+Qed.
+
+(* the log-measure of the band [A, A+n) during a crossing is >= n/M *)
+Theorem band_logmeasure : forall n N M A, (1 <= N)%nat -> (N <= M)%nat ->
+  Rem N >= A + INR n -> Rem M < A ->
+  exists l, NoDup l /\
+    (forall k, In k l -> (N < k <= M)%nat /\ A <= Rem k /\ Rem k < A + INR n) /\
+    Rls l (fun k => / INR k) >= INR n / INR M.
+Proof.
+  intros n N M A HN1 HNM HN HM.
+  destruct (band_witnesses n N M A HNM HN HM) as [l [Hnd [Hlen Hprops]]].
+  exists l; split; [ exact Hnd | split; [ exact Hprops | ] ].
+  pose proof (sum_inv_ge l M
+    ltac:(intros k Hk; destruct (Hprops k Hk) as [[Hk1 Hk2] _]; lia)) as Hs.
+  rewrite Hlen in Hs; unfold Rdiv; exact Hs.
+Qed.
+
 Print Assumptions Rem_step.
 Print Assumptions plateau_pos.
 Print Assumptions crossing_band.
+Print Assumptions band_logmeasure.
 
 (* ================================================================= *)
 (*  END SelbergDynamics.v  —  the sound, non-PNT-hard core of S2:       *)
