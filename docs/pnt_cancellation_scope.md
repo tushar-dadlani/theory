@@ -53,16 +53,39 @@ The remaining gap is the **self-improvement** `α > 0 ⟹ contradiction`.
 This is the route the repo is built for. `α = 0` factors into three
 sub-lemmas.
 
-### S1 — signed degree-2 identity  (buildable, MEDIUM)
+### S1 — signed degree-2 identity  (ATTEMPTED — UNSOUND as scoped)
 
+The hoped-for clean form
 ```
-R(x) ln²x + Σ_{n≤x} Λ₂(n) R(x/n) = O(x ln x).
+Vsig(N) ln²N + Σ_{n≤N} (Λ₂(n)/n) Vsig(N/n) = O(ln N)
 ```
-Derivable from `selberg_average_signed` by multiplying by `ln x` and iterating
-(partial summation), using `lam2_sum_bound` / `lam2_over_n_bound` already in
-the repo. This is a genuine, non-false signed identity (unlike the `|·|`
-versions — see §5). Estimated ~1 file. It sharpens the pin to degree 2:
-`Σ (Λ₂/n) σ(x/n) = −σ(x) ln²x + O(ln x)` where `σ = R/x`.
+does NOT hold. Reason (verified by redoing the `StarInequality` derivation
+with `Vsig` in place of `Vrem`): the `|·|` degree-2 `star_inequality` works
+because iterating `selberg_average` gives
+`Σ_d (Λd/d) Vrem(N/d) ln(N/d) ≤ +doublesum + C`, and the `−Σ (Λ ln n/n) Vrem`
+from the log-gap expansion (`HLGT`) cancels the `−Σ (Λ ln n/n) Vrem` from
+`star_reindex`. But the SIGNED iterate flips the sign of `doublesum`:
+`selberg_average_signed` gives `Vsig(N/d) ln(N/d) = e(N/d) − Σ_e (Λe/e) Vsig(N/(de))`,
+so `Σ_d (Λd/d) Vsig(N/d) ln(N/d) = Etot − doublesum`. Feeding this through the
+same (sign-agnostic) `HLGT` and `star_reindex` yields
+```
+ln N · G(N) + Σ (Λ₂/n) Vsig(N/n) = Etot + 2·Σ (Λ ln n/n) Vsig(N/n) − E1
+```
+and the `Σ (Λ ln n/n) Vsig(N/n)` term does NOT cancel (it cancelled in the `≤`
+version only because `doublesum` had the opposite sign there). That term is
+`O(ln²N)` — degree-2 sized — so the identity above is `O(ln²N)`, not `O(ln N)`.
+
+A valid signed degree-2 identity DOES exist, but with the useless weight
+`Λ log − Λ∗Λ` instead of `Λ₂ = Λ log + Λ∗Λ`:
+`Vsig(N) ln²N − Σ (Λ₂/n) Vsig + 2 Σ (Λ ln n/n) Vsig = O(ln N)`. It does not use
+the `Σ Λ₂ = 2x ln x` budget and gives no degree-2 pin.
+
+**Conclusion:** the cancellation that makes the degree-2 estimate work is
+inherently ONE-SIDED (absolute values). Passing to signed quantities loses it.
+This is the same phenomenon as the `avg_below` dead-end (§5): the sign
+information at degree 2 is exactly what is hard. So S1 is NOT a buildable step;
+it joins the recorded dead-ends. The degree-2 route does not linearize the
+self-improvement.
 
 ### S2 — the oscillation-structure lemma  (THE WALL, research-hard)
 
@@ -144,22 +167,30 @@ wall — they relocate it.
   needs fine slow-variation `ψ(m)−ψ(n) ≤ C(m−n)` = PNT-strength (repo only has
   the doubling bound `ψ(2n)−ψ(n) ≤ 2n ln 2 = O(n)`).
 
+- **S1 — signed degree-2 identity with `Λ₂` weight (§2): UNSOUND.** The
+  `Σ (Λ ln n/n) Vsig` term is degree-2 and does not cancel in the signed
+  setting (it cancels only under the one-sided `|·|` inequality). Verified by
+  redoing the `StarInequality` derivation with `Vsig`.
+
 The lesson: any "bound `σ(x)` by a dipping *local* average" reduction silently
-assumes PNT-strength. S2 must be the global budget argument.
+assumes PNT-strength, and the degree-2 cancellation is one-sided (lost when
+passing to signed quantities). S2 must be the global budget argument.
 
 ## 6. Recommendation & buildable-now sub-targets
 
 The single wall is **S2**. Everything else is done or mechanically buildable.
 Concrete next steps, in increasing hardness:
 
-1. **`L = Σ_{d≤√x} M(x/d²)`** (§4, Liouville⟺Mertens forward). Axiom-clean,
-   uses `lam_mult` + `mu_mult`; gives `M=o(x) ⟹ liouville_pnt_lam` for free.
-   Best "provable now" that advances the tie-back.
-2. **S1** (signed degree-2 identity). Real progress on Route A; sharpens the
-   pin and kills the `|·|`-average dead-ends rigorously.
+1. **`L = Σ_{d≤x} [d²]·M(x/d)`** (§4, Liouville⟺Mertens forward). DONE, see
+   `LiouvilleMobius.v` (`L_mertens`, built on the axiom-free `lam_eq_sq_conv_mu`
+   `= 1_square ∗ mu`). Gives `M=o(x) ⟹ liouville_pnt_lam` for free.
+2. ~~S1 (signed degree-2 identity)~~ — ATTEMPTED, UNSOUND (see §2, §5). The
+   degree-2 cancellation is one-sided; the signed version keeps a degree-2
+   `Λ log` term. Not a step.
 3. **S2** only after reconstructing the exact spacing + budget + iteration from
    a named reference as a lemma-by-lemma spec with explicit constants. Do not
-   formalize from intuition — the two prior intuitive attempts were unsound.
+   formalize from intuition — the prior intuitive attempts (avg_below, range
+   average, S1) were all unsound. This is the single genuine wall.
 
 Honest status line: **elementary PNT is machine-checked modulo `α = 0`**, with
 the symmetry budget, the signed identity, the signed pin `V = −v = α`, and the
