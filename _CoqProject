@@ -854,3 +854,4 @@ spectral-theory/GroupLike.v
 spectral-theory/AdjRatioBreak.v
 spectral-theory/LiouvilleConcrete.v
 spectral-theory/LiouvilleMobius.v
+spectral-theory/SelbergDynamics.v
