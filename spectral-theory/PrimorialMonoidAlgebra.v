@@ -122,7 +122,63 @@ Proof. split; [ exact crt_monoid_iso | exact product_algebra_tensor ]. Qed.
 Example primorial_6 : primorial_primes 1 = [2; 3].
 Proof. exact primorial_primes_1. Qed.
 
+(* ---- FUNCTORIALITY: fuse the two halves into one term ----
+   The CRT bijection reindexes M_6's convolution to that of M_2 x M_3,
+   which then tensor-factors -- so Z[M_6]'s convolution IS the tensor
+   convolution, transported. *)
+
+Definition gconv6 (a b : nat -> Z) (r : nat) : Z :=
+  sumf e6 (fun x => sumf e6 (fun y =>
+    if Nat.eqb (op6 x y) r then (a x * b y)%Z else 0%Z)).
+
+(* the CRT bijection reindexes any sum over the 6 residues to a sum over
+   M_2 x M_3 (both are the same 6 values, reordered) *)
+Lemma reindex6 : forall F : nat -> Z,
+  sumf e6 F = sumf eAB (fun p => F (crt_inv p)).
+Proof. intros F; unfold sumf, e6, eAB, crt_inv; cbn; ring. Qed.
+
+(* the convolution condition matches under the bijection (216 finite cases) *)
+Lemma cond_eq_check :
+  forallb (fun p => forallb (fun q => forallb (fun r =>
+     Bool.eqb (Nat.eqb (op6 (crt_inv p) (crt_inv q)) (crt_inv r))
+              (pair_eqb (cop p q) r)) eAB) eAB) eAB = true.
+Proof. vm_compute; reflexivity. Qed.
+
+Lemma cond_eq : forall p q r, In p eAB -> In q eAB -> In r eAB ->
+  Nat.eqb (op6 (crt_inv p) (crt_inv q)) (crt_inv r) = pair_eqb (cop p q) r.
+Proof.
+  intros p q r Hp Hq Hr; apply Bool.eqb_prop.
+  pose proof cond_eq_check as H.
+  rewrite forallb_forall in H; specialize (H p Hp).
+  rewrite forallb_forall in H; specialize (H q Hq).
+  rewrite forallb_forall in H; exact (H r Hr).
+Qed.
+
+(* M_6's convolution equals M_2 x M_3's, transported along crt *)
+Theorem gconv6_eq_gconvGH : forall a b r, In r eAB ->
+  gconv6 a b (crt_inv r)
+  = gconvGH Nat.eqb Nat.eqb e2 e3 op2 op3
+      (fun p => a (crt_inv p)) (fun p => b (crt_inv p)) r.
+Proof.
+  intros a b r Hr; unfold gconv6, gconvGH.
+  rewrite reindex6; apply sumf_ext; intros p Hp.
+  rewrite reindex6; apply sumf_ext; intros q Hq.
+  change (ABeq Nat.eqb Nat.eqb (opAB op2 op3 p q) r) with (pair_eqb (cop p q) r).
+  rewrite (cond_eq p q r Hp Hq Hr); reflexivity.
+Qed.
+
+(* ...and that convolution is the tensor conv: the full functorial statement *)
+Theorem gconv6_tensor : forall a b g h, In (g, h) eAB ->
+  gconv6 a b (crt_inv (g, h))
+  = tconv Nat.eqb Nat.eqb e2 e3 op2 op3
+      (fun i j => a (crt_inv (i, j))) (fun i j => b (crt_inv (i, j))) g h.
+Proof.
+  intros a b g h Hgh.
+  rewrite (gconv6_eq_gconvGH a b (g, h) Hgh); apply gconv_prod_tensor.
+Qed.
+
 Print Assumptions primorial_tensor_factorization.
+Print Assumptions gconv6_tensor.
 
 (* ================================================================= *)
 (*  END PrimorialMonoidAlgebra.v  (Brick 5: at the primorial 6 = 2.3    *)
