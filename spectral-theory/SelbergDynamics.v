@@ -203,10 +203,46 @@ Proof.
   rewrite Hlen in Hs; unfold Rdiv; exact Hs.
 Qed.
 
+(* ================================================================= *)
+(*  5.  PER-CROSSING DIP in sigma-terms: a +c -> -c crossing forces a   *)
+(*  positive-log-measure set of scales with |sigma| < c.               *)
+(* ================================================================= *)
+
+(* From an oscillation crossing (Vsig N1 >= c, Vsig N2 < -c -- supplied  *)
+(* by sign_oscillation), the band |sigma| < c is occupied over          *)
+(* (N1,N2] with flat log-measure sum 1/k >= n / N2, where the Rem-band   *)
+(* width n <= 2 c N1 keeps it inside |sigma| < c.                       *)
+Theorem sigma_crossing_dip : forall (N1 N2 n : nat) (c : R),
+  (1 <= N1)%nat -> (N1 <= N2)%nat -> 0 < c ->
+  c * INR N1 <= Rem N1 ->
+  Rem N2 < - (c * INR N1) ->
+  INR n <= 2 * (c * INR N1) ->
+  exists l, NoDup l /\
+    (forall k, In k l -> (N1 < k <= N2)%nat /\ Rabs (Vsig k) < c) /\
+    Rls l (fun k => / INR k) >= INR n / INR N2.
+Proof.
+  intros N1 N2 n c HN1 HN12 Hc HremN1 HremN2 Hn.
+  assert (HN1p : 0 < INR N1) by (apply lt_0_INR; lia).
+  destruct (band_logmeasure n N1 N2 (- (c * INR N1)) HN1 HN12
+              ltac:(lra) HremN2) as [l [Hnd [Hprops Hsum]]].
+  exists l; split; [ exact Hnd | split; [ | exact Hsum ] ].
+  intros k Hk; destruct (Hprops k Hk) as [Hkr [Hka Hkb]].
+  split; [ exact Hkr | ].
+  assert (HkP : 0 < INR k) by (apply lt_0_INR; lia).
+  assert (HkN1 : INR N1 < INR k) by (apply lt_INR; lia).
+  assert (Hremk : Rabs (Rem k) <= c * INR N1) by (apply Rabs_le; split; lra).
+  unfold Vsig, Rdiv; rewrite Rabs_mult, Rabs_inv, (Rabs_pos_eq (INR k)) by lra.
+  apply Rmult_lt_reg_r with (INR k); [ exact HkP | ].
+  rewrite Rmult_assoc, Rinv_l, Rmult_1_r by lra.
+  apply Rle_lt_trans with (c * INR N1);
+    [ exact Hremk | apply Rmult_lt_compat_l; [ exact Hc | exact HkN1 ] ].
+Qed.
+
 Print Assumptions Rem_step.
 Print Assumptions plateau_pos.
 Print Assumptions crossing_band.
 Print Assumptions band_logmeasure.
+Print Assumptions sigma_crossing_dip.
 
 (* ================================================================= *)
 (*  END SelbergDynamics.v  —  the sound, non-PNT-hard core of S2:       *)
