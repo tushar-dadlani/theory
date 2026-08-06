@@ -845,3 +845,4 @@ spectral-theory/ZmodMultMonoid.v
 spectral-theory/LegendreMonoidHom.v
 spectral-theory/PrimorialMonoidAlgebra.v
 spectral-theory/ZmodUnitsCyclic.v
+spectral-theory/SelbergDip.v
