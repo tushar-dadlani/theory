@@ -14,45 +14,32 @@ Zagier truncated-disk contour, stage the Goursat/Cauchy wall.
 
 `pathint_primitive_loop` is the **engine of Cauchy's theorem** — the entire wall is built on it.
 
-## C2a — Goursat's theorem: `∮_{∂△} h = 0` for `h` holomorphic on a triangle
+## C2a — Goursat's theorem: status
 
-**Placement:** the FIRST brick of the C2 (Cauchy) stage, built directly on C1c. Everything
-downstream (C2b primitive-on-convex, C2c winding, C2d Cauchy integral formula, C4 Newman)
-depends on it. It is the single hardest brick of the milestone.
+**Placement:** the FIRST brick of the C2 (Cauchy) stage, built on C1c's
+`pathint_primitive_loop`. The single hardest brick of the milestone.
 
-**The proof (bisection), decomposed into sub-bricks:**
+### C2a-1 — triangle boundary + segment reparametrization laws
+- **DONE (core):** `CSegCoV.v` — `Cintf_cov`, the C-valued change of variables
+  `∫_a^b g'(t)·G(g t) dt = ∫_{g a}^{g b} G` for an increasing C¹ substitution `g`
+  (componentwise from `LocalCoV.cov_local`, witnesses bridged by `RiemannInt_P18`).
+  Axiom-clean. This is the reparametrization engine.
+- **Remaining:** `seg_int` (a segment integral wrapper), segment **concatenation**
+  `seg_int a c = seg_int a m + seg_int m c` (via `Cintf_additive` + `Cintf_cov` on the two
+  increasing halves `v↦v/2`, `v↦(1+v)/2`), segment **reversal** `seg_int b a = −seg_int a b`
+  (a reflection variant `∫₀¹φ(1−u)du = ∫₀¹φ`; `cov_local` is increasing-only, so this needs a
+  small dedicated reflection CoV), and `tri_int` + perimeter/diameter. Each threads an
+  f-continuity hypothesis (automatic for holomorphic f).
 
-- **C2a-1 triangle boundary** (`CTriangle.v`): represent a triangle by 3 vertices `v0,v1,v2`;
-  its boundary integral `tri_int h v0 v1 v2 := pathint(seg v0 v1) + pathint(seg v1 v2) +
-  pathint(seg v2 v0)` (sum of 3 `pathint` over `seg`, C1b). Orientation/reversal via
-  `pathint_swap`. Perimeter and diameter functions; basic bounds.
+### C2a-2 — bisection identity `tri_int(T) = Σ_{i=1}^4 tri_int(Tᵢ)`
+Pure edge combinatorics on top of C2a-1's concatenation + reversal: each outer edge splits at
+its midpoint (concatenation) into two half-edges shared by sub-triangles; the three inner
+(medial) edges are each traversed twice in opposite directions and cancel (reversal). Yields
+`∃i, |tri_int(Tᵢ)| ≥ |tri_int(T)|/4` with halved diameter/perimeter. Tedious but mechanical
+once the segment laws are in place.
 
-- **C2a-2 bisection identity** (`CGoursatBisect.v`): the 4 medial sub-triangles (edge
-  midpoints `m01,m12,m20`); prove `tri_int(T) = Σ_{i=1}^4 tri_int(Ti)` — the inner edges
-  are each traversed twice in opposite directions and cancel (`pathint_swap` +
-  `pathint_split` on `seg`, since a segment reversed is its negative and midpoint-splitting a
-  segment is `pathint_split`). Hence `∃ i, |tri_int(Ti)| ≥ |tri_int(T)|/4`, with
-  `diam(Ti)=diam/2`, `perim(Ti)=perim/2`. Finicky but purely algebraic.
-
-- **C2a-3 the affine primitive** (in `CGoursat.v`): the affine map `z ↦ h(z*)+h'(z*)(z−z*)`
-  has the explicit primitive `H(z) = h(z*)·z + h'(z*)·(z−z*)²/2` (an `is_Cderiv`, via the
-  existing calculus). So its loop integral over ANY closed triangle is `0` by
-  `pathint_primitive_loop` (C1c). Thus `tri_int(T,h) = tri_int(T, remainder)` where
-  `remainder(z) = h(z) − [h(z*)+h'(z*)(z−z*)]`, and `|remainder(z)| ≤ ε·|z−z*|` near `z*`
-  (from `is_Cderiv h z*`).
-
-- **C2a-4 nested limit + squeeze** (`CGoursat.v`): the nested triangles `T ⊃ T^(1) ⊃ …` have
-  `diam(T^(n)) = diam/2^n → 0`; by completeness (Cauchy on the `Re/Im` components, or a
-  nested-compact argument) they shrink to a point `z*` inside `T`. Combine
-  `|tri_int(T)|/4^n ≤ |tri_int(T^(n))| = |tri_int(T^(n),remainder)| ≤ ε·diam(T^(n))·perim(T^(n))
-  = ε·(diam·perim)/4^n` (ML bound `pathint_ML`, C1b), giving `|tri_int(T)| ≤ ε·diam·perim`
-  for every `ε>0`, hence `tri_int(T)=0`.
-
-**Risk / cost:** the largest brick of the project. The bisection combinatorics (C2a-2) are
-tedious but mechanical; the genuine risk is C2a-4 (the nested-triangle completeness limit on
-the custom field) — that is the piece to prove out FIRST as the feasibility test for the whole
-wall. Reusable inputs already in hand: `pathint_primitive_loop`, `pathint_ML`, `pathint_split`,
-`pathint_swap`, `seg`, the full `is_Cderiv` calculus.
+**Then:** C2a-3 (affine primitive ⇒ loop 0, via C1c) + C2a-4 (nested-triangle completeness
+squeeze — the feasibility crux) finish Goursat.
 
 ## Remaining after C2a
 C2b (primitive on convex ⇒ `∮_loop=0`) → C2c (`∮_C dz/z = 2πi`, truncated disk) →
