@@ -865,3 +865,4 @@ spectral-theory/CDirichletProduct.v
 spectral-theory/CVonMangoldtZeta.v
 spectral-theory/CHoloCalculus.v
 spectral-theory/ZetaFn.v
+spectral-theory/ZetaInvHolo.v
