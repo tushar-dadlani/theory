@@ -18,12 +18,29 @@ Require Import ComplexField Cmodulus CexpFull CSeries CAbelSummation CFTC
         GammaFunction.
 Open Scope R_scope.
 
+Lemma Cpsum_ext : forall (f g : nat -> C) N, (forall k, f k = g k) -> Cpsum f N = Cpsum g N.
+Proof.
+  intros f g N Hfg; induction N as [|N IH]; cbn [Cpsum];
+    [ apply Hfg | rewrite IH, Hfg; reflexivity ].
+Qed.
+
 Section IntRep.
 Variable s : C.
 Hypothesis H : 1 < Re s.
 
 Lemma psi_nonneg : forall N, 0 <= psi N.
 Proof. intro N; rewrite <- psi_0; apply psi_mono; lia. Qed.
+
+(* the correction, made explicit: each term is psi(k)·(cell increment),
+   and each increment gC s(INR(S k)) - gC s(INR k) = Int_k^{k+1}(-s x^{-s-1})
+   is a genuine cell integral (CVonMangoldtAbel.cell_increment / CFTC). *)
+Lemma correction_cells : forall M,
+  Cabel_correction (fun k => RtoC (Lam k)) (fun k => gC s (INR k)) M
+  = Cpsum (fun k => Cmul (RtoC (psi k)) (Cminus (gC s (INR (S k))) (gC s (INR k)))) M.
+Proof.
+  intro M; unfold Cabel_correction; apply Cpsum_ext; intro k.
+  rewrite Cpsum_Lam_psi; reflexivity.
+Qed.
 
 (* the boundary weight psi(N)·N^{-s} tends to 0 *)
 Lemma psi_weight_cv0 :
