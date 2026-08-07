@@ -32,18 +32,36 @@ Zagier truncated-disk contour, stage the Goursat/Cauchy wall.
   Proof: `seg_concat` splits outer edges at midpoints, `seg_reverse` cancels the three medial
   edges, then `ring`. Axiom-clean.
 
-### C2a-3, C2a-4 — remaining Goursat pieces
-- C2a-3: the affine map `z ↦ h(z*)+h'(z*)(z−z*)` has explicit primitive
-  `h(z*)·z + h'(z*)·(z−z*)²/2`, so its loop integral over any closed triangle is 0
-  (`CPathFTC.pathint_primitive_loop`); hence `tri_int(T,h) = tri_int(T, remainder)`,
-  `|remainder| ≤ ε|z−z*|`. Needs the triangle boundary as a single closed path (join the 3
-  `seg` into one `pathint` over `[0,3]`, or sum the segment FTCs).
-- C2a-4 (crux): nested triangles shrink to `z*` (completeness on Re/Im); the squeeze
-  `|tri_int(T)|/4ⁿ ≤ ε·(diam·perim)/4ⁿ` (via `pathint_ML`/a `tri_int` ML bound) ⇒ `tri_int(T)=0`.
-  The nested-triangle completeness limit is the feasibility crux of the whole wall.
+### C2a-3 — reduce Goursat to a small remainder  ✅ DONE
+- `CGoursatFTC.v` — `seg_FTC`; `tri_int_primitive_zero` (a function with a global primitive
+  has zero triangle integral, by telescoping).
+- `CGoursatLin.v` — `Cintf_add`/`seg_int_add`/`tri_int_add` (integrand linearity).
+- `CGoursatML.v` — `perim`/`diam`; `seg_int_ML`; `tri_int_ML` (`Cmod(tri_int f) ≤ 2·sup|f|·perim`).
+- `CGoursatAffine.v` (C2a-4a) — `affine_tri_zero`: the affine approximant `Aff z = c0+c1(z−zc)`
+  has primitive `AffH z = c0 z + c1(z−zc)²/2`, so `tri_int(Aff) = 0`.
 
-## Remaining after C2a
-C2b (primitive on convex ⇒ `∮_loop=0`) → C2c (`∮_C dz/z = 2πi`, truncated disk) →
-C2d (Cauchy formula `∮_C F/z = 2πi·F(0)`) → C4 (`Newman.v`) → Milestone D (D1 single-∫ Φ rep,
-D2 Laplace/CoV + C0 holomorphy-at-1, D3 Newman⇒convergence, D4 Tauberian squeeze) ⇒
-`Un_cv (psi N/INR N) 1` ⇒ `pi_asymp_of_psi` ⇒ PNT.
+  Together: for holomorphic `h`, `tri_int(h) = tri_int(Aff) + tri_int(rem) = tri_int(rem)`
+  (`tri_int_add` + `affine_tri_zero`), and `|tri_int(rem)| ≤ 2·sup|rem|·perim` (`tri_int_ML`).
+
+### C2a-4b — the nested-triangle completeness squeeze  (REMAINING crux; all inputs built)
+Assemble Goursat's theorem `tri_int(h) = 0` for `h` holomorphic on a neighborhood of the closed
+triangle. Precise structure (each input now exists):
+1. **Sequence**: `worst_sub : (C·C·C) → (C·C·C)` picks, among the 4 medial sub-triangles
+   (`tri_bisect`), the one of largest `Cmod(tri_int h ·)` (`Rle_dec`). `Tn := iter worst_sub n T`.
+2. **Lower bound**: `Cmod(tri_int(T_{n+1})) ≥ Cmod(tri_int(Tn))/4` (bisection: `|Σ_4| ≤ 4·max`),
+   so `Cmod(tri_int(Tn)) ≥ Cmod(tri_int(T))/4ⁿ` (induction).
+2'. **Geometry**: each medial sub has half the edge lengths ⇒ `diam(worst_sub X)=diam X/2`,
+    `perim = perim/2` ⇒ `diam(Tn)=diam T/2ⁿ`, `perim(Tn)=perim T/2ⁿ` (pure `Cmod`/midpoint algebra).
+3. **Limit**: the vertex sequences are Cauchy (`|Δvertex| ≤ diam(Tn) = diam/2ⁿ`, geometric) ⇒
+   converge to `zc` (R-completeness on `Re`/`Im` components); `|vertex(Tn) − zc| ≤ 2·diam(Tn)`.
+4. **Remainder bound**: `h` holomorphic at `zc` (`is_Cderiv h zc c1`) ⇒ `∀ε∃δ`, `|z−zc|<δ ⇒
+   |rem z| ≤ ε|z−zc|` where `rem z = h z − Aff z`, `Aff` from `(h zc, c1)`. For `z` on `∂Tn`
+   (convex combo of 2 vertices), `|z−zc| ≤ 2·diam(Tn)`; pick `n` with `2·diam(Tn) < δ`.
+5. **Squeeze**: `Cmod(tri_int(T))/4ⁿ ≤ Cmod(tri_int(Tn)) = Cmod(tri_int(rem,Tn)) ≤
+   2·(ε·2·diam(Tn))·perim(Tn) = 8ε·diam·perim/4ⁿ` ⇒ `Cmod(tri_int(T)) ≤ 8ε·diam·perim`
+   `∀ε>0` ⇒ `tri_int(T) = 0`.
+
+Large (~300 lines) but every ingredient is in place; the completeness limit (step 3) is the
+one genuinely delicate part (Cauchy sequence in C via the two R-component sequences).
+
+### Then: C2b–C2d (Cauchy integral formula) → C4 (Newman) → Milestone D → PNT.
