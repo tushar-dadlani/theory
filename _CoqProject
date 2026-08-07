@@ -863,3 +863,4 @@ spectral-theory/CDirichletExhaustion.v
 spectral-theory/CDirichletTail.v
 spectral-theory/CDirichletProduct.v
 spectral-theory/CVonMangoldtZeta.v
+spectral-theory/CHoloCalculus.v
