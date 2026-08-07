@@ -19,27 +19,28 @@ Zagier truncated-disk contour, stage the Goursat/Cauchy wall.
 **Placement:** the FIRST brick of the C2 (Cauchy) stage, built on C1c's
 `pathint_primitive_loop`. The single hardest brick of the milestone.
 
-### C2a-1 — triangle boundary + segment reparametrization laws
-- **DONE (core):** `CSegCoV.v` — `Cintf_cov`, the C-valued change of variables
-  `∫_a^b g'(t)·G(g t) dt = ∫_{g a}^{g b} G` for an increasing C¹ substitution `g`
-  (componentwise from `LocalCoV.cov_local`, witnesses bridged by `RiemannInt_P18`).
-  Axiom-clean. This is the reparametrization engine.
-- **Remaining:** `seg_int` (a segment integral wrapper), segment **concatenation**
-  `seg_int a c = seg_int a m + seg_int m c` (via `Cintf_additive` + `Cintf_cov` on the two
-  increasing halves `v↦v/2`, `v↦(1+v)/2`), segment **reversal** `seg_int b a = −seg_int a b`
-  (a reflection variant `∫₀¹φ(1−u)du = ∫₀¹φ`; `cov_local` is increasing-only, so this needs a
-  small dedicated reflection CoV), and `tri_int` + perimeter/diameter. Each threads an
-  f-continuity hypothesis (automatic for holomorphic f).
+### C2a-1 — triangle boundary + segment reparametrization laws  ✅ DONE
+- `CSegCoV.v` — `Cintf_cov`, the C-valued increasing change of variables.
+- `CSegInt.v` — `seg_int` (segment integral for a continuity-preserving `CcontC f`);
+  **concatenation** `seg_concat : seg_int a c = seg_int a (mid a c) + seg_int (mid a c) c`
+  (Cintf_additive + Cintf_cov on the two increasing halves); **reversal**
+  `seg_reverse : seg_int b a = −seg_int a b` (reflection `∫₀¹−φ(1−u)=−∫₀¹φ` via FTC).
 
-### C2a-2 — bisection identity `tri_int(T) = Σ_{i=1}^4 tri_int(Tᵢ)`
-Pure edge combinatorics on top of C2a-1's concatenation + reversal: each outer edge splits at
-its midpoint (concatenation) into two half-edges shared by sub-triangles; the three inner
-(medial) edges are each traversed twice in opposite directions and cancel (reversal). Yields
-`∃i, |tri_int(Tᵢ)| ≥ |tri_int(T)|/4` with halved diameter/perimeter. Tedious but mechanical
-once the segment laws are in place.
+### C2a-2 — bisection identity  ✅ DONE
+- `CTriangle.v` — `tri_int` (triangle boundary integral) and
+  `tri_bisect : tri_int(T) = Σ_{i=1}^4 tri_int(Tᵢ)` for the four medial sub-triangles.
+  Proof: `seg_concat` splits outer edges at midpoints, `seg_reverse` cancels the three medial
+  edges, then `ring`. Axiom-clean.
 
-**Then:** C2a-3 (affine primitive ⇒ loop 0, via C1c) + C2a-4 (nested-triangle completeness
-squeeze — the feasibility crux) finish Goursat.
+### C2a-3, C2a-4 — remaining Goursat pieces
+- C2a-3: the affine map `z ↦ h(z*)+h'(z*)(z−z*)` has explicit primitive
+  `h(z*)·z + h'(z*)·(z−z*)²/2`, so its loop integral over any closed triangle is 0
+  (`CPathFTC.pathint_primitive_loop`); hence `tri_int(T,h) = tri_int(T, remainder)`,
+  `|remainder| ≤ ε|z−z*|`. Needs the triangle boundary as a single closed path (join the 3
+  `seg` into one `pathint` over `[0,3]`, or sum the segment FTCs).
+- C2a-4 (crux): nested triangles shrink to `z*` (completeness on Re/Im); the squeeze
+  `|tri_int(T)|/4ⁿ ≤ ε·(diam·perim)/4ⁿ` (via `pathint_ML`/a `tri_int` ML bound) ⇒ `tri_int(T)=0`.
+  The nested-triangle completeness limit is the feasibility crux of the whole wall.
 
 ## Remaining after C2a
 C2b (primitive on convex ⇒ `∮_loop=0`) → C2c (`∮_C dz/z = 2πi`, truncated disk) →
