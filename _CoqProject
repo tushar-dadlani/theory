@@ -878,3 +878,4 @@ spectral-theory/CFTC.v
 spectral-theory/CAbelSummation.v
 spectral-theory/CVonMangoldtAbel.v
 spectral-theory/CVonMangoldtIntegral.v
+spectral-theory/CIntegral2.v
