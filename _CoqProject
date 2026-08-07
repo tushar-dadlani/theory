@@ -880,3 +880,4 @@ spectral-theory/CVonMangoldtAbel.v
 spectral-theory/CVonMangoldtIntegral.v
 spectral-theory/CIntegral2.v
 spectral-theory/CPathIntegral.v
+spectral-theory/CExpKernel.v
