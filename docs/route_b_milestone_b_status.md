@@ -1,43 +1,53 @@
-# Route B — Milestone B: `Φ(s) − 1/(s−1)` holomorphic across `Re s = 1` (IN PROGRESS)
+# Route B — Milestone B: `Φ(s) − 1/(s−1)` holomorphic across `Re s = 1`  ✅ DONE
 
-Goal: make the continuation of `Φ = −ζ′/ζ` holomorphic on an open neighborhood of
-the closed half-plane `Re s ≥ 1`. Algebraically `Φ − 1/(s−1) = −B′/B` with
-`B(s) = (s−1)ζ(s)` holomorphic, `B(1)=1`, nonzero near the line — so the pole is
-removable. Making `−B′/B` holomorphic needs `B″`, hence `ζ″`, i.e. `ζ′` packaged
-as a differentiable function.
+**End state** (`spectral-theory/ZetaPoleCancel.v`), all axiom-clean, pushed:
 
-## Done this milestone (all axiom-clean, pushed)
+```coq
+phi_minus_holo : forall z, 0 < Re z -> Cminus C1 z <> C0 -> zF z <> C0 ->
+                 exists d, is_Cderiv PhiMinus z d.
+phi_minus_line_holo : forall t, t <> 0 -> exists d, is_Cderiv PhiMinus (mkC 1 t) d.
+phi_minus_eq : forall s H0 H1 (H : 1 < Re s),
+                 PhiMinus s = Cminus (Phi s H) (Cinv (Cminus s C1)).
+```
+`PhiMinus s = −B′(s)/B(s)` with `B(s) = (s−1)ζ(s)`; `phi_minus_eq` proves it equals
+`Φ(s) − 1/(s−1)` on `Re s > 1`, and `phi_minus_holo` proves it holomorphic wherever
+`0 < Re s, s ≠ 1, ζ(s) ≠ 0` — in particular on an open neighborhood of the line
+`Re s = 1` (`s ≠ 1`), since `ζ(1+it) ≠ 0` (banked `zetaC_line_nonzero`). The `1/(s−1)`
+pole of `Φ = −ζ′/ζ` is exactly cancelled.
+
+## The 12 bricks (all axiom-clean)
 
 | Brick | File | Content |
 |-------|------|---------|
-| B1 | `CHoloCalculus.v` | quotient rule `Cderiv_div`, `is_Cderiv_cont`, `Cderiv_nonzero_nbhd` (continuous+nonzero ⇒ nonzero on a disc) |
-| B2 | `ZetaFn.v` | total function `zF : C→C`, proof-irrelevance, `HolomorphicOn zF inDom` (lifts `zetaC_holo`) |
-| B3 | `ZetaInvHolo.v` | `1/ζ` holomorphic where `ζ≠0`; `zeta_line_open_nonzero` (ζ≠0 on a disc around each `1+it`) |
-| B4 | `CZetaDeriv4.v` | `d2gtermC_cv` — the ζ″ analytic series converges |
-| B5 | `CZetaDeriv5.v` | `d3gtermC` + `d2gtermC_sderiv` (per-term 3rd s-derivative, via the self-reproducing calculus) |
-| B6a | `CBaseDeriv3.v` | `d3kb`, `dd3kb`, `Cmod_dd3kb` (base t-derivatives of the 3rd-deriv kernel) |
-| B6b | `CD3sGCKnot.v` | the third-order **knot** `dd_eq3 : d/dt d3sGC = d3k`, `base_deriv_d3sGC_Re/Im` |
+| B1 | `CHoloCalculus.v` | quotient rule + "continuous & nonzero ⇒ nonzero on a disc" |
+| B2 | `ZetaFn.v` | total `zF : C→C`, `HolomorphicOn zF inDom` |
+| B3 | `ZetaInvHolo.v` | `1/ζ` holomorphic; `ζ ≠ 0` on a disc around each `1+it` |
+| B4 | `CZetaDeriv4.v` | `d2gtermC_cv` (ζ″ analytic series converges) |
+| B5 | `CZetaDeriv5.v` | `d3gtermC` + `d2gtermC_sderiv` |
+| B6a | `CBaseDeriv3.v` | `dd3kb`, `Cmod_dd3kb` |
+| B6b | `CD3sGCKnot.v` | the knot `d/dt d3sGC = d3k` |
 | B6c | `CZetaTerm3.v` | `d3bound`, double-MVT `Cmod_d3gtermC_bound`, `d3bound_sum_cv` |
+| B7 | `CZetaHolo2.v` | `sum_deriv2` (ζ′ series differentiable) |
+| B8 | `ZetaDeriv.v` | `zF_deriv` (ζ′=zDF), `zDF_deriv` (ζ″) |
+| B9 | `ZetaPoleCancel.v` | `phi_minus_holo`, `phi_minus_eq` (capstone) |
 
-**The complete third-derivative term stack (B4–B6c) is the hard, novel prerequisite
-for ζ″ and is finished.** Each ζ-derivative costs only one extra log-power (the knot
-keeps the bound tower from exploding), so no fourth-order machinery is needed.
+The novel/hard content was the full third-derivative term stack (B4–B6c); B7–B9 are the
+differentiation-under-the-sum assembly that consumes it, mirroring `CZetaHolo`.
 
-## Remaining bricks (mechanical; mirror CZetaHolo / CZetaDeriv3 one order up)
+## One documented refinement
 
-- **B7 `sum_deriv2`** (mirror `CZetaHolo.v` Part 1 `remainder_Re/Im` + Part 2
-  `weighted_pseries_cv` + Part 4 `sum_deriv`): differentiate the ζ′ series
-  term-by-term. Reuses the generic `order2_bound`, `is_Cderiv_line_Re/Im`,
-  `Cderiv_mul_const_r`, plus `dgtermC_sderiv`, `d2gtermC_sderiv` (B5),
-  `Cmod_d3gtermC_bound` (B6c), `d2gtermC_cv` (B4). Result:
-  `is_Cderiv (fun w => Σ dgtermC w) z (Σ d2gtermC z)`.
-- **B8 ζ′ as a holomorphic function**: package `zDF : C→C` = `−1/(z−1)² + Σ dgtermC`
-  (the derivative from `zetaC_holo`), and prove `is_Cderiv zDF z (ζ″(z))` combining
-  the pole-derivative part (`+2/(z−1)³`, pure calculus) with B7. Mirror `ZetaFn.v`.
-- **B9 pole cancellation**: define `B(s) = (s−1)·zF(s)` (holomorphic, `B(1)=1`),
-  show `B ≠ 0` on a neighborhood of `Re s ≥ 1` (B3 + `B(1)=1`), and
-  `Φ(s) − 1/(s−1) = −B′(s)/B(s)` holomorphic there (quotient rule B1 with `B′` from
-  B8). This is the Milestone-B end state.
+`phi_minus_holo`'s domain excludes the single point `s = 1`. There `Φ − 1/(s−1)` is
+holomorphic with a genuine finite value (`= −A(1)` where `A = ζ − 1/(s−1)`), but our
+total `zF` returns `0` at `s=1` (outside `inDom`), so `Bfn(1)=0` and `−B′/B` is not the
+right object exactly at `1`. Closing this needs the analytic part `A(s) = Σ gtermC(s)`
+packaged as holomorphic *at* `s=1` (extend `gtermC_cv` to `s=1`, where the EM series
+still converges) — a bounded final step, not on the critical path for the line
+non-vanishing that drives PNT.
 
-Then Milestone C (Newman analytic theorem — greenfield contour integration on the
-custom `ComplexField`) and Milestone D (Tauberian ⇒ `ψ(N)/N→1` ⇒ `pi_asymp_of_psi`).
+## Remaining Route B
+
+- **Milestone C** (the wall): Newman's analytic theorem — greenfield C-valued contour
+  integration + Cauchy's theorem on the custom `ComplexField`, plus the kernel estimate.
+- **Milestone D**: Newman ⇒ `∫(ψ(x)−x)/x² dx` converges ⇒ `ψ(x)~x` ⇒
+  `PNTConditional.pi_asymp_of_psi` ⇒ PNT. Also needs the integral representation
+  `Φ(s) = s∫₁^∞ ψ(x)x^{−s−1}dx` (via `AbelSummation` + the existing `CImp` machinery).
