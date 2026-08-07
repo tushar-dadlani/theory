@@ -877,3 +877,4 @@ spectral-theory/ZetaPoleCancel.v
 spectral-theory/CFTC.v
 spectral-theory/CAbelSummation.v
 spectral-theory/CVonMangoldtAbel.v
+spectral-theory/CVonMangoldtIntegral.v
