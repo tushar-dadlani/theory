@@ -884,3 +884,4 @@ spectral-theory/CExpKernel.v
 spectral-theory/CPathFTC.v
 spectral-theory/CSegCoV.v
 spectral-theory/CSegInt.v
+spectral-theory/CTriangle.v
