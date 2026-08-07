@@ -875,3 +875,4 @@ spectral-theory/CZetaHolo2.v
 spectral-theory/ZetaDeriv.v
 spectral-theory/ZetaPoleCancel.v
 spectral-theory/CFTC.v
+spectral-theory/CAbelSummation.v
