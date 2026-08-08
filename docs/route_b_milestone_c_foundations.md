@@ -43,25 +43,23 @@ Zagier truncated-disk contour, stage the Goursat/Cauchy wall.
   Together: for holomorphic `h`, `tri_int(h) = tri_int(Aff) + tri_int(rem) = tri_int(rem)`
   (`tri_int_add` + `affine_tri_zero`), and `|tri_int(rem)| ≤ 2·sup|rem|·perim` (`tri_int_ML`).
 
-### C2a-4b — the nested-triangle completeness squeeze  (REMAINING crux; all inputs built)
-Assemble Goursat's theorem `tri_int(h) = 0` for `h` holomorphic on a neighborhood of the closed
-triangle. Precise structure (each input now exists):
-1. **Sequence**: `worst_sub : (C·C·C) → (C·C·C)` picks, among the 4 medial sub-triangles
-   (`tri_bisect`), the one of largest `Cmod(tri_int h ·)` (`Rle_dec`). `Tn := iter worst_sub n T`.
-2. **Lower bound**: `Cmod(tri_int(T_{n+1})) ≥ Cmod(tri_int(Tn))/4` (bisection: `|Σ_4| ≤ 4·max`),
-   so `Cmod(tri_int(Tn)) ≥ Cmod(tri_int(T))/4ⁿ` (induction).
-2'. **Geometry**: each medial sub has half the edge lengths ⇒ `diam(worst_sub X)=diam X/2`,
-    `perim = perim/2` ⇒ `diam(Tn)=diam T/2ⁿ`, `perim(Tn)=perim T/2ⁿ` (pure `Cmod`/midpoint algebra).
-3. **Limit**: the vertex sequences are Cauchy (`|Δvertex| ≤ diam(Tn) = diam/2ⁿ`, geometric) ⇒
-   converge to `zc` (R-completeness on `Re`/`Im` components); `|vertex(Tn) − zc| ≤ 2·diam(Tn)`.
-4. **Remainder bound**: `h` holomorphic at `zc` (`is_Cderiv h zc c1`) ⇒ `∀ε∃δ`, `|z−zc|<δ ⇒
-   |rem z| ≤ ε|z−zc|` where `rem z = h z − Aff z`, `Aff` from `(h zc, c1)`. For `z` on `∂Tn`
-   (convex combo of 2 vertices), `|z−zc| ≤ 2·diam(Tn)`; pick `n` with `2·diam(Tn) < δ`.
-5. **Squeeze**: `Cmod(tri_int(T))/4ⁿ ≤ Cmod(tri_int(Tn)) = Cmod(tri_int(rem,Tn)) ≤
-   2·(ε·2·diam(Tn))·perim(Tn) = 8ε·diam·perim/4ⁿ` ⇒ `Cmod(tri_int(T)) ≤ 8ε·diam·perim`
-   `∀ε>0` ⇒ `tri_int(T) = 0`.
+### C2a-4b — Goursat's theorem  ✅ DONE
+- `CGoursatGeom.v` — the sub-triangles have half the diameter; corners move by <= half a diameter.
+- `CGeomCauchy.v` — `geom_cauchy_cv`: a real sequence with geometric increments converges with
+  an explicit rate (R-completeness core for the vertex sequences).
+- `CGoursat.v` — `goursat : tri_int h v0 v1 v2 = 0` for `h` holomorphic (`is_Cderiv` everywhere).
+  The nested-triangle argument: `nextT` picks the worst sub-triangle, the tracked corner is
+  Cauchy → limit `zc`; every boundary point lies within `3·diam·(1/2)^n` of `zc`; at `zc`,
+  `h = affine + remainder`, affine integrates to 0 (`affine_tri_zero`), remainder is
+  `O(ε·diam)` (`tri_int_ML`); the `≥/4ⁿ` lower bound (`tin`) vs the `≤ O(ε·diam²·(1/4)ⁿ)` ML
+  bound forces `tri_int(h) ≤ 18ε·diam²` for all `ε`, hence `= 0`.  Axiom-clean.
 
-Large (~300 lines) but every ingredient is in place; the completeness limit (step 3) is the
-one genuinely delicate part (Cauchy sequence in C via the two R-component sequences).
+**Goursat — the foundational hard theorem of the contour-integration wall — is complete.**
 
-### Then: C2b–C2d (Cauchy integral formula) → C4 (Newman) → Milestone D → PNT.
+### Remaining Milestone C/D
+- C2b: holomorphic on a convex set ⇒ has a primitive ⇒ `∮_loop = 0` (define the primitive by a
+  base-point integral; path-independence from `goursat` via triangulation).
+- C2c: `∮_C dz/z = 2πi` (explicit winding of the truncated-disk contour).
+- C2d: Cauchy integral formula `∮_C F/z = 2πi·F(0)` (`(F(z)−F(0))/z` removable + C2b + C2c).
+- C4: Newman's analytic theorem (contour estimates on `CPathIntegral`/`CExpKernel`).
+- Milestone D: Newman ⇒ `ψ~x` ⇒ `pi_asymp_of_psi` ⇒ PNT (with C0 = holomorphy at `s=1`).
