@@ -894,3 +894,4 @@ spectral-theory/CGeomCauchy.v
 spectral-theory/CGoursat.v
 spectral-theory/CPrimitive.v
 spectral-theory/CWinding.v
+spectral-theory/CMeanValue.v
