@@ -56,10 +56,39 @@ Zagier truncated-disk contour, stage the Goursat/Cauchy wall.
 
 **Goursat — the foundational hard theorem of the contour-integration wall — is complete.**
 
+### C2b — primitive of a holomorphic function + loop zero  ✅ DONE
+- `CPrimitive.v` — `seg_int` algebra (`seg_int_const/opp/sub`, `Cintf_const01`); the base-point
+  primitive `Prim z := seg_int F z0 z`; `Prim_diff : Prim(z+k)−Prim(z) = ∫_z^{z+k}F` (Goursat
+  kills the triangle `z0,z,z+k`; `seg_reverse`); **`Prim_deriv : is_Cderiv Prim z (F z)`**
+  (the increment `∫_z^{z+k}(F(w)−F(z))dw` is `o(k)` by `is_Cderiv_cont` + `seg_int_ML`);
+  **`pathint_loop_holo`**: the loop integral of a holomorphic `F` over any closed `C¹` path
+  is `0` (`Prim_deriv` + `pathint_primitive_loop`). Axiom-clean.
+
+### C2c — the winding integral  ✅ DONE
+- `CWinding.v` — `Cintf_const_ab`; `arc_over_id`: on `z = r e^{iθ}`, `(1/z)·z' = i` (constant,
+  via `cos²+sin²=1`); **`winding_dz_z : ∮_{|z|=r} dz/z = 2πi`**. Axiom-clean.
+
+### C2d — Cauchy integral formula  ⏳ NEXT (the removable-singularity wall)
+`∮_C F(z)/z dz = 2πi·F(0)` for `F` holomorphic on the region. Reduces (C2b+C2c) to
+`∮_C φ = 0` where `φ(z)=(F(z)−F(0))/z`, `φ(0):=F′(0)`. **`φ` is continuous everywhere but only
+holomorphic off `0`** — so C2b's `pathint_loop_holo` (needs holomorphy *everywhere*) does not
+apply directly. The honest route is the classical **exceptional-point Goursat** (continuous on
+the triangle, holomorphic except at one point ⇒ `tri_int = 0`), which in turn needs a
+**region-version of `goursat`** (holomorphy only at the triangle's interior/hull points):
+  1. `goursat_hull` — relax `Hhol : forall z, ...` to `forall z, in_hull v0 v1 v2 z -> ...`.
+     The current proof already uses `Hhol` at exactly one point, the nested limit `zc`; the new
+     obligation is `in_hull v0 v1 v2 zc` (each `seqT` vertex is a convex combination of `v0v1v2`
+     by induction; the hull is closed, `zc = lim V0(seqT n)`). Global continuity `CcontC h` is
+     kept (no integral-infrastructure refactor).
+  2. `goursat_except` — `h` continuous on `△`, holomorphic off `p∈△`: subdivide so `p` is a
+     vertex of a small sub-triangle, `goursat_hull` on the `p`-avoiding pieces (they tile `△`,
+     internal edges cancel), ML-bound the small piece (`tri_int_ML` + continuity → `0` as it
+     shrinks).
+  3. C2d proper: `φ` continuous (removable at `0`, value `F′(0)`), holomorphic off `0`;
+     `goursat_except` ⇒ primitive on the region ⇒ `∮_C φ = 0`; then
+     `∮_C F/z = F(0)·∮_C dz/z + ∮_C φ = 2πi·F(0)` (C2c). This is a multi-brick body (convex-hull
+     machinery + subdivision tiling), comparable in size to the original Goursat.
+
 ### Remaining Milestone C/D
-- C2b: holomorphic on a convex set ⇒ has a primitive ⇒ `∮_loop = 0` (define the primitive by a
-  base-point integral; path-independence from `goursat` via triangulation).
-- C2c: `∮_C dz/z = 2πi` (explicit winding of the truncated-disk contour).
-- C2d: Cauchy integral formula `∮_C F/z = 2πi·F(0)` (`(F(z)−F(0))/z` removable + C2b + C2c).
 - C4: Newman's analytic theorem (contour estimates on `CPathIntegral`/`CExpKernel`).
 - Milestone D: Newman ⇒ `ψ~x` ⇒ `pi_asymp_of_psi` ⇒ PNT (with C0 = holomorphy at `s=1`).
