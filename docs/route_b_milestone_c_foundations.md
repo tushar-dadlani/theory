@@ -130,6 +130,26 @@ Let `M(r) := Cintf (fun θ => F(arc r θ)) 0 (2π)` (a C-valued integral). Targe
 Estimated size ~250–350 lines, dominated by Block 4's Heine-style 2D uniform continuity. Blocks
 1–3 are near-verbatim reuse of C2b/C2c/C1c and can be committed independently first.
 
+### C2d — Cauchy's integral formula on a circle  ✅ (modulo one standard hypothesis)
+Executed the mean-value/Leibniz route:
+- `CMeanValue.v` (Blocks 2+3) — `circint_Fp_zero` (`∮_{|z|=r}F′=0`), `Farc_r_deriv` (radial chain rule).
+- **`CLeibniz.v` (Block 4)** — `leibniz_deriv`: differentiation under the finite C-integral, from a
+  uniform first-order estimate (`RInt_scal`/`RInt_sub`/`Cintf_cmul_l`/`Cintf_sub` + `Cintf_ML`;
+  componentwise `Cmod_Re`/`Cmod_Im`). Reusable, no topology. Axiom-clean.
+- **`CCauchyFormula.v` (Blocks 1+4+5)** — `cauchy_integral_formula`:
+  `∮_{|z|=R} F/z = 2πi·F(0)`. `M(r)=∫₀^{2π}F(arc r θ)dθ`; `Fdphi_unif` supplies Leibniz's uniform
+  estimate via **seg-FTC** (`seg_FTC`+`seg_int_const`+`seg_int_sub`+`seg_int_ML`) bounded by the 2D
+  uniform continuity; `Mder_zero` (`∮F′=0` + C-field cancellation) ⇒ `M′≡0` ⇒ `M_const` (`MVT_cor2`)
+  ⇒ `M(R)=M(0)=2πF(0)` (`meanval0`+`winding_F_over_z`+`arc_over_id`). Axiom-clean, with **one
+  section hypothesis** `Harc_uc` = 2D uniform continuity of `Fp∘arc` over `[0,2π]`.
+- `CUnifCont.v` (Block A, part 1) — `deriv_lip1`⇒`cos_lip`/`sin_lip` (MVT), `arc_joint_cont`
+  (joint continuity of `arc`). **Remaining:** the finite-open-cover step (`compact_P3` + an
+  `is_lub`-radius family mirroring `Rtopology.Heine`, choice-free) that assembles these into
+  `arc_Fp_unifcont`, discharging `Harc_uc` from `Fp` pointwise-continuous. ~100–150 lines of
+  stdlib topology (`family`/`covering_open_set`/`disc_P1`/`open_set_P6`/`domain_finite`).
+
 ### Remaining Milestone C/D
+- C2d finish: the `CUnifCont.v` cover argument (above) ⇒ `arc_Fp_unifcont` ⇒ a wrapper
+  `cauchy_formula_full` with hypothesis "`Fp` pointwise-continuous" instead of `Harc_uc`.
 - C4: Newman's analytic theorem (contour estimates on `CPathIntegral`/`CExpKernel`).
 - Milestone D: Newman ⇒ `ψ~x` ⇒ `pi_asymp_of_psi` ⇒ PNT (with C0 = holomorphy at `s=1`).
