@@ -25,7 +25,31 @@ integrals over paths in the region vanish for free.
 
 ## Brick decomposition (each a file; ~2000 lines total — a multi-session milestone)
 
-### The contour wall (region-restricted Cauchy)
+### The contour wall (region-restricted Cauchy) — bricks 1–2 DONE
+**Brick 1 ✅ `CGoursatConv.v`** — `tri_int_conv`: region Goursat for a non-degenerate closed
+triangle (signed-area `InTri` + limit-stable sign conditions; axiom-clean).
+**Brick 2 ✅ `CPrimConv.v`** — `Convex`/`Open`, `convex_hull_subset`, `tri_split_vertex`,
+`tri_int_conv_all` (all triangles in an open convex `U`; degenerate case split through an off-line
+apex `w = v0 + λ·i·(v2−v0) ∈ U`), and the `ConvexPrim` section: `PrimC_deriv`
+(`is_Cderiv PrimC z (F z)` on `U`) + `pathint_loop_conv` (closed C¹ loop in `U` ⇒ `pathint F = 0`).
+Axiom-clean.
+
+**Brick 3 ⏳ `CGoursatExcept.v` (NEXT — the hard geometric one, ~250 lines):**
+- `seg_split_param` : `seg_int f a c = seg_int f a (seg a c δ) + seg_int f (seg a c δ) c` for
+  `δ∈[0,1]` (generalises `CSegInt.seg_concat` from δ=½; same `Cintf_cov` + affine-map plumbing).
+  Gives `tri_int_collinear` (degenerate ⇒ 0 for merely-continuous `h`).
+- `tri_except_vertex` : `h` continuous, holo on `U∖{p}`, `p` a vertex ⇒ `tri_int h p a b = 0`.
+  Cut a small corner triangle `(p, seg p a δ, seg p b δ)`; the two `p`-avoiding pieces vanish (see
+  reformulation below), the two collinear slivers vanish (`tri_int_collinear`), the corner is
+  ML-bounded (`tri_int_ML`, `perim→0`) ⇒ 0.
+- **Recommended reformulation to avoid convex-nbhd construction:** give `tri_int_conv`/`_all` a
+  variant taking holomorphy on the CLOSED triangle `InTri(v0,v1,v2)` (brick 1 already does), so a
+  `p`-free sub-triangle uses `h` holo on `InTri(sub) ⊆ U∖{p}` directly — no open convex `U'∌p`
+  needed. Only degenerate `p`-free subs need the off-line apex (choose it `≠ p` via `Open`).
+- `tri_int_except` (`p` anywhere in `U`) via `tri_split_vertex` through `p`; then `pathint_loop_except`
+  (rerun brick 2's `PrimC` with `tri_int_except`).
+
+### The contour wall — original brick list (unchanged detail)
 1. **`CGoursatConv.v` — region Goursat.** `tri_int h v0 v1 v2 = 0` for `h` globally continuous
    (`CcontC h`) but holomorphic only on the closed triangle. Copy `CGoursat.goursat`; weaken `Hhol`
    to `forall z, InTri v0 v1 v2 z -> exists d, is_Cderiv h z d`; the ONE new obligation is
