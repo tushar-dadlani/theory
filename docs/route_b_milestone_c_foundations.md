@@ -89,6 +89,18 @@ the triangle, holomorphic except at one point ⇒ `tri_int = 0`), which in turn 
      `∮_C F/z = F(0)·∮_C dz/z + ∮_C φ = 2πi·F(0)` (C2c). This is a multi-brick body (convex-hull
      machinery + subdivision tiling), comparable in size to the original Goursat.
 
+**Alternative route for C2d (mean-value / Leibniz) — may be cleaner.** For the *circle* contour,
+`∮_{|z|=R} F/z dz = i∫₀^{2π} F(Re^{iθ})dθ`, so the formula is the mean-value property
+`(1/2π)∫₀^{2π}F(re^{iθ})dθ = F(0)`. Set `M(r) := ∫₀^{2π}F(re^{iθ})dθ`; `M(0)=2πF(0)`. Then
+`M'(r) = ∫₀^{2π}F′(re^{iθ})e^{iθ}dθ`, and since `d/dθ[F(re^{iθ})] = ir·F′(re^{iθ})e^{iθ}`, FTC +
+periodicity give `∫₀^{2π}F′(re^{iθ})e^{iθ}dθ = 0` — equivalently `∮_{|z|=r}F′ = 0`, which is
+**exactly C2b** (`F` is a primitive of `F′`, `pathint_primitive_loop`). So `M′(r)=0 ⇒ M` constant
+`⇒ M(R)=M(0)`. This avoids convex-hull/tiling machinery entirely; its one new ingredient is the
+**Leibniz rule** `d/dr ∫₀^{2π}f(r,θ)dθ = ∫₀^{2π}∂_r f dθ` (differentiation under the RiemannInt,
+for `f,∂_r f` jointly continuous) — a single self-contained real-analysis lemma. Recommended
+route unless Newman needs the truncated-disk (non-circle) contour, in which case the
+exceptional-point Goursat above is required.
+
 ### Remaining Milestone C/D
 - C4: Newman's analytic theorem (contour estimates on `CPathIntegral`/`CExpKernel`).
 - Milestone D: Newman ⇒ `ψ~x` ⇒ `pi_asymp_of_psi` ⇒ PNT (with C0 = holomorphy at `s=1`).
