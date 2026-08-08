@@ -897,3 +897,4 @@ spectral-theory/CWinding.v
 spectral-theory/CMeanValue.v
 spectral-theory/CLeibniz.v
 spectral-theory/CCauchyFormula.v
+spectral-theory/CUnifCont.v
