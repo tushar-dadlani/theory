@@ -899,3 +899,4 @@ spectral-theory/CLeibniz.v
 spectral-theory/CCauchyFormula.v
 spectral-theory/CUnifCont.v
 spectral-theory/CNewmanKernel.v
+spectral-theory/CGoursatConv.v
