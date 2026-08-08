@@ -101,6 +101,35 @@ for `f,∂_r f` jointly continuous) — a single self-contained real-analysis le
 route unless Newman needs the truncated-disk (non-circle) contour, in which case the
 exceptional-point Goursat above is required.
 
+**Chosen route: mean-value/Leibniz. Full blueprint (all axiom-clean; `Heine` confirmed to use
+only the four Reals axioms, so 2D uniform continuity is achievable without choice/epsilon):**
+Let `M(r) := Cintf (fun θ => F(arc r θ)) 0 (2π)` (a C-valued integral). Target `M(R) = M(0)`.
+- **Block 1 — reduction (pure C2c reuse).** `∮_{|z|=R} F/z = Cmul Ci (M R)`: the integrand is
+  `F(arc R θ)·(Cinv(arc R θ)·arc'(R θ)) = F(arc R θ)·Ci` by `arc_over_id`; pull the constant `Ci`
+  out with a `Cintf_cmul_l` helper (RiemannInt linearity). Also `M(0) = Cmul (RtoC 2π) (F C0)`
+  (`arc 0 θ = C0`, `Cintf_const_ab`). So the formula `= 2πi·F(0)` follows once `M(R)=M(0)`.
+- **Block 2 — `∮_{|z|=r} F' dz = 0` (pure C2b reuse).** `F` is a primitive of `F'`, so
+  `pathint_primitive_loop` gives it directly (the arc is a closed C¹ path:
+  `arc r 0 = arc r 2π`, `d/dθ Re/Im(arc r θ) = Re/Im(arc' r θ)` are scaled `sin/cos` derivatives).
+- **Block 3 — the chain rule (pure C1c reuse).** `d/dr F(arc r θ) = Cmul (F'(arc r θ)) (mkC cosθ sinθ)`
+  via `Cderiv_path_Re/Im` with the path `r ↦ arc r θ` (its r-derivative is `mkC cosθ sinθ`,
+  `derivable_pt_lim (fun r => r·cosθ) = cosθ`).
+- **Block 4 — Leibniz (the one new theorem).** `M'(r) = Cintf (fun θ => d/dr F(arc r θ)) 0 (2π)`.
+  Core is easy (`Cintf` linearity + `Cintf_ML`): `M(r)−M(r0)−M'(r0)(r−r0) = ∫[o(r−r0)]dθ`, bounded
+  by `2π·(uniform o)`. The ONE hard input is the **uniform-in-θ bound**, which the `seg`-FTC
+  reduces to **uniform-in-θ continuity of `ρ ↦ F'(arc ρ θ)` at `ρ=r0`**
+  (`F(w+Δ)−F(w)−F'(w)Δ = ∫_{seg w (w+Δ)}(F'−F'(w))`, ML-bounded by `sup_ρ|F'(arc ρ θ)−F'(arc r0 θ)|`).
+  That sup-continuity is 2D uniform continuity on the compact `[r0−δ,r0+δ]×[0,2π]`; build it
+  axiom-clean by mimicking `Rtopology.Heine`'s finite-open-cover construction for the 2-parameter
+  map (avoid the sequential/`ValAdh` route — extracting the sequence from the negation would need
+  a choice axiom, breaking axiom-cleanliness).
+- **Block 5 — assembly.** Block 2 ⇒ `M'(r) = (1/(ir))∮_{|z|=r}F' = 0` for `r>0`; `M` continuous
+  (Leibniz ⇒ differentiable ⇒ continuous) with `M'≡0` on `(0,R]` ⇒ `M` constant (component-wise
+  `null_derivative`/MVT) ⇒ `M(R)=M(0)`. Combine with Block 1 ⇒ `∮_{|z|=R}F/z = 2πi·F(0)`.
+
+Estimated size ~250–350 lines, dominated by Block 4's Heine-style 2D uniform continuity. Blocks
+1–3 are near-verbatim reuse of C2b/C2c/C1c and can be committed independently first.
+
 ### Remaining Milestone C/D
 - C4: Newman's analytic theorem (contour estimates on `CPathIntegral`/`CExpKernel`).
 - Milestone D: Newman ⇒ `ψ~x` ⇒ `pi_asymp_of_psi` ⇒ PNT (with C0 = holomorphy at `s=1`).
