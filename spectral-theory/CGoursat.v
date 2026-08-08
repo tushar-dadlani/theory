@@ -7,8 +7,9 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra Lia.
-Require Import ComplexField Cmodulus Holomorphic CSegInt CTriangle
-        CGoursatFTC CGoursatLin CGoursatML CGoursatAffine CGoursatGeom CGeomCauchy.
+Require Import ComplexField Cmodulus Holomorphic CIntegral2 CPathIntegral CSegInt
+        CTriangle CGoursatFTC CGoursatLin CGoursatML CGoursatAffine CGoursatGeom
+        CGeomCauchy.
 Open Scope R_scope.
 
 Section Goursat.
@@ -101,10 +102,85 @@ Proof.
     solve [ exact Hz | apply vmove_m01 | apply vmove_m20 ].
 Qed.
 
-Print Assumptions v0_next.
+(* ---- the nested sequence and its bounds ---- *)
+Definition seqT (t0 : Tri) (n : nat) : Tri := Nat.iter n nextT t0.
+
+Lemma seqT_S : forall t0 n, seqT t0 (S n) = nextT (seqT t0 n).
+Proof. reflexivity. Qed.
+
+Lemma diamn : forall t0 n, diam3 (seqT t0 n) <= diam3 t0 * (/ 2) ^ n.
+Proof.
+  intros t0 n; induction n.
+  - unfold seqT; simpl; lra.
+  - rewrite seqT_S; eapply Rle_trans; [ apply diam_next | ].
+    apply Rle_trans with (/ 2 * (diam3 t0 * (/ 2) ^ n));
+      [ apply Rmult_le_compat_l; [ lra | exact IHn ] | ].
+    assert (Hs : (/ 2) ^ (S n) = / 2 * (/ 2) ^ n) by (cbn [pow]; ring).
+    rewrite Hs; apply Req_le; ring.
+Qed.
+
+Lemma tin : forall t0 n, Cmod (TI t0) * (/ 4) ^ n <= Cmod (TI (seqT t0 n)).
+Proof.
+  intros t0 n; induction n.
+  - unfold seqT; simpl; lra.
+  - rewrite seqT_S; pose proof (TI_next (seqT t0 n)) as HT.
+    assert (Hs : (/ 4) ^ (S n) = / 4 * (/ 4) ^ n) by (cbn [pow]; ring).
+    rewrite Hs; apply Rle_trans with (Cmod (TI (seqT t0 n)) / 4).
+    + apply Rle_trans with (Cmod (TI t0) * (/ 4) ^ n / 4);
+        [ apply Req_le; field | apply Rmult_le_compat_r; [ lra | exact IHn ] ].
+    + lra.
+Qed.
+
+Lemma v0_incr : forall t0 n,
+  Cmod (Cminus (V0 (seqT t0 (S n))) (V0 (seqT t0 n))) <= (diam3 t0 / 2) * (/ 2) ^ n.
+Proof.
+  intros t0 n; rewrite seqT_S; eapply Rle_trans; [ apply v0_next | ].
+  apply Rle_trans with (/ 2 * (diam3 t0 * (/ 2) ^ n));
+    [ apply Rmult_le_compat_l; [ lra | apply diamn ] | apply Req_le; field ].
+Qed.
+
+(* ---- general helpers used by the assembly ---- *)
+Lemma seg_convex_bound : forall a b zc s, 0 <= s <= 1 ->
+  Cmod (Cminus (seg a b s) zc)
+  <= Rmax (Cmod (Cminus a zc)) (Cmod (Cminus b zc)).
+Proof.
+  intros a b zc s [Hs0 Hs1].
+  assert (Heq : Cminus (seg a b s) zc =
+    Cadd (Cmul (RtoC (1 - s)) (Cminus a zc)) (Cmul (RtoC s) (Cminus b zc)))
+    by (unfold seg, Cadd, Cmul, RtoC, Cminus; apply Ceq; cbn; ring).
+  rewrite Heq; eapply Rle_trans; [ apply Cmod_triangle | ].
+  rewrite !Cmod_mul, !Cmod_RtoC.
+  rewrite (Rabs_pos_eq (1 - s)) by lra; rewrite (Rabs_pos_eq s) by lra.
+  apply Rle_trans with ((1 - s) * Rmax (Cmod (Cminus a zc)) (Cmod (Cminus b zc))
+    + s * Rmax (Cmod (Cminus a zc)) (Cmod (Cminus b zc))).
+  - apply Rplus_le_compat.
+    + apply Rmult_le_compat_l; [ lra | apply Rmax_l ].
+    + apply Rmult_le_compat_l; [ lra | apply Rmax_r ].
+  - apply Req_le; ring.
+Qed.
+
+Lemma CcontC_opp : forall f, CcontC f -> CcontC (fun z => Copp (f z)).
+Proof. intros f Hf gam Hgam; apply Ccont_opp, Hf; exact Hgam. Qed.
+
+Lemma seg_int_ext : forall f g Hf Hg a b,
+  (forall z, f z = g z) -> seg_int f Hf a b = seg_int g Hg a b.
+Proof.
+  intros f g Hf Hg a b Heq; unfold seg_int; apply Cintf_ext; intro u;
+    rewrite Heq; reflexivity.
+Qed.
+
+Lemma tri_int_ext : forall f g Hf Hg v0 v1 v2,
+  (forall z, f z = g z) -> tri_int f Hf v0 v1 v2 = tri_int g Hg v0 v1 v2.
+Proof.
+  intros f g Hf Hg v0 v1 v2 Heq; unfold tri_int;
+    rewrite (seg_int_ext f g Hf Hg v0 v1 Heq), (seg_int_ext f g Hf Hg v1 v2 Heq),
+            (seg_int_ext f g Hf Hg v2 v0 Heq); reflexivity.
+Qed.
+
+Print Assumptions v0_incr.
 
 End Goursat.
 
 (* ================================================================= *)
-(*  END CGoursat.v (chunk 1) — nextT sequence step + properties.        *)
+(*  END CGoursat.v (chunk 2) — sequence bounds + assembly helpers.      *)
 (* ================================================================= *)
