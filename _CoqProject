@@ -902,3 +902,4 @@ spectral-theory/CNewmanKernel.v
 spectral-theory/CGoursatConv.v
 spectral-theory/CPrimConv.v
 spectral-theory/CGoursatExcept.v
+spectral-theory/CTruncWind.v
