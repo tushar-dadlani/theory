@@ -204,6 +204,14 @@ Let `n_k = p_1···p_k` be the k-th primorial. Two facts, one negative and one 
    the divisors of `n_k`, i.e. the Boolean cube `2^k`. So the primorial is the top of the F-free
    sublattice and `val_n_zero_iff` is the statement "μ is supported on divisors of `n_k`" — the
    squarefree collapse `INFMonoid` already names, read one dimension up.
+   **DONE (the seam to the genuine Möbius function, axiom-free): `spectral-theory/MobiusINFSeam.v`.**
+   `mu_smooth_val_n`: for `pks : list (prime, exponent)` with distinct primes,
+   `DirichletConv.mu (∏ p_i^{k_i}) = INFProduct.val_n (map sym_of (map snd pks))`. Proved from the
+   atomic seam `mu_ppow_eq_mu_pp : mu(p^k) = mu_pp k` (all k: `mu_1`/`mu_p`/`mu_ppow_ge2`) and
+   `DirichletMult.mu_mult_prod` iterated with `DirichletVonMangoldtGen.gcd_ppow_coprime` for the
+   coprimality (each head prime `∤` the smooth tail, via `prime_mult_nat` + `prime_div_prime`), then
+   `INFProduct.val_n_mu`. So one `F` (some `k_i ≥ 2`) sends both sides to 0 — the squarefree veto IS
+   `μ` vanishing — and `{I,N}` on squarefree smooth numbers is exactly `μ`.
 
 2. **The primorial is where the residue monoid algebra factors as a tensor product.**
    `ProfiniteCRT.crt_iso` (ProfiniteCRT.v:117, axiom-free) gives `ℤ/mn ≅ ℤ/m × ℤ/n` for coprime
