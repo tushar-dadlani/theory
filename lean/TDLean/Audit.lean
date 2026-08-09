@@ -21,6 +21,7 @@ import TDLean.Newman.Winding
 import TDLean.Newman.StarPrimitive
 import TDLean.Newman.TruncCauchy
 import TDLean.Newman.Laplace
+import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -175,6 +176,16 @@ import TDLean.Newman.Laplace
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Newman.norm_laplaceTail_le
+
+/-- info: 'TDLean.Newman.newman_contour_identity' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.newman_contour_identity
+
+/-- info: 'TDLean.Newman.truncContour_kernelPoly_eq_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.truncContour_kernelPoly_eq_zero
 
 /-! ### Non-vacuity witnesses
 

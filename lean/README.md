@@ -103,6 +103,7 @@ on injected `sorry`). Four bricks landed, all tier L1:
 | C5 | `Newman/Winding.lean` | `CTruncWind.v` |
 | C6 | `Newman/TruncCauchy.lean` | `CTruncCauchy.v` |
 | C7 | `Newman/Laplace.lean` | `CLaplace.v` |
+| C8 (part) | `Newman/Tauberian.lean` | — (overtake) |
 
 C5 (`∮_C dz/z = 2πi`) turned out **not** to need the keystone C4: on the chord
 `Re z < 0`, so `log(-z)` is a primitive of `1/z` there and C3 finishes it. See LEDGER §3.1.
@@ -119,5 +120,9 @@ Two findings stand out:
   triangle Goursat, and `log(-z)` instead of `arctan` antiderivatives — so the agreement is
   genuinely independent rather than a re-run of the same argument.
 
-Next: C8 (Newman's analytic Tauberian theorem, which does not exist on the Coq side). Also outstanding: B4 (the `⋉`-is-really-`×`
+C8 is under way. `CNewman.v` does not exist on the Coq side, so this brick is an
+**overtake**, not a cross-verification, and is labelled as such. Landed so far: the
+contour identity `∮_C F(z)(1/z + z/R²) dz = 2πi F(0)` (C4 + C6) and the Laplace tail
+bound (C7). Still to come: the two remaining ML estimates, the `T → ∞` dominated-
+convergence step on the left part, and the `ε`-chase in `R`. Also outstanding: B4 (the `⋉`-is-really-`×`
 splitting theorem) and A2 (the theta transformation from Poisson summation).
