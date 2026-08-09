@@ -903,3 +903,4 @@ spectral-theory/CGoursatConv.v
 spectral-theory/CPrimConv.v
 spectral-theory/CGoursatExcept.v
 spectral-theory/CTruncWind.v
+spectral-theory/CTruncCauchy.v
