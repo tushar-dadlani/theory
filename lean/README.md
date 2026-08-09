@@ -121,8 +121,16 @@ Two findings stand out:
   genuinely independent rather than a re-run of the same argument.
 
 C8 is under way. `CNewman.v` does not exist on the Coq side, so this brick is an
-**overtake**, not a cross-verification, and is labelled as such. Landed so far: the
-contour identity `∮_C F(z)(1/z + z/R²) dz = 2πi F(0)` (C4 + C6) and the Laplace tail
-bound (C7). Still to come: the two remaining ML estimates, the `T → ∞` dominated-
-convergence step on the left part, and the `ε`-chase in `R`. Also outstanding: B4 (the `⋉`-is-really-`×`
+**overtake**, not a cross-verification, and is labelled as such. Landed so far:
+
+- the contour identity `∮_C F(z)(1/z + z/R²) dz = 2πi F(0)` (from C4 + C6);
+- the Laplace tail bound `‖∫_{t>T} f e^{−zt}‖ ≤ B e^{−(Re z)T}/Re z` (C7);
+- ML bounds for the arc and chord;
+- **the right-semicircle estimate**, where the tail bound, `‖e^{zT}‖` and the kernel
+  identity cancel to the constant `2B/R²`. That cancellation is the crux of Newman's
+  argument.
+
+Still to come: the left-semicircle estimate for the entire `g_T`, the `T → ∞`
+dominated-convergence step for the `g` part at fixed `R`, and the `ε`-chase in `R`
+that assembles them. Also outstanding: B4 (the `⋉`-is-really-`×`
 splitting theorem) and A2 (the theta transformation from Poisson summation).

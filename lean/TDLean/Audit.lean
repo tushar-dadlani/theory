@@ -187,6 +187,21 @@ import TDLean.Newman.Tauberian
 #guard_msgs in
 #print axioms TDLean.Newman.truncContour_kernelPoly_eq_zero
 
+/-- info: 'TDLean.Newman.norm_newman_integrand_right' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.norm_newman_integrand_right
+
+/-- info: 'TDLean.Newman.norm_arcIntegral_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.norm_arcIntegral_le
+
+/-- info: 'TDLean.Newman.norm_chordIntegral_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.norm_chordIntegral_le
+
 /-! ### Non-vacuity witnesses
 
     These must be audited too. A `sorry` here is exactly as fatal as a `sorry` in a
@@ -229,3 +244,8 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Newman.trunc_winding_nonvacuous
+
+/-- info: 'TDLean.Newman.norm_newman_integrand_right_nonvacuous' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.norm_newman_integrand_right_nonvacuous

@@ -186,6 +186,37 @@ theorem truncContour_add {f g : ℂ → ℂ} {R α : ℝ}
     intervalIntegral.integral_add (chordIntegrable (hf.mono hchS)) (chordIntegrable (hg.mono hchS))]
   ring
 
+/-! ### ML estimates
+
+    The standard "length times sup" bounds for the two pieces. These are what Newman's
+    three semicircle estimates are ultimately applications of. -/
+
+/-- On the arc, `‖γ'(θ)‖ = |R|`. -/
+theorem norm_deriv_circleMap (R θ : ℝ) : ‖deriv (circleMap 0 R) θ‖ = |R| := by
+  rw [deriv_circleMap, norm_mul, Complex.norm_I, mul_one, norm_circleMap_zero]
+
+/-- ML bound on the arc: `‖∫_arc f‖ ≤ |R| · M · |2α|`. -/
+theorem norm_arcIntegral_le {f : ℂ → ℂ} {R α M : ℝ}
+    (hf : ∀ z ∈ arcSet R α, ‖f z‖ ≤ M) :
+    ‖arcIntegral f R α‖ ≤ |R| * M * |α - -α| := by
+  refine intervalIntegral.norm_integral_le_of_norm_le_const fun θ hθ => ?_
+  have hmem : circleMap 0 R θ ∈ arcSet R α := arcSet_mem (uIoc_subset_uIcc hθ)
+  have hM0 : 0 ≤ M := le_trans (norm_nonneg _) (hf _ hmem)
+  rw [norm_mul, norm_deriv_circleMap]
+  exact mul_le_mul_of_nonneg_left (hf _ hmem) (abs_nonneg R)
+
+/-- ML bound on the chord: `‖∫_chord f‖ ≤ ‖Q − P‖ · M`. -/
+theorem norm_chordIntegral_le {f : ℂ → ℂ} {P Q : ℂ} {M : ℝ}
+    (hf : ∀ z ∈ chordSet P Q, ‖f z‖ ≤ M) :
+    ‖chordIntegral f P Q‖ ≤ ‖Q - P‖ * M := by
+  have h := intervalIntegral.norm_integral_le_of_norm_le_const
+    (a := (0 : ℝ)) (b := 1) (C := ‖Q - P‖ * M)
+    (f := fun t : ℝ => (Q - P) * f (chord P Q t)) fun t ht => by
+      have hmem : chord P Q t ∈ chordSet P Q := chordSet_mem (uIoc_subset_uIcc ht)
+      rw [norm_mul]
+      exact mul_le_mul_of_nonneg_left (hf _ hmem) (norm_nonneg _)
+  simpa [chordIntegral] using h
+
 /-! ### FTC on each piece -/
 
 /-- FTC along the arc: with a primitive `F`, the arc integral telescopes. -/
