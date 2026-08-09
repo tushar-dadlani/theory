@@ -14,7 +14,15 @@
 (*      forall L, is_limsup Vrem L -> 0 < L -> lambda2_dip L -> False.  *)
 (*                                                                    *)
 (*  This is the Λ₂/ln² analogue of SelbergDip.dip_avg_below; it isolates *)
-(*  PNT to the single density fact  lambda2_dip  (the Erdős core).       *)
+(*  PNT to the single density fact  lambda2_dip.                         *)
+(*                                                                    *)
+(*  ⚠ CAVEAT (see docs/pnt_elementary_status.md): the theorems below are  *)
+(*  VALID but on a DEAD BRANCH — lambda2_dip is FALSE for α>0.  At a peak *)
+(*  N* (Vrem(N*)→α) the star inequality itself forces dipw2 b N* =        *)
+(*  O(ε₀)·ln²N*, so no fixed θ works uniformly.  The unsigned |Vrem| log² *)
+(*  route gives no improvement at peaks (|·| kills the ±α cancellation).  *)
+(*  The correct closure is the SIGNED two-scale Erdős argument            *)
+(*  (selberg_average_signed + signed_pin), not this dip.                 *)
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra Lia Arith Lists.List.

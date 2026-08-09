@@ -68,7 +68,29 @@ concrete; needs `Lam2_nonneg` (Λ2 = Λ·ln + Σ Λ·Λ ≥ 0 for n≥1) as a sm
 Reusable: `SelbergDip.v` helpers (`Rls_lin`, `Rls_scal'`, `ln_le'`, `tail_ln`,
 `Ndiv_ge`), `Rls_app`, `Rls_le`.
 
-### THE remaining crux: `lambda2_dip` (`SelbergSelfImprove.v`) — open research
+### ⚠ CRITICAL: `lambda2_dip` is FALSE (α>0) — the unsigned route is a dead branch
+
+Evaluating `dipw2` at a **peak** `N*` (where `Vrem(N*) → α`) via `star_inequality`
+itself gives `dipw2 b N* ≤ (ε₀/(α−b))·ln²N* + O(ln N*)` for the eventual bound `ε₀`;
+since the limsup lets `ε₀ → 0`, for ANY fixed `θ>0` there are arbitrarily large peaks
+with `dipw2 b N* < θ·ln²N*`. So `dipw2 b N ≥ θ·ln²N` **cannot hold uniformly** — it
+fails at the peaks. Hence `lambda2_dip` (∀ large N) is FALSE for α>0, and
+`self_improve_of_dip` / `pnt_of_lambda2_dip`, though VALID theorems, are on a **dead
+branch** (their hypothesis is unsatisfiable). The unsigned `|Vrem|` log² route gives
+NO improvement at peaks: at a peak the sub-scales concentrate at the OPPOSITE
+signed extreme (`Vsig ≈ −α`), whose `|Vsig| = α` is large, not a dip — `|·|` destroys
+the `±α` cancellation.
+
+**The correct route is the SIGNED two-scale Erdős argument** (`selberg_average_signed`
++ `signed_pin`): at a peak `x` (`Vsig(x)≈+α`) the Λ-weighted average of `Vsig(x/n)` is
+`≈ −α`, forcing concentration at `−α`; applying the symmetry again at a trough
+`y=x/n` (`Vsig(y)≈−α`) forces its sub-scales `≈ +α`; but `y/m = x/(nm)` is a sub-scale
+of both, and must be `≈ −α` (from x) and `≈ +α` (from y) — contradiction, forcing
+`α=0`. This is Selberg's 1949 core; it needs the concentration/overlap made
+quantitative (positive Λ-measure). `lam2_interval_mass` (committed) is still a useful
+reweighting atom, but the DIP framing must be replaced by this signed contraction.
+
+### (obsolete) the previous framing: `lambda2_dip`
 
 ```coq
 Definition lambda2_dip (L:R) : Prop :=
