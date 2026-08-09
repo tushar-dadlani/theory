@@ -1,0 +1,23 @@
+/-
+  TDLean -- root import file.
+
+  TDLean.Audit is imported LAST and on purpose: it wraps every headline theorem in
+  `#guard_msgs in #print axioms`, so a green `lake build TDLean` *is* the axiom audit.
+  If a `sorry` appears anywhere in a headline's dependency graph, `sorryAx` enters the
+  message, `#guard_msgs` fails, and the build fails.
+
+  TDLean.Audit.CrossCheck is deliberately NOT imported here -- it is the only file
+  allowed to touch banned mathlib modules, and keeping it out of this graph is what
+  guarantees those lemmas never discharge a headline.
+-/
+import TDLean.Basic
+
+-- Cluster B -- monoid algebra of prime length
+import TDLean.MonoidAlgebra.ZMod.PrimeIsWithZero
+import TDLean.MonoidAlgebra.Sym.SignType
+
+-- Cluster C -- Newman contour route
+import TDLean.Newman.Region
+import TDLean.Newman.Kernel
+
+import TDLean.Audit
