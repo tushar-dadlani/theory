@@ -10,8 +10,8 @@
 
 From Stdlib Require Import Reals Lra Lia Classical.
 Require Import ComplexField Cmodulus CSeries CIntegral2 CSegCoV CSegInt
-        CPathIntegral CTriangle Holomorphic CHoloCalculus CGoursatML
-        CGoursatGeom CGoursat CGoursatConv CPrimConv.
+        CPathIntegral CPathFTC CTriangle Holomorphic CHoloCalculus CGoursatML
+        CGoursatGeom CGoursatLin CGoursat CGoursatConv CPrimitive CPrimConv.
 Open Scope R_scope.
 
 Section SplitParam.
@@ -257,8 +257,161 @@ Proof.
   rewrite (Rmult_comm delta (D1 + 1)); apply Rmult_le_compat_l; lra.
 Qed.
 
-Print Assumptions tri_except_vertex.
+(* ================================================================= *)
+(*  Degenerate (collinear) triangles vanish for merely-continuous h.     *)
+(* ================================================================= *)
+
+(* a collinear b lies on the line a—c: b = seg a c t for some real t *)
+Lemma extract_t : forall a b c, a <> c -> sarea a b c = 0 -> exists t, b = seg a c t.
+Proof.
+  intros a b c Hac Hs; unfold sarea, cross, Cminus in Hs; cbn in Hs.
+  destruct (Req_dec (Re c - Re a) 0) as [Hr | Hr].
+  - assert (Him : Im c - Im a <> 0) by (intro Hi; apply Hac; apply Ceq; lra).
+    assert (Hreb : Re b = Re a).
+    { assert (H : (Re b - Re a) * (Im c - Im a) = 0) by nra.
+      apply Rmult_integral in H; destruct H; [ lra | contradiction ]. }
+    exists ((Im b - Im a) / (Im c - Im a)).
+    apply Ceq; unfold seg, Cadd, Cmul, RtoC, Cminus; cbn; [ rewrite Hr; lra | field; exact Him ].
+  - exists ((Re b - Re a) / (Re c - Re a)).
+    apply Ceq; unfold seg, Cadd, Cmul, RtoC, Cminus; cbn; [ field; exact Hr | ].
+    apply (Rmult_eq_reg_r (Re c - Re a)); [ field_simplify; try exact Hr; nra | exact Hr ].
+Qed.
+
+(* general collinear Chasles: seg_int a c = seg_int a b + seg_int b c *)
+Lemma seg_chasles_collinear : forall f (Hf : CcontC f) a b c,
+  a <> c -> sarea a b c = 0 ->
+  seg_int f Hf a c = Cadd (seg_int f Hf a b) (seg_int f Hf b c).
+Proof.
+  intros f Hf a b c Hac Hs; destruct (extract_t a b c Hac Hs) as [t Ht].
+  destruct (Rlt_le_dec t 0) as [Ht0 | Ht0].
+  - (* t < 0 : a is between b and c *)
+    set (s := - t / (1 - t)).
+    assert (Hs01 : 0 <= s <= 1) by (unfold s; split;
+      [ apply Rle_mult_inv_pos; lra | apply Rmult_le_reg_r with (1 - t); [ lra | ];
+        replace (- t / (1 - t) * (1 - t)) with (- t) by (field; lra); lra ]).
+    assert (Hba : seg b c s = a)
+      by (rewrite Ht; unfold s, seg, Cadd, Cmul, RtoC, Cminus; apply Ceq; cbn; field; lra).
+    pose proof (seg_split_param f Hf b c s Hs01) as HH; rewrite Hba in HH.
+    rewrite (seg_reverse f Hf a b) in HH; ring [HH].
+  - destruct (Rle_lt_dec t 1) as [Ht1 | Ht1].
+    + (* 0 <= t <= 1 : b between a and c *)
+      rewrite Ht; apply (seg_split_param f Hf a c t); lra.
+    + (* t > 1 : c is between a and b *)
+      set (s := / t).
+      assert (Hs01 : 0 <= s <= 1) by (unfold s; split;
+        [ left; apply Rinv_0_lt_compat; lra
+        | rewrite <- Rinv_1; apply Rinv_le_contravar; lra ]).
+      assert (Hca : seg a b s = c)
+        by (rewrite Ht; unfold s, seg, Cadd, Cmul, RtoC, Cminus; apply Ceq; cbn; field; lra).
+      pose proof (seg_split_param f Hf a b s Hs01) as HH; rewrite Hca in HH.
+      rewrite (seg_reverse f Hf b c) in HH; ring [HH].
+Qed.
+
+Lemma tri_int_collinear : forall f (Hf : CcontC f) a b c,
+  sarea a b c = 0 -> tri_int f Hf a b c = C0.
+Proof.
+  intros f Hf a b c Hs; destruct (classic (a = c)) as [-> | Hac].
+  - apply tri_int_deg20.
+  - unfold tri_int; rewrite (seg_reverse f Hf a c).
+    pose proof (seg_chasles_collinear f Hf a b c Hac Hs) as HC; ring [HC].
+Qed.
+
+(* ---- Goursat with one exceptional point (anywhere) ---- *)
+Theorem tri_int_except : forall (U : C -> Prop), Convex U ->
+  forall h (Hcont : CcontC h) p v0 v1 v2,
+  U p -> U v0 -> U v1 -> U v2 ->
+  (forall z, U z -> z <> p -> exists d, is_Cderiv h z d) ->
+  (exists M eta, 0 < eta /\ forall w, Cmod (Cminus w p) < eta -> Cmod (h w) <= M) ->
+  tri_int h Hcont v0 v1 v2 = C0.
+Proof.
+  intros U HU h Hcont p v0 v1 v2 HUp HU0 HU1 HU2 Hhol Hbd.
+  rewrite (tri_split_vertex h Hcont p v0 v1 v2).
+  assert (Hsub : forall a b, U a -> U b -> tri_int h Hcont p a b = C0).
+  { intros a b HUa HUb; destruct (Req_dec (sarea p a b) 0) as [Hd | Hnd].
+    - apply tri_int_collinear; exact Hd.
+    - apply (tri_except_vertex U HU h Hcont p a b HUp HUa HUb Hnd Hhol Hbd). }
+  rewrite (Hsub v0 v1 HU0 HU1), (Hsub v1 v2 HU1 HU2), (Hsub v2 v0 HU2 HU0); ring.
+Qed.
 
 (* ================================================================= *)
-(*  END (stage 3b) — Goursat with one exceptional vertex.               *)
+(*  The exceptional-point primitive and loop-zero (mirrors ConvexPrim). *)
+(* ================================================================= *)
+Section ExceptPrim.
+Variable U : C -> Prop.
+Hypothesis HU : Convex U.
+Hypothesis HO : Open U.
+Variable F : C -> C.
+Variable HF : CcontC F.
+Variable p : C.
+Hypothesis HUp : U p.
+Hypothesis HFhol : forall z, U z -> z <> p -> exists d, is_Cderiv F z d.
+Hypothesis HFbd : exists M eta, 0 < eta /\ forall w, Cmod (Cminus w p) < eta -> Cmod (F w) <= M.
+Hypothesis HFcont : forall z, U z -> forall eps, 0 < eps -> exists del, 0 < del /\
+  forall w, Cmod (Cminus w z) < del -> Cmod (Cminus (F w) (F z)) < eps.
+Variable z0 : C.
+Hypothesis HUz0 : U z0.
+
+Definition PrimE (z : C) : C := seg_int F HF z0 z.
+
+Lemma PrimE_diff : forall z k, U z -> U (Cadd z k) ->
+  seg_int F HF z (Cadd z k) = Cminus (PrimE (Cadd z k)) (PrimE z).
+Proof.
+  intros z k HUz HUzk; unfold PrimE.
+  pose proof (tri_int_except U HU F HF p z0 z (Cadd z k) HUp HUz0 HUz HUzk HFhol HFbd) as HG.
+  unfold tri_int in HG; rewrite (seg_reverse F HF z0 (Cadd z k)) in HG.
+  assert (HR := f_equal Re HG); assert (HI := f_equal Im HG).
+  apply Ceq; unfold Cadd, Copp, Cminus, C0 in *; cbn in *; lra.
+Qed.
+
+Theorem PrimE_deriv : forall z, U z -> is_Cderiv PrimE z (F z).
+Proof.
+  intros z HUz eps Heps.
+  destruct (HFcont z HUz (eps / 2) ltac:(lra)) as [del1 [Hdel1 Hc]].
+  destruct (HO z HUz) as [r [Hr Hball]].
+  exists (Rmin del1 r); split; [ apply Rmin_pos; lra | ]; intros k Hk.
+  assert (HUzk : U (Cadd z k)).
+  { apply Hball; replace (Cminus (Cadd z k) z) with k by ring;
+      eapply Rlt_le_trans; [ exact Hk | apply Rmin_r ]. }
+  rewrite <- (PrimE_diff z k HUz HUzk).
+  assert (HFk : Cmul (F z) k = seg_int (fun _ => F z) (CcontC_const (F z)) z (Cadd z k))
+    by (rewrite seg_int_const; replace (Cminus (Cadd z k) z) with k by ring; reflexivity).
+  rewrite HFk.
+  rewrite <- (seg_int_sub F (fun _ => F z) HF (CcontC_const (F z))
+              (CcontC_add F (fun _ => Copp (F z)) HF (CcontC_const (Copp (F z))))
+              z (Cadd z k)).
+  eapply Rle_trans.
+  { apply (seg_int_ML (fun w => Cminus (F w) (F z)) _ z (Cadd z k) (eps / 2)).
+    intros s Hs.
+    assert (Hws : Cmod (Cminus (seg z (Cadd z k) s) z) <= Cmod k).
+    { replace (Cminus (seg z (Cadd z k) s) z) with (Cmul (RtoC s) k)
+        by (unfold seg, Cadd, Cmul, RtoC, Cminus; apply Ceq; cbn; ring).
+      rewrite Cmod_mul, Cmod_RtoC, (Rabs_pos_eq s) by lra.
+      apply Rle_trans with (1 * Cmod k);
+        [ apply Rmult_le_compat_r; [ apply Cmod_nonneg | lra ] | lra ]. }
+    apply Rlt_le, Hc; eapply Rle_lt_trans;
+      [ exact Hws | eapply Rlt_le_trans; [ exact Hk | apply Rmin_l ] ]. }
+  replace (Cminus (Cadd z k) z) with k by ring.
+  apply Req_le; lra.
+Qed.
+
+Theorem pathint_loop_except : forall (gam gam' : R -> C)
+  (Hf : Ccont (fun u => Cmul (F (gam u)) (gam' u))) a b,
+  a <= b -> gam a = gam b ->
+  (forall s, a <= s <= b -> U (gam s)) ->
+  (forall s, a <= s <= b -> derivable_pt_lim (fun r => Re (gam r)) s (Re (gam' s))) ->
+  (forall s, a <= s <= b -> derivable_pt_lim (fun r => Im (gam r)) s (Im (gam' s))) ->
+  pathint gam gam' F Hf a b = C0.
+Proof.
+  intros gam gam' Hf a b Hab Hloop HUgam HgR HgI.
+  apply (pathint_primitive_loop PrimE F gam gam' Hf a b Hab Hloop);
+    [ intros s Hs; apply PrimE_deriv; apply HUgam; exact Hs | exact HgR | exact HgI ].
+Qed.
+
+End ExceptPrim.
+
+Print Assumptions tri_int_except.
+Print Assumptions pathint_loop_except.
+
+(* ================================================================= *)
+(*  END CGoursatExcept.v  —  Goursat + primitive with one bad point.    *)
 (* ================================================================= *)
