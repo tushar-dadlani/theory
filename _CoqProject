@@ -913,3 +913,4 @@ spectral-theory/PNTUnconditional.v
 spectral-theory/SelbergSelfImprove.v
 spectral-theory/SelbergLambda2Dip.v
 spectral-theory/SelbergSignedConc.v
+spectral-theory/SelbergStarSigned.v
