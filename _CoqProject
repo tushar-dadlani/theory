@@ -915,3 +915,4 @@ spectral-theory/SelbergLambda2Dip.v
 spectral-theory/SelbergSignedConc.v
 spectral-theory/SelbergStarSigned.v
 spectral-theory/SelbergDlogWeight.v
+spectral-theory/SelbergDlogControl.v
