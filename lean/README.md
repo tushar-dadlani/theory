@@ -102,6 +102,7 @@ on injected `sorry`). Four bricks landed, all tier L1:
 | C4 | `Newman/StarPrimitive.lean` | `CGoursatConv.v`, `CPrimConv.v`, `CGoursatExcept.v` |
 | C5 | `Newman/Winding.lean` | `CTruncWind.v` |
 | C6 | `Newman/TruncCauchy.lean` | `CTruncCauchy.v` |
+| C7 | `Newman/Laplace.lean` | `CLaplace.v` |
 
 C5 (`∮_C dz/z = 2πi`) turned out **not** to need the keystone C4: on the chord
 `Re z < 0`, so `log(-z)` is a primitive of `1/z` there and C3 finishes it. See LEDGER §3.1.
@@ -118,6 +119,5 @@ Two findings stand out:
   triangle Goursat, and `log(-z)` instead of `arctan` antiderivatives — so the agreement is
   genuinely independent rather than a re-run of the same argument.
 
-Next: C7 (`g_T` entire + the tail bound), then C8 (Newman's analytic Tauberian theorem,
-which does not exist on the Coq side). Also outstanding: B4 (the `⋉`-is-really-`×`
+Next: C8 (Newman's analytic Tauberian theorem, which does not exist on the Coq side). Also outstanding: B4 (the `⋉`-is-really-`×`
 splitting theorem) and A2 (the theta transformation from Poisson summation).

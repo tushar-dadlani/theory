@@ -23,5 +23,6 @@ import TDLean.Newman.Contour
 import TDLean.Newman.Winding
 import TDLean.Newman.StarPrimitive
 import TDLean.Newman.TruncCauchy
+import TDLean.Newman.Laplace
 
 import TDLean.Audit
