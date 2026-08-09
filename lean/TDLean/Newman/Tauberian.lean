@@ -195,6 +195,51 @@ theorem leftPart_kernel_deform {R α : ℝ} (hR : 0 < R) (hα : π / 2 < α) (h�
     (continuousOn_kernel_mul hR hπ2 le_rfl hF.continuous)
     (by rw [hcα, hcπ])
 
+/-! ### From pointwise to integral: the two `2πB/R` bounds
+
+    `R · (2B/R²) · π = 2πB/R` on each semicircle. Both go through the a.e. ML bound, since
+    the pointwise estimates need `Re z ≠ 0` and the endpoints `θ = ±π/2` have `Re z = 0`. -/
+
+/-- The right semicircle contributes at most `R · (2B/R²) · π`. -/
+theorem norm_rightSemi_le {R B : ℝ} {h : ℂ → ℂ} (hR : 0 < R)
+    (hb : ∀ z : ℂ, ‖z‖ = R → 0 < z.re → ‖h z‖ ≤ 2 * B / R ^ 2) :
+    ‖rightSemi h R‖ ≤ R * (2 * B / R ^ 2) * π := by
+  have hhalf : -(π / 2) ≤ π / 2 := by linarith [Real.pi_pos]
+  have key : ∀ θ ∈ Ioo (min (-(π / 2)) (π / 2)) (max (-(π / 2)) (π / 2)),
+      ‖h (circleMap 0 R θ)‖ ≤ 2 * B / R ^ 2 := by
+    intro θ hθ
+    rw [min_eq_left hhalf, max_eq_right hhalf] at hθ
+    refine hb _ (by rw [norm_circleMap_zero, abs_of_pos hR]) ?_
+    rw [circleMap_re]
+    exact mul_pos hR (Real.cos_pos_of_mem_Ioo hθ)
+  have hml := norm_arcIntegralOn_le_of_ae (f := h) (R := R) key
+  rw [abs_of_pos hR] at hml
+  calc ‖rightSemi h R‖ ≤ R * (2 * B / R ^ 2) * |π / 2 - -(π / 2)| := hml
+    _ = R * (2 * B / R ^ 2) * π := by
+        rw [show π / 2 - -(π / 2) = π by ring, abs_of_pos Real.pi_pos]
+
+/-- An arc piece lying in the left half-plane contributes at most `R · (2B/R²) · |b − a|`. -/
+theorem norm_leftArc_le {R B a b : ℝ} {h : ℂ → ℂ} (hR : 0 < R)
+    (hab : ∀ θ ∈ Ioo (min a b) (max a b), Real.cos θ < 0)
+    (hb : ∀ z : ℂ, ‖z‖ = R → z.re < 0 → ‖h z‖ ≤ 2 * B / R ^ 2) :
+    ‖arcIntegralOn h R a b‖ ≤ R * (2 * B / R ^ 2) * |b - a| := by
+  have key : ∀ θ ∈ Ioo (min a b) (max a b), ‖h (circleMap 0 R θ)‖ ≤ 2 * B / R ^ 2 := by
+    intro θ hθ
+    refine hb _ (by rw [norm_circleMap_zero, abs_of_pos hR]) ?_
+    rw [circleMap_re]
+    exact mul_neg_of_pos_of_neg hR (hab θ hθ)
+  have hml := norm_arcIntegralOn_le_of_ae (f := h) (R := R) key
+  rwa [abs_of_pos hR] at hml
+
+/-- `cos < 0` on `(π/2, π)`. -/
+theorem cos_neg_on_upper {θ : ℝ} (hθ : θ ∈ Ioo (π / 2) π) : Real.cos θ < 0 :=
+  Real.cos_neg_of_pi_div_two_lt_of_lt hθ.1 (by linarith [Real.pi_pos, hθ.2])
+
+/-- `cos < 0` on `(−π, −π/2)`. -/
+theorem cos_neg_on_lower {θ : ℝ} (hθ : θ ∈ Ioo (-π) (-(π / 2))) : Real.cos θ < 0 := by
+  rw [← Real.cos_neg]
+  exact cos_neg_on_upper ⟨by linarith [hθ.2], by linarith [hθ.1]⟩
+
 /-- Non-vacuity: the right-semicircle hypotheses are satisfiable. -/
 theorem norm_newman_integrand_right_nonvacuous :
     ∃ (R : ℝ) (z : ℂ), 0 < R ∧ ‖z‖ = R ∧ 0 < z.re :=

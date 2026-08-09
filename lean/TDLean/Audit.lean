@@ -238,6 +238,16 @@ import TDLean.Newman.Tauberian
 #guard_msgs in
 #print axioms TDLean.Newman.integral_exp_mul_zero
 
+/-- info: 'TDLean.Newman.norm_rightSemi_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.norm_rightSemi_le
+
+/-- info: 'TDLean.Newman.norm_leftArc_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.norm_leftArc_le
+
 /-! ### Non-vacuity witnesses
 
     These must be audited too. A `sorry` here is exactly as fatal as a `sorry` in a

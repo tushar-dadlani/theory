@@ -120,17 +120,32 @@ Two findings stand out:
   triangle Goursat, and `log(-z)` instead of `arctan` antiderivatives — so the agreement is
   genuinely independent rather than a re-run of the same argument.
 
-C8 is under way. `CNewman.v` does not exist on the Coq side, so this brick is an
-**overtake**, not a cross-verification, and is labelled as such. Landed so far:
+C8 is **not finished**, and is labelled an **overtake** rather than a cross-verification
+throughout, because `CNewman.v` does not exist on the Coq side.
 
-- the contour identity `∮_C F(z)(1/z + z/R²) dz = 2πi F(0)` (from C4 + C6);
-- the Laplace tail bound `‖∫_{t>T} f e^{−zt}‖ ≤ B e^{−(Re z)T}/Re z` (C7);
-- ML bounds for the arc and chord;
-- **the right-semicircle estimate**, where the tail bound, `‖e^{zT}‖` and the kernel
-  identity cancel to the constant `2B/R²`. That cancellation is the crux of Newman's
-  argument.
+Proved so far (all tier L1):
 
-Still to come: the left-semicircle estimate for the entire `g_T`, the `T → ∞`
-dominated-convergence step for the `g` part at fixed `R`, and the `ε`-chase in `R`
-that assembles them. Also outstanding: B4 (the `⋉`-is-really-`×`
-splitting theorem) and A2 (the theta transformation from Poisson summation).
+- `newman_contour_identity` — `∮_C F(z)(1/z + z/R²) dz = 2πi F(0)` (from C4 + C6);
+- `norm_laplaceTail_le` — `‖∫_{t>T} f e^{−zt}‖ ≤ B e^{−(Re z)T}/Re z`;
+- `norm_gT_le_of_re_neg` — the matching bound on `g_T` for `Re z < 0`, needing
+  `∫₀ᵀ e^{at} dt` (absent from mathlib, proved here by FTC);
+- `truncContour_split` — `C(α) = rightSemi + leftPart(α)`, cutting at `Re z = 0`;
+- **`leftPart_kernel_deform`** — Zagier's deformation of the left part to the left
+  semicircle. This was expected to need a second contour and C4 re-proved about an
+  off-origin star centre. It needs neither: at `α = π` the chord degenerates
+  (`arcTop R π = arcBot R π = −R`), so `C(π)` *is* the full circle, and C6 at `α` and at
+  `π` give the same value with a shared right semicircle;
+- `norm_newman_integrand_right` / `_left` — both pointwise semicircle estimates, each
+  collapsing to the constant `2B/R²` as every `z`-dependence cancels;
+- `norm_rightSemi_le`, `norm_leftArc_le` — the ML integral bounds, via an a.e. variant
+  (`norm_arcIntegralOn_le_of_ae`) because the endpoints `θ = ±π/2` have `Re z = 0`.
+
+**What is still missing**, precisely:
+
+1. Additivity of `leftPart` over sums, to split `leftPart((g − g_T)·e^{zT}·K)` into the
+   `g` and `g_T` parts (plumbing; `truncContour_add` already exists for the full contour).
+2. The `T → ∞` step: `leftPart(g·e^{zT}·K) → 0` at fixed `R`, by dominated convergence —
+   `‖e^{zT}‖ = e^{(Re z)T} → 0` pointwise for `Re z < 0`, with a constant dominating bound.
+3. The final `ε`-chase: `limsup_T ‖g(0) − g_T(0)‖ ≤ 2B/R` for every `R`, hence `= 0`.
+
+Items 1 and 3 are routine given what is here; item 2 is the last piece with real content.
