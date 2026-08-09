@@ -1,5 +1,29 @@
 # C4 — Newman's analytic theorem (Zagier form) + Milestone D → PNT
 
+## Progress snapshot (contour wall complete; Newman assembly + C0 remain)
+
+**DONE, axiom-clean:** bricks 1–3 (region Goursat / convex primitive / exceptional point),
+brick 4 `CTruncWind.trunc_winding` (∮_C dz/z = 2πi), brick 5 `CTruncCauchy.trunc_cauchy`
+(∮_C F/z = 2πi·F(0), conditional on φ's exceptional-point interface), `CTruncDisk` (the Convex+Open
+region U = {|z|<R}∩{Re z>−δ}), brick 6 `CNewmanKernel`, brick 7 `CLaplace.gT_holo`
+(g_T(z)=∫₀ᵀ f e^{−zt}dt entire, via CexpRemainder + ML). The contour wall is finished.
+
+**The deep remaining blockers** (each needs new infrastructure, not just assembly):
+- **C0 — holomorphy of `PhiMinus` at `s=1`.** `ZetaPoleCancel` gives holomorphy on Re z>0, z≠1,
+  ζ≠0; the removable pole at `s=1` is ABSENT. `zetaC` (the complex continuation to Re z>0) has no
+  Laurent/pole structure at 1 — only the REAL continuation `ζ(s)=1/(s−1)+Σgterm(s)` exists
+  (`ZetaContinuation.v`, all `s:R`). Need the COMPLEX pole: `(s−1)ζ(s)→1`, i.e. `Bfn` extends
+  holomorphically to 1 with `Bfn 1 = 1` (currently `Bfn 1 = 0` since `zF 1 = C0`). This gates
+  `g` being holomorphic on all of `U` (0 ∈ U).
+- **The g-extension / discharge φ.** The integral infra needs GLOBAL `CcontC` continuity; `g` is
+  only holomorphic near the truncated disk. Need a continuous extension off the domain (or a
+  reformulation). Tied to C0.
+- **Brick 8 `CNewman.v`** — the analytic theorem: contour identity `2πi(g(0)−g_T(0)) =
+  ∮_C(g−g_T)e^{zT}K_R` (brick 5 + loop-zero of z/R²), three ML estimates, R,T→∞ limits ⇒ ∫₀^∞ f
+  converges. Needs C0 + extension + the g_T tail bound (improper ∫₀^∞).
+- **Milestone D — Tauberian bridge** `∫₁^∞(ψ(x)−x)/x²dx converges ⟹ ψ(x)/x→1` (ABSENT), then
+  `pi_asymp_of_psi` ⇒ PNT. (The elementary Selberg route already reaches `ψ/x→1` modulo one lemma.)
+
 ## Where C2 landed, and the key architectural finding
 
 C2 delivered Cauchy's integral formula **on a full circle** (`CUnifCont.cauchy_formula_full`),
