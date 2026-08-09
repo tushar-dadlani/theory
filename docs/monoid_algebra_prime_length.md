@@ -223,7 +223,19 @@ Let `n_k = p_1···p_k` be the k-th primorial. Two facts, one negative and one 
 
    This is nearly free: `gconv_prod_tensor`/`gunit_prod_tensor`/`tconv_elementary` are already
    proved at the generality needed, so the work is instantiation plus the CRT induction, not new
-   tensor theory. Prime enumeration comes from
+   tensor theory.
+   **DONE (general two-factor case, axiom-free): `spectral-theory/PrimorialTensorGen.v`.** For ANY
+   coprime `m, n`, `crt_monoid_iso_gen` proves `M_{mn} ≅ M_m × M_n` — `crt x = (x mod m, x mod n)`
+   is a multiplicative homomorphism (`crt_hom`, via `Nat.Div0.mul_mod` + `(a mod mn) mod m = a mod m`),
+   is injective on `[0,mn)` (`crt_inj`, CRT injectivity cast to ℤ, reusing
+   `ProfiniteCRT.sub_of_mod_eq`/`mul_divide_of_coprime`), and is a bijection of residue systems
+   (`crt_perm : Permutation (map crt (seq 0 (m*n))) (list_prod (seq 0 m) (seq 0 n))`, via
+   `NoDup_Permutation_bis`). `sumf_reindex_crt` is the general grid↔residue reindexing (the
+   `reindex6` generalization). `primorial_tensor_factorization_gen` packages this with the generic
+   `gconv_prod_tensor` — i.e. `PrimorialMonoidAlgebra.primorial_tensor_factorization` with its
+   216-case `vm_compute` replaced by a proof valid for every coprime `m, n`. The k-fold primorial
+   is then this two-factor step iterated (`primorial(k+1) = primorial(k) · p_{k+1}`, coprime).
+   Prime enumeration comes from
    `PrimorialSpectralTheory.primorial_primes k = map kth_prime (seq 0 (S k))` (:137) with
    `primorial_primes_nested` (:146).
 
