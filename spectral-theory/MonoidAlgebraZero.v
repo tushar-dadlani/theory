@@ -209,11 +209,81 @@ Proof.
   apply sumf_ext; intros q _; cbn [aop aAeq alift]; reflexivity.
 Qed.
 
+(* ================================================================= *)
+(*  THE FULL SPLITTING / SEMIDIRECT FORMULA.                          *)
+(*  Writing an arbitrary element of Z[Adj G] as (x, s) with x the       *)
+(*  AElt-part (a G-function) and s = coeff at AZero (= delta_0), the     *)
+(*  product is  (x,s)*(y,t) = (x·y, eps(x)t + eps(y)s + st),  where      *)
+(*  eps = augmentation = bigsum over G.  The AElt half is G-convolution  *)
+(*  (gconv_adj_elt_full); the AZero half is the semidirect twist         *)
+(*  (gconv_adj_zero_full).  Together they specify the whole product,     *)
+(*  completing the two special cases (gconv_adj_elt / _zero_coeff /      *)
+(*  gconv_zero_absorb) into the general law.                            *)
+(* ================================================================= *)
+
+(* the AElt-coefficient of an arbitrary product IS the G-convolution *)
+Theorem gconv_adj_elt_full : forall f g h,
+  gconv (Adj G) (aAeq G Geq) (aelts G gelts) (aop G gop) f g (AElt G h)
+  = gconv G Geq gelts gop (fun k => f (AElt G k)) (fun k => g (AElt G k)) h.
+Proof.
+  intros f g h. unfold gconv, dsum.
+  rewrite bigsum_adj_split.
+  (* the AZero-outer term vanishes: aop AZero j is never AElt h *)
+  replace (bigsum (Adj G) (aelts G gelts)
+             (fun j => if aAeq G Geq (aop G gop (AZero G) j) (AElt G h)
+                       then (f (AZero G) * g j)%Z else 0%Z)) with 0%Z.
+  2:{ symmetry; unfold bigsum;
+      transitivity (sumf (Adj G) (aelts G gelts) (fun _ => 0%Z)); [ | apply sumf_zero ];
+      apply sumf_ext; intros j _; cbn [aop aAeq]; ring. }
+  rewrite Z.add_0_l.
+  apply sumf_ext; intros p _.
+  rewrite bigsum_adj_split.
+  (* the inner AZero term vanishes: aop (AElt p) AZero = AZero <> AElt h *)
+  replace (if aAeq G Geq (aop G gop (AElt G p) (AZero G)) (AElt G h)
+           then (f (AElt G p) * g (AZero G))%Z else 0%Z) with 0%Z.
+  2:{ rewrite aop_zero_r; cbn [aAeq]; ring. }
+  rewrite Z.add_0_l.
+  apply sumf_ext; intros q _; cbn [aop aAeq]; reflexivity.
+Qed.
+
+(* the AZero-coefficient of an arbitrary product: the semidirect twist *)
+Theorem gconv_adj_zero_full : forall f g,
+  gconv (Adj G) (aAeq G Geq) (aelts G gelts) (aop G gop) f g (AZero G)
+  = (bigsum G gelts (fun k => f (AElt G k)) * g (AZero G)
+   + bigsum G gelts (fun k => g (AElt G k)) * f (AZero G)
+   + f (AZero G) * g (AZero G))%Z.
+Proof.
+  intros f g. unfold gconv, dsum.
+  rewrite bigsum_adj_split.
+  (* AZero-outer term:  aop AZero j = AZero always, so all j contribute f(AZero)*g j *)
+  assert (HZ : bigsum (Adj G) (aelts G gelts)
+                 (fun j => if aAeq G Geq (aop G gop (AZero G) j) (AZero G)
+                           then (f (AZero G) * g j)%Z else 0%Z)
+             = (f (AZero G) * (g (AZero G) + bigsum G gelts (fun k => g (AElt G k))))%Z).
+  { transitivity (bigsum (Adj G) (aelts G gelts) (fun j => (f (AZero G) * g j)%Z)).
+    - unfold bigsum; apply sumf_ext; intros j _; cbn [aop aAeq]; ring.
+    - rewrite <- (bigsum_adj_split g); unfold bigsum; rewrite sumf_scal; reflexivity. }
+  rewrite HZ.
+  (* AElt-outer terms:  aop (AElt p) j = AZero only at j = AZero, giving f(AElt p)*g(AZero) *)
+  assert (HE : forall p, bigsum (Adj G) (aelts G gelts)
+                 (fun j => if aAeq G Geq (aop G gop (AElt G p) j) (AZero G)
+                           then (f (AElt G p) * g j)%Z else 0%Z)
+               = (f (AElt G p) * g (AZero G))%Z).
+  { intro p. rewrite bigsum_adj_split. cbn [aop aAeq].
+    unfold bigsum; rewrite sumf_zero; ring. }
+  transitivity ((f (AZero G) * (g (AZero G) + bigsum G gelts (fun k => g (AElt G k)))
+               + bigsum G gelts (fun p => f (AElt G p) * g (AZero G)))%Z).
+  - f_equal. unfold bigsum; apply sumf_ext; intros p _; exact (HE p).
+  - rewrite <- (bigsum_mul_r G gelts (fun p => f (AElt G p)) (g (AZero G))); ring.
+Qed.
+
 End AdjAbsorption.
 
 Print Assumptions gconv_zero_absorb.
 Print Assumptions gconv_adj_zero_coeff.
 Print Assumptions gconv_adj_elt.
+Print Assumptions gconv_adj_elt_full.
+Print Assumptions gconv_adj_zero_full.
 
 (* ================================================================= *)
 (*  END MonoidAlgebraZero.v (Brick 2: Adj monoid + no_inverse + absorb).*)
