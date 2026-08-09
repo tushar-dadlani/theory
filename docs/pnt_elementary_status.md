@@ -82,13 +82,28 @@ signed extreme (`Vsig ≈ −α`), whose `|Vsig| = α` is large, not a dip — `
 the `±α` cancellation.
 
 **The correct route is the SIGNED two-scale Erdős argument** (`selberg_average_signed`
-+ `signed_pin`): at a peak `x` (`Vsig(x)≈+α`) the Λ-weighted average of `Vsig(x/n)` is
-`≈ −α`, forcing concentration at `−α`; applying the symmetry again at a trough
-`y=x/n` (`Vsig(y)≈−α`) forces its sub-scales `≈ +α`; but `y/m = x/(nm)` is a sub-scale
-of both, and must be `≈ −α` (from x) and `≈ +α` (from y) — contradiction, forcing
-`α=0`. This is Selberg's 1949 core; it needs the concentration/overlap made
-quantitative (positive Λ-measure). `lam2_interval_mass` (committed) is still a useful
-reweighting atom, but the DIP framing must be replaced by this signed contraction.
++ `signed_pin`). Progress and the precise remaining path:
+
+**DONE (`SelbergSignedConc.v`, axiom-clean):**
+- `peak_concentration`: at a near-peak `N`, `δ·Σ_{d≤N/M0}(Λd/d)[Vsig(N/d)>−α+δ] ≤
+  (η+ε)ln N + O(1)` — most sub-scales are troughs `−α` (in Λ/d-measure).
+- `trough_concentration`: mirror — at a near-trough, most sub-scales are peaks `+α`.
+
+**Remaining (the deep core), precise path:** the degree-1 two-scale Fubini
+(`Σ_{d,e}Λ(d)Λ(e)/(de) → Σ_n Λ2(n)/n` on `n=de`) reduces the contradiction to
+bounding `Σ_{n: N/n a peak} Λ2(n)/n` SMALL — a **Λ₂-measure** concentration the
+degree-1 lemmas can't give (Λ2 = Λ·log + Λ∗Λ; the `log` weight breaks the Λ→Λ2
+transfer). So the key missing tool is the **SIGNED log² Selberg inequality**
+`Vsig(N)·ln²N + Σ Λ2(n)/n·Vsig(N/n) = O(ln N)` — the signed analogue of the
+(unsigned) `StarInequality.star_inequality`, derived by iterating
+`selberg_average_signed` in place of `selberg_average` (mirror `StarInequality.v`:
+`selberg_iterate_bound`/`star_reindex`, ~150–200 lines). From it, a signed-Λ₂
+`peak_concentration` gives `Σ_{peak n}Λ2/n = O(ε)ln²N` at a peak, closing the
+two-scale contradiction (`T ≳ ¼ln²N` from the degree-1 side vs `O(ε)ln²N`). This is
+Selberg's 1949 core; the path is now fully mapped, ~500 lines remain.
+
+`lam2_interval_mass` (committed) remains a useful Λ₂ reweighting atom. (The obsolete
+`lambda2_dip` framing below is a dead branch — see the caveat above.)
 
 ### (obsolete) the previous framing: `lambda2_dip`
 
