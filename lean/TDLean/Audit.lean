@@ -17,6 +17,7 @@ import TDLean.MonoidAlgebra.Sym.SignType
 import TDLean.Newman.Region
 import TDLean.Newman.Kernel
 import TDLean.Newman.Contour
+import TDLean.Newman.Winding
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -87,6 +88,26 @@ import TDLean.Newman.Contour
 #guard_msgs in
 #print axioms TDLean.Newman.hasDerivAt_comp_ofReal_path
 
+/-- info: 'TDLean.Newman.trunc_winding' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.trunc_winding
+
+/-- info: 'TDLean.Newman.arcIntegral_inv' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.arcIntegral_inv
+
+/-- info: 'TDLean.Newman.chordIntegral_inv' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.chordIntegral_inv
+
+/-- info: 'TDLean.Newman.hasDerivAt_logNeg' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.hasDerivAt_logNeg
+
 /-! ### Non-vacuity witnesses
 
     These must be audited too. A `sorry` here is exactly as fatal as a `sorry` in a
@@ -124,3 +145,8 @@ import TDLean.Newman.Contour
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Newman.contourSet_nonempty
+
+/-- info: 'TDLean.Newman.trunc_winding_nonvacuous' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.trunc_winding_nonvacuous

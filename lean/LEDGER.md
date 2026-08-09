@@ -105,6 +105,8 @@ have).
 | `MonoidAlgebra.symEquiv` | `AdjBoolINF.v : Adj_bool_iso_INF` | **confirmed** | Same lemma as `zmodPrimeEquiv`, at `p = 3`. |
 | `Newman.convex_truncDisk`, `isOpen_truncDisk` | `CTruncDisk.v` | **confirmed** | 79 Coq lines → two lines. |
 | `Newman.newmanKernel_of_norm_eq`, `norm_newmanKernel` | `CNewmanKernel.v : newman_kernel_on_circle, Cmod_newman_kernel` | **confirmed** | The one Coq brick that was already short (45 lines); comparable here. |
+| `Newman.truncContour_eq_zero_of_primitive` | `CPathFTC.v : pathint_primitive_loop` | **confirmed** | Specialised to the truncated contour. Coq needs a whole path-integral calculus first (`CPathIntegral.v`, `CPathFTC.v`, `CSegInt.v`) because Rocq has no complex analysis; mathlib has interval integrals + FTC-2 but no path abstraction, so this supplies the minimum. |
+| `Newman.trunc_winding` | `CTruncWind.v : trunc_winding` (254 lines) | **confirmed, different proof** | `∮_C dz/z = 2πi`. **Does not need the keystone C4.** On the chord `Re z = R cos α < 0`, so `log(-z)` is a primitive of `1/z` there — `-z` has positive real part, lands in `slitPlane`, and the chord never meets the branch cut. Arc gives `2αi` (integrand collapses to the constant `I`), chord gives `2(π-α)i`, total `2πi`. Coq uses `arctan` antiderivatives precisely because it has no complex `log`. |
 
 ### 3.2 Findings recorded during planning, pending Lean proof
 
@@ -127,6 +129,22 @@ have).
   master, not in the pinned `v4.29.0-rc6`; and even there it is only a `≃ₗ`, carrying a
   literal `TODO: ... strengthen to an AlgEquiv`. Brick B10 must rebuild it from
   `finsuppTensorFinsupp'`.
+- **An `ℝ`-on-`ℂ` typeclass diamond, hit twice.** For a *concrete* `ℂ → ℂ` function,
+  `NormedSpace ℝ ℂ` resolves through `instInnerProductSpaceRealComplex`, and the resulting
+  `SMul ℝ ℂ` does not match the algebra tower. Consequences:
+  1. `(hF.hasFDerivAt.restrictScalars ℝ).comp_hasDerivAt` — the natural chain rule for a
+     real path through a holomorphic function — fails to synthesise `IsScalarTower ℝ ℂ ℂ`,
+     even though that instance *is* provable standalone with the same imports, and even
+     with a `haveI` in context. mathlib's own uses of the idiom sit in contexts where the
+     codomain is an abstract `E`. **Workaround** (`Contour.lean`): factor each path as a
+     genuinely `ℂ → ℂ` map precomposed with `Complex.ofReal`, keeping the chain rule inside
+     `ℂ` and finishing with `HasDerivAt.comp_ofReal`.
+  2. `intervalIntegral.integral_const` produces `(b - a) • c` with the action routed through
+     `SMulZeroClass.toSMul`; neither `rw` nor `simp` will unify that against
+     `Complex.real_smul`. The two actions *are* definitionally equal, so `change` cuts
+     through (`Winding.lean`).
+  Both are mathlib ergonomics issues, not td-theory findings, but they cost real time and
+  are recorded so the next brick does not rediscover them.
 
 ---
 

@@ -20,5 +20,6 @@ import TDLean.MonoidAlgebra.Sym.SignType
 import TDLean.Newman.Region
 import TDLean.Newman.Kernel
 import TDLean.Newman.Contour
+import TDLean.Newman.Winding
 
 import TDLean.Audit

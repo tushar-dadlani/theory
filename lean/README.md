@@ -98,6 +98,12 @@ on injected `sorry`). Four bricks landed, all tier L1:
 | B7 | `MonoidAlgebra/Sym/SignType.lean` | `INFMonoid.v`, `AdjBoolINF.v` |
 | C1 | `Newman/Region.lean` | `CTruncDisk.v` |
 | C2 | `Newman/Kernel.lean` | `CNewmanKernel.v` |
+| C3 | `Newman/Contour.lean` | `CPathFTC.v` |
+| C5 | `Newman/Winding.lean` | `CTruncWind.v` |
 
-Next: B4 (the `⋉`-is-really-`×` splitting theorem), C4 (Cauchy on the truncated disk — the
-keystone), A2 (the theta transformation from Poisson summation — the hardest single brick).
+C5 (`∮_C dz/z = 2πi`) turned out **not** to need the keystone C4: on the chord
+`Re z < 0`, so `log(-z)` is a primitive of `1/z` there and C3 finishes it. See LEDGER §3.1.
+
+Next: C4 (Cauchy on a star-shaped region — still the keystone, needed for C6 and C8),
+B4 (the `⋉`-is-really-`×` splitting theorem), A2 (the theta transformation from Poisson
+summation — the hardest single brick).
