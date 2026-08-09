@@ -45,7 +45,7 @@ theorem div_eq_dslope_add {z : ℂ} (hz : z ≠ 0) (F : ℂ → ℂ) :
 
 /-- ORACLE: CTruncCauchy.v : trunc_cauchy -- but **unconditional** here, where the Coq
     version takes φ's global-continuity interface as hypotheses. -/
-theorem trunc_cauchy {R α : ℝ} (hR : 0 < R) (hα : π / 2 < α) (hα2 : α < π)
+theorem trunc_cauchy {R α : ℝ} (hR : 0 < R) (hα : π / 2 < α) (hα2 : α ≤ π)
     (hU : IsOpen U) (hstar : StarAboutZero U) (h0 : (0 : ℂ) ∈ U)
     (hF : DifferentiableOn ℂ F U) (hsubset : contourSet R α ⊆ U)
     (hzero : (0 : ℂ) ∉ contourSet R α) :

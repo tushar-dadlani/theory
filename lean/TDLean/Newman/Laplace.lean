@@ -139,6 +139,62 @@ theorem hasDerivAt_gT (hf : ContinuousOn f (uIcc (0 : ℝ) T)) (z : ℂ) :
 theorem differentiable_gT (hf : ContinuousOn f (uIcc (0 : ℝ) T)) :
     Differentiable ℂ (gT f T) := fun z => (hasDerivAt_gT hf z).differentiableAt
 
+/-! ### `g_T` on the left half-plane
+
+    Newman needs a bound on `g_T` itself (not on `g − g_T`) where `Re z < 0`. The integral
+    `∫₀ᵀ e^{−(Re z)t} dt` is what supplies the `1/|Re z|` that cancels the kernel's
+    numerator. mathlib has no `∫₀ᵀ e^{at} dt`, so it is proved here by FTC. -/
+
+/-- `∫₀ᵀ e^{at} dt = (e^{aT} − 1)/a`. -/
+theorem integral_exp_mul_zero {a : ℝ} (ha : a ≠ 0) (T : ℝ) :
+    (∫ t in (0 : ℝ)..T, Real.exp (a * t)) = (Real.exp (a * T) - 1) / a := by
+  have hderiv : ∀ t ∈ uIcc (0 : ℝ) T,
+      HasDerivAt (fun s : ℝ => Real.exp (a * s) / a) (Real.exp (a * t)) t := by
+    intro t _
+    have h : HasDerivAt (fun s : ℝ => Real.exp (a * s)) (Real.exp (a * t) * a) t := by
+      simpa using (Real.hasDerivAt_exp (a * t)).comp t ((hasDerivAt_id t).const_mul a)
+    simpa [mul_div_assoc, mul_div_cancel_right₀ _ ha] using h.div_const a
+  have hcont : ContinuousOn (fun t : ℝ => Real.exp (a * t)) (uIcc (0 : ℝ) T) := by fun_prop
+  rw [integral_eq_sub_of_hasDerivAt hderiv hcont.intervalIntegrable]
+  simp [sub_div]
+
+/-- For `Re z < 0`, `‖g_T(z)‖ ≤ B e^{−(Re z)T} / (−Re z)`. -/
+theorem norm_gT_le_of_re_neg {B : ℝ} (hT : 0 ≤ T)
+    (hf : ContinuousOn f (uIcc (0 : ℝ) T)) (hB : ∀ t, 0 ≤ t → ‖f t‖ ≤ B)
+    {z : ℂ} (hz : z.re < 0) :
+    ‖gT f T z‖ ≤ B * Real.exp (-z.re * T) / (-z.re) := by
+  have ha : (0 : ℝ) < -z.re := neg_pos.mpr hz
+  have hIcc : uIcc (0 : ℝ) T = Icc 0 T := uIcc_of_le hT
+  have hB0 : 0 ≤ B := by
+    have := hB 0 le_rfl
+    exact le_trans (norm_nonneg _) this
+  -- bound the integrand pointwise
+  have hpt : ∀ t ∈ Icc (0 : ℝ) T,
+      ‖f t * Complex.exp (-z * (t : ℂ))‖ ≤ B * Real.exp (-z.re * t) := by
+    intro t ht
+    rw [norm_mul, norm_expNeg]
+    exact mul_le_mul_of_nonneg_right (hB t ht.1) (Real.exp_pos _).le
+  have hcont1 : ContinuousOn (fun t : ℝ => ‖f t * Complex.exp (-z * (t : ℂ))‖)
+      (uIcc (0 : ℝ) T) := (laplaceIntegrand_continuousOn hf z).norm
+  have hcont2 : ContinuousOn (fun t : ℝ => B * Real.exp (-z.re * t)) (uIcc (0 : ℝ) T) := by
+    fun_prop
+  calc ‖gT f T z‖
+      ≤ ∫ t in (0 : ℝ)..T, ‖f t * Complex.exp (-z * (t : ℂ))‖ := by
+        rw [gT]
+        exact intervalIntegral.norm_integral_le_integral_norm hT
+    _ ≤ ∫ t in (0 : ℝ)..T, B * Real.exp (-z.re * t) := by
+        refine intervalIntegral.integral_mono_on hT hcont1.intervalIntegrable
+          hcont2.intervalIntegrable fun t ht => hpt t ht
+    _ = B * ((Real.exp (-z.re * T) - 1) / (-z.re)) := by
+        have h := intervalIntegral.integral_const_mul (a := (0 : ℝ)) (b := T)
+          (μ := MeasureTheory.volume) B (fun t : ℝ => Real.exp (-z.re * t))
+        rw [h, integral_exp_mul_zero (ne_of_gt ha)]
+    _ = (B * Real.exp (-z.re * T) - B) / (-z.re) := by
+        field_simp
+    _ ≤ B * Real.exp (-z.re * T) / (-z.re) := by
+        gcongr
+        linarith
+
 /-! ### The tail bound
 
     No Coq oracle: in `docs/route_b_C4_newman_plan.md` this estimate is part of the still

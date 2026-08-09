@@ -21,6 +21,7 @@ import TDLean.Newman.Winding
 import TDLean.Newman.StarPrimitive
 import TDLean.Newman.TruncCauchy
 import TDLean.Newman.Laplace
+import TDLean.Newman.Split
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -201,6 +202,41 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Newman.norm_chordIntegral_le
+
+/-- info: 'TDLean.Newman.truncContour_split' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.truncContour_split
+
+/-- info: 'TDLean.Newman.leftPart_eq_of_truncContour_eq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.leftPart_eq_of_truncContour_eq
+
+/-- info: 'TDLean.Newman.leftPart_kernel_deform' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.leftPart_kernel_deform
+
+/-- info: 'TDLean.Newman.norm_arcIntegralOn_le_of_ae' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.norm_arcIntegralOn_le_of_ae
+
+/-- info: 'TDLean.Newman.norm_newman_integrand_left' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.norm_newman_integrand_left
+
+/-- info: 'TDLean.Newman.norm_gT_le_of_re_neg' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.norm_gT_le_of_re_neg
+
+/-- info: 'TDLean.Newman.integral_exp_mul_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.integral_exp_mul_zero
 
 /-! ### Non-vacuity witnesses
 

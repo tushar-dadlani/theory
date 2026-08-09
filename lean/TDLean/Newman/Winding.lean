@@ -99,9 +99,10 @@ theorem arg_circleMap {R θ : ℝ} (hR : 0 < R) (hθ : θ ∈ Ioc (-π) π) :
     simp [circleMap, Complex.exp_mul_I]
   rw [this, Complex.arg_real_mul _ hR, Complex.arg_cos_add_sin_mul_I hθ]
 
-theorem chordIntegral_inv {R α : ℝ} (hR : 0 < R) (hα : π / 2 < α) (hα2 : α < π) :
+theorem chordIntegral_inv {R α : ℝ} (hR : 0 < R) (hα : π / 2 < α) (hα2 : α ≤ π) :
     chordIntegral (fun z => z⁻¹) (arcTop R α) (arcBot R α) = (2 * (π - α) : ℝ) * I := by
-  have hcos : Real.cos α < 0 := Real.cos_neg_of_pi_div_two_lt_of_lt hα (by linarith [Real.pi_pos])
+  have hcos : Real.cos α < 0 :=
+    Real.cos_neg_of_pi_div_two_lt_of_lt hα (by linarith [Real.pi_pos])
   have hre : ∀ z ∈ chordSet (arcTop R α) (arcBot R α), z.re < 0 := by
     rintro z ⟨t, -, rfl⟩
     rw [chord_re_eq]
@@ -133,7 +134,7 @@ theorem chordIntegral_inv {R α : ℝ} (hR : 0 < R) (hα : π / 2 < α) (hα2 : 
 
 /-- ORACLE: CTruncWind.v : trunc_winding.
     `∮_C dz/z = 2πi` over the truncated contour. -/
-theorem trunc_winding {R α : ℝ} (hR : 0 < R) (hα : π / 2 < α) (hα2 : α < π) :
+theorem trunc_winding {R α : ℝ} (hR : 0 < R) (hα : π / 2 < α) (hα2 : α ≤ π) :
     truncContour (fun z => z⁻¹) R α = 2 * π * I := by
   rw [truncContour, arcIntegral_inv hR.ne' α, chordIntegral_inv hR hα hα2]
   push_cast
