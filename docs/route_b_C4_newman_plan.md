@@ -81,7 +81,13 @@ Parametrise the truncated contour by `R>0` and half-angle `α∈(π/2,π)` with 
 `Y := R·sin α > 0`; endpoints `P := arc R α = mkC (−δ) Y` (top), `Q := arc R (−α) = mkC (−δ) (−Y)`
 (bottom). Contour `C` = arc `arc R` over `[−α, α]` (through 0) then chord `seg P Q` over `[0,1]`.
 
-**Brick 4 `CTruncWind.v` — `∮_C dz/z = mkC 0 (2π)`** (`= 2πi`), via EXPLICIT computation (avoids the
+**Brick 4 ✅ `CTruncWind.v` — DONE, axiom-clean.** `trunc_winding : ∮_C dz/z = mkC 0 (2π)` (`= 2πi`),
+EXACTLY as designed below (chord result `mkC 0 (−2·atan(y/a))`, `a=R cos α`, `y=R sin α`; identity
+`2α − 2·atan(y/a) = 2π` via `atan(tan α)=α−π`, `tan(α−π)=tan α` from `sin_minus/cos_minus` since
+`tan_PI_minus` is absent). `Nfun_deriv`/`Ginn_deriv` proved from the ε–δ definition directly (the
+`derivable_pt_lim_scal`/`mult_real_fct` unification against explicit lambdas is flaky).
+
+Original design — via EXPLICIT computation (avoids the
 convex-`1/z`-primitive, which fails since `CcontC Cinv` is false — `Cinv` is discontinuous at 0):
 - Arc part: `pathint (arc R)(arc' R) Cinv (−α) α = mkC 0 (2α)` — integrand `= Ci` by
   `CWinding.arc_over_id`, then `Cintf_const_ab`. (Clean, ~10 lines.)
@@ -98,7 +104,17 @@ convex-`1/z`-primitive, which fails since `CcontC Cinv` is false — `Cinv` is d
 - Identity `2α + 2·atan(Y/δ) = 2π`: `Y/δ = −tan α = tan(PI−α)` (`tan_PI_minus`, needs `cos α≠0`),
   `π−α ∈ (−π/2,π/2)` so `atan(tan(π−α)) = π−α` (`atan_tan`) ⇒ `atan(Y/δ)=π−α`. (~20 lines.)
 
-**Brick 5 `CTruncCauchy.v` — `∮_C F/z = 2πi·F(0)`** for `F : CcontC F` holomorphic on (a nbhd of)
+**Brick 5 ✅ `CTruncCauchy.v` — DONE, axiom-clean (conditional).** `trunc_cauchy` proves
+`∮_arc F/z + ∮_chord F/z = Cmul (F 0) (mkC 0 (2π))`. Rather than construct the piecewise `φ` and its
+global continuity (the hard removable-at-0 fact), the theorem is a `Section` that TAKES `φ`'s
+exceptional-point interface as hypotheses: `CcontC φ`, holo off 0, bounded/continuous near 0, and
+agreement `φ = (F−F 0)/z` on the contour. The split `F/z = (F−F 0)/z + F 0·(1/z)` holds everywhere
+by `ring` (distributivity — no `z≠0` needed, so no patch in the split); `∮_C φ = 0` telescopes via
+`PrimE_deriv` (brick 3) + `pathint_FTC` on arc then chord (`P,Q` cancel); the `F 0/z` part is
+`Cintf_cmul_l` + `trunc_winding` (brick 4). Remaining for the Newman app: discharge the `φ`
+hypotheses (this IS the flagged global-`CcontC`/extension concern). Original design:
+
+For `F : CcontC F` holomorphic on (a nbhd of)
 the truncated disk (`0` interior). Split `F(z)/z = F(0)·(1/z) + φ(z)`, `φ := fun z => if z=C0 then
 Fp 0 else Cmul (Cminus (F z)(F 0)) (Cinv z)` — the removable-singularity function; note the raw
 formula gives `C0` at 0 (`Cmul C0 _`), so the `if z=C0` branch (value `Fp 0`) is REQUIRED for
