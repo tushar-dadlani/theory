@@ -34,7 +34,13 @@ apex `w = v0 + λ·i·(v2−v0) ∈ U`), and the `ConvexPrim` section: `PrimC_de
 (`is_Cderiv PrimC z (F z)` on `U`) + `pathint_loop_conv` (closed C¹ loop in `U` ⇒ `pathint F = 0`).
 Axiom-clean.
 
-**Brick 3 ⏳ `CGoursatExcept.v` (NEXT — the hard geometric one, ~250 lines):**
+**Brick 3 ✅ `CGoursatExcept.v` — DONE, axiom-clean.** `seg_split_param` (general Chasles) →
+`tri_corner_split` → `tri_except_vertex` (ML shrink + `p ∉ hull` via barycentric coords) →
+`extract_t`/`seg_chasles_collinear` → `tri_int_collinear` → **`tri_int_except`** (exceptional point
+anywhere) → **`pathint_loop_except`** (removable-singularity loop-zero on a convex region). This is
+the loop-zero engine for brick 5.
+
+**Brick 3 (original scoping, now delivered):**
 - `seg_split_param` : `seg_int f a c = seg_int f a (seg a c δ) + seg_int f (seg a c δ) c` for
   `δ∈[0,1]` (generalises `CSegInt.seg_concat` from δ=½; same `Cintf_cov` + affine-map plumbing).
   Gives `tri_int_collinear` (degenerate ⇒ 0 for merely-continuous `h`).
