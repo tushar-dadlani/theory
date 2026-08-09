@@ -32,7 +32,17 @@ Assume `α := limsup Vrem > 0`. Goal: derive `False` (via `α ≤ α − δ`).
   `plateau_pos/neg` (excursions have positive multiplicative width);
   `SelbergSignedExtremes.Vrem_eq_absVsig:53`.
 
-### Next concrete step: `self_improve_of_dip` (the Λ₂/ln² analog of `dip_avg_below`)
+### DONE: `self_improve_of_dip` (`SelbergSelfImprove.v`, axiom-clean)
+
+`self_improve_of_dip : forall L, is_limsup Vrem L -> 0 < L -> lambda2_dip L -> False`
+and `pnt_of_lambda2_dip : (forall L, is_limsup Vrem L -> 0 < L -> lambda2_dip L) ->
+Un_cv (pi_count/(N/ln N)) 1`. Built on `star_inequality` + `lam2_over_n_bound`; the
+`O(ln N)` remainder folds EXACTLY to `C1·ln N + C0` (ring), and the contradiction
+uses the `is_limsup` reach along a peak with `ln N > (C1+|C0|)/pos` (`INR_unbounded`).
+**PNT is now isolated to the single density fact `lambda2_dip`** (below), via the
+correct log² track — the dead-end `Λ`/`ln` dip route is abandoned.
+
+### (superseded) the original next step: `self_improve_of_dip` sketch
 
 State the Λ₂-weighted dip and reduce `self_improve` to it via `star_inequality`:
 ```coq
@@ -58,7 +68,15 @@ concrete; needs `Lam2_nonneg` (Λ2 = Λ·ln + Σ Λ·Λ ≥ 0 for n≥1) as a sm
 Reusable: `SelbergDip.v` helpers (`Rls_lin`, `Rls_scal'`, `ln_le'`, `tail_ln`,
 `Ndiv_ge`), `Rls_app`, `Rls_le`.
 
-### The crux: `lambda2_dip` (2d) — open research
+### THE remaining crux: `lambda2_dip` (`SelbergSelfImprove.v`) — open research
+
+```coq
+Definition lambda2_dip (L:R) : Prop :=
+  exists b theta, b < L /\ 0 < theta /\
+    exists K, forall N, (K<=N)%nat -> theta * (ln (INR N) * ln (INR N)) <= dipw2 b N.
+```
+where `dipw2 b N = Σ_{n≤N} (Λ2 n/n)·[Vrem(N/n) ≤ b]`. This is the ONLY thing between
+the repo and an unconditional, axiom-clean elementary PNT.
 
 Produce `b<α`, `θ>0` with `dipw2 b N ≥ θ·ln²N` for all large N. From
 `sign_oscillation` + `signed_pin` (`Vsig` crosses 0 i.o. with positive
