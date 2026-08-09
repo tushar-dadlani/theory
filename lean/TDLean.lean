@@ -21,5 +21,6 @@ import TDLean.Newman.Region
 import TDLean.Newman.Kernel
 import TDLean.Newman.Contour
 import TDLean.Newman.Winding
+import TDLean.Newman.StarPrimitive
 
 import TDLean.Audit

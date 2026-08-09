@@ -18,6 +18,7 @@ import TDLean.Newman.Region
 import TDLean.Newman.Kernel
 import TDLean.Newman.Contour
 import TDLean.Newman.Winding
+import TDLean.Newman.StarPrimitive
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -107,6 +108,21 @@ import TDLean.Newman.Winding
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Newman.hasDerivAt_logNeg
+
+/-- info: 'TDLean.Newman.hasDerivAt_radialIntegrand' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.hasDerivAt_radialIntegrand
+
+/-- info: 'TDLean.Newman.hasDerivAt_radialAntiderivative' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.hasDerivAt_radialAntiderivative
+
+/-- info: 'TDLean.Newman.radialCone_subset' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.radialCone_subset
 
 /-! ### Non-vacuity witnesses
 
