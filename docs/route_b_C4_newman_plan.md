@@ -76,6 +76,39 @@ the loop-zero engine for brick 5.
 5. **`CTruncCauchy.v` — `∮_C F/z = 2πi·F(0)`** for `F` holomorphic on the truncated disk:
    `(F(z)−F(0))/z` continuous + holomorphic off 0 ⇒ loop 0 (brick 3) ⇒ `∮_C F/z = F(0)∮dz/z` (4).
 
+### Bricks 4–5 — precise ready-to-execute construction (all stdlib pieces CONFIRMED present)
+Parametrise the truncated contour by `R>0` and half-angle `α∈(π/2,π)` with `δ := −R·cos α > 0`,
+`Y := R·sin α > 0`; endpoints `P := arc R α = mkC (−δ) Y` (top), `Q := arc R (−α) = mkC (−δ) (−Y)`
+(bottom). Contour `C` = arc `arc R` over `[−α, α]` (through 0) then chord `seg P Q` over `[0,1]`.
+
+**Brick 4 `CTruncWind.v` — `∮_C dz/z = mkC 0 (2π)`** (`= 2πi`), via EXPLICIT computation (avoids the
+convex-`1/z`-primitive, which fails since `CcontC Cinv` is false — `Cinv` is discontinuous at 0):
+- Arc part: `pathint (arc R)(arc' R) Cinv (−α) α = mkC 0 (2α)` — integrand `= Ci` by
+  `CWinding.arc_over_id`, then `Cintf_const_ab`. (Clean, ~10 lines.)
+- Chord part: `pathint (seg P Q)(seg' P Q) Cinv 0 1 = mkC 0 (2·atan (Y/δ))`. On the chord
+  `seg P Q s = mkC (−δ) (Y(1−2s))`, `seg' = mkC 0 (−2Y)`, so the integrand is
+  `mkC (−2Y²(1−2s)/N) (2δY/N)` with `N = δ²+Y²(1−2s)²`. Evaluate the two `RiemannInt`s by
+  `ContinuousCoV.FTC_antideriv` (`RiemannInt = G b − G a` from `antiderivative f G a b`):
+    - Re integrand antiderivative `G_Re s := ½·ln N` (`G_Re' = −2Y²(1−2s)/N`,
+      `derivable_pt_lim_ln` + chain); `Re = ½(ln N(1) − ln N(0)) = 0` (`N(0)=N(1)=δ²+Y²`).
+    - Im integrand antiderivative `G_Im s := −atan (Y(1−2s)/δ)` (`G_Im' = 2δY/N`,
+      `derivable_pt_lim_atan` + chain, inner `s ↦ Y(1−2s)/δ`); `Im = 2·atan(Y/δ)`.
+  Build each `antiderivative` in the `exists pr:derivable_pt, f=derive_pt` form (mirror
+  `CSegInt.seg_reverse`'s `Hanti`). (~90 lines.)
+- Identity `2α + 2·atan(Y/δ) = 2π`: `Y/δ = −tan α = tan(PI−α)` (`tan_PI_minus`, needs `cos α≠0`),
+  `π−α ∈ (−π/2,π/2)` so `atan(tan(π−α)) = π−α` (`atan_tan`) ⇒ `atan(Y/δ)=π−α`. (~20 lines.)
+
+**Brick 5 `CTruncCauchy.v` — `∮_C F/z = 2πi·F(0)`** for `F : CcontC F` holomorphic on (a nbhd of)
+the truncated disk (`0` interior). Split `F(z)/z = F(0)·(1/z) + φ(z)`, `φ := fun z => if z=C0 then
+Fp 0 else Cmul (Cminus (F z)(F 0)) (Cinv z)` — the removable-singularity function; note the raw
+formula gives `C0` at 0 (`Cmul C0 _`), so the `if z=C0` branch (value `Fp 0`) is REQUIRED for
+continuity at 0. `φ` is globally continuous (`CcontC φ`, from `is_Cderiv F 0 (Fp 0)`) and holomorphic
+off 0, so `pathint_loop_except` (brick 3) gives `∮_C φ = 0` by telescoping `PrimE` over the arc +
+chord pieces (`pathint_FTC` each, endpoints `P,Q` cancel). Then per-piece linearity (`Cintf_cmul_l`,
+`Cintf_sub`) ⇒ `∮_C F/z = F(0)·∮_C dz/z + ∮_C φ = F(0)·2πi` (brick 4). The global-`CcontC` demand on
+`F`/`φ` is the same extension concern as the Newman application (brick 8) — a global continuous
+extension of `g` off its domain, agreeing on the truncated disk.
+
 ### Newman + application
 6. **`CNewmanKernel.v` ✅ DONE** — `newman_kernel R z = 1/z + z/R²`; on `|z|=R` it is the real
    `2·Re z/R²`, so `|K_R| = 2|Re z|/R²` (`Cmod_newman_kernel`). Axiom-clean.
