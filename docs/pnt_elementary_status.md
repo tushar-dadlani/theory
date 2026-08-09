@@ -99,6 +99,27 @@ primes). So a clean pure-Λ2 signed concentration is not immediate — the `2·D
 must be controlled (e.g. via a companion symmetry for `Σ Λ·log/n·Vsig`, or by combining
 with the unsigned `star_inequality`). This is the genuine remaining delicacy.
 
+**DONE (Dlog attack, axiom-clean) — the surviving `2·Dlog` is now pinned:**
+- `SelbergDlogWeight.dlog_total_weight`: the SHARP total log-mass
+  `|Σ_{n≤N} Λ(n)ln n/n − ½ln²N| ≤ 2·Kup·ln N + 1` (Abel summation of Mertens
+  against `ln n` + the telescope `Σ ln n·Δln n = ½ln²N − ½Σ(Δln n)²`,
+  `0≤Σ(Δln n)²≤2`). The survey confirmed this standalone bound did not exist; the
+  sharp ½ is the constant that pairs with the `2` to cancel `α·ln²N`.
+- `SelbergDlogControl.dlog_split_bound` / `dlog_upper`: the division-free sign-split
+  `Dlog ≤ (−α+δ)·½ln²N + (Kup−1+α−δ)·Wc + (α−δ)(2Kup ln N+1)`, where
+  `Wc = Σ w(n)·[Vsig(N/n) > −α+δ]` is the "not-a-deep-trough" log-mass
+  (`w(n)=Λ(n)ln n/n ≥ 0`). This isolates the SINGLE remaining input `Wc`.
+- **Verified the algebraic route is a dead loop:** `Λ(n)ln n = Λ2 − Λ∗Λ` +
+  `selberg2_reindex` + `selberg_average_signed` + `log_floor_diff` regenerates
+  `star_signed` verbatim — `Dlog` is only controllable through the SIGN of `Vsig`.
+- **Remaining (Stage 3, research):** a log-weighted concentration `Wc = o(ln²N)` at a
+  peak (the `w`-measure analogue of `SelbergSignedConc.peak_concentration`; the
+  bulk `n ≤ N/M0` carries all but `O(ln N)` of the `w`-mass, so it is plausible via
+  Abel from the degree-1 lemma). Then `star_signed` + `dlog_upper` force
+  `D2 = o(ln²N)` at peaks. **Even that does NOT close PNT** — closure still needs the
+  two-scale peak→trough→peak overlap (Erdős) on top. Honest scope: this layer pins
+  `Dlog`; it is necessary, not sufficient.
+
 **Original path (degree-1 two-scale), now refined:** the two-scale Fubini
 (`Σ_{d,e}Λ(d)Λ(e)/(de) → Σ_n Λ2(n)/n` on `n=de`) reduces the contradiction to
 bounding `Σ_{n: N/n a peak} Λ2(n)/n` SMALL — a **Λ₂-measure** concentration the
