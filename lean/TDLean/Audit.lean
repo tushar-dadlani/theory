@@ -19,6 +19,7 @@ import TDLean.Newman.Kernel
 import TDLean.Newman.Contour
 import TDLean.Newman.Winding
 import TDLean.Newman.StarPrimitive
+import TDLean.Newman.TruncCauchy
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -138,6 +139,26 @@ import TDLean.Newman.StarPrimitive
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Newman.starAboutZero_truncDisk
+
+/-- info: 'TDLean.Newman.trunc_cauchy' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.trunc_cauchy
+
+/-- info: 'TDLean.Newman.div_eq_dslope_add' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.div_eq_dslope_add
+
+/-- info: 'TDLean.Newman.truncContour_add' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.truncContour_add
+
+/-- info: 'TDLean.Newman.truncContour_const_mul' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.truncContour_const_mul
 
 /-! ### Non-vacuity witnesses
 

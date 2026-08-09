@@ -101,15 +101,23 @@ on injected `sorry`). Four bricks landed, all tier L1:
 | C3 | `Newman/Contour.lean` | `CPathFTC.v` |
 | C4 | `Newman/StarPrimitive.lean` | `CGoursatConv.v`, `CPrimConv.v`, `CGoursatExcept.v` |
 | C5 | `Newman/Winding.lean` | `CTruncWind.v` |
+| C6 | `Newman/TruncCauchy.lean` | `CTruncCauchy.v` |
 
 C5 (`∮_C dz/z = 2πi`) turned out **not** to need the keystone C4: on the chord
 `Re z < 0`, so `log(-z)` is a primitive of `1/z` there and C3 finishes it. See LEDGER §3.1.
 
-**C4, the keystone, is done** — Cauchy on a star-shaped region, via the radial primitive
-rather than the planned adaptation of mathlib's `HasPrimitives.lean` (see LEDGER §3.3 for
-why that route is blocked). The whole Coq contour wall is now cross-verified except C6.
+**The whole Coq contour wall (C4-7 in the Coq plan) is now cross-verified.**
 
-Next: C6 (`∮_C F/z = 2πi F(0)`, which should now be short: split `F z / z` as
-`dslope F 0 z + F 0 / z`, kill the first with C4 and the second with C5), then C7/C8.
-Also outstanding: B4 (the `⋉`-is-really-`×` splitting theorem) and A2 (the theta
-transformation from Poisson summation — the hardest single brick).
+Two findings stand out:
+
+- **C6 is strictly stronger than its Coq oracle.** Coq's `trunc_cauchy` is conditional on
+  φ's global-continuity interface, and `docs/newman_route_status.md` lists discharging that
+  interface as one of the *deep remaining blockers* of the Coq route. In Lean the hypothesis
+  never arises. That blocker is an artifact of the bespoke `ComplexField`, not mathematics.
+- **C4 and C5 both took different proof routes than Coq** — radial primitive instead of
+  triangle Goursat, and `log(-z)` instead of `arctan` antiderivatives — so the agreement is
+  genuinely independent rather than a re-run of the same argument.
+
+Next: C7 (`g_T` entire + the tail bound), then C8 (Newman's analytic Tauberian theorem,
+which does not exist on the Coq side). Also outstanding: B4 (the `⋉`-is-really-`×`
+splitting theorem) and A2 (the theta transformation from Poisson summation).

@@ -111,6 +111,81 @@ def chordSet (P Q : ℂ) : Set ℂ := chord P Q '' uIcc (0:ℝ) 1
 /-- The whole contour, as a set of points. -/
 def contourSet (R α : ℝ) : Set ℂ := arcSet R α ∪ chordSet (arcTop R α) (arcBot R α)
 
+/-! ### Integrability of the two pieces -/
+
+theorem arcSet_mem {R α : ℝ} {θ : ℝ} (hθ : θ ∈ uIcc (-α) α) :
+    circleMap 0 R θ ∈ arcSet R α := ⟨θ, hθ, rfl⟩
+
+theorem chordSet_mem {P Q : ℂ} {t : ℝ} (ht : t ∈ uIcc (0 : ℝ) 1) :
+    chord P Q t ∈ chordSet P Q := ⟨t, ht, rfl⟩
+
+theorem arcIntegrand_continuousOn {f : ℂ → ℂ} {R α : ℝ} (hf : ContinuousOn f (arcSet R α)) :
+    ContinuousOn (fun θ => deriv (circleMap 0 R) θ * f (circleMap 0 R θ)) (uIcc (-α) α) := by
+  have hderivEq : (fun θ : ℝ => deriv (circleMap 0 R) θ) = fun θ => circleMap 0 R θ * I :=
+    funext fun θ => deriv_circleMap 0 R θ
+  have h1 : ContinuousOn (fun θ : ℝ => deriv (circleMap 0 R) θ) (uIcc (-α) α) := by
+    rw [hderivEq]; exact ((continuous_arc R).continuousOn).mul continuousOn_const
+  exact h1.mul (hf.comp (continuous_arc R).continuousOn fun θ hθ => arcSet_mem hθ)
+
+theorem arcIntegrable {f : ℂ → ℂ} {R α : ℝ} (hf : ContinuousOn f (arcSet R α)) :
+    IntervalIntegrable (fun θ => deriv (circleMap 0 R) θ * f (circleMap 0 R θ))
+      MeasureTheory.volume (-α) α :=
+  (arcIntegrand_continuousOn hf).intervalIntegrable
+
+theorem chordIntegrand_continuousOn {f : ℂ → ℂ} {P Q : ℂ} (hf : ContinuousOn f (chordSet P Q)) :
+    ContinuousOn (fun t => (Q - P) * f (chord P Q t)) (uIcc (0 : ℝ) 1) :=
+  continuousOn_const.mul (hf.comp (continuous_chord P Q).continuousOn fun _ ht => chordSet_mem ht)
+
+theorem chordIntegrable {f : ℂ → ℂ} {P Q : ℂ} (hf : ContinuousOn f (chordSet P Q)) :
+    IntervalIntegrable (fun t => (Q - P) * f (chord P Q t)) MeasureTheory.volume 0 1 :=
+  (chordIntegrand_continuousOn hf).intervalIntegrable
+
+/-! ### Linearity of the contour integral -/
+
+theorem truncContour_const_mul (c : ℂ) (f : ℂ → ℂ) (R α : ℝ) :
+    truncContour (fun z => c * f z) R α = c * truncContour f R α := by
+  have harc : (fun θ : ℝ => deriv (circleMap 0 R) θ * (c * f (circleMap 0 R θ)))
+      = fun θ : ℝ => c * (deriv (circleMap 0 R) θ * f (circleMap 0 R θ)) :=
+    funext fun θ => by ring
+  have hch : (fun t : ℝ => (arcBot R α - arcTop R α) * (c * f (chord (arcTop R α) (arcBot R α) t)))
+      = fun t : ℝ =>
+          c * ((arcBot R α - arcTop R α) * f (chord (arcTop R α) (arcBot R α) t)) :=
+    funext fun t => by ring
+  -- `rw`/`simp` cannot unify `integral_const_mul` here (higher-order pattern), but the
+  -- fully-applied term elaborates fine, so state each instance concretely.
+  have h1 : (∫ θ in (-α)..α, c * (deriv (circleMap 0 R) θ * f (circleMap 0 R θ)))
+      = c * ∫ θ in (-α)..α, deriv (circleMap 0 R) θ * f (circleMap 0 R θ) :=
+    intervalIntegral.integral_const_mul c _
+  have h2 : (∫ t in (0 : ℝ)..1,
+        c * ((arcBot R α - arcTop R α) * f (chord (arcTop R α) (arcBot R α) t)))
+      = c * ∫ t in (0 : ℝ)..1,
+        (arcBot R α - arcTop R α) * f (chord (arcTop R α) (arcBot R α) t) :=
+    intervalIntegral.integral_const_mul c _
+  unfold truncContour arcIntegral chordIntegral
+  rw [harc, hch, h1, h2]
+  ring
+
+theorem truncContour_add {f g : ℂ → ℂ} {R α : ℝ}
+    (hf : ContinuousOn f (contourSet R α)) (hg : ContinuousOn g (contourSet R α)) :
+    truncContour (fun z => f z + g z) R α = truncContour f R α + truncContour g R α := by
+  have harcS : arcSet R α ⊆ contourSet R α := subset_union_left
+  have hchS : chordSet (arcTop R α) (arcBot R α) ⊆ contourSet R α := subset_union_right
+  have harc : (fun θ : ℝ =>
+        deriv (circleMap 0 R) θ * (f (circleMap 0 R θ) + g (circleMap 0 R θ)))
+      = fun θ : ℝ => deriv (circleMap 0 R) θ * f (circleMap 0 R θ)
+          + deriv (circleMap 0 R) θ * g (circleMap 0 R θ) :=
+    funext fun θ => by ring
+  have hch : (fun t : ℝ => (arcBot R α - arcTop R α) *
+          (f (chord (arcTop R α) (arcBot R α) t) + g (chord (arcTop R α) (arcBot R α) t)))
+      = fun t : ℝ => (arcBot R α - arcTop R α) * f (chord (arcTop R α) (arcBot R α) t)
+          + (arcBot R α - arcTop R α) * g (chord (arcTop R α) (arcBot R α) t) :=
+    funext fun t => by ring
+  unfold truncContour arcIntegral chordIntegral
+  rw [harc, hch,
+    intervalIntegral.integral_add (arcIntegrable (hf.mono harcS)) (arcIntegrable (hg.mono harcS)),
+    intervalIntegral.integral_add (chordIntegrable (hf.mono hchS)) (chordIntegrable (hg.mono hchS))]
+  ring
+
 /-! ### FTC on each piece -/
 
 /-- FTC along the arc: with a primitive `F`, the arc integral telescopes. -/
