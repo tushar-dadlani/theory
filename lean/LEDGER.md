@@ -106,6 +106,7 @@ have).
 | `Newman.convex_truncDisk`, `isOpen_truncDisk` | `CTruncDisk.v` | **confirmed** | 79 Coq lines → two lines. |
 | `Newman.newmanKernel_of_norm_eq`, `norm_newmanKernel` | `CNewmanKernel.v : newman_kernel_on_circle, Cmod_newman_kernel` | **confirmed** | The one Coq brick that was already short (45 lines); comparable here. |
 | `Newman.truncContour_eq_zero_of_primitive` | `CPathFTC.v : pathint_primitive_loop` | **confirmed** | Specialised to the truncated contour. Coq needs a whole path-integral calculus first (`CPathIntegral.v`, `CPathFTC.v`, `CSegInt.v`) because Rocq has no complex analysis; mathlib has interval integrals + FTC-2 but no path abstraction, so this supplies the minimum. |
+| `Newman.hasDerivAt_radialPrimitive`, `truncContour_eq_zero_of_starAboutZero` | `CGoursatConv.v` + `CPrimConv.v` + `CGoursatExcept.v` (**1116 lines**) | **confirmed, different proof** | The keystone. A holomorphic function on an open star-shaped-about-`0` region has a primitive, so closed-loop integrals over the truncated contour vanish. Radial argument (`F z = ∫₀¹ z f(tz) dt`), resting on `∂/∂z[z f(tz)] = f(tz) + t z f'(tz) = d/dt[t f(tz)]`; differentiate under the integral, then FTC-2 in `t` telescopes to `f z`. Coq subdivides triangles (Goursat); mathlib has no triangle Goursat, only rectangles. **Genuinely independent proof route.** |
 | `Newman.trunc_winding` | `CTruncWind.v : trunc_winding` (254 lines) | **confirmed, different proof** | `∮_C dz/z = 2πi`. **Does not need the keystone C4.** On the chord `Re z = R cos α < 0`, so `log(-z)` is a primitive of `1/z` there — `-z` has positive real part, lands in `slitPlane`, and the chord never meets the branch cut. Arc gives `2αi` (integrand collapses to the constant `I`), chord gives `2(π-α)i`, total `2πi`. Coq uses `arctan` antiderivatives precisely because it has no complex `log`. |
 
 ### 3.2 Findings recorded during planning, pending Lean proof
@@ -129,6 +130,15 @@ have).
   master, not in the pinned `v4.29.0-rc6`; and even there it is only a `≃ₗ`, carrying a
   literal `TODO: ... strengthen to an AlgEquiv`. Brick B10 must rebuild it from
   `finsuppTensorFinsupp'`.
+- **`Analysis/Complex/HasPrimitives.lean` does not generalise off the ball, two ways.**
+  Its Morera route needs the *rectangle* spanned by pairs of region points to stay inside
+  the region, and **balls are not rectangle-closed**: for `z = 0.9`, `w = 0.9i` in
+  `ball 0 1`, the corner `0.9 + 0.9i` has modulus `1.27 > 1`. mathlib's proof only ever
+  moves a coordinate *toward the centre*, which is why it works for a ball and gives
+  nothing for free on a general convex set. Separately, every supporting lemma
+  (`re_add_im_mul_mem_ball`, `mem_ball_of_map_re_aux`, `hasDerivAt_wedgeIntegral_re_aux`,
+  …) is `private`. The file's own `TODO` — "Extend to holomorphic functions on simply
+  connected domains" — is still open. Brick C4 therefore uses the radial argument instead.
 - **An `ℝ`-on-`ℂ` typeclass diamond, hit twice.** For a *concrete* `ℂ → ℂ` function,
   `NormedSpace ℝ ℂ` resolves through `instInnerProductSpaceRealComplex`, and the resulting
   `SMul ℝ ℂ` does not match the algebra tower. Consequences:

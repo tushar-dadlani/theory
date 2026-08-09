@@ -124,6 +124,21 @@ import TDLean.Newman.StarPrimitive
 #guard_msgs in
 #print axioms TDLean.Newman.radialCone_subset
 
+/-- info: 'TDLean.Newman.hasDerivAt_radialPrimitive' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.hasDerivAt_radialPrimitive
+
+/-- info: 'TDLean.Newman.truncContour_eq_zero_of_starAboutZero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.truncContour_eq_zero_of_starAboutZero
+
+/-- info: 'TDLean.Newman.starAboutZero_truncDisk' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.starAboutZero_truncDisk
+
 /-! ### Non-vacuity witnesses
 
     These must be audited too. A `sorry` here is exactly as fatal as a `sorry` in a

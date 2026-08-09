@@ -99,11 +99,17 @@ on injected `sorry`). Four bricks landed, all tier L1:
 | C1 | `Newman/Region.lean` | `CTruncDisk.v` |
 | C2 | `Newman/Kernel.lean` | `CNewmanKernel.v` |
 | C3 | `Newman/Contour.lean` | `CPathFTC.v` |
+| C4 | `Newman/StarPrimitive.lean` | `CGoursatConv.v`, `CPrimConv.v`, `CGoursatExcept.v` |
 | C5 | `Newman/Winding.lean` | `CTruncWind.v` |
 
 C5 (`∮_C dz/z = 2πi`) turned out **not** to need the keystone C4: on the chord
 `Re z < 0`, so `log(-z)` is a primitive of `1/z` there and C3 finishes it. See LEDGER §3.1.
 
-Next: C4 (Cauchy on a star-shaped region — still the keystone, needed for C6 and C8),
-B4 (the `⋉`-is-really-`×` splitting theorem), A2 (the theta transformation from Poisson
-summation — the hardest single brick).
+**C4, the keystone, is done** — Cauchy on a star-shaped region, via the radial primitive
+rather than the planned adaptation of mathlib's `HasPrimitives.lean` (see LEDGER §3.3 for
+why that route is blocked). The whole Coq contour wall is now cross-verified except C6.
+
+Next: C6 (`∮_C F/z = 2πi F(0)`, which should now be short: split `F z / z` as
+`dslope F 0 z + F 0 / z`, kill the first with C4 and the second with C5), then C7/C8.
+Also outstanding: B4 (the `⋉`-is-really-`×` splitting theorem) and A2 (the theta
+transformation from Poisson summation — the hardest single brick).
