@@ -19,5 +19,6 @@ import TDLean.MonoidAlgebra.Sym.SignType
 -- Cluster C -- Newman contour route
 import TDLean.Newman.Region
 import TDLean.Newman.Kernel
+import TDLean.Newman.Contour
 
 import TDLean.Audit
