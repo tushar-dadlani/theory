@@ -227,4 +227,27 @@ theorem norm_laplaceTail_le {B : ℝ} {z : ℂ} (hB : ∀ t, 0 ≤ t → ‖f t�
         rw [integral_exp_mul_Ioi hneg T]
         field_simp
 
+
+/-! ### Splitting the Laplace integral at `T` -/
+
+/-- For `Re z > 0`, `g z − g_T z` is exactly the tail `∫_{t>T} f e^{−zt}`. -/
+theorem sub_gT_eq_tail {g : ℂ → ℂ} (hT : 0 ≤ T) {z : ℂ}
+    (hgL : g z = ∫ t in Ioi (0 : ℝ), f t * Complex.exp (-z * (t : ℂ)))
+    (hint : IntegrableOn (fun t : ℝ => f t * Complex.exp (-z * (t : ℂ))) (Ioi 0)) :
+    g z - gT f T z = ∫ t in Ioi T, f t * Complex.exp (-z * (t : ℂ)) := by
+  have hsplit : Ioc (0 : ℝ) T ∪ Ioi T = Ioi (0 : ℝ) := Ioc_union_Ioi_eq_Ioi hT
+  have hdisj : Disjoint (Ioc (0 : ℝ) T) (Ioi T) := Ioc_disjoint_Ioi le_rfl
+  have h1 : IntegrableOn (fun t : ℝ => f t * Complex.exp (-z * (t : ℂ))) (Ioc 0 T) :=
+    hint.mono_set (by rw [← hsplit]; exact subset_union_left)
+  have h2 : IntegrableOn (fun t : ℝ => f t * Complex.exp (-z * (t : ℂ))) (Ioi T) :=
+    hint.mono_set (by rw [← hsplit]; exact subset_union_right)
+  have hadd : (∫ t in Ioi (0 : ℝ), f t * Complex.exp (-z * (t : ℂ)))
+      = (∫ t in Ioc (0 : ℝ) T, f t * Complex.exp (-z * (t : ℂ)))
+        + ∫ t in Ioi T, f t * Complex.exp (-z * (t : ℂ)) := by
+    rw [← hsplit, MeasureTheory.setIntegral_union hdisj measurableSet_Ioi h1 h2]
+  have hgTeq : gT f T z = ∫ t in Ioc (0 : ℝ) T, f t * Complex.exp (-z * (t : ℂ)) := by
+    rw [gT, intervalIntegral.integral_of_le hT]
+  rw [hgL, hadd, hgTeq]
+  ring
+
 end TDLean.Newman

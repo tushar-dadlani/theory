@@ -24,6 +24,7 @@ import TDLean.Newman.TruncCauchy
 import TDLean.Newman.Kernel
 import TDLean.Newman.Laplace
 import TDLean.Newman.Split
+import TDLean.Newman.LeftLimit
 
 namespace TDLean.Newman
 
@@ -231,19 +232,208 @@ theorem norm_leftArc_le {R B a b : ℝ} {h : ℂ → ℂ} (hR : 0 < R)
   have hml := norm_arcIntegralOn_le_of_ae (f := h) (R := R) key
   rwa [abs_of_pos hR] at hml
 
-/-- `cos < 0` on `(π/2, π)`. -/
-theorem cos_neg_on_upper {θ : ℝ} (hθ : θ ∈ Ioo (π / 2) π) : Real.cos θ < 0 :=
-  Real.cos_neg_of_pi_div_two_lt_of_lt hθ.1 (by linarith [Real.pi_pos, hθ.2])
-
-/-- `cos < 0` on `(−π, −π/2)`. -/
-theorem cos_neg_on_lower {θ : ℝ} (hθ : θ ∈ Ioo (-π) (-(π / 2))) : Real.cos θ < 0 := by
-  rw [← Real.cos_neg]
-  exact cos_neg_on_upper ⟨by linarith [hθ.2], by linarith [hθ.1]⟩
+/-- The left semicircle (the `α = π` left part, where the chord degenerates) contributes at
+    most `R · (2B/R²) · π` -- the same as the right semicircle. -/
+theorem norm_leftPart_pi_le {R B : ℝ} {h : ℂ → ℂ} (hR : 0 < R)
+    (hb : ∀ z : ℂ, ‖z‖ = R → z.re < 0 → ‖h z‖ ≤ 2 * B / R ^ 2) :
+    ‖leftPart h R π‖ ≤ R * (2 * B / R ^ 2) * π := by
+  have hπ := Real.pi_pos
+  rw [leftPart_pi]
+  have h1 : ‖arcIntegralOn h R (-π) (-(π / 2))‖ ≤ R * (2 * B / R ^ 2) * |(-(π / 2)) - (-π)| := by
+    refine norm_leftArc_le hR (fun θ hθ => ?_) hb
+    rw [min_eq_left (by linarith : -π ≤ -(π / 2)),
+      max_eq_right (by linarith : -π ≤ -(π / 2))] at hθ
+    exact cos_neg_on_lower hθ
+  have h2 : ‖arcIntegralOn h R (π / 2) π‖ ≤ R * (2 * B / R ^ 2) * |π - π / 2| := by
+    refine norm_leftArc_le hR (fun θ hθ => ?_) hb
+    rw [min_eq_left (by linarith : π / 2 ≤ π), max_eq_right (by linarith : π / 2 ≤ π)] at hθ
+    exact cos_neg_on_upper hθ
+  rw [show (-(π / 2)) - (-π) = π / 2 by ring, abs_of_pos (by linarith : (0:ℝ) < π / 2)] at h1
+  rw [show π - π / 2 = π / 2 by ring, abs_of_pos (by linarith : (0:ℝ) < π / 2)] at h2
+  calc ‖arcIntegralOn h R (-π) (-(π / 2)) + arcIntegralOn h R (π / 2) π‖
+      ≤ ‖arcIntegralOn h R (-π) (-(π / 2))‖ + ‖arcIntegralOn h R (π / 2) π‖ := norm_add_le _ _
+    _ ≤ R * (2 * B / R ^ 2) * (π / 2) + R * (2 * B / R ^ 2) * (π / 2) := by linarith
+    _ = R * (2 * B / R ^ 2) * π := by ring
 
 /-- Non-vacuity: the right-semicircle hypotheses are satisfiable. -/
 theorem norm_newman_integrand_right_nonvacuous :
     ∃ (R : ℝ) (z : ℂ), 0 < R ∧ ‖z‖ = R ∧ 0 < z.re :=
   ⟨1, 1, one_pos, by rw [show ((1 : ℂ)) = ((1 : ℝ) : ℂ) by norm_num, Complex.norm_real]; simp,
     by simp⟩
+
+
+/-! ### The quantitative core of Newman's theorem -/
+
+/-- **The Newman inequality.** For every `T ≥ 0` and every admissible contour radius `R`,
+
+      `2π ‖g(0) − g_T(0)‖ ≤ 2·(R·(2B/R²)·π) + ‖leftPart(g·e^{zT}·K_R)‖`.
+
+    The first term is `4πB/R`, which is small for large `R`; the second tends to `0` as
+    `T → ∞` at fixed `R` (`tendsto_leftPart_g_zero`). Those two facts together are Newman's
+    theorem.
+
+    OVERTAKE: no Coq counterpart. -/
+theorem newman_inequality {f : ℝ → ℂ} {g : ℂ → ℂ} {B R α T : ℝ} {U : Set ℂ}
+    (hfc : Continuous f) (hB : ∀ t, 0 ≤ t → ‖f t‖ ≤ B) (hT : 0 ≤ T)
+    (hint : ∀ z : ℂ, 0 < z.re →
+      MeasureTheory.IntegrableOn (fun t : ℝ => f t * Complex.exp (-z * (t : ℂ))) (Ioi 0))
+    (hgL : ∀ z : ℂ, 0 < z.re → g z = ∫ t in Ioi (0 : ℝ), f t * Complex.exp (-z * (t : ℂ)))
+    (hR : 0 < R) (hα : π / 2 < α) (hα2 : α ≤ π)
+    (hU : IsOpen U) (hstar : StarAboutZero U) (h0 : (0 : ℂ) ∈ U)
+    (hsub : contourSet R α ⊆ U) (hgd : DifferentiableOn ℂ g U) :
+    2 * π * ‖g 0 - gT f T 0‖ ≤ 2 * (R * (2 * B / R ^ 2) * π)
+      + ‖leftPart (fun z => g z * Complex.exp (z * (T : ℂ)) * newmanKernel R z) R α‖ := by
+  have hπ := Real.pi_pos
+  have hfT : ContinuousOn f (uIcc (0 : ℝ) T) := hfc.continuousOn
+  have hgTd : Differentiable ℂ (gT f T) := differentiable_gT hfT
+  have hexpd : Differentiable ℂ (fun z : ℂ => Complex.exp (z * (T : ℂ))) :=
+    Complex.differentiable_exp.comp (differentiable_id.mul_const _)
+  -- the two integrands
+  set A : ℂ → ℂ := fun z => g z * Complex.exp (z * (T : ℂ)) * newmanKernel R z with hA
+  set Bf : ℂ → ℂ := fun z => gT f T z * Complex.exp (z * (T : ℂ)) * newmanKernel R z with hBf
+  set F : ℂ → ℂ := fun z => (g z - gT f T z) * Complex.exp (z * (T : ℂ)) with hF
+  have hFd : DifferentiableOn ℂ F U :=
+    (hgd.sub hgTd.differentiableOn).mul hexpd.differentiableOn
+  have hzero := zero_not_mem_contourSet hR hα hα2
+  have hne : ∀ z ∈ contourSet R α, z ≠ 0 := fun z hz h => hzero (h ▸ hz)
+  have hKc : ContinuousOn (fun z : ℂ => newmanKernel R z) (contourSet R α) := by
+    intro z hz
+    exact ((continuousAt_inv₀ (hne z hz)).continuousWithinAt).add
+      ((continuousAt_id.div_const _).continuousWithinAt)
+  have hAc : ContinuousOn A (contourSet R α) :=
+    ((hgd.continuousOn.mono hsub).mul (by fun_prop)).mul hKc
+  have hBc : ContinuousOn Bf (contourSet R α) :=
+    ((hgTd.continuous.continuousOn).mul (by fun_prop)).mul hKc
+  -- the contour identity, then the split
+  have hid := newman_contour_identity hR hα hα2 hU hstar h0 hFd hsub hzero
+  have hF0 : F 0 = g 0 - gT f T 0 := by simp [hF]
+  have hFK : (fun z => F z * newmanKernel R z) = fun z => A z - Bf z := by
+    funext z; simp only [hA, hBf, hF]; ring
+  rw [hFK, hF0] at hid
+  have hsplit := truncContour_split (f := fun z => A z - Bf z) hα.le (hAc.sub hBc)
+  rw [hsplit, leftPart_sub hα.le hAc hBc] at hid
+  -- deform the `g_T` left part to the left semicircle
+  have hdeform : leftPart Bf R α = leftPart Bf R π := by
+    have : Bf = fun z => (gT f T z * Complex.exp (z * (T : ℂ))) * newmanKernel R z := by
+      funext z; simp [hBf]
+    rw [this]
+    exact leftPart_kernel_deform hR hα hα2 (hgTd.mul hexpd)
+  rw [hdeform] at hid
+  -- bound the right semicircle
+  have hright : ‖rightSemi (fun z => A z - Bf z) R‖ ≤ R * (2 * B / R ^ 2) * π := by
+    refine norm_rightSemi_le hR fun z hznorm hzre => ?_
+    have hsubg : A z - Bf z = (g z - gT f T z) * Complex.exp (z * (T : ℂ)) *
+        newmanKernel R z := by simp only [hA, hBf]; ring
+    rw [hsubg]
+    refine norm_newman_integrand_right (G := fun w => g w - gT f T w) hR hznorm hzre ?_
+    dsimp only
+    rw [sub_gT_eq_tail hT (hgL z hzre) (hint z hzre)]
+    exact norm_laplaceTail_le hB hzre hT ((hint z hzre).mono_set (Ioi_subset_Ioi hT))
+  -- bound the left semicircle
+  have hleft : ‖leftPart Bf R π‖ ≤ R * (2 * B / R ^ 2) * π := by
+    refine norm_leftPart_pi_le hR fun z hznorm hzre => ?_
+    have hsubg : Bf z = gT f T z * Complex.exp (z * (T : ℂ)) * newmanKernel R z := rfl
+    rw [hsubg]
+    exact norm_newman_integrand_left (G := gT f T) hR hznorm hzre
+      (norm_gT_le_of_re_neg hT hfT hB hzre)
+  -- assemble
+  have hnorm : ‖(2 : ℂ) * π * I * (g 0 - gT f T 0)‖ = 2 * π * ‖g 0 - gT f T 0‖ := by
+    rw [norm_mul, norm_mul, norm_mul, Complex.norm_I, mul_one, Complex.norm_real,
+      Real.norm_eq_abs, abs_of_pos hπ]
+    norm_num
+  calc 2 * π * ‖g 0 - gT f T 0‖ = ‖(2 : ℂ) * π * I * (g 0 - gT f T 0)‖ := hnorm.symm
+    _ = ‖rightSemi (fun z => A z - Bf z) R + (leftPart A R α - leftPart Bf R π)‖ := by rw [hid]
+    _ ≤ ‖rightSemi (fun z => A z - Bf z) R‖ + (‖leftPart A R α‖ + ‖leftPart Bf R π‖) := by
+        refine le_trans (norm_add_le _ _) ?_
+        gcongr
+        exact norm_sub_le _ _
+    _ ≤ R * (2 * B / R ^ 2) * π + (‖leftPart A R α‖ + R * (2 * B / R ^ 2) * π) := by
+        gcongr
+    _ = 2 * (R * (2 * B / R ^ 2) * π) + ‖leftPart A R α‖ := by ring
+
+
+/-! ### Newman's analytic theorem -/
+
+/-- **Newman's analytic Tauberian theorem** (Zagier's form).
+
+    If `f` is continuous and bounded by `B` on `[0,∞)`, `g` is its Laplace transform on
+    `Re z > 0`, and `g` extends holomorphically past the imaginary axis (encoded by
+    `hregion`: for each contour radius `R` there is an admissible star-shaped region), then
+
+        `∫₀ᵀ f(t) dt → g(0)`  as  `T → ∞`,
+
+    i.e. the improper integral `∫₀^∞ f` converges to `g(0)`.
+
+    OVERTAKE: no Coq counterpart -- `CNewman.v` does not exist, and
+    `docs/newman_route_status.md` lists this as brick 8, open. -/
+theorem newman_tauberian {f : ℝ → ℂ} {g : ℂ → ℂ} {B : ℝ}
+    (hfc : Continuous f) (hB : ∀ t, 0 ≤ t → ‖f t‖ ≤ B)
+    (hint : ∀ z : ℂ, 0 < z.re →
+      MeasureTheory.IntegrableOn (fun t : ℝ => f t * Complex.exp (-z * (t : ℂ))) (Ioi 0))
+    (hgL : ∀ z : ℂ, 0 < z.re → g z = ∫ t in Ioi (0 : ℝ), f t * Complex.exp (-z * (t : ℂ)))
+    (hregion : ∀ R : ℝ, 0 < R → ∃ α U, π / 2 < α ∧ α ≤ π ∧ IsOpen U ∧ StarAboutZero U ∧
+      (0 : ℂ) ∈ U ∧ contourSet R α ⊆ U ∧ DifferentiableOn ℂ g U) :
+    Filter.Tendsto (fun T : ℝ => gT f T 0) Filter.atTop (nhds (g 0)) := by
+  have hπ := Real.pi_pos
+  have hB0 : 0 ≤ B := le_trans (norm_nonneg _) (hB 0 le_rfl)
+  rw [Metric.tendsto_atTop]
+  intro ε hε
+  -- choose the contour radius so that the `4πB/R` term is below `πε`
+  set R : ℝ := 4 * B / ε + 1 with hRdef
+  have hR : 0 < R := by positivity
+  have hRbig : 2 * B / R < ε / 2 := by
+    have hεne : ε ≠ 0 := ne_of_gt hε
+    have hRval : ε / 2 * R = 2 * B + ε / 2 := by rw [hRdef]; field_simp; ring
+    rw [div_lt_iff₀ hR, hRval]
+    linarith
+  obtain ⟨α, U, hα, hα2, hU, hstar, h0, hsub, hgd⟩ := hregion R hR
+  have hgc : ContinuousOn g (contourSet R α) := hgd.continuousOn.mono hsub
+  -- the left part vanishes as `T → ∞`
+  have hlim := (tendsto_leftPart_g_zero hR hα hα2 hgc).norm
+  simp only [norm_zero] at hlim
+  have hev : ∀ᶠ T : ℝ in Filter.atTop,
+      ‖leftPart (fun z => g z * Complex.exp (z * (T : ℂ)) * newmanKernel R z) R α‖ < π * ε :=
+    hlim.eventually (eventually_lt_nhds (by positivity))
+  obtain ⟨N, hN⟩ := (hev.and (Filter.eventually_ge_atTop (0 : ℝ))).exists_forall_of_atTop
+  refine ⟨N, fun T hT => ?_⟩
+  obtain ⟨hTleft, hT0⟩ := hN T hT
+  have hineq := newman_inequality hfc hB hT0 hint hgL hR hα hα2 hU hstar h0 hsub hgd
+  -- `2 * (R * (2B/R²) * π) = 2π * (2B/R)`
+  have hrw : 2 * (R * (2 * B / R ^ 2) * π) = 2 * π * (2 * B / R) := by
+    field_simp
+  rw [hrw] at hineq
+  have hstep : 2 * π * ‖g 0 - gT f T 0‖ < 2 * π * ε := by
+    calc 2 * π * ‖g 0 - gT f T 0‖
+        ≤ 2 * π * (2 * B / R) + ‖leftPart
+            (fun z => g z * Complex.exp (z * (T : ℂ)) * newmanKernel R z) R α‖ := hineq
+      _ < 2 * π * (ε / 2) + π * ε := by gcongr
+      _ = 2 * π * ε := by ring
+  have hfin : ‖g 0 - gT f T 0‖ < ε := by
+    have h2π : 0 < 2 * π := by linarith
+    exact lt_of_mul_lt_mul_left (by linarith [hstep]) (le_of_lt h2π)
+  rw [dist_eq_norm, ← norm_neg]
+  simpa using hfin
+
+
+/-- Non-vacuity for `newman_tauberian`. The hypothesis set is elaborate -- in particular
+    `hregion` -- so it is worth exhibiting a point where all of it holds simultaneously.
+    Taking `f = 0`, `g = 0`, `B = 0`: `g` is entire, so any ball around `0` serves as the
+    region. (This says only that the hypotheses are consistent, not that they are weak.) -/
+theorem newman_tauberian_nonvacuous :
+    ∃ (f : ℝ → ℂ) (g : ℂ → ℂ) (B : ℝ),
+      Continuous f ∧ (∀ t : ℝ, 0 ≤ t → ‖f t‖ ≤ B) ∧
+      (∀ z : ℂ, 0 < z.re →
+        MeasureTheory.IntegrableOn (fun t : ℝ => f t * Complex.exp (-z * (t : ℂ))) (Ioi 0)) ∧
+      (∀ z : ℂ, 0 < z.re → g z = ∫ t in Ioi (0 : ℝ), f t * Complex.exp (-z * (t : ℂ))) ∧
+      (∀ R : ℝ, 0 < R → ∃ α U, π / 2 < α ∧ α ≤ π ∧ IsOpen U ∧ StarAboutZero U ∧
+        (0 : ℂ) ∈ U ∧ contourSet R α ⊆ U ∧ DifferentiableOn ℂ g U) := by
+  have hπ := Real.pi_pos
+  refine ⟨fun _ => 0, fun _ => 0, 0, continuous_const, fun t _ => by simp, ?_, ?_, ?_⟩
+  · intro z _; simp
+  · intro z _; simp
+  · intro R hR
+    refine ⟨π, Metric.ball (0 : ℂ) (R + 1), by linarith, le_rfl, isOpen_ball,
+      starAboutZero_ball, mem_ball_self (by linarith), ?_, differentiableOn_const 0⟩
+    exact contourSet_subset_ball hR (by linarith)
 
 end TDLean.Newman

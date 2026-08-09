@@ -120,32 +120,30 @@ Two findings stand out:
   triangle Goursat, and `log(-z)` instead of `arctan` antiderivatives — so the agreement is
   genuinely independent rather than a re-run of the same argument.
 
-C8 is **not finished**, and is labelled an **overtake** rather than a cross-verification
-throughout, because `CNewman.v` does not exist on the Coq side.
+**C8 is complete.** `newman_tauberian` — Newman's analytic Tauberian theorem in Zagier's
+form — is proved, tier L1, no `sorry`:
 
-Proved so far (all tier L1):
+> `f` continuous and bounded by `B` on `[0,∞)`, `g` its Laplace transform on `Re z > 0`,
+> `g` holomorphic past the imaginary axis  ⟹  `∫₀ᵀ f(t) dt → g(0)` as `T → ∞`.
 
-- `newman_contour_identity` — `∮_C F(z)(1/z + z/R²) dz = 2πi F(0)` (from C4 + C6);
-- `norm_laplaceTail_le` — `‖∫_{t>T} f e^{−zt}‖ ≤ B e^{−(Re z)T}/Re z`;
-- `norm_gT_le_of_re_neg` — the matching bound on `g_T` for `Re z < 0`, needing
-  `∫₀ᵀ e^{at} dt` (absent from mathlib, proved here by FTC);
-- `truncContour_split` — `C(α) = rightSemi + leftPart(α)`, cutting at `Re z = 0`;
-- **`leftPart_kernel_deform`** — Zagier's deformation of the left part to the left
-  semicircle. This was expected to need a second contour and C4 re-proved about an
-  off-origin star centre. It needs neither: at `α = π` the chord degenerates
-  (`arcTop R π = arcBot R π = −R`), so `C(π)` *is* the full circle, and C6 at `α` and at
-  `π` give the same value with a shared right semicircle;
-- `norm_newman_integrand_right` / `_left` — both pointwise semicircle estimates, each
-  collapsing to the constant `2B/R²` as every `z`-dependence cancels;
-- `norm_rightSemi_le`, `norm_leftArc_le` — the ML integral bounds, via an a.e. variant
-  (`norm_arcIntegralOn_le_of_ae`) because the endpoints `θ = ±π/2` have `Re z = 0`.
+This is an **overtake, not a cross-verification**: `CNewman.v` does not exist, and
+`docs/newman_route_status.md` lists brick 8 as open. Nothing in cluster C8 may be
+described as "verified against Coq".
 
-**What is still missing**, precisely:
+The proof, and where each earlier brick is used:
 
-1. Additivity of `leftPart` over sums, to split `leftPart((g − g_T)·e^{zT}·K)` into the
-   `g` and `g_T` parts (plumbing; `truncContour_add` already exists for the full contour).
-2. The `T → ∞` step: `leftPart(g·e^{zT}·K) → 0` at fixed `R`, by dominated convergence —
-   `‖e^{zT}‖ = e^{(Re z)T} → 0` pointwise for `Re z < 0`, with a constant dominating bound.
-3. The final `ε`-chase: `limsup_T ‖g(0) − g_T(0)‖ ≤ 2B/R` for every `R`, hence `= 0`.
+| Step | Rests on |
+|---|---|
+| `newman_contour_identity` — `∮_C F·K_R = 2πi F(0)` | C6 (`1/z` half) + C4 (`z/R²` half) |
+| `truncContour_split` — cut at `Re z = 0` | C3 |
+| `leftPart_kernel_deform` — Zagier's deformation | C6 at `α` **and at `π`**, where the chord degenerates so `C(π)` is the full circle |
+| right-semicircle estimate → `2B/R²` | C7 tail bound + C2 kernel identity |
+| left-semicircle estimate → `2B/R²` | `norm_gT_le_of_re_neg` + C2 |
+| `tendsto_leftPart_g_zero` — the `T → ∞` step | dominated convergence, three pieces |
+| `newman_inequality` — `2π‖g(0)−g_T(0)‖ ≤ 4πB/R + ‖leftPart(g…)‖` | all of the above |
+| `newman_tauberian` | the inequality + the limit, `ε`-chase in `R` |
 
-Items 1 and 3 are routine given what is here; item 2 is the last piece with real content.
+The remaining route to PNT is C9 (the zeta-side input `Φ(s) − 1/(s−1)` holomorphic on
+`Re s ≥ 1`) and C10 (the Chebyshev assembly). C9 is the Coq route's own gating blocker and
+is a different area of mathematics; mathlib has `riemannZeta` and its non-vanishing, but
+both are banned as endpoints under the from-scratch rule.

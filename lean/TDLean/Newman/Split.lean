@@ -224,4 +224,85 @@ theorem zero_not_mem_contourSet {R α : ℝ} (hR : 0 < R) (hα : π / 2 < α) (h
     simp only [Complex.zero_re] at hre
     nlinarith
 
+
+/-! ### Linearity of the pieces -/
+
+theorem arcIntegralOn_sub {f g : ℂ → ℂ} {R a b : ℝ}
+    (hf : ContinuousOn f (arcSetOn R a b)) (hg : ContinuousOn g (arcSetOn R a b)) :
+    arcIntegralOn (fun z => f z - g z) R a b
+      = arcIntegralOn f R a b - arcIntegralOn g R a b := by
+  have hrw : (fun θ : ℝ => deriv (circleMap 0 R) θ * (f (circleMap 0 R θ) - g (circleMap 0 R θ)))
+      = fun θ : ℝ => deriv (circleMap 0 R) θ * f (circleMap 0 R θ)
+          - deriv (circleMap 0 R) θ * g (circleMap 0 R θ) := funext fun θ => by ring
+  unfold arcIntegralOn
+  rw [hrw, intervalIntegral.integral_sub (arcIntegrableOn hf) (arcIntegrableOn hg)]
+
+theorem chordIntegral_sub {f g : ℂ → ℂ} {P Q : ℂ}
+    (hf : ContinuousOn f (chordSet P Q)) (hg : ContinuousOn g (chordSet P Q)) :
+    chordIntegral (fun z => f z - g z) P Q = chordIntegral f P Q - chordIntegral g P Q := by
+  have hrw : (fun t : ℝ => (Q - P) * (f (chord P Q t) - g (chord P Q t)))
+      = fun t : ℝ => (Q - P) * f (chord P Q t) - (Q - P) * g (chord P Q t) :=
+    funext fun t => by ring
+  unfold chordIntegral
+  rw [hrw, intervalIntegral.integral_sub (chordIntegrable hf) (chordIntegrable hg)]
+
+/-- The three arc/chord sets of the left part sit inside the contour. -/
+theorem leftPart_subsets {R α : ℝ} (hα : π / 2 ≤ α) :
+    arcSetOn R (-α) (-(π / 2)) ⊆ contourSet R α ∧
+      arcSetOn R (π / 2) α ⊆ contourSet R α ∧
+      chordSet (arcTop R α) (arcBot R α) ⊆ contourSet R α := by
+  obtain ⟨s1, -, s3⟩ := uIcc_pieces_subset hα
+  exact ⟨(arcSetOn_mono s1).trans subset_union_left,
+    (arcSetOn_mono s3).trans subset_union_left, subset_union_right⟩
+
+/-- `leftPart` is additive over differences. -/
+theorem leftPart_sub {f g : ℂ → ℂ} {R α : ℝ} (hα : π / 2 ≤ α)
+    (hf : ContinuousOn f (contourSet R α)) (hg : ContinuousOn g (contourSet R α)) :
+    leftPart (fun z => f z - g z) R α = leftPart f R α - leftPart g R α := by
+  obtain ⟨t1, t2, t3⟩ := leftPart_subsets hα
+  unfold leftPart
+  rw [arcIntegralOn_sub (hf.mono t1) (hg.mono t1),
+    arcIntegralOn_sub (hf.mono t2) (hg.mono t2),
+    chordIntegral_sub (hf.mono t3) (hg.mono t3)]
+  ring
+
+
+/-! ### Compactness of the contour -/
+
+theorem isCompact_arcSetOn (R a b : ℝ) : IsCompact (arcSetOn R a b) :=
+  isCompact_uIcc.image (continuous_arc R)
+
+theorem isCompact_chordSet (P Q : ℂ) : IsCompact (chordSet P Q) :=
+  isCompact_uIcc.image (continuous_chord P Q)
+
+theorem isCompact_contourSet (R α : ℝ) : IsCompact (contourSet R α) :=
+  (isCompact_arcSetOn R (-α) α).union (isCompact_chordSet _ _)
+
+
+/-! ### Sign of `cos` on the contour pieces -/
+
+/-- `cos < 0` on `(π/2, π)`. -/
+theorem cos_neg_on_upper {θ : ℝ} (hθ : θ ∈ Ioo (π / 2) π) : Real.cos θ < 0 :=
+  Real.cos_neg_of_pi_div_two_lt_of_lt hθ.1 (by linarith [Real.pi_pos, hθ.2])
+
+/-- `cos < 0` on `(−π, −π/2)`. -/
+theorem cos_neg_on_lower {θ : ℝ} (hθ : θ ∈ Ioo (-π) (-(π / 2))) : Real.cos θ < 0 := by
+  rw [← Real.cos_neg]
+  exact cos_neg_on_upper ⟨by linarith [hθ.2], by linarith [hθ.1]⟩
+
+/-- `cos ≤ 0` on the lower outer arc `Ι (−α) (−π/2)`, for `π/2 < α ≤ π`. -/
+theorem cos_nonpos_of_mem_lower {α θ : ℝ} (hα : π / 2 < α) (hα2 : α ≤ π)
+    (hθ : θ ∈ Ι (-α) (-(π / 2))) : Real.cos θ ≤ 0 := by
+  have hπ := Real.pi_pos
+  rw [uIoc_of_le (by linarith : -α ≤ -(π / 2))] at hθ
+  rw [← Real.cos_neg]
+  exact Real.cos_nonpos_of_pi_div_two_le_of_le (by linarith [hθ.2]) (by linarith [hθ.1])
+
+/-- `cos ≤ 0` on the upper outer arc `Ι (π/2) α`, for `π/2 < α ≤ π`. -/
+theorem cos_nonpos_of_mem_upper {α θ : ℝ} (hα : π / 2 < α) (hα2 : α ≤ π)
+    (hθ : θ ∈ Ι (π / 2) α) : Real.cos θ ≤ 0 := by
+  have hπ := Real.pi_pos
+  rw [uIoc_of_le hα.le] at hθ
+  exact Real.cos_nonpos_of_pi_div_two_le_of_le (by linarith [hθ.1]) (by linarith [hθ.2])
+
 end TDLean.Newman

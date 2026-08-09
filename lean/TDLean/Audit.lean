@@ -22,6 +22,7 @@ import TDLean.Newman.StarPrimitive
 import TDLean.Newman.TruncCauchy
 import TDLean.Newman.Laplace
 import TDLean.Newman.Split
+import TDLean.Newman.LeftLimit
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -248,6 +249,36 @@ import TDLean.Newman.Tauberian
 #guard_msgs in
 #print axioms TDLean.Newman.norm_leftArc_le
 
+/-- info: 'TDLean.Newman.newman_tauberian' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.newman_tauberian
+
+/-- info: 'TDLean.Newman.newman_inequality' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.newman_inequality
+
+/-- info: 'TDLean.Newman.tendsto_leftPart_g_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.tendsto_leftPart_g_zero
+
+/-- info: 'TDLean.Newman.norm_leftPart_pi_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.norm_leftPart_pi_le
+
+/-- info: 'TDLean.Newman.leftPart_sub' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.leftPart_sub
+
+/-- info: 'TDLean.Newman.sub_gT_eq_tail' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.sub_gT_eq_tail
+
 /-! ### Non-vacuity witnesses
 
     These must be audited too. A `sorry` here is exactly as fatal as a `sorry` in a
@@ -290,6 +321,11 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Newman.trunc_winding_nonvacuous
+
+/-- info: 'TDLean.Newman.newman_tauberian_nonvacuous' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Newman.newman_tauberian_nonvacuous
 
 /-- info: 'TDLean.Newman.norm_newman_integrand_right_nonvacuous' depends on axioms:
 [propext, Classical.choice, Quot.sound] -/
