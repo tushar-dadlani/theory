@@ -89,7 +89,17 @@ the `±α` cancellation.
   (η+ε)ln N + O(1)` — most sub-scales are troughs `−α` (in Λ/d-measure).
 - `trough_concentration`: mirror — at a near-trough, most sub-scales are peaks `+α`.
 
-**Remaining (the deep core), precise path:** the degree-1 two-scale Fubini
+**DONE (`SelbergStarSigned.v`, axiom-clean): `star_signed`** — the signed log²
+Selberg identity `|Vsig(N)·ln²N − Σ Λ2/n·Vsig(N/n) + 2·Σ Λ·ln/n·Vsig(N/n)| ≤ O(ln N)`,
+by iterating `selberg_average_signed` + `selberg2_reindex` (mirror of `StarInequality`).
+**Subtlety made explicit:** the `2·Λ·log` term SURVIVES (in the unsigned `|·|` version
+it cancels; the signed iterate flips D's sign), so the signed degree-2 weight is
+`Λ2 − 2Λ·log = Λ∗Λ − Λ·log`, NOT pure Λ2 (weight is sign-indefinite: `= −(ln p)²` at
+primes). So a clean pure-Λ2 signed concentration is not immediate — the `2·Dlog` term
+must be controlled (e.g. via a companion symmetry for `Σ Λ·log/n·Vsig`, or by combining
+with the unsigned `star_inequality`). This is the genuine remaining delicacy.
+
+**Original path (degree-1 two-scale), now refined:** the two-scale Fubini
 (`Σ_{d,e}Λ(d)Λ(e)/(de) → Σ_n Λ2(n)/n` on `n=de`) reduces the contradiction to
 bounding `Σ_{n: N/n a peak} Λ2(n)/n` SMALL — a **Λ₂-measure** concentration the
 degree-1 lemmas can't give (Λ2 = Λ·log + Λ∗Λ; the `log` weight breaks the Λ→Λ2
