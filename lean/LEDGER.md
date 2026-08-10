@@ -121,6 +121,14 @@ have).
 | `Newman.norm_laplaceTail_le` | — | **absent-in-Coq** | `‖∫_{t>T} f e^{−zt}‖ ≤ B e^{−(Re z)T}/Re z` for `Re z > 0`. In `route_b_C4_newman_plan.md` this is part of the still-open brick 8. |
 | `Newman.trunc_winding` | `CTruncWind.v : trunc_winding` (254 lines) | **confirmed, different proof** | `∮_C dz/z = 2πi`. **Does not need the keystone C4.** On the chord `Re z = R cos α < 0`, so `log(-z)` is a primitive of `1/z` there — `-z` has positive real part, lands in `slitPlane`, and the chord never meets the branch cut. Arc gives `2αi` (integrand collapses to the constant `I`), chord gives `2(π-α)i`, total `2πi`. Coq uses `arctan` antiderivatives precisely because it has no complex `log`. |
 
+### 3.1b Cluster C9 — zeta from scratch (overtake; C9 is the Coq route's own blocker)
+
+| Lean | Coq oracle | Verdict | Note |
+|---|---|---|---|
+| `Zeta.zetaCont_eq_zetaSeries`, `differentiableAt_zetaCont` | — | **absent-in-Coq (overtake)** | The analytic continuation of ζ to `Re s > 0` with the pole isolated in an explicit `1/(s−1)`, built from the difference series `∑ (m^{−s} − ∫ₘ^{m+1} x^{−s})`. No functional equation, no mathlib zeta. `docs/newman_route_status.md` records the Coq side's `zetaC` as having **no Laurent/pole structure at 1** — that is exactly the gap this closes. |
+| `Zeta.norm_cpow_sub_le`, `norm_zetaDiff_le`, `summable_zetaDiff` | — | **absent-in-Coq** | The increment estimate and convergence of the difference series on `Re s > 0`. |
+| `Zeta.differentiableOn_zetaDiffSum` | — | **absent-in-Coq** | Holomorphy, via differentiation under the integral plus `differentiableOn_tsum_of_summable_norm` applied on balls (the term bound carries `‖s‖`, so it is uniform only on bounded sets). |
+
 ### 3.2 Findings recorded during planning, pending Lean proof
 
 | Coq oracle | Verdict | Note |

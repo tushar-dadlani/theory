@@ -32,5 +32,6 @@ import TDLean.Newman.Tauberian
 import TDLean.Zeta.Basic
 import TDLean.Zeta.Continuation
 import TDLean.Zeta.Holo
+import TDLean.Zeta.Telescope
 
 import TDLean.Audit
