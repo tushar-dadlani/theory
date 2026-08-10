@@ -17,7 +17,8 @@
 
 From Stdlib Require Import Reals Lra Lia.
 Require Import ComplexField Cmodulus Holomorphic CHoloCalculus CDeriv
-        CIntegral2 CSegInt CexpFull CPower CexpRemainder PerronPower.
+        CIntegral2 CSegInt CexpFull CPower CexpRemainder PerronPower
+        CPrimConv CPathIntegral CPathFTC CGoursatExcept CTruncCauchy.
 Open Scope R_scope.
 
 Definition Ceq0_dec (w : C) : {w = C0} + {w <> C0}.
@@ -318,8 +319,82 @@ Qed.
 Lemma phi_ext_cont : forall y, 0 < y -> CcontC (phi_ext y).
 Proof. intros y Hy; apply ptcont_CcontC, phi_ext_ptcont; exact Hy. Qed.
 
+(* ----------------------------------------------------------------- *)
+(*  the rectangle loop of phi_ext = 0  (exceptional-point primitive)    *)
+(* ----------------------------------------------------------------- *)
+
+Definition Uall : C -> Prop := fun _ => True.
+
+Lemma Uall_conv : Convex Uall.
+Proof. intros a b _ _ s _; exact I. Qed.
+
+Lemma Uall_open : Open Uall.
+Proof. intros z _; exists 1; split; [ lra | intros; exact I ]. Qed.
+
+Section RectLoop.
+Variable y : R.
+Hypothesis Hy : 0 < y.
+
+Definition PE : C -> C := PrimE (phi_ext y) (phi_ext_cont y Hy) C1.
+
+(* PE is a primitive of phi_ext everywhere (the exceptional point 0 is absorbed) *)
+Lemma HH_all : forall z, is_Cderiv PE z (phi_ext y z).
+Proof.
+  intro z; unfold PE.
+  apply (PrimE_deriv Uall Uall_conv Uall_open (phi_ext y) (phi_ext_cont y Hy) C0 I
+           (fun z _ Hz => phi_ext_holo_off0 y z Hy Hz)
+           (phi_ext_bd y Hy)
+           (fun z _ eps Heps => phi_ext_ptcont y Hy z eps Heps)
+           C1 I z I).
+Qed.
+
+(* each edge integral telescopes to PE(end) − PE(start) *)
+Lemma Iedge : forall P Q
+  (Hf : Ccont (fun u => Cmul (phi_ext y (seg P Q u)) (seg' P Q u))),
+  pathint (seg P Q) (seg' P Q) (phi_ext y) Hf 0 1 = Cminus (PE Q) (PE P).
+Proof.
+  intros P Q Hf.
+  rewrite (pathint_FTC PE (phi_ext y) (seg P Q) (seg' P Q) Hf 0 1 Rle_0_1
+             (fun s _ => HH_all (seg P Q s))
+             (fun s _ => chord_Re_deriv P Q s)
+             (fun s _ => chord_Im_deriv P Q s)).
+  rewrite seg_at1, seg_at0; reflexivity.
+Qed.
+
+Theorem phi_ext_rect_loop : forall (c Uu T : R), 0 < c -> 0 < Uu -> 0 < T ->
+  forall (Hf1 : Ccont (fun u => Cmul (phi_ext y (seg (mkC c (- T)) (mkC c T) u))
+                                     (seg' (mkC c (- T)) (mkC c T) u)))
+         (Hf2 : Ccont (fun u => Cmul (phi_ext y (seg (mkC c T) (mkC (- Uu) T) u))
+                                     (seg' (mkC c T) (mkC (- Uu) T) u)))
+         (Hf3 : Ccont (fun u => Cmul (phi_ext y (seg (mkC (- Uu) T) (mkC (- Uu) (- T)) u))
+                                     (seg' (mkC (- Uu) T) (mkC (- Uu) (- T)) u)))
+         (Hf4 : Ccont (fun u => Cmul (phi_ext y (seg (mkC (- Uu) (- T)) (mkC c (- T)) u))
+                                     (seg' (mkC (- Uu) (- T)) (mkC c (- T)) u))),
+  Cadd (pathint (seg (mkC c (- T)) (mkC c T))
+                (seg' (mkC c (- T)) (mkC c T)) (phi_ext y) Hf1 0 1)
+  (Cadd (pathint (seg (mkC c T) (mkC (- Uu) T))
+                 (seg' (mkC c T) (mkC (- Uu) T)) (phi_ext y) Hf2 0 1)
+  (Cadd (pathint (seg (mkC (- Uu) T) (mkC (- Uu) (- T)))
+                 (seg' (mkC (- Uu) T) (mkC (- Uu) (- T))) (phi_ext y) Hf3 0 1)
+        (pathint (seg (mkC (- Uu) (- T)) (mkC c (- T)))
+                 (seg' (mkC (- Uu) (- T)) (mkC c (- T))) (phi_ext y) Hf4 0 1)))
+  = C0.
+Proof.
+  intros c Uu T Hc HU HT Hf1 Hf2 Hf3 Hf4.
+  rewrite (Iedge (mkC c (- T)) (mkC c T) Hf1).
+  rewrite (Iedge (mkC c T) (mkC (- Uu) T) Hf2).
+  rewrite (Iedge (mkC (- Uu) T) (mkC (- Uu) (- T)) Hf3).
+  rewrite (Iedge (mkC (- Uu) (- T)) (mkC c (- T)) Hf4).
+  ring.
+Qed.
+
+End RectLoop.
+
+Print Assumptions phi_ext_rect_loop.
+
 (* ================================================================= *)
-(*  END PerronRemovable.v (checkpoint 2) — the full ExceptPrim interface *)
-(*  for phi_ext: global continuity CcontC (through 0, the removability),  *)
-(*  holomorphy off 0, boundedness.  The extension concern, discharged.   *)
+(*  END PerronRemovable.v — A1c complete:  ∮_rect (y^s−1)/s = 0, the      *)
+(*  removable half of the Perron contour, with the extension concern      *)
+(*  (globally-continuous removable extension through the pole) fully       *)
+(*  discharged for a concrete function.  Axiom-clean.                    *)
 (* ================================================================= *)
