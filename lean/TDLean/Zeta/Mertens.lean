@@ -118,4 +118,10 @@ theorem mertens_nonneg {σ : ℝ} (hσ : 1 < σ) (t : ℝ) :
     mul_nonneg ArithmeticFunction.vonMangoldt_nonneg (Real.rpow_nonneg hn0.le _)
   exact mul_nonneg hnn (three_add_four_cos_nonneg θ)
 
+/-! ### Non-vacuity -/
+
+/-- The hypotheses of `summable_mertensTerm` are satisfiable: the series really exists. -/
+theorem summable_mertensTerm_nonvacuous : Summable (mertensTerm 2 1) :=
+  summable_mertensTerm (by norm_num) 1
+
 end TDLean.Zeta

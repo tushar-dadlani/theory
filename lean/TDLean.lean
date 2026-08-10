@@ -39,5 +39,6 @@ import TDLean.Zeta.DirichletMul
 import TDLean.Zeta.VonMangoldt
 import TDLean.Zeta.Identity
 import TDLean.Zeta.Mertens
+import TDLean.Zeta.LogDerivOrder
 
 import TDLean.Audit

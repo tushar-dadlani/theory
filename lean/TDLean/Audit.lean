@@ -33,6 +33,7 @@ import TDLean.Zeta.DirichletMul
 import TDLean.Zeta.VonMangoldt
 import TDLean.Zeta.Identity
 import TDLean.Zeta.Mertens
+import TDLean.Zeta.LogDerivOrder
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -540,3 +541,35 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Zeta.mertens_nonneg
+
+/-- info: 'TDLean.Zeta.summable_mertensTerm_nonvacuous' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.summable_mertensTerm_nonvacuous
+
+/-! ### C9 item 3, phase 2: logarithmic derivative at a zero (absent from mathlib) -/
+
+/-- info: 'TDLean.Zeta.logDeriv_sub_pow' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.logDeriv_sub_pow
+
+/-- info: 'TDLean.Zeta.logDeriv_eventuallyEq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.logDeriv_eventuallyEq
+
+/-- info: 'TDLean.Zeta.logDeriv_eq_order_div_add' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.logDeriv_eq_order_div_add
+
+/-- info: 'TDLean.Zeta.tendsto_sub_mul_logDeriv' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.tendsto_sub_mul_logDeriv
+
+/-- info: 'TDLean.Zeta.logDeriv_sub_pow_nonvacuous' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.logDeriv_sub_pow_nonvacuous
