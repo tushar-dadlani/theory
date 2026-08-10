@@ -31,5 +31,6 @@ import TDLean.Newman.Tauberian
 -- Cluster C9 -- zeta from scratch
 import TDLean.Zeta.Basic
 import TDLean.Zeta.Continuation
+import TDLean.Zeta.Holo
 
 import TDLean.Audit
