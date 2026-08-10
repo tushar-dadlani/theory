@@ -35,5 +35,6 @@ import TDLean.Zeta.Continuation
 import TDLean.Zeta.Holo
 import TDLean.Zeta.Telescope
 import TDLean.Zeta.LogDeriv
+import TDLean.Zeta.DirichletMul
 
 import TDLean.Audit
