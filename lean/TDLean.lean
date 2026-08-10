@@ -42,5 +42,6 @@ import TDLean.Zeta.Mertens
 import TDLean.Zeta.LogDerivOrder
 import TDLean.Zeta.NonVanishing
 import TDLean.Zeta.PhiHolo
+import TDLean.PNT.Chebyshev
 
 import TDLean.Audit

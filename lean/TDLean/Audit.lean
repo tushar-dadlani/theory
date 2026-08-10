@@ -36,6 +36,7 @@ import TDLean.Zeta.Mertens
 import TDLean.Zeta.LogDerivOrder
 import TDLean.Zeta.NonVanishing
 import TDLean.Zeta.PhiHolo
+import TDLean.PNT.Chebyshev
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -664,3 +665,25 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Zeta.PhiMinus_nonvacuous
+
+/-! ### C10 part 1: Chebyshev theta (from scratch; mathlib's Chebyshev.lean is gate-banned) -/
+
+/-- info: 'TDLean.PNT.theta_eq_log_primorial' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.theta_eq_log_primorial
+
+/-- info: 'TDLean.PNT.theta_le_mul_log4' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.theta_le_mul_log4
+
+/-- info: 'TDLean.PNT.theta_nonneg' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.theta_nonneg
+
+/-- info: 'TDLean.PNT.psi_nonneg' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.psi_nonneg
