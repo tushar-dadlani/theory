@@ -17,7 +17,7 @@
 
 From Stdlib Require Import Reals Lra Lia.
 Require Import ComplexField Cmodulus Holomorphic CHoloCalculus CDeriv
-        CexpFull CPower CexpRemainder PerronPower.
+        CIntegral2 CSegInt CexpFull CPower CexpRemainder PerronPower.
 Open Scope R_scope.
 
 Definition Ceq0_dec (w : C) : {w = C0} + {w <> C0}.
@@ -184,6 +184,142 @@ Proof.
     unfold L in *; lra.
 Qed.
 
+(* ----------------------------------------------------------------- *)
+(*  continuity bridge:  ε-δ (Cmod)  ⇄  continuity_pt, and CcontC          *)
+(* ----------------------------------------------------------------- *)
+
+Lemma Rabs_Re_le_Cmod : forall c, Rabs (Re c) <= Cmod c.
+Proof.
+  intro c; unfold Cmod, Cnorm2; rewrite <- (sqrt_Rsqr_abs (Re c)).
+  apply sqrt_le_1_alt; unfold Rsqr; pose proof (Rle_0_sqr (Im c)); unfold Rsqr in *; nra.
+Qed.
+
+Lemma Rabs_Im_le_Cmod : forall c, Rabs (Im c) <= Cmod c.
+Proof.
+  intro c; unfold Cmod, Cnorm2; rewrite <- (sqrt_Rsqr_abs (Im c)).
+  apply sqrt_le_1_alt; unfold Rsqr; pose proof (Rle_0_sqr (Re c)); unfold Rsqr in *; nra.
+Qed.
+
+Lemma Cmod_le_sum : forall c, Cmod c <= Rabs (Re c) + Rabs (Im c).
+Proof.
+  intro c; unfold Cmod, Cnorm2.
+  rewrite <- (sqrt_Rsqr (Rabs (Re c) + Rabs (Im c)))
+    by (apply Rplus_le_le_0_compat; apply Rabs_pos).
+  apply sqrt_le_1_alt; unfold Rsqr.
+  pose proof (Rabs_pos (Re c)); pose proof (Rabs_pos (Im c)).
+  pose proof (Rsqr_abs (Re c)); pose proof (Rsqr_abs (Im c)); unfold Rsqr in *; nra.
+Qed.
+
+Lemma continuity_pt_from_bound : forall (f : R -> R) x,
+  (forall eps, 0 < eps -> exists del, 0 < del /\
+     forall u, Rabs (u - x) < del -> Rabs (f u - f x) < eps) ->
+  continuity_pt f x.
+Proof.
+  intros f x Hb; unfold continuity_pt, continue_in, limit1_in, limit_in; intros eps Heps.
+  destruct (Hb eps Heps) as [del [Hdel Hc]].
+  exists del; split; [ exact Hdel | ].
+  intros u [_ Hdist]; unfold R_dist in *; apply Hc; exact Hdist.
+Qed.
+
+Lemma continuity_pt_bound : forall (f : R -> R) x, continuity_pt f x ->
+  forall eps, 0 < eps -> exists del, 0 < del /\
+    forall u, Rabs (u - x) < del -> Rabs (f u - f x) < eps.
+Proof.
+  intros f x Hf eps Heps;
+    unfold continuity_pt, continue_in, limit1_in, limit_in in Hf.
+  destruct (Hf eps Heps) as [del [Hdel Hc]].
+  exists del; split; [ exact Hdel | ].
+  intros u Hu; destruct (Req_dec u x) as [Heq | Hne].
+  - subst u; rewrite Rminus_diag, Rabs_R0; exact Heps.
+  - apply (Hc u); split; [ split; [ exact I | apply not_eq_sym; exact Hne ] | exact Hu ].
+Qed.
+
+(* pointwise Cmod-continuity everywhere ⇒ CcontC *)
+Lemma ptcont_CcontC : forall F,
+  (forall z eps, 0 < eps -> exists del, 0 < del /\
+     forall w, Cmod (Cminus w z) < del -> Cmod (Cminus (F w) (F z)) < eps) ->
+  CcontC F.
+Proof.
+  intros F HF g [HgR HgI]; split; intro x; apply continuity_pt_from_bound; intros eps Heps.
+  all: destruct (HF (g x) eps Heps) as [del [Hdel Hb]];
+       destruct (continuity_pt_bound _ x (HgR x) (del / 2) ltac:(lra)) as [d1 [Hd1 Hc1]];
+       destruct (continuity_pt_bound _ x (HgI x) (del / 2) ltac:(lra)) as [d2 [Hd2 Hc2]];
+       exists (Rmin d1 d2); split; [ apply Rmin_pos; lra | ];
+       intros u Hu;
+       assert (Hu1 : Rabs (Re (g u) - Re (g x)) < del / 2)
+         by (apply Hc1; eapply Rlt_le_trans; [ exact Hu | apply Rmin_l ]);
+       assert (Hu2 : Rabs (Im (g u) - Im (g x)) < del / 2)
+         by (apply Hc2; eapply Rlt_le_trans; [ exact Hu | apply Rmin_r ]);
+       assert (Hgd : Cmod (Cminus (g u) (g x)) < del);
+       [ eapply Rle_lt_trans; [ apply Cmod_le_sum | ];
+         unfold Cminus, Cadd, Copp; cbn [Re Im]; lra
+       | pose proof (Hb (g u) Hgd) as Hfb ].
+  - replace (Re (F (g u)) - Re (F (g x)))
+      with (Re (Cminus (F (g u)) (F (g x)))) by (unfold Cminus, Cadd, Copp; cbn; ring).
+    eapply Rle_lt_trans; [ apply Rabs_Re_le_Cmod | exact Hfb ].
+  - replace (Im (F (g u)) - Im (F (g x)))
+      with (Im (Cminus (F (g u)) (F (g x)))) by (unfold Cminus, Cadd, Copp; cbn; ring).
+    eapply Rle_lt_trans; [ apply Rabs_Im_le_Cmod | exact Hfb ].
+Qed.
+
+(* ----------------------------------------------------------------- *)
+(*  pointwise continuity of phi_ext everywhere, and hence CcontC        *)
+(* ----------------------------------------------------------------- *)
+
+Lemma phi_ext_ptcont : forall y, 0 < y -> forall z eps, 0 < eps ->
+  exists del, 0 < del /\ forall w, Cmod (Cminus w z) < del ->
+    Cmod (Cminus (phi_ext y w) (phi_ext y z)) < eps.
+Proof.
+  intros y Hy z eps Heps; destruct (Ceq0_dec z) as [Hz0 | Hz0].
+  - (* z = 0: removability *)
+    subst z; rewrite phi_ext_at0.
+    set (L := Rabs (ln y)); set (K := 3 * L ^ 2 * exp L + 1).
+    assert (HK : 0 < K) by (unfold K; pose proof (pow2_ge_0 L); pose proof (exp_pos L); nra).
+    exists (Rmin 1 (eps / K)); split;
+      [ apply Rmin_pos; [ lra | apply Rdiv_lt_0_compat; [ exact Heps | exact HK ] ] | ].
+    intros w Hw; replace (Cminus w C0) with w in Hw by ring.
+    destruct (Ceq0_dec w) as [Hw0 | Hw0].
+    + subst w; rewrite phi_ext_at0.
+      replace (Cminus (RtoC (ln y)) (RtoC (ln y))) with C0 by ring; rewrite Cmod_C0; exact Heps.
+    + rewrite (phi_ext_off0 y w Hw0).
+      pose proof (qy_remainder y w Hy Hw0) as Hrem.
+      assert (Hw1 : Cmod w <= 1) by (eapply Rle_trans; [ left; eapply Rlt_le_trans; [ exact Hw | apply Rmin_l ] | apply Rle_refl ]).
+      assert (Hwk : Cmod w * K < eps).
+      { apply Rlt_le_trans with (eps / K * K);
+          [ apply Rmult_lt_compat_r; [ exact HK | eapply Rlt_le_trans; [ exact Hw | apply Rmin_r ] ]
+          | apply Req_le; field; lra ]. }
+      eapply Rle_lt_trans; [ exact Hrem | ].
+      assert (Hmono : 3 * Cmod w * L ^ 2 * exp (Cmod w * L) <= 3 * Cmod w * L ^ 2 * exp L).
+      { apply Rmult_le_compat_l;
+          [ pose proof (pow2_ge_0 L); pose proof (Cmod_nonneg w); nra
+          | apply exp_le_compat; rewrite <- (Rmult_1_l L) at 2;
+            apply Rmult_le_compat_r; [ unfold L; apply Rabs_pos | exact Hw1 ] ]. }
+      eapply Rle_lt_trans; [ exact Hmono | ].
+      unfold K in Hwk; pose proof (Cmod_nonneg w); pose proof (pow2_ge_0 L);
+        pose proof (exp_pos L); nra.
+  - (* z ≠ 0: phi_ext = qy near z, use is_Cderiv_cont *)
+    destruct (qy_holo y z Hy Hz0) as [d Hd].
+    destruct (is_Cderiv_cont (qy y) z d Hd eps Heps) as [del0 [Hdel0 Hc]].
+    exists (Rmin del0 (Cmod z)); split;
+      [ apply Rmin_pos; [ exact Hdel0 | apply Cmod_pos_ne0; exact Hz0 ] | ].
+    intros w Hw.
+    assert (Hwz : Cmod (Cminus w z) < Cmod z) by (eapply Rlt_le_trans; [ exact Hw | apply Rmin_r ]).
+    assert (Hw0 : w <> C0).
+    { intro Hc0; subst w.
+      assert (Cmod (Cminus C0 z) = Cmod z)
+        by (replace (Cminus C0 z) with (Copp z) by ring; apply Cmod_opp).
+      lra. }
+    rewrite (phi_ext_off0 y w Hw0), (phi_ext_off0 y z Hz0).
+    set (h := Cminus w z); assert (Hweq : w = Cadd z h) by (unfold h; ring).
+    rewrite Hweq; apply Hc.
+    eapply Rlt_le_trans; [ | apply Rmin_l ]; unfold h; exact Hw.
+Qed.
+
+Lemma phi_ext_cont : forall y, 0 < y -> CcontC (phi_ext y).
+Proof. intros y Hy; apply ptcont_CcontC, phi_ext_ptcont; exact Hy. Qed.
+
 (* ================================================================= *)
-(*  END PerronRemovable.v (checkpoint 1) — removable extension core.     *)
+(*  END PerronRemovable.v (checkpoint 2) — the full ExceptPrim interface *)
+(*  for phi_ext: global continuity CcontC (through 0, the removability),  *)
+(*  holomorphy off 0, boundedness.  The extension concern, discharged.   *)
 (* ================================================================= *)
