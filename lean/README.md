@@ -143,7 +143,7 @@ The proof, and where each earlier brick is used:
 | `newman_inequality` — `2π‖g(0)−g_T(0)‖ ≤ 4πB/R + ‖leftPart(g…)‖` | all of the above |
 | `newman_tauberian` | the inequality + the limit, `ε`-chase in `R` |
 
-**C9 items 1 and 2 are complete, and item 3 is under way**: the continuation of `ζ` past `Re s = 1` with the pole
+**C9 items 1, 2 and 3 are complete**: the continuation of `ζ` past `Re s = 1` with the pole
 isolated, and `∑ Λ(n)n^{−s} = −ζ′/ζ` on `Re s > 1` (with `ζ ≠ 0` there, from `μ ∗ 1 = δ`,
 needing no Euler product). Also landed: the complex-analytic **identity theorem**, whose
 absence in Rocq is LEDGER finding #1.

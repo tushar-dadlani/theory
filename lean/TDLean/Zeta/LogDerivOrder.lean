@@ -91,6 +91,64 @@ theorem tendsto_sub_mul_logDeriv {f : ℂ → ℂ} {z₀ : ℂ} (hf : AnalyticAt
     tendsto_const_nhds.add (h1.mul hcont.tendsto)
   simpa using h2.mono_left nhdsWithin_le_nhds
 
+/-! ### Punctured versions, for a pole as well as a zero
+
+    The Hadamard--de la Vallee Poussin argument needs the same limit at the *pole* `s = 1`
+    of zeta, where the local model is `(z − z₀)^(−1)·g`. Allowing an integer exponent covers
+    zero and pole uniformly. The factorisation is then only available on a *punctured*
+    neighbourhood, so locality of `logDeriv` has to be re-proved there -- which works
+    because `{z₀}ᶜ` is open, so `𝓝[{z₀}ᶜ] z = 𝓝 z` at every `z ≠ z₀`. -/
+
+theorem logDeriv_eventuallyEq_punctured {f h : ℂ → ℂ} {z₀ : ℂ}
+    (hfh : ∀ᶠ z in 𝓝[≠] z₀, f z = h z) :
+    ∀ᶠ z in 𝓝[≠] z₀, logDeriv f z = logDeriv h z := by
+  filter_upwards [eventually_eventually_nhdsWithin.mpr hfh, hfh, self_mem_nhdsWithin]
+    with z hz hz' hzne
+  rw [(isOpen_compl_singleton (x := z₀)).nhdsWithin_eq hzne] at hz
+  rw [logDeriv_apply, logDeriv_apply, Filter.EventuallyEq.deriv_eq hz, hz']
+
+/-- `logDeriv` of an integer power of `(· − z₀)`. -/
+theorem logDeriv_sub_zpow (z₀ : ℂ) (m : ℤ) {z : ℂ} (hz : z - z₀ ≠ 0) :
+    logDeriv (fun w : ℂ => (w - z₀) ^ m) z = m / (z - z₀) := by
+  have h : (fun w : ℂ => (w - z₀) ^ m) = (fun u : ℂ => u ^ m) ∘ (fun w : ℂ => w - z₀) := rfl
+  rw [h, logDeriv_comp (f := fun u : ℂ => u ^ m) (g := fun w : ℂ => w - z₀) (x := z)
+    (differentiableAt_zpow.mpr (Or.inl hz)) (by fun_prop), logDeriv_zpow]
+  simp
+
+/-- **The limit, uniformly for zeros and poles.** If `f z = (z − z₀)^m · g z` on a punctured
+    neighbourhood with `g` analytic and `g z₀ ≠ 0`, then `(z − z₀)·logDeriv f z → m`.
+    `m > 0` is a zero of order `m`, `m < 0` a pole of order `−m`. -/
+theorem tendsto_sub_mul_logDeriv_of_factor {f g : ℂ → ℂ} {z₀ : ℂ} {m : ℤ}
+    (hg : AnalyticAt ℂ g z₀) (hg0 : g z₀ ≠ 0)
+    (hfac : ∀ᶠ z in 𝓝[≠] z₀, f z = (z - z₀) ^ m * g z) :
+    Tendsto (fun z => (z - z₀) * logDeriv f z) (𝓝[≠] z₀) (𝓝 ((m : ℤ) : ℂ)) := by
+  have hld := logDeriv_eventuallyEq_punctured hfac
+  have hgnz : ∀ᶠ z in 𝓝 z₀, g z ≠ 0 := hg.continuousAt.eventually_ne hg0
+  have key : ∀ᶠ z in 𝓝[≠] z₀,
+      (z - z₀) * logDeriv f z = (m : ℂ) + (z - z₀) * logDeriv g z := by
+    filter_upwards [self_mem_nhdsWithin, hld, nhdsWithin_le_nhds hgnz,
+      nhdsWithin_le_nhds hg.eventually_analyticAt] with z hz hld' hgz hga
+    have hz0 : z - z₀ ≠ 0 := sub_ne_zero.mpr hz
+    have hd : DifferentiableAt ℂ (fun w : ℂ => (w - z₀) ^ m) z :=
+      (differentiableAt_zpow.mpr (Or.inl hz0)).comp z (differentiableAt_id.sub_const z₀)
+    have hmul : logDeriv (fun w : ℂ => (w - z₀) ^ m * g w) z
+        = logDeriv (fun w : ℂ => (w - z₀) ^ m) z + logDeriv g z :=
+      logDeriv_mul z (zpow_ne_zero _ hz0) hgz hd hga.differentiableAt
+    rw [hld', hmul, logDeriv_sub_zpow z₀ m hz0]
+    field_simp
+  rw [tendsto_congr' key]
+  have hcont : ContinuousAt (logDeriv g) z₀ := by
+    have hlg : logDeriv g = fun z => deriv g z / g z := rfl
+    rw [hlg]
+    exact hg.deriv.continuousAt.div hg.continuousAt hg0
+  have h1 : Tendsto (fun z : ℂ => z - z₀) (𝓝 z₀) (𝓝 0) := by
+    have hca : ContinuousAt (fun z : ℂ => z - z₀) z₀ := by fun_prop
+    simpa using hca.tendsto
+  have h2 : Tendsto (fun z : ℂ => (m : ℂ) + (z - z₀) * logDeriv g z) (𝓝 z₀)
+      (𝓝 ((m : ℂ) + 0 * logDeriv g z₀)) :=
+    tendsto_const_nhds.add (h1.mul hcont.tendsto)
+  simpa using h2.mono_left nhdsWithin_le_nhds
+
 /-! ### Non-vacuity -/
 
 /-- The model computation is not vacuous: `logDeriv ((·−1)^3)` at `2` is `3/(2−1) = 3`. -/

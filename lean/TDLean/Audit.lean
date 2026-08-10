@@ -34,6 +34,7 @@ import TDLean.Zeta.VonMangoldt
 import TDLean.Zeta.Identity
 import TDLean.Zeta.Mertens
 import TDLean.Zeta.LogDerivOrder
+import TDLean.Zeta.NonVanishing
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -573,3 +574,55 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Zeta.logDeriv_sub_pow_nonvacuous
+
+/-! ### C9 item 3: zeta has no zero on the line `Re s = 1` -/
+
+/-- info: 'TDLean.Zeta.analyticAt_zetaCont' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.analyticAt_zetaCont
+
+/-- info: 'TDLean.Zeta.zetaCont_eq_poleFactor' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zetaCont_eq_poleFactor
+
+/-- info: 'TDLean.Zeta.analyticOrderAt_zetaCont_ne_top' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.analyticOrderAt_zetaCont_ne_top
+
+/-- info: 'TDLean.Zeta.LS_LamC_eq_neg_logDeriv' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.LS_LamC_eq_neg_logDeriv
+
+/-- info: 'TDLean.Zeta.tendsto_mertensW' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.tendsto_mertensW
+
+/-- info: 'TDLean.Zeta.tendsto_mertensW_pole' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.tendsto_mertensW_pole
+
+/-- info: 'TDLean.Zeta.tendsto_mertensW_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.tendsto_mertensW_zero
+
+/-- info: 'TDLean.Zeta.zetaCont_ne_zero_of_re_eq_one' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zetaCont_ne_zero_of_re_eq_one
+
+/-- info: 'TDLean.Zeta.zetaCont_ne_zero_of_one_le_re' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zetaCont_ne_zero_of_one_le_re
+
+/-- info: 'TDLean.Zeta.zetaCont_ne_zero_nonvacuous' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zetaCont_ne_zero_nonvacuous

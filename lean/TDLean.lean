@@ -40,5 +40,6 @@ import TDLean.Zeta.VonMangoldt
 import TDLean.Zeta.Identity
 import TDLean.Zeta.Mertens
 import TDLean.Zeta.LogDerivOrder
+import TDLean.Zeta.NonVanishing
 
 import TDLean.Audit
