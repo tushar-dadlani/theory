@@ -932,3 +932,4 @@ spectral-theory/PerronPsi.v
 spectral-theory/LaplaceFull.v
 spectral-theory/LaplacePhi.v
 spectral-theory/ChebyshevPsiR.v
+spectral-theory/PiecewiseTransform.v
