@@ -435,6 +435,31 @@ import TDLean.Newman.Tauberian
 #guard_msgs in
 #print axioms TDLean.Zeta.eqOn_of_eventuallyEq
 
+/-- info: 'TDLean.Zeta.LS_vonMangoldt_eq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.LS_vonMangoldt_eq
+
+/-- info: 'TDLean.Zeta.LS_vonMangoldt_mul_zeta' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.LS_vonMangoldt_mul_zeta
+
+/-- info: 'TDLean.Zeta.zetaSeries_ne_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zetaSeries_ne_zero
+
+/-- info: 'TDLean.Zeta.dconv_LamC_zetaC' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.dconv_LamC_zetaC
+
+/-- info: 'TDLean.Zeta.summable_log_rpow' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.summable_log_rpow
+
 /-! ### Non-vacuity witnesses
 
     These must be audited too. A `sorry` here is exactly as fatal as a `sorry` in a
