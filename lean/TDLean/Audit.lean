@@ -24,6 +24,7 @@ import TDLean.Newman.Laplace
 import TDLean.Newman.Split
 import TDLean.Newman.LeftLimit
 import TDLean.Zeta.Basic
+import TDLean.Zeta.Continuation
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -296,6 +297,21 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Zeta.hasDerivAt_cpow_neg
+
+/-- info: 'TDLean.Zeta.norm_zetaDiff_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.norm_zetaDiff_le
+
+/-- info: 'TDLean.Zeta.summable_zetaDiff' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.summable_zetaDiff
+
+/-- info: 'TDLean.Zeta.zetaDiff_eq_integral' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zetaDiff_eq_integral
 
 /-! ### Non-vacuity witnesses
 
