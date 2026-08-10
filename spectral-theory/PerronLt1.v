@@ -12,9 +12,10 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Ratan Lra Lia.
-Require Import ComplexField Cmodulus CImproperIntegral CIntegral2
+Require Import ComplexField Cmodulus CDeriv CImproperIntegral CIntegral2
         CPathIntegral CSegInt CWinding ContinuousCoV RectWinding
-        CexpFull PerronPower PerronRemovable PerronKernel CTruncCauchy.
+        CexpFull PerronPower PerronRemovable PerronKernel PerronBound PerronEdge
+        CTruncCauchy.
 Open Scope R_scope.
 
 Theorem rect_winding_right : forall (c U T : R), 0 < c -> c < U -> 0 < T ->
@@ -146,7 +147,106 @@ Qed.
 
 Print Assumptions right_rect_residue.
 
+(* ----------------------------------------------------------------- *)
+(*  general monotonicity sign of Rpower (valid for any y>0)           *)
+(* ----------------------------------------------------------------- *)
+
+Lemma Rpower_diff_sign_gen : forall y p q, 0 < y ->
+  0 <= ln y * ((q - p) * (Rpower y q - Rpower y p)).
+Proof.
+  intros y p q Hy.
+  destruct (Rtotal_order q p) as [Hlt | [Heq | Hgt]].
+  - destruct (Rtotal_order (ln y) 0) as [HL | [HL | HL]].
+    + assert (Rpower y p < Rpower y q) by (unfold Rpower; apply exp_increasing; nra).
+      assert ((q - p) * (Rpower y q - Rpower y p) <= 0) by nra; nra.
+    + rewrite HL, Rmult_0_l; apply Rle_refl.
+    + assert (Rpower y q < Rpower y p) by (unfold Rpower; apply exp_increasing; nra).
+      assert (0 <= (q - p) * (Rpower y q - Rpower y p)) by nra; nra.
+  - assert (Hz : (q - p) * (Rpower y q - Rpower y p) = 0) by (rewrite Heq; ring);
+      rewrite Hz, Rmult_0_r; apply Rle_refl.
+  - destruct (Rtotal_order (ln y) 0) as [HL | [HL | HL]].
+    + assert (Rpower y q < Rpower y p) by (unfold Rpower; apply exp_increasing; nra).
+      assert ((q - p) * (Rpower y q - Rpower y p) <= 0) by nra; nra.
+    + rewrite HL, Rmult_0_l; apply Rle_refl.
+    + assert (Rpower y p < Rpower y q) by (unfold Rpower; apply exp_increasing; nra).
+      assert (0 <= (q - p) * (Rpower y q - Rpower y p)) by nra; nra.
+Qed.
+
+(* ----------------------------------------------------------------- *)
+(*  the horizontal-edge bound for any y>0, y≠1 (|ln y| form)          *)
+(* ----------------------------------------------------------------- *)
+
+Theorem horiz_edge_bound_gen : forall y p q b
+  (Hy : 0 < y) (Hlne : ln y <> 0) (Hb : b <> 0) (Hpq : q <> p)
+  (HfF : Ccont (fun u => Cmul (Cmul (Cpw y (seg (mkC p b) (mkC q b) u))
+                    (Cinv (seg (mkC p b) (mkC q b) u))) (seg' (mkC p b) (mkC q b) u))),
+  Cmod (pathint (seg (mkC p b) (mkC q b)) (seg' (mkC p b) (mkC q b))
+                (fun z => Cmul (Cpw y z) (Cinv z)) HfF 0 1)
+  <= 2 * (Rabs (Rpower y q - Rpower y p) / (Rabs b * Rabs (ln y))).
+Proof.
+  intros y p q b Hy Hlne Hb Hpq HfF.
+  assert (Hab : 0 < Rabs b) by (apply Rabs_pos_lt; exact Hb).
+  assert (Hlab : 0 < Rabs (ln y)) by (apply Rabs_pos_lt; exact Hlne).
+  assert (Hqpab : 0 < Rabs (q - p)) by (apply Rabs_pos_lt; intro Hc; apply Hpq; lra).
+  set (k := Rabs (q - p) / Rabs b).
+  assert (Hcm : Riemann_integrable
+                  (fun u => Cmod (Cmul (Cmul (Cpw y (seg (mkC p b) (mkC q b) u))
+                    (Cinv (seg (mkC p b) (mkC q b) u))) (seg' (mkC p b) (mkC q b) u))) 0 1)
+    by (apply continuity_implies_RiemannInt; [ lra | intros x _; apply Ccont_Cmod; exact HfF ]).
+  assert (Hbd : Riemann_integrable (fun u => k * Rpower y (Ld p q u)) 0 1).
+  { apply continuity_implies_RiemannInt; [ lra | intros x _ ].
+    apply (continuity_pt_mult (fun _ => k) (fun u => Rpower y (Ld p q u)) x);
+      [ apply continuity_pt_const; intros a c; reflexivity
+      | apply derivable_continuous_pt; exists (ln y * Rpower y (Ld p q x) * (q - p));
+        apply Rpower_Ld_deriv; exact Hy ]. }
+  assert (Hpt : forall u, 0 < u < 1 ->
+    Cmod (Cmul (Cmul (Cpw y (seg (mkC p b) (mkC q b) u))
+          (Cinv (seg (mkC p b) (mkC q b) u))) (seg' (mkC p b) (mkC q b) u))
+    <= k * Rpower y (Ld p q u)).
+  { intros u _; rewrite segh, segh', !Cmod_mul, (Cpw_mod y (mkC (Ld p q u) b)); cbn [Re].
+    rewrite (Cmod_inv (mkC (Ld p q u) b) (mkC_Im_ne0 _ _ Hb)).
+    replace (Cmod (mkC (q - p) 0)) with (Rabs (q - p))
+      by (change (mkC (q - p) 0) with (RtoC (q - p)); rewrite Cmod_RtoC; reflexivity).
+    assert (Hge : Rabs b <= Cmod (mkC (Ld p q u) b))
+      by (pose proof (Cmod_Im (mkC (Ld p q u) b)) as H; cbn in H; exact H).
+    assert (Hcp : 0 < Cmod (mkC (Ld p q u) b)) by lra.
+    assert (Hinv : / Cmod (mkC (Ld p q u) b) <= / Rabs b)
+      by (apply Rinv_le_contravar; [ exact Hab | exact Hge ]).
+    assert (Hrp : 0 <= Rpower y (Ld p q u)) by (left; apply exp_pos).
+    apply Rle_trans with (Rpower y (Ld p q u) * / Rabs b * Rabs (q - p)).
+    - apply Rmult_le_compat_r; [ apply Rabs_pos | apply Rmult_le_compat_l; [ exact Hrp | exact Hinv ] ].
+    - apply Req_le; unfold k; field; intro Hz; nra. }
+  unfold pathint.
+  eapply Rle_trans; [ apply (Cintf_mod_le2 _ HfF 0 1 Hcm Rle_0_1) | ].
+  apply Rmult_le_compat_l; [ lra | ].
+  eapply Rle_trans; [ apply (RiemannInt_P19 Hcm Hbd Rle_0_1 Hpt) | ].
+  rewrite (int_kRpower_Ld y p q k Hy Hlne ltac:(lra) Hbd).
+  apply Req_le.
+  assert (Hqpl : (q - p) * ln y <> 0)
+    by (apply Rmult_integral_contrapositive_currified; [ intro Hc; apply Hpq; lra | exact Hlne ]).
+  assert (Hsgn : Rabs (q - p) * (Rpower y q - Rpower y p) * Rabs (ln y)
+                 = Rabs (Rpower y q - Rpower y p) * ((q - p) * ln y)).
+  { pose proof (Rpower_diff_sign_gen y p q Hy) as Hsg.
+    assert (Hsg2 : 0 <= (q - p) * ln y * (Rpower y q - Rpower y p)) by nra.
+    replace (Rabs (q - p) * (Rpower y q - Rpower y p) * Rabs (ln y))
+      with (Rabs (q - p) * Rabs (ln y) * (Rpower y q - Rpower y p)) by ring.
+    rewrite <- Rabs_mult.
+    unfold Rabs; destruct (Rcase_abs ((q - p) * ln y));
+      destruct (Rcase_abs (Rpower y q - Rpower y p)); nra. }
+  unfold k.
+  apply Rmult_eq_reg_r with (Rabs b * Rabs (ln y)); [ | intro Hz; nra ].
+  transitivity (Rabs (Rpower y q - Rpower y p)).
+  - replace (Rabs (q - p) / Rabs b * ((Rpower y q - Rpower y p) / ((q - p) * ln y))
+             * (Rabs b * Rabs (ln y)))
+      with (Rabs (q - p) * (Rpower y q - Rpower y p) * Rabs (ln y) / ((q - p) * ln y))
+      by (field; repeat split; intro Hz; nra).
+    rewrite Hsgn; field; repeat split; intro Hz; nra.
+  - field; repeat split; intro Hz; nra.
+Qed.
+
+Print Assumptions horiz_edge_bound_gen.
+
 (* ================================================================= *)
-(*  (checkpoint) right-rect residue = 0.  Next: the y<1 horizontal       *)
-(*  bound, the far-edge decay, and perron_lt1.                          *)
+(*  (checkpoint) y<1 horizontal bound in place.  Next: far-edge decay    *)
+(*  and perron_lt1.                                                      *)
 (* ================================================================= *)
