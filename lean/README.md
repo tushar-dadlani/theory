@@ -143,12 +143,12 @@ The proof, and where each earlier brick is used:
 | `newman_inequality` — `2π‖g(0)−g_T(0)‖ ≤ 4πB/R + ‖leftPart(g…)‖` | all of the above |
 | `newman_tauberian` | the inequality + the limit, `ε`-chase in `R` |
 
-**C9 items 1, 2 and 3 are complete**: the continuation of `ζ` past `Re s = 1` with the pole
+**C9 items 1–4 are complete**: the continuation of `ζ` past `Re s = 1` with the pole
 isolated, and `∑ Λ(n)n^{−s} = −ζ′/ζ` on `Re s > 1` (with `ζ ≠ 0` there, from `μ ∗ 1 = δ`,
 needing no Euler product). Also landed: the complex-analytic **identity theorem**, whose
 absence in Rocq is LEDGER finding #1.
 
-The remaining route to PNT is C9 (the zeta-side input `Φ(s) − 1/(s−1)` holomorphic on
-`Re s ≥ 1`) and C10 (the Chebyshev assembly). C9 is the Coq route's own gating blocker and
+The remaining route to PNT is C10 (the Chebyshev assembly); the zeta-side input
+`Φ(s) − 1/(s−1)` holomorphic on `Re s ≥ 1` is now done. C9 is the Coq route's own gating blocker and
 is a different area of mathematics; mathlib has `riemannZeta` and its non-vanishing, but
 both are banned as endpoints under the from-scratch rule.

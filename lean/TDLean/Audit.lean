@@ -35,6 +35,7 @@ import TDLean.Zeta.Identity
 import TDLean.Zeta.Mertens
 import TDLean.Zeta.LogDerivOrder
 import TDLean.Zeta.NonVanishing
+import TDLean.Zeta.PhiHolo
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -626,3 +627,40 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Zeta.zetaCont_ne_zero_nonvacuous
+
+/-! ### C9 item 4: the pole-subtracted logarithmic derivative -/
+
+/-- info: 'TDLean.Zeta.zetaPoleFactor_ne_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zetaPoleFactor_ne_zero
+
+/-- info: 'TDLean.Zeta.logDeriv_zetaCont_eq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.logDeriv_zetaCont_eq
+
+/-- info: 'TDLean.Zeta.PhiMinus_eq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.PhiMinus_eq
+
+/-- info: 'TDLean.Zeta.isOpen_phiRegion' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.isOpen_phiRegion
+
+/-- info: 'TDLean.Zeta.halfplane_subset_phiRegion' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.halfplane_subset_phiRegion
+
+/-- info: 'TDLean.Zeta.differentiableOn_PhiMinus' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.differentiableOn_PhiMinus
+
+/-- info: 'TDLean.Zeta.PhiMinus_nonvacuous' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.PhiMinus_nonvacuous
