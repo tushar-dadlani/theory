@@ -925,3 +925,4 @@ spectral-theory/PerronBound.v
 spectral-theory/PerronVertical.v
 spectral-theory/PerronEdge.v
 spectral-theory/PerronGt1.v
+spectral-theory/PerronLt1.v
