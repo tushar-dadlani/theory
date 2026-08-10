@@ -917,3 +917,4 @@ spectral-theory/SelbergStarSigned.v
 spectral-theory/SelbergDlogWeight.v
 spectral-theory/SelbergDlogControl.v
 spectral-theory/PerronPower.v
+spectral-theory/ArakelovDegree.v
