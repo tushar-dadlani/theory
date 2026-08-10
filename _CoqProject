@@ -916,3 +916,4 @@ spectral-theory/SelbergSignedConc.v
 spectral-theory/SelbergStarSigned.v
 spectral-theory/SelbergDlogWeight.v
 spectral-theory/SelbergDlogControl.v
+spectral-theory/PerronPower.v
