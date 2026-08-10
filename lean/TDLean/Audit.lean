@@ -32,6 +32,7 @@ import TDLean.Zeta.LogDeriv
 import TDLean.Zeta.DirichletMul
 import TDLean.Zeta.VonMangoldt
 import TDLean.Zeta.Identity
+import TDLean.Zeta.Mertens
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -512,3 +513,30 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Newman.norm_newman_integrand_right_nonvacuous
+
+/-! ### C9 item 3, phase 1: Mertens' inequality -/
+
+/-- info: 'TDLean.Zeta.three_add_four_cos_nonneg' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.three_add_four_cos_nonneg
+
+/-- info: 'TDLean.Zeta.cpow_neg_re' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.cpow_neg_re
+
+/-- info: 'TDLean.Zeta.re_LS_LamC' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.re_LS_LamC
+
+/-- info: 'TDLean.Zeta.summable_mertensTerm' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.summable_mertensTerm
+
+/-- info: 'TDLean.Zeta.mertens_nonneg' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.mertens_nonneg
