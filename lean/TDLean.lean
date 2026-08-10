@@ -15,6 +15,7 @@ import TDLean.Basic
 -- Cluster B -- monoid algebra of prime length
 import TDLean.MonoidAlgebra.ZMod.PrimeIsWithZero
 import TDLean.MonoidAlgebra.Sym.SignType
+import TDLean.MonoidAlgebra.PrimorialLimit
 
 -- Cluster C -- Newman contour route
 import TDLean.Newman.Region

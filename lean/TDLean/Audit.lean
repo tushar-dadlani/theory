@@ -14,6 +14,7 @@
 import TDLean.Basic
 import TDLean.MonoidAlgebra.ZMod.PrimeIsWithZero
 import TDLean.MonoidAlgebra.Sym.SignType
+import TDLean.MonoidAlgebra.PrimorialLimit
 import TDLean.Newman.Region
 import TDLean.Newman.Kernel
 import TDLean.Newman.Contour
@@ -282,6 +283,26 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Newman.sub_gT_eq_tail
+
+/-- info: 'TDLean.MonoidAlgebra.squarefree_prod_primes' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.MonoidAlgebra.squarefree_prod_primes
+
+/-- info: 'TDLean.MonoidAlgebra.toZMod_not_injective' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.MonoidAlgebra.toZMod_not_injective
+
+/-- info: 'TDLean.MonoidAlgebra.pairwise_coprime_primes' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.MonoidAlgebra.pairwise_coprime_primes
+
+/-- info: 'TDLean.MonoidAlgebra.primorial_nonvacuous' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.MonoidAlgebra.primorial_nonvacuous
 
 /-! ### Cluster C9 -- zeta from scratch -/
 
