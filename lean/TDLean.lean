@@ -28,4 +28,7 @@ import TDLean.Newman.Split
 import TDLean.Newman.LeftLimit
 import TDLean.Newman.Tauberian
 
+-- Cluster C9 -- zeta from scratch
+import TDLean.Zeta.Basic
+
 import TDLean.Audit
