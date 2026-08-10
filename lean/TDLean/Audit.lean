@@ -28,6 +28,7 @@ import TDLean.Zeta.Basic
 import TDLean.Zeta.Continuation
 import TDLean.Zeta.Holo
 import TDLean.Zeta.Telescope
+import TDLean.Zeta.LogDeriv
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -370,6 +371,16 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Zeta.intCpow_eq
+
+/-- info: 'TDLean.Zeta.hasSum_deriv_zetaSeries' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.hasSum_deriv_zetaSeries
+
+/-- info: 'TDLean.Zeta.hasDerivAt_zetaTerm' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.hasDerivAt_zetaTerm
 
 /-! ### Non-vacuity witnesses
 
