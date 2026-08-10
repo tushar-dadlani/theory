@@ -67,11 +67,29 @@ theorem laplaceDerivIntegrand_continuousOn (hf : ContinuousOn f (uIcc (0 : ℝ) 
   hf.mul ((by fun_prop : ContinuousOn (fun t : ℝ => -(t : ℂ)) (uIcc (0:ℝ) T)).mul
     (by fun_prop))
 
+/-! ### Integrability, not continuity
+
+    `f` is NOT continuous in the PNT application: it is `ψ(eᵗ)e^{−t} − 1`, a step function.
+    So everything below is stated for `IntervalIntegrable f` plus a bound on `‖f‖`, which is
+    all the domination argument ever needed. Continuity is recovered as a special case via
+    `ContinuousOn.intervalIntegrable`. -/
+
+theorem laplaceIntegrand_intervalIntegrable
+    (hf : IntervalIntegrable f MeasureTheory.volume 0 T) (z : ℂ) :
+    IntervalIntegrable (fun t : ℝ => f t * Complex.exp (-z * (t : ℂ)))
+      MeasureTheory.volume 0 T :=
+  hf.mul_continuousOn (by fun_prop)
+
+theorem laplaceDerivIntegrand_intervalIntegrable
+    (hf : IntervalIntegrable f MeasureTheory.volume 0 T) (z : ℂ) :
+    IntervalIntegrable (fun t : ℝ => f t * (-(t : ℂ) * Complex.exp (-z * (t : ℂ))))
+      MeasureTheory.volume 0 T :=
+  hf.mul_continuousOn (by fun_prop)
+
 /-- ORACLE: CLaplace.v : gT_holo. The truncated Laplace transform is entire. -/
-theorem hasDerivAt_gT (hf : ContinuousOn f (uIcc (0 : ℝ) T)) (z : ℂ) :
+theorem hasDerivAt_gT {M : ℝ} (hf : IntervalIntegrable f MeasureTheory.volume 0 T)
+    (hM : ∀ t ∈ uIcc (0 : ℝ) T, ‖f t‖ ≤ M) (z : ℂ) :
     HasDerivAt (gT f T) (gT' f T z) z := by
-  -- bound `‖f‖` on the (compact) interval
-  obtain ⟨M, hM⟩ := (isCompact_uIcc (a := (0 : ℝ)) (b := T)).exists_bound_of_continuousOn hf
   set ρ : ℝ := 1 with hρdef
   have hρ : (0 : ℝ) < ρ := one_pos
   -- a constant dominating bound for `x` in `ball z ρ`
@@ -126,18 +144,19 @@ theorem hasDerivAt_gT (hf : ContinuousOn f (uIcc (0 : ℝ) T)) (z : ℂ) :
     (μ := MeasureTheory.volume) (a := 0) (b := T)
     (ball_mem_nhds z hρ)
     (Filter.Eventually.of_forall fun x =>
-      ((laplaceIntegrand_continuousOn hf x).mono hsub).aestronglyMeasurable measurableSet_uIoc)
-    (laplaceIntegrand_continuousOn hf z).intervalIntegrable
-    (((laplaceDerivIntegrand_continuousOn hf z).mono hsub).aestronglyMeasurable
-      measurableSet_uIoc)
+      (intervalIntegrable_iff.mp (laplaceIntegrand_intervalIntegrable hf x)).aestronglyMeasurable)
+    (laplaceIntegrand_intervalIntegrable hf z)
+    (intervalIntegrable_iff.mp
+      (laplaceDerivIntegrand_intervalIntegrable hf z)).aestronglyMeasurable
     (Filter.Eventually.of_forall hdom)
     _root_.intervalIntegrable_const
     (Filter.Eventually.of_forall fun t _ x _ => (hasDerivAt_expNeg t x).const_mul (f t))
   exact hres.2
 
 /-- ORACLE: CLaplace.v : gT_holo (the `Differentiable` packaging). -/
-theorem differentiable_gT (hf : ContinuousOn f (uIcc (0 : ℝ) T)) :
-    Differentiable ℂ (gT f T) := fun z => (hasDerivAt_gT hf z).differentiableAt
+theorem differentiable_gT {M : ℝ} (hf : IntervalIntegrable f MeasureTheory.volume 0 T)
+    (hM : ∀ t ∈ uIcc (0 : ℝ) T, ‖f t‖ ≤ M) :
+    Differentiable ℂ (gT f T) := fun z => (hasDerivAt_gT hf hM z).differentiableAt
 
 /-! ### `g_T` on the left half-plane
 
@@ -160,7 +179,7 @@ theorem integral_exp_mul_zero {a : ℝ} (ha : a ≠ 0) (T : ℝ) :
 
 /-- For `Re z < 0`, `‖g_T(z)‖ ≤ B e^{−(Re z)T} / (−Re z)`. -/
 theorem norm_gT_le_of_re_neg {B : ℝ} (hT : 0 ≤ T)
-    (hf : ContinuousOn f (uIcc (0 : ℝ) T)) (hB : ∀ t, 0 ≤ t → ‖f t‖ ≤ B)
+    (hf : IntervalIntegrable f MeasureTheory.volume 0 T) (hB : ∀ t, 0 ≤ t → ‖f t‖ ≤ B)
     {z : ℂ} (hz : z.re < 0) :
     ‖gT f T z‖ ≤ B * Real.exp (-z.re * T) / (-z.re) := by
   have ha : (0 : ℝ) < -z.re := neg_pos.mpr hz
@@ -174,8 +193,8 @@ theorem norm_gT_le_of_re_neg {B : ℝ} (hT : 0 ≤ T)
     intro t ht
     rw [norm_mul, norm_expNeg]
     exact mul_le_mul_of_nonneg_right (hB t ht.1) (Real.exp_pos _).le
-  have hcont1 : ContinuousOn (fun t : ℝ => ‖f t * Complex.exp (-z * (t : ℂ))‖)
-      (uIcc (0 : ℝ) T) := (laplaceIntegrand_continuousOn hf z).norm
+  have hcont1 : IntervalIntegrable (fun t : ℝ => ‖f t * Complex.exp (-z * (t : ℂ))‖)
+      MeasureTheory.volume 0 T := (laplaceIntegrand_intervalIntegrable hf z).norm
   have hcont2 : ContinuousOn (fun t : ℝ => B * Real.exp (-z.re * t)) (uIcc (0 : ℝ) T) := by
     fun_prop
   calc ‖gT f T z‖
@@ -183,7 +202,7 @@ theorem norm_gT_le_of_re_neg {B : ℝ} (hT : 0 ≤ T)
         rw [gT]
         exact intervalIntegral.norm_integral_le_integral_norm hT
     _ ≤ ∫ t in (0 : ℝ)..T, B * Real.exp (-z.re * t) := by
-        refine intervalIntegral.integral_mono_on hT hcont1.intervalIntegrable
+        refine intervalIntegral.integral_mono_on hT hcont1
           hcont2.intervalIntegrable fun t ht => hpt t ht
     _ = B * ((Real.exp (-z.re * T) - 1) / (-z.re)) := by
         have h := intervalIntegral.integral_const_mul (a := (0 : ℝ)) (b := T)

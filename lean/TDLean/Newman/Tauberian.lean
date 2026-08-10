@@ -274,7 +274,8 @@ theorem norm_newman_integrand_right_nonvacuous :
 
     OVERTAKE: no Coq counterpart. -/
 theorem newman_inequality {f : ℝ → ℂ} {g : ℂ → ℂ} {B R α T : ℝ} {U : Set ℂ}
-    (hfc : Continuous f) (hB : ∀ t, 0 ≤ t → ‖f t‖ ≤ B) (hT : 0 ≤ T)
+    (hfi : IntervalIntegrable f MeasureTheory.volume 0 T)
+    (hB : ∀ t, 0 ≤ t → ‖f t‖ ≤ B) (hT : 0 ≤ T)
     (hint : ∀ z : ℂ, 0 < z.re →
       MeasureTheory.IntegrableOn (fun t : ℝ => f t * Complex.exp (-z * (t : ℂ))) (Ioi 0))
     (hgL : ∀ z : ℂ, 0 < z.re → g z = ∫ t in Ioi (0 : ℝ), f t * Complex.exp (-z * (t : ℂ)))
@@ -284,8 +285,11 @@ theorem newman_inequality {f : ℝ → ℂ} {g : ℂ → ℂ} {B R α T : ℝ} {
     2 * π * ‖g 0 - gT f T 0‖ ≤ 2 * (R * (2 * B / R ^ 2) * π)
       + ‖leftPart (fun z => g z * Complex.exp (z * (T : ℂ)) * newmanKernel R z) R α‖ := by
   have hπ := Real.pi_pos
-  have hfT : ContinuousOn f (uIcc (0 : ℝ) T) := hfc.continuousOn
-  have hgTd : Differentiable ℂ (gT f T) := differentiable_gT hfT
+  have hfM : ∀ t ∈ uIcc (0 : ℝ) T, ‖f t‖ ≤ B := by
+    intro t ht
+    rw [uIcc_of_le hT] at ht
+    exact hB t ht.1
+  have hgTd : Differentiable ℂ (gT f T) := differentiable_gT hfi hfM
   have hexpd : Differentiable ℂ (fun z : ℂ => Complex.exp (z * (T : ℂ))) :=
     Complex.differentiable_exp.comp (differentiable_id.mul_const _)
   -- the two integrands
@@ -335,7 +339,7 @@ theorem newman_inequality {f : ℝ → ℂ} {g : ℂ → ℂ} {B R α T : ℝ} {
     have hsubg : Bf z = gT f T z * Complex.exp (z * (T : ℂ)) * newmanKernel R z := rfl
     rw [hsubg]
     exact norm_newman_integrand_left (G := gT f T) hR hznorm hzre
-      (norm_gT_le_of_re_neg hT hfT hB hzre)
+      (norm_gT_le_of_re_neg hT hfi hB hzre)
   -- assemble
   have hnorm : ‖(2 : ℂ) * π * I * (g 0 - gT f T 0)‖ = 2 * π * ‖g 0 - gT f T 0‖ := by
     rw [norm_mul, norm_mul, norm_mul, Complex.norm_I, mul_one, Complex.norm_real,
@@ -367,7 +371,8 @@ theorem newman_inequality {f : ℝ → ℂ} {g : ℂ → ℂ} {B R α T : ℝ} {
     OVERTAKE: no Coq counterpart -- `CNewman.v` does not exist, and
     `docs/newman_route_status.md` lists this as brick 8, open. -/
 theorem newman_tauberian {f : ℝ → ℂ} {g : ℂ → ℂ} {B : ℝ}
-    (hfc : Continuous f) (hB : ∀ t, 0 ≤ t → ‖f t‖ ≤ B)
+    (hfi : ∀ T : ℝ, IntervalIntegrable f MeasureTheory.volume 0 T)
+    (hB : ∀ t, 0 ≤ t → ‖f t‖ ≤ B)
     (hint : ∀ z : ℂ, 0 < z.re →
       MeasureTheory.IntegrableOn (fun t : ℝ => f t * Complex.exp (-z * (t : ℂ))) (Ioi 0))
     (hgL : ∀ z : ℂ, 0 < z.re → g z = ∫ t in Ioi (0 : ℝ), f t * Complex.exp (-z * (t : ℂ)))
@@ -397,7 +402,7 @@ theorem newman_tauberian {f : ℝ → ℂ} {g : ℂ → ℂ} {B : ℝ}
   obtain ⟨N, hN⟩ := (hev.and (Filter.eventually_ge_atTop (0 : ℝ))).exists_forall_of_atTop
   refine ⟨N, fun T hT => ?_⟩
   obtain ⟨hTleft, hT0⟩ := hN T hT
-  have hineq := newman_inequality hfc hB hT0 hint hgL hR hα hα2 hU hstar h0 hsub hgd
+  have hineq := newman_inequality (hfi T) hB hT0 hint hgL hR hα hα2 hU hstar h0 hsub hgd
   -- `2 * (R * (2B/R²) * π) = 2π * (2B/R)`
   have hrw : 2 * (R * (2 * B / R ^ 2) * π) = 2 * π * (2 * B / R) := by
     field_simp
@@ -421,14 +426,16 @@ theorem newman_tauberian {f : ℝ → ℂ} {g : ℂ → ℂ} {B : ℝ}
     region. (This says only that the hypotheses are consistent, not that they are weak.) -/
 theorem newman_tauberian_nonvacuous :
     ∃ (f : ℝ → ℂ) (g : ℂ → ℂ) (B : ℝ),
-      Continuous f ∧ (∀ t : ℝ, 0 ≤ t → ‖f t‖ ≤ B) ∧
+      (∀ T : ℝ, IntervalIntegrable f MeasureTheory.volume 0 T) ∧
+      (∀ t : ℝ, 0 ≤ t → ‖f t‖ ≤ B) ∧
       (∀ z : ℂ, 0 < z.re →
         MeasureTheory.IntegrableOn (fun t : ℝ => f t * Complex.exp (-z * (t : ℂ))) (Ioi 0)) ∧
       (∀ z : ℂ, 0 < z.re → g z = ∫ t in Ioi (0 : ℝ), f t * Complex.exp (-z * (t : ℂ))) ∧
       (∀ R : ℝ, 0 < R → ∃ α U, π / 2 < α ∧ α ≤ π ∧ IsOpen U ∧ StarAboutZero U ∧
         (0 : ℂ) ∈ U ∧ contourSet R α ⊆ U ∧ DifferentiableOn ℂ g U) := by
   have hπ := Real.pi_pos
-  refine ⟨fun _ => 0, fun _ => 0, 0, continuous_const, fun t _ => by simp, ?_, ?_, ?_⟩
+  refine ⟨fun _ => 0, fun _ => 0, 0, fun _ => intervalIntegrable_const,
+    fun t _ => by simp, ?_, ?_, ?_⟩
   · intro z _; simp
   · intro z _; simp
   · intro R hR
