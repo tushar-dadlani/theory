@@ -919,3 +919,4 @@ spectral-theory/SelbergDlogControl.v
 spectral-theory/PerronPower.v
 spectral-theory/ArakelovDegree.v
 spectral-theory/RectWinding.v
+spectral-theory/PerronRemovable.v
