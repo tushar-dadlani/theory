@@ -922,3 +922,4 @@ spectral-theory/RectWinding.v
 spectral-theory/PerronRemovable.v
 spectral-theory/PerronKernel.v
 spectral-theory/PerronBound.v
+spectral-theory/PerronVertical.v
