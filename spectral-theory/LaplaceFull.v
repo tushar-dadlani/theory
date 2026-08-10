@@ -11,8 +11,8 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra Lia.
-Require Import ComplexField Cmodulus CIntegral2 CSegInt CExpKernel ContinuousCoV
-        PerronBound PerronEdge.
+Require Import ComplexField Cmodulus CSeries CIntegral2 CSegInt CExpKernel ContinuousCoV
+        CImproperIntegral PerronBound PerronEdge.
 Open Scope R_scope.
 
 (* ----------------------------------------------------------------- *)
@@ -196,13 +196,134 @@ Proof.
   pose proof (exp_pos (- (Re z * T'))); lra.
 Qed.
 
+(* ----------------------------------------------------------------- *)
+(*  Part 3:  the full transform  g(z) = lim_{T->oo} g_T(z)  (Re z>0)     *)
+(* ----------------------------------------------------------------- *)
+
+Lemma exp_le : forall a b, a <= b -> exp a <= exp b.
+Proof.
+  intros a b Hab; destruct (Rle_lt_or_eq_dec a b Hab) as [H|H];
+    [ left; apply exp_increasing; exact H | subst; apply Rle_refl ].
+Qed.
+
+Lemma cv_infty_INR_loc : cv_infty (fun n => INR n).
+Proof.
+  intro M; destruct (INR_unbounded M) as [n0 Hn0]; exists n0; intros n Hn;
+    eapply Rlt_le_trans; [ exact Hn0 | apply le_INR; exact Hn ].
+Qed.
+
+(*  the geometric-decay majorant of the truncation increments  *)
+Definition tailmaj (z : C) (n : nat) : R := 2 * (B * exp (- (Re z * INR n)) / Re z).
+
+Lemma tailmaj_nonneg : forall z n, 0 < Re z -> 0 <= tailmaj z n.
+Proof.
+  intros z n Hz; unfold tailmaj; apply Rmult_le_pos; [ lra | ].
+  unfold Rdiv; apply Rmult_le_pos;
+    [ apply Rmult_le_pos; [ apply B_nonneg | left; apply exp_pos ]
+    | left; apply Rinv_0_lt_compat; exact Hz ].
+Qed.
+
+Lemma tailmaj_cv0 : forall z, 0 < Re z -> Un_cv (tailmaj z) 0.
+Proof.
+  intros z Hz; unfold tailmaj.
+  replace 0 with (2 * B / Re z * 0) by ring.
+  apply (Un_cv_ext (fun n => 2 * B / Re z * exp (- (Re z * INR n))));
+    [ intro n; field; apply Rgt_not_eq; exact Hz | ].
+  apply Un_cv_cscal_R, exp_neg_cv0, cv_infty_scal_pos; [ exact Hz | apply cv_infty_INR_loc ].
+Qed.
+
+Lemma tailmaj_dec : forall z m n, 0 < Re z -> (n <= m)%nat -> tailmaj z m <= tailmaj z n.
+Proof.
+  intros z m n Hz Hnm; unfold tailmaj; apply Rmult_le_compat_l; [ lra | ].
+  unfold Rdiv; apply Rmult_le_compat_r; [ left; apply Rinv_0_lt_compat; exact Hz | ].
+  apply Rmult_le_compat_l; [ apply B_nonneg | ].
+  apply exp_le; apply Ropp_le_contravar, Rmult_le_compat_l;
+    [ left; exact Hz | apply le_INR; exact Hnm ].
+Qed.
+
+Lemma Lseq_close_sym : forall z m n, 0 < Re z ->
+  Cmod (Cminus (LT z (INR m)) (LT z (INR n))) <= tailmaj z (Nat.min m n).
+Proof.
+  intros z m n Hz; destruct (Nat.le_ge_cases n m) as [Hle | Hge].
+  - rewrite (Nat.min_r m n Hle).
+    apply (LT_tail_bound' z (INR n) (INR m) Hz (pos_INR n) (le_INR _ _ Hle)).
+  - rewrite (Nat.min_l m n Hge).
+    replace (Cminus (LT z (INR m)) (LT z (INR n)))
+      with (Copp (Cminus (LT z (INR n)) (LT z (INR m)))) by ring.
+    rewrite Cmod_opp.
+    apply (LT_tail_bound' z (INR m) (INR n) Hz (pos_INR m) (le_INR _ _ Hge)).
+Qed.
+
+Lemma Lseq_Re_cauchy : forall z, 0 < Re z -> Cauchy_crit (fun n => Re (LT z (INR n))).
+Proof.
+  intros z Hz eps Heps; destruct (tailmaj_cv0 z Hz eps Heps) as [N HN].
+  exists N; intros m n Hm Hn; unfold R_dist.
+  apply Rle_lt_trans with (Cmod (Cminus (LT z (INR m)) (LT z (INR n)))).
+  - replace (Re (LT z (INR m)) - Re (LT z (INR n)))
+      with (Re (Cminus (LT z (INR m)) (LT z (INR n)))) by (unfold Cminus, Cadd, Copp; cbn; ring).
+    apply Cmod_Re.
+  - apply Rle_lt_trans with (tailmaj z (Nat.min m n)); [ apply Lseq_close_sym; exact Hz | ].
+    apply Rle_lt_trans with (tailmaj z N);
+      [ apply (tailmaj_dec z (Nat.min m n) N Hz); apply Nat.min_glb; assumption | ].
+    pose proof (HN N (Nat.le_refl N)) as HNN; unfold R_dist in HNN;
+      rewrite Rminus_0_r, Rabs_pos_eq in HNN by (apply tailmaj_nonneg; exact Hz); exact HNN.
+Qed.
+
+Lemma Lseq_Im_cauchy : forall z, 0 < Re z -> Cauchy_crit (fun n => Im (LT z (INR n))).
+Proof.
+  intros z Hz eps Heps; destruct (tailmaj_cv0 z Hz eps Heps) as [N HN].
+  exists N; intros m n Hm Hn; unfold R_dist.
+  apply Rle_lt_trans with (Cmod (Cminus (LT z (INR m)) (LT z (INR n)))).
+  - replace (Im (LT z (INR m)) - Im (LT z (INR n)))
+      with (Im (Cminus (LT z (INR m)) (LT z (INR n)))) by (unfold Cminus, Cadd, Copp; cbn; ring).
+    apply Cmod_Im.
+  - apply Rle_lt_trans with (tailmaj z (Nat.min m n)); [ apply Lseq_close_sym; exact Hz | ].
+    apply Rle_lt_trans with (tailmaj z N);
+      [ apply (tailmaj_dec z (Nat.min m n) N Hz); apply Nat.min_glb; assumption | ].
+    pose proof (HN N (Nat.le_refl N)) as HNN; unfold R_dist in HNN;
+      rewrite Rminus_0_r, Rabs_pos_eq in HNN by (apply tailmaj_nonneg; exact Hz); exact HNN.
+Qed.
+
+(*  the full Laplace transform, for Re z > 0  *)
+Definition gfull (z : C) (Hz : 0 < Re z) : C :=
+  mkC (proj1_sig (R_complete _ (Lseq_Re_cauchy z Hz)))
+      (proj1_sig (R_complete _ (Lseq_Im_cauchy z Hz))).
+
+Lemma gfull_cv : forall z (Hz : 0 < Re z), CUn_cv (fun n => LT z (INR n)) (gfull z Hz).
+Proof.
+  intros z Hz; apply CUn_cv_comp; split;
+    [ exact (proj2_sig (R_complete _ (Lseq_Re_cauchy z Hz)))
+    | exact (proj2_sig (R_complete _ (Lseq_Im_cauchy z Hz))) ].
+Qed.
+
+(*  the full right-half-plane tail bound  |g(z) - g_T(z)| <= 2 B e^{-(Re z)T}/(Re z)  *)
+Theorem gfull_tail : forall z (Hz : 0 < Re z) T, 0 <= T ->
+  Cmod (Cminus (gfull z Hz) (LT z T)) <= 2 * (B * exp (- (Re z * T)) / Re z).
+Proof.
+  intros z Hz T HT; destruct (INR_unbounded T) as [N0 HN0].
+  apply Rle_cv_lim with
+    (Un := fun k => Cmod (Cminus (LT z (INR (N0 + k))) (LT z T)))
+    (Vn := fun _ => 2 * (B * exp (- (Re z * T)) / Re z)).
+  - intro k; apply LT_tail_bound'; [ exact Hz | exact HT | ].
+    apply Rle_trans with (INR N0); [ left; exact HN0 | apply le_INR; lia ].
+  - intros eps Heps; destruct (gfull_cv z Hz eps Heps) as [N1 HN1].
+    exists N1; intros k Hk; unfold R_dist.
+    eapply Rle_lt_trans; [ apply Cmod_diff_le | ].
+    replace (Cminus (Cminus (LT z (INR (N0 + k))) (LT z T)) (Cminus (gfull z Hz) (LT z T)))
+      with (Cminus (LT z (INR (N0 + k))) (gfull z Hz)) by ring.
+    apply HN1; lia.
+  - apply Un_cv_const.
+Qed.
+
 End FullLaplace.
 
-Print Assumptions LT_tail_bound.
 Print Assumptions LT_tail_bound'.
+Print Assumptions gfull_tail.
 
 (* ================================================================= *)
-(*  Parts 1-2 complete: exp-tail core + the sharp truncation tail bound  *)
-(*  |g_{T'}(z) - g_T(z)| <= 2 B e^{-(Re z) T}/(Re z).  Next stage: the    *)
-(*  full transform g(z) as the (Cauchy) limit of g_T, and |g - g_T|.      *)
+(*  Parts 1-3 complete: exp-tail core, the sharp truncation tail bound,   *)
+(*  and the full transform g(z) = lim g_T(z) (Re z>0) with                *)
+(*  |g(z) - g_T(z)| <= 2 B e^{-(Re z) T}/(Re z).  This is the concrete F   *)
+(*  fed to the Newman contour argument.  Next: LaplacePhi (identify g      *)
+(*  with Phi(z+1)/(z+1) - 1/z and holomorphy at 0).                       *)
 (* ================================================================= *)
