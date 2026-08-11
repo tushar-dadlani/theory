@@ -43,5 +43,6 @@ import TDLean.Zeta.LogDerivOrder
 import TDLean.Zeta.NonVanishing
 import TDLean.Zeta.PhiHolo
 import TDLean.PNT.Chebyshev
+import TDLean.PNT.Mellin
 
 import TDLean.Audit

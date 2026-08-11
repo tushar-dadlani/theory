@@ -37,6 +37,7 @@ import TDLean.Zeta.LogDerivOrder
 import TDLean.Zeta.NonVanishing
 import TDLean.Zeta.PhiHolo
 import TDLean.PNT.Chebyshev
+import TDLean.PNT.Mellin
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -717,3 +718,20 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.PNT.psi_le_const_mul
+
+/-! ### C10 part 2: Abel summation -/
+
+/-- info: 'TDLean.PNT.sum_LamC_eq_psi' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.sum_LamC_eq_psi
+
+/-- info: 'TDLean.PNT.deriv_kernel_eqOn' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.deriv_kernel_eqOn
+
+/-- info: 'TDLean.PNT.abel_finite' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.abel_finite
