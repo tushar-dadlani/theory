@@ -940,3 +940,4 @@ spectral-theory/FusionKernel.v
 spectral-theory/FusionIntegral.v
 spectral-theory/NewmanPhiTerm.v
 spectral-theory/NewmanG.v
+spectral-theory/NewmanIdentity.v
