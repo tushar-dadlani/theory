@@ -16,6 +16,7 @@
 import TDLean.Zeta.VonMangoldt
 import TDLean.PNT.Chebyshev
 import Mathlib.NumberTheory.AbelSummation
+import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
 namespace TDLean.PNT
 
@@ -94,4 +95,124 @@ theorem abel_finite {s : ℂ} (hs : s ≠ 0) (b : ℝ) :
   rw [hgoal]
   exact habel
 
+/-! ### Passing to `b → ∞` -/
+
+theorem measurable_psi : Measurable psi := psi_mono.measurable
+
+theorem norm_mellin_integrand_le {s : ℂ} (_hs : 1 < s.re) {t : ℝ} (ht : 1 ≤ t) :
+    ‖((t : ℂ) ^ (-s - 1)) * ((psi t : ℝ) : ℂ)‖ ≤ Ccheb * t ^ (-s.re) := by
+  have ht0 : (0 : ℝ) < t := by linarith
+  have hnorm1 : ‖((t : ℂ) ^ (-s - 1))‖ = t ^ (-s.re - 1) := by
+    rw [Complex.norm_cpow_eq_rpow_re_of_pos ht0]
+    congr 1
+  have hnorm2 : ‖((psi t : ℝ) : ℂ)‖ = psi t := by
+    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (psi_nonneg t)]
+  have hpsi : psi t ≤ Ccheb * t := psi_le_Ccheb ht
+  have hrpow : t ^ (-s.re - 1) * t = t ^ (-s.re) := by
+    rw [show (-s.re - 1 : ℝ) = -s.re + (-1) by ring, Real.rpow_add ht0]
+    rw [Real.rpow_neg_one]
+    field_simp
+  calc ‖((t : ℂ) ^ (-s - 1)) * ((psi t : ℝ) : ℂ)‖
+      = t ^ (-s.re - 1) * psi t := by rw [norm_mul, hnorm1, hnorm2]
+    _ ≤ t ^ (-s.re - 1) * (Ccheb * t) := by
+        exact mul_le_mul_of_nonneg_left hpsi (Real.rpow_nonneg ht0.le _)
+    _ = Ccheb * (t ^ (-s.re - 1) * t) := by ring
+    _ = Ccheb * t ^ (-s.re) := by rw [hrpow]
+
+theorem integrableOn_mellin {s : ℂ} (hs : 1 < s.re) :
+    IntegrableOn (fun t : ℝ => ((t : ℂ) ^ (-s - 1)) * ((psi t : ℝ) : ℂ)) (Set.Ioi 1) := by
+  have hcont : ContinuousOn (fun t : ℝ => ((t : ℂ) ^ (-s - 1))) (Set.Ioi (1 : ℝ)) := by
+    refine ContinuousOn.cpow_const ?_ ?_
+    · exact Complex.continuous_ofReal.continuousOn.comp continuousOn_id (fun u _ => trivial)
+    · intro u hu
+      exact Or.inl (by simpa using (by linarith [Set.mem_Ioi.mp hu] : (0:ℝ) < u))
+  have hmeas : AEStronglyMeasurable
+      (fun t : ℝ => ((t : ℂ) ^ (-s - 1)) * ((psi t : ℝ) : ℂ)) (volume.restrict (Set.Ioi 1)) :=
+    (hcont.aestronglyMeasurable measurableSet_Ioi).mul
+      (Complex.measurable_ofReal.comp measurable_psi).aestronglyMeasurable
+  have hdom : IntegrableOn (fun t : ℝ => Ccheb * t ^ (-s.re)) (Set.Ioi 1) :=
+    (integrableOn_Ioi_rpow_of_lt (by linarith) one_pos).const_mul _
+  refine Integrable.mono' hdom hmeas ?_
+  filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
+  exact norm_mellin_integrand_le hs (le_of_lt (Set.mem_Ioi.mp ht))
+
+theorem tendsto_boundary {s : ℂ} (hs : 1 < s.re) :
+    Filter.Tendsto (fun b : ℝ => (b : ℂ) ^ (-s) * ((psi b : ℝ) : ℂ)) Filter.atTop (nhds 0) := by
+  have hlim : Filter.Tendsto (fun b : ℝ => Ccheb * b ^ (1 - s.re)) Filter.atTop (nhds 0) := by
+    have := (tendsto_rpow_neg_atTop (y := s.re - 1) (by linarith))
+    simpa [show -(s.re - 1) = 1 - s.re by ring] using this.const_mul Ccheb
+  refine squeeze_zero_norm' ?_ (by simpa using hlim)
+  filter_upwards [Filter.eventually_ge_atTop (1 : ℝ)] with b hb
+  have hb0 : (0 : ℝ) < b := by linarith
+  have h1 : ‖(b : ℂ) ^ (-s)‖ = b ^ (-s.re) := by
+    rw [Complex.norm_cpow_eq_rpow_re_of_pos hb0]; congr 1
+  have h2 : ‖((psi b : ℝ) : ℂ)‖ = psi b := by
+    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (psi_nonneg b)]
+  have hrpow : b ^ (-s.re) * b = b ^ (1 - s.re) := by
+    rw [show (1 - s.re : ℝ) = -s.re + 1 by ring, Real.rpow_add hb0, Real.rpow_one]
+  calc ‖(b : ℂ) ^ (-s) * ((psi b : ℝ) : ℂ)‖ = b ^ (-s.re) * psi b := by
+        rw [norm_mul, h1, h2]
+    _ ≤ b ^ (-s.re) * (Ccheb * b) :=
+        mul_le_mul_of_nonneg_left (psi_le_Ccheb hb) (Real.rpow_nonneg hb0.le _)
+    _ = Ccheb * (b ^ (-s.re) * b) := by ring
+    _ = Ccheb * b ^ (1 - s.re) := by rw [hrpow]
+
+theorem summable_LamC_nat {s : ℂ} (hs : 1 < s.re) :
+    Summable (fun n : ℕ => LamC n / (n : ℂ) ^ s) := by
+  refine Summable.of_norm (Summable.of_nonneg_of_le (fun n => norm_nonneg _) (fun n => ?_)
+    (summable_log_rpow hs))
+  rcases Nat.eq_zero_or_pos n with rfl | hn
+  · simp [LamC]
+  · have hn0 : (0 : ℝ) < (n : ℝ) := by exact_mod_cast hn
+    have hn1 : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hn
+    rw [norm_div, LamC, Complex.norm_real, Real.norm_eq_abs,
+      abs_of_nonneg ArithmeticFunction.vonMangoldt_nonneg,
+      Complex.norm_natCast_cpow_of_pos hn, Real.rpow_neg hn0.le,
+      div_eq_mul_inv]
+    exact mul_le_mul_of_nonneg_right ArithmeticFunction.vonMangoldt_le_log
+      (by positivity)
+
+theorem tendsto_partial {s : ℂ} (hs : 1 < s.re) :
+    Filter.Tendsto (fun b : ℝ => ∑ k ∈ Finset.Icc 0 ⌊b⌋₊, ((k : ℂ) ^ (-s)) * LamC k)
+      Filter.atTop (nhds (LS LamC s)) := by
+  have hs0 : s ≠ 0 := by intro h; rw [h] at hs; simp at hs; linarith
+  have hterm : ∀ k : ℕ, ((k : ℂ) ^ (-s)) * LamC k = LamC k / (k : ℂ) ^ s := by
+    intro k
+    rw [Complex.cpow_neg, div_eq_mul_inv]
+    ring
+  have hnat : Filter.Tendsto (fun N : ℕ => ∑ k ∈ Finset.range N, LamC k / (k : ℂ) ^ s)
+      Filter.atTop (nhds (LS LamC s)) := by
+    rw [LS_eq_tsum_nat LamC hs0]
+    exact (summable_LamC_nat hs).hasSum.tendsto_sum_nat
+  have hfl : Filter.Tendsto (fun b : ℝ => ⌊b⌋₊ + 1) Filter.atTop Filter.atTop :=
+    Filter.tendsto_atTop_mono (fun b => Nat.le_succ _) tendsto_nat_floor_atTop
+  have := hnat.comp hfl
+  refine this.congr fun b => ?_
+  simp only [Function.comp_apply, Icc_zero_eq_range]
+  exact (Finset.sum_congr rfl fun k _ => hterm k).symm
+
+/-- **The Mellin representation.** For `Re s > 1`,
+    `∑ Λ(n) n^{−s} = s · ∫₁^∞ ψ(t) t^{−s−1} dt`. -/
+theorem LS_LamC_eq_mellin {s : ℂ} (hs : 1 < s.re) :
+    LS LamC s = s * ∫ t in Set.Ioi (1 : ℝ), ((t : ℂ) ^ (-s - 1)) * ((psi t : ℝ) : ℂ) := by
+  have hs0 : s ≠ 0 := by intro h; rw [h] at hs; simp at hs; linarith
+  have hI : Filter.Tendsto
+      (fun b : ℝ => ∫ t in Set.Ioc (1 : ℝ) b, ((t : ℂ) ^ (-s - 1)) * ((psi t : ℝ) : ℂ))
+      Filter.atTop (nhds (∫ t in Set.Ioi (1 : ℝ), ((t : ℂ) ^ (-s - 1)) * ((psi t : ℝ) : ℂ))) := by
+    have h := intervalIntegral_tendsto_integral_Ioi (1 : ℝ) (integrableOn_mellin hs)
+      Filter.tendsto_id
+    refine h.congr' ?_
+    filter_upwards [Filter.eventually_ge_atTop (1 : ℝ)] with b hb
+    exact intervalIntegral.integral_of_le hb
+  have hRHS : Filter.Tendsto
+      (fun b : ℝ => (b : ℂ) ^ (-s) * ((psi b : ℝ) : ℂ)
+        + s * ∫ t in Set.Ioc (1 : ℝ) b, ((t : ℂ) ^ (-s - 1)) * ((psi t : ℝ) : ℂ))
+      Filter.atTop
+      (nhds (0 + s * ∫ t in Set.Ioi (1 : ℝ), ((t : ℂ) ^ (-s - 1)) * ((psi t : ℝ) : ℂ))) :=
+    (tendsto_boundary hs).add (hI.const_mul s)
+  have heq := tendsto_nhds_unique (tendsto_partial hs)
+    (hRHS.congr fun b => (abel_finite hs0 b).symm)
+  simpa using heq
+
 end TDLean.PNT
+

@@ -276,5 +276,26 @@ theorem psi_le_const_mul {x : ℝ} (hx : 1 ≤ x) :
   rw [psi_eq_theta_add]
   nlinarith
 
+/-- The Chebyshev constant. -/
+noncomputable def Ccheb : ℝ := Real.log 4 + 40 / Real.log 2
+
+theorem Ccheb_nonneg : 0 ≤ Ccheb := by
+  have h : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have h4 : 0 ≤ Real.log 4 := Real.log_nonneg (by norm_num)
+  rw [Ccheb]; positivity
+
+theorem psi_le_Ccheb {x : ℝ} (hx : 1 ≤ x) : psi x ≤ Ccheb * x := psi_le_const_mul hx
+
+/-- `ψ` is monotone -- hence measurable, and interval-integrable on every `[0,T]`. -/
+theorem psi_mono : Monotone psi := by
+  intro x y hxy
+  have hsub : Finset.range (⌊x⌋₊ + 1) ⊆ Finset.range (⌊y⌋₊ + 1) :=
+    fun i hi => Finset.mem_range.mpr
+      (lt_of_lt_of_le (Finset.mem_range.mp hi)
+        (Nat.add_le_add_right (Nat.floor_mono hxy) 1))
+  refine Finset.sum_le_sum_of_subset_of_nonneg hsub ?_
+  exact fun i _ _ => ArithmeticFunction.vonMangoldt_nonneg
+
 end TDLean.PNT
+
 

@@ -735,3 +735,38 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.PNT.abel_finite
+
+/-- info: 'TDLean.PNT.psi_mono' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.psi_mono
+
+/-- info: 'TDLean.PNT.Ccheb_nonneg' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.Ccheb_nonneg
+
+/-- info: 'TDLean.PNT.integrableOn_mellin' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.integrableOn_mellin
+
+/-- info: 'TDLean.PNT.tendsto_boundary' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.tendsto_boundary
+
+/-- info: 'TDLean.PNT.summable_LamC_nat' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.summable_LamC_nat
+
+/-- info: 'TDLean.PNT.tendsto_partial' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.tendsto_partial
+
+/-- info: 'TDLean.PNT.LS_LamC_eq_mellin' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.LS_LamC_eq_mellin
