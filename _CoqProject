@@ -946,3 +946,4 @@ spectral-theory/NewmanTauber.v
 spectral-theory/NewmanBlock.v
 spectral-theory/NewmanArcML.v
 spectral-theory/NewmanLeft.v
+spectral-theory/NewmanGLeft.v
