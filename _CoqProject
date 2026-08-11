@@ -934,3 +934,4 @@ spectral-theory/LaplacePhi.v
 spectral-theory/ChebyshevPsiR.v
 spectral-theory/PiecewiseTransform.v
 spectral-theory/CellAdditivity.v
+spectral-theory/PhiCellRep.v
