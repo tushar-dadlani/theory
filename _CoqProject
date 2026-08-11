@@ -944,3 +944,4 @@ spectral-theory/NewmanIdentity.v
 spectral-theory/NewmanArc.v
 spectral-theory/NewmanTauber.v
 spectral-theory/NewmanBlock.v
+spectral-theory/NewmanArcML.v
