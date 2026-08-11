@@ -53,7 +53,7 @@ theorem mellin_change_of_variable (s : ℂ) :
   refine setIntegral_congr_fun measurableSet_Ioi fun t _ => ?_
   have ht0 : (0 : ℝ) < Real.exp t := Real.exp_pos t
   rw [abs_of_pos ht0]
-  show ((Real.exp t : ℝ) : ℂ)
+  change ((Real.exp t : ℝ) : ℂ)
       * ((((Real.exp t : ℝ)) : ℂ) ^ (-s - 1) * ((psi (Real.exp t) : ℝ) : ℂ))
     = Complex.exp (-s * (t : ℂ)) * ((psi (Real.exp t) : ℝ) : ℂ)
   rw [ofReal_exp_cpow, Complex.ofReal_exp, ← mul_assoc, ← Complex.exp_add]

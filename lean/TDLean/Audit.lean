@@ -39,6 +39,7 @@ import TDLean.Zeta.PhiHolo
 import TDLean.PNT.Chebyshev
 import TDLean.PNT.Mellin
 import TDLean.PNT.Substitution
+import TDLean.PNT.NewmanInput
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -786,3 +787,18 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.PNT.mellin_change_of_variable
+
+/-- info: 'TDLean.PNT.norm_fNewmanC_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.norm_fNewmanC_le
+
+/-- info: 'TDLean.PNT.intervalIntegrable_fNewmanC' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.intervalIntegrable_fNewmanC
+
+/-- info: 'TDLean.PNT.psi_exp_eq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.psi_exp_eq

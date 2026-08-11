@@ -45,5 +45,6 @@ import TDLean.Zeta.PhiHolo
 import TDLean.PNT.Chebyshev
 import TDLean.PNT.Mellin
 import TDLean.PNT.Substitution
+import TDLean.PNT.NewmanInput
 
 import TDLean.Audit
