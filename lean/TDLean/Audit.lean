@@ -45,6 +45,7 @@ import TDLean.PNT.GNewman
 import TDLean.PNT.Region
 import TDLean.PNT.Tauberian
 import TDLean.Operator.Ell2C
+import TDLean.Operator.Number
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -941,3 +942,40 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Operator.isHermitian_zetaKernel_of_real
+
+/-! ### The number operator and the partition function -/
+
+/-- info: 'TDLean.Operator.numberOp_mul' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.numberOp_mul
+
+/-- info: 'TDLean.Operator.numberOp_pow' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.numberOp_pow
+
+/-- info: 'TDLean.Operator.numberOp_eq_sum_vonMangoldt' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.numberOp_eq_sum_vonMangoldt
+
+/-- info: 'TDLean.Operator.isHermitian_numberOp' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.isHermitian_numberOp
+
+/-- info: 'TDLean.Operator.gibbs_eq_zetaKernel' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.gibbs_eq_zetaKernel
+
+/-- info: 'TDLean.Operator.partitionFunction_eq_zeta' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.partitionFunction_eq_zeta
+
+/-- info: 'TDLean.Operator.partitionFunction_diverges' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.partitionFunction_diverges

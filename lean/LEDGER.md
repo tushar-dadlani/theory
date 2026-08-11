@@ -247,11 +247,17 @@ namespace.
 | `Operator.trace_zetaKernel` | `Ell2Zeta.v:122 zeta_partition` | **cross-verified + extended** | `∑ₙ ⟪δₙ, Z_s δₙ⟫ = ζ(s)` for `Re s > 1`, where `Z_s` is diagonal with entries `n^{−s}`. The Rocq version is a *finite* partial trace with `s : R`; this is the convergent trace at complex `s`, tied to `zetaSeries`. |
 | `Operator.isHermitian_zetaKernel_of_real` | — | **absent-in-Coq** | `Z_s` is Hermitian exactly when `s` is real — the operator-side shadow of the fact that `Ell2Zeta.v` could only ever take `s : R`. |
 
+| **`Operator.partitionFunction_eq_zeta`** | — | **absent-in-Coq (overtake)** | **`Tr(e^{−βN}) = ζ(β)` for `Re β > 1`** — milestone 2 of `docs/ncg_monoid_algebra_thesis.md:41`, machine-checked. `N δₙ = (log n)δₙ`, so `e^{−βN}` is the zeta kernel (`gibbs_eq_zetaKernel`). |
+| `Operator.numberOp_mul`, `numberOp_pow` | — | **absent-in-Coq** | What makes `N` a *number* operator rather than an arbitrary diagonal: `N(mn) = N(m) + N(n)` and `N(pᵏ) = k·N(p)`. Additivity is exactly the statement that `ℓ²(ℕ⁺)` is a Fock space with one bosonic mode per prime. |
+| `Operator.numberOp_eq_sum_vonMangoldt` | `Ell2Zeta.v:149 energy_eq_divisor_sum` | **cross-verified** | `log n = ∑_{d ∣ n} Λ(d)` — the energy of `δₙ` decomposes into prime-power quanta. |
+| **`Operator.partitionFunction_diverges`** | — | **absent-in-Coq** | `‖Tr(e^{−σN})‖ → ∞` as `σ → 1⁺`. The free-energy blow-up at the critical temperature, straight from the pole that `zetaCont = 1/(s−1) + zetaDiffSum` isolates by construction. **Honest label:** this is the classical divergence and the right *shadow* of the Bost–Connes transition — it is **not** a KMS statement, and LEDGER 3.2 already records that `HagedornTransition` has the same limitation. |
+
 **Scope, stated plainly.** None of this approaches RH. Constructing an operator whose
 eigenvalues are the zeta zeros *is* the Hilbert–Pólya problem and is open. What is built is the
 **framework in which such a statement can be made at all** — inner product, adjoint, Hermitian
-self-adjointness, real spectrum, and the diagonal zeta operator — none of which existed on
-either side before. `millennium-problems/Riemann.v:75` declares `Parameter H_operator` and
+self-adjointness, real spectrum, the diagonal zeta operator, and the number operator with its
+partition function — none of which existed on either side before. The spectrum of `N` is
+`{log n}`, not the zeros; building an operator with the zeros as spectrum *is* Hilbert–Pólya. `millennium-problems/Riemann.v:75` declares `Parameter H_operator` and
 `SpectralTripleRH.v` has `st_self_adjoint : True`; those are placeholders, not operators.
 
 ### 3.3 Not a td-theory finding — a mathlib gap
