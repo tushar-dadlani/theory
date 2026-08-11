@@ -687,3 +687,33 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.PNT.psi_nonneg
+
+/-- info: 'TDLean.PNT.psi_eq_theta_add' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.psi_eq_theta_add
+
+/-- info: 'TDLean.PNT.card_ppSet_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.card_ppSet_le
+
+/-- info: 'TDLean.PNT.psiErr_le_card_mul' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.psiErr_le_card_mul
+
+/-- info: 'TDLean.PNT.log_le_four_mul_sqrt_sqrt' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.log_le_four_mul_sqrt_sqrt
+
+/-- info: 'TDLean.PNT.psiErr_mul_log2_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.psiErr_mul_log2_le
+
+/-- info: 'TDLean.PNT.psi_le_const_mul' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.psi_le_const_mul
