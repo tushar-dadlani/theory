@@ -44,6 +44,7 @@ import TDLean.PNT.NewmanInput
 import TDLean.PNT.GNewman
 import TDLean.PNT.Region
 import TDLean.PNT.Tauberian
+import TDLean.Operator.Ell2C
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -898,3 +899,45 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Zeta.eqOn_realRay_nonvacuous
+
+/-! ### Complex ell-2 with an adjoint (the Rocq Ell2 line is over R) -/
+
+/-- info: 'TDLean.Operator.summable_ip' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.summable_ip
+
+/-- info: 'TDLean.Operator.ell2_diag' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.ell2_diag
+
+/-- info: 'TDLean.Operator.ip_diag_adjoint' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.ip_diag_adjoint
+
+/-- info: 'TDLean.Operator.ip_diag_selfadjoint' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.ip_diag_selfadjoint
+
+/-- info: 'TDLean.Operator.ip_delta_diag' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.ip_delta_diag
+
+/-- info: 'TDLean.Operator.eigenvalue_real_of_selfadjoint' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.eigenvalue_real_of_selfadjoint
+
+/-- info: 'TDLean.Operator.trace_zetaKernel' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.trace_zetaKernel
+
+/-- info: 'TDLean.Operator.isHermitian_zetaKernel_of_real' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.isHermitian_zetaKernel_of_real

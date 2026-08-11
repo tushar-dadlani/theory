@@ -50,5 +50,6 @@ import TDLean.PNT.NewmanInput
 import TDLean.PNT.GNewman
 import TDLean.PNT.Region
 import TDLean.PNT.Tauberian
+import TDLean.Operator.Ell2C
 
 import TDLean.Audit

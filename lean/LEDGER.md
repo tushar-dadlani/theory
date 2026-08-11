@@ -237,6 +237,23 @@ they are the two most carefully-hedged RH files in the repo. Likely a namespace 
 `packages/GHS/RiemannHypothesis.v`, since `_CoqProject` maps every directory to the root
 namespace.
 
+### 3.2c Cluster O — the operator side, over ℂ
+
+| Lean | Coq oracle | Verdict | Note |
+|---|---|---|---|
+| **`Operator.ip_diag_adjoint`** | `Ell2Operator.v:66 Dmul_selfadjoint` | **overtake** | `⟪D_a f, g⟫ = ⟪f, D_ā g⟫` — the **adjoint**, which does not exist anywhere in the Rocq repo (no `adjoint : Op → Op` is defined; self-adjointness is only ever an ad-hoc equation between inner products). The conjugate on the multiplier is precisely what a real bilinear form cannot see. |
+| `Operator.ip`, `Ell2`, `summable_ip` | `Ell2.v:49, :179` | **overtake** | A genuinely **sesquilinear** inner product on `ℓ²(ℕ⁺, ℂ)`. The Rocq `Ell2` is `nat → R` with `ip = Σ f(n)g(n)`, symmetric bilinear, and a repo-wide search finds **zero** `Cconj` in any `Ell2*` file. Convergence via AM–GM on `‖f‖‖g‖ ≤ (‖f‖²+‖g‖²)/2`. |
+| **`Operator.eigenvalue_real_of_selfadjoint`** | — | **absent-in-Coq** | Hermitian self-adjointness ⟹ **real eigenvalues**. This is the entire logic of Hilbert–Pólya, and it is unavailable over ℝ: the real symmetric form of `Ell2Operator.v` is a strictly weaker notion that carries no such consequence. |
+| `Operator.trace_zetaKernel` | `Ell2Zeta.v:122 zeta_partition` | **cross-verified + extended** | `∑ₙ ⟪δₙ, Z_s δₙ⟫ = ζ(s)` for `Re s > 1`, where `Z_s` is diagonal with entries `n^{−s}`. The Rocq version is a *finite* partial trace with `s : R`; this is the convergent trace at complex `s`, tied to `zetaSeries`. |
+| `Operator.isHermitian_zetaKernel_of_real` | — | **absent-in-Coq** | `Z_s` is Hermitian exactly when `s` is real — the operator-side shadow of the fact that `Ell2Zeta.v` could only ever take `s : R`. |
+
+**Scope, stated plainly.** None of this approaches RH. Constructing an operator whose
+eigenvalues are the zeta zeros *is* the Hilbert–Pólya problem and is open. What is built is the
+**framework in which such a statement can be made at all** — inner product, adjoint, Hermitian
+self-adjointness, real spectrum, and the diagonal zeta operator — none of which existed on
+either side before. `millennium-problems/Riemann.v:75` declares `Parameter H_operator` and
+`SpectralTripleRH.v` has `st_self_adjoint : True`; those are placeholders, not operators.
+
 ### 3.3 Not a td-theory finding — a mathlib gap
 
 - **`Fintype (WithZero α)` is missing.** `WithOne α := Option α` is a plain `def`, so the
