@@ -802,3 +802,18 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.PNT.psi_exp_eq
+
+/-- info: 'TDLean.PNT.integral_cexp_neg_interval' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.integral_cexp_neg_interval
+
+/-- info: 'TDLean.PNT.integrableOn_cexp_neg' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.integrableOn_cexp_neg
+
+/-- info: 'TDLean.PNT.integral_cexp_neg_Ioi' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.integral_cexp_neg_Ioi
