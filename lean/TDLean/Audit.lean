@@ -41,6 +41,7 @@ import TDLean.PNT.Mellin
 import TDLean.PNT.Substitution
 import TDLean.PNT.NewmanInput
 import TDLean.PNT.GNewman
+import TDLean.PNT.Region
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -833,3 +834,28 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.PNT.gNewman_eq
+
+/-- info: 'TDLean.PNT.isOpen_gRegion' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.isOpen_gRegion
+
+/-- info: 'TDLean.PNT.differentiableOn_gNewman' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.differentiableOn_gNewman
+
+/-- info: 'TDLean.PNT.rightHalfplane_subset_gRegion' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.rightHalfplane_subset_gRegion
+
+/-- info: 'TDLean.PNT.contourSet_subset' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.contourSet_subset
+
+/-- info: 'TDLean.PNT.hregion_gNewman' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.hregion_gNewman
