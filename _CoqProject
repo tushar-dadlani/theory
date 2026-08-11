@@ -938,3 +938,4 @@ spectral-theory/PhiCellRep.v
 spectral-theory/ExpBridge.v
 spectral-theory/FusionKernel.v
 spectral-theory/FusionIntegral.v
+spectral-theory/NewmanPhiTerm.v
