@@ -44,5 +44,6 @@ import TDLean.Zeta.NonVanishing
 import TDLean.Zeta.PhiHolo
 import TDLean.PNT.Chebyshev
 import TDLean.PNT.Mellin
+import TDLean.PNT.Substitution
 
 import TDLean.Audit
