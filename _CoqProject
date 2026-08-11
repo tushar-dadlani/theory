@@ -942,3 +942,4 @@ spectral-theory/NewmanPhiTerm.v
 spectral-theory/NewmanG.v
 spectral-theory/NewmanIdentity.v
 spectral-theory/NewmanArc.v
+spectral-theory/NewmanTauber.v
