@@ -26,7 +26,7 @@ Build Coq in the main checkout at `/Users/tushar/workspace/td-theory` instead.
 ```sh
 cd lean
 lake build TDLean      # this IS the axiom audit -- see below
-./scripts/check_sorry.sh
+./scripts/check_sorry.sh` and `python3 scripts/trusted_base.py
 ```
 
 `TDLean.lean` imports `TDLean.Audit` **last**, and `Audit.lean` wraps every headline in

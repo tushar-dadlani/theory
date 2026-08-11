@@ -89,6 +89,43 @@ All theorems landed so far are **tier L1**. No `sorry`, no `axiom`, no `native_d
 
 ---
 
+## 2b. Trusted base — what "pure Lean" actually means here
+
+Regenerate with `python3 scripts/trusted_base.py` (exits non-zero if a banned module ever
+enters the closure).
+
+| | |
+|---|---|
+| Own source | 5,653 lines across 32 files |
+| Direct mathlib imports | **39** |
+| Transitive mathlib closure | **2,569** modules (of 7,754; mathlib is ~2.13M lines) |
+| Banned modules in closure | **0** |
+| Audited headlines | **150**, every one at tier L1 |
+| Axioms used, total | `propext`, `Classical.choice`, `Quot.sound` |
+
+**mathlib contributes no axioms.** Those three are declared in Lean 4 **core**
+(`Init/Prelude.lean`, `Init/Core.lean`). A repo-wide `grep '^axiom '` over `Mathlib/` returns
+four hits, of which two are the word "axiom" in prose and two are throwaway `qc`/`hqc` inside a
+docstring example in `Tactic/LinearCombination'.lean`, reachable from nothing. So the trusted
+base of this project *is* Lean's kernel plus its three core axioms — mathlib supplies
+definitions and proofs, all of them kernel-checked, and delegates no trust.
+
+That is the precise sense in which this development is already "pure Lean". Dropping mathlib
+would not shrink the trusted base (it is already minimal); it would mean rebuilding ℝ, ℂ,
+filters, normed spaces, `tsum`, Fréchet derivatives, Bochner integration, the FTC and Cauchy's
+integral theorem before the first line about ζ — and the result would be *less* trustworthy,
+because a freshly written analysis foundation is the least exercised component imaginable,
+whereas mathlib's is the most exercised one in existence.
+
+The 39 direct imports are the honest dependency surface, and they are worth reading as a
+statement of what the proofs actually need: complex analysis (`Analytic.Order`,
+`Complex.CauchyIntegral`, `Complex.LocallyUniformLimit`, `Calculus.LogDeriv`), integration
+(`IntervalIntegral.FundThmCalculus`, `JacobianOneDim`, `DominatedConvergence`,
+`ParametricIntervalIntegral`), and *elementary* number theory only
+(`ArithmeticFunction.{Moebius,VonMangoldt}`, `Primorial`, `AbelSummation`,
+`TsumDivisorsAntidiagonal`). No zeta, no L-series, no Chebyshev, no prime counting — those are
+the ban list, and the closure is verified clear of them.
+
 ## 3. Cross-verification outcomes
 
 Verdicts: `confirmed` · `confirmed-but-trivial` · `strengthened` · `narrower-than-named` ·
