@@ -46,6 +46,7 @@ import TDLean.PNT.Region
 import TDLean.PNT.Tauberian
 import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
+import TDLean.Operator.Isometry
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -979,3 +980,45 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Operator.partitionFunction_diverges
+
+/-! ### The prime-shift isometries: S*S = 1 but SS* /= 1 -/
+
+/-- info: 'TDLean.Operator.coshift_shift' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.coshift_shift
+
+/-- info: 'TDLean.Operator.ell2_shift' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.ell2_shift
+
+/-- info: 'TDLean.Operator.ip_shift_adjoint' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.ip_shift_adjoint
+
+/-- info: 'TDLean.Operator.shift_coshift_apply' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.shift_coshift_apply
+
+/-- info: 'TDLean.Operator.shift_coshift_ne_id' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.shift_coshift_ne_id
+
+/-- info: 'TDLean.Operator.coshift_coshift' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.coshift_coshift
+
+/-- info: 'TDLean.Operator.numberOp_covariance' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.numberOp_covariance
+
+/-- info: 'TDLean.Operator.numberOp_commutator' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.numberOp_commutator

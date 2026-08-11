@@ -252,12 +252,19 @@ namespace.
 | `Operator.numberOp_eq_sum_vonMangoldt` | `Ell2Zeta.v:149 energy_eq_divisor_sum` | **cross-verified** | `log n = ∑_{d ∣ n} Λ(d)` — the energy of `δₙ` decomposes into prime-power quanta. |
 | **`Operator.partitionFunction_diverges`** | — | **absent-in-Coq** | `‖Tr(e^{−σN})‖ → ∞` as `σ → 1⁺`. The free-energy blow-up at the critical temperature, straight from the pole that `zetaCont = 1/(s−1) + zetaDiffSum` isolates by construction. **Honest label:** this is the classical divergence and the right *shadow* of the Bost–Connes transition — it is **not** a KMS statement, and LEDGER 3.2 already records that `HagedornTransition` has the same limitation. |
 
+| **`Operator.coshift_shift`** / **`shift_coshift_ne_id`** | — | **absent-in-Coq (overtake)** | **`Sₙ* Sₙ = 1` but `Sₙ Sₙ* ≠ 1`** — each prime shift `Sₙ δₘ = δₙₘ` is an **isometry, not a unitary**; `Sₙ Sₙ*` is the projection onto multiples of `n` (`shift_coshift_apply`), witnessed failing at `n = 2` on `δ₁`. This single asymmetry is the whole reason Bost–Connes is a crossed product by a *semigroup of isometries* rather than by a group — and it recasts `MonoidAlgebraZero.v:30 adj_no_inverse` from an obstruction into the feature the construction is built on. |
+| **`Operator.numberOp_covariance`**, `numberOp_commutator` | — | **absent-in-Coq** | `N Sₙ = Sₙ(N + log n)`: the shift raises energy by `log n`. This is the crossed-product covariance relation and the generator of the BC time evolution `σ_t(Sₙ) = n^{it}Sₙ`. |
+| `Operator.ip_shift_adjoint`, `ell2_shift`, `coshift_coshift` | — | **absent-in-Coq** | The adjoint identity `⟪Sₙf, g⟫ = ⟪f, Sₙ*g⟫`, ℓ²-preservation, and the semigroup law. |
+
 **Scope, stated plainly.** None of this approaches RH. Constructing an operator whose
 eigenvalues are the zeta zeros *is* the Hilbert–Pólya problem and is open. What is built is the
 **framework in which such a statement can be made at all** — inner product, adjoint, Hermitian
 self-adjointness, real spectrum, the diagonal zeta operator, and the number operator with its
 partition function — none of which existed on either side before. The spectrum of `N` is
-`{log n}`, not the zeros; building an operator with the zeros as spectrum *is* Hilbert–Pólya. `millennium-problems/Riemann.v:75` declares `Parameter H_operator` and
+`{log n}`, not the zeros; building an operator with the zeros as spectrum *is* Hilbert–Pólya.
+The isometries give the covariance relation but **not** the crossed-product C\*-algebra: there is
+no C\*-completion, no KMS states, and no phase transition in the KMS sense. `partitionFunction_diverges`
+is the classical free-energy blow-up, not a KMS transition. `millennium-problems/Riemann.v:75` declares `Parameter H_operator` and
 `SpectralTripleRH.v` has `st_self_adjoint : True`; those are placeholders, not operators.
 
 ### 3.3 Not a td-theory finding — a mathlib gap
