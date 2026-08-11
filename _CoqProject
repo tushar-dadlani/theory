@@ -949,3 +949,4 @@ spectral-theory/NewmanLeft.v
 spectral-theory/NewmanGLeft.v
 spectral-theory/NewmanNearAxis.v
 spectral-theory/NewmanLimits.v
+spectral-theory/Ell2MellinVM.v
