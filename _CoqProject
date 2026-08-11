@@ -937,3 +937,4 @@ spectral-theory/CellAdditivity.v
 spectral-theory/PhiCellRep.v
 spectral-theory/ExpBridge.v
 spectral-theory/FusionKernel.v
+spectral-theory/FusionIntegral.v
