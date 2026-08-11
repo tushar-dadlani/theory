@@ -168,13 +168,14 @@ have).
 | `Zeta.zetaSeries_ne_zero` | — | **absent-in-Coq** | `ζ(s) ≠ 0` for `Re s > 1`, from `μ ∗ 1 = δ` via `LS_mul`. **No Euler product** — so item 2 does not depend on item 3's hard work. |
 | `Zeta.summable_log_rpow` | — | **absent-in-Coq** | `∑ log(n)·n^{−σ}` converges for `σ > 1`, by the elementary bound `log x ≤ x^ε/ε` (from `log y ≤ y − 1` at `y = x^ε`) — no asymptotics machinery. |
 | `Zeta.eqOn_halfplane_of_eqOn_subhalfplane`, `eqOn_of_eventuallyEq` | — | **absent-in-Coq (overtake)** | **The complex-analytic identity theorem, region form.** This is the tool whose absence is finding #1 below: the Rocq repo has only *polynomial* identity theorems (`QPolyPIT.v`, `IntPolyDerivResp.v`), which is precisely why `LambdaC_FE`'s symmetry on ℂ cannot be joined to the ζ-identification on the real ray `s > 1`. Built from `AnalyticOnNhd.eqOn_of_preconnected_of_eventuallyEq` plus convexity ⇒ preconnectedness of a half-plane. |
+| **`Zeta.eqOn_of_eqOn_realRay`**, `eqOn_of_eqOn_seq` | — | **absent-in-Coq (overtake)** | **The identity theorem in real-RAY form — the tool finding #1 actually needs.** *Correction to my own earlier claim:* I said `eqOn_halfplane_of_eqOn_subhalfplane` was that tool. It is not. The Rocq gap is agreement on the **real ray** `s > 1` (`ZetaXiLink.v:18`), a set with **empty interior** in ℂ, so no open-to-open lemma can bridge it; what is required is the accumulation-point principle. Built on mathlib's one-dimensional `AnalyticOnNhd.eqOn_of_preconnected_of_frequently_eq` via the approach sequence `x₀ + 1/(n+1)`. Closes the *tool* gap only — applying it to `Λ(s) = Λ(1−s)` still needs a Lean-side `Ξ`, i.e. cluster A. |
 | `Zeta.zetaDiffSum_unique` | — | **absent-in-Coq** | Uniqueness of the continuation: any function holomorphic on `Re s > 0` agreeing with `zetaDiffSum` on `Re s > 1` *is* it. |
 | `Zeta.deriv_zetaCont_eq` | — | **absent-in-Coq** | Derivative transfer on `Re s > 1`. Worth noting this does **not** use the identity theorem — the functions agree on an open set, so locality (`EventuallyEq.deriv_eq`) suffices. |
 | **`Zeta.mertens_nonneg`** | — | **absent-in-Coq (overtake)** | **C9 item 3, phase 1:** `3·Re F(σ) + 4·Re F(σ+it) + Re F(σ+2it) ≥ 0` for `σ > 1`, where `F = L(Λ) = −ζ′/ζ`. **Correction to my own earlier claim:** I said repeatedly that item 3 "needs the Euler product first". Given item 2 it does not. mathlib needs the Euler product only because it routes through `log ζ` (`LSeries/Nonvanishing.lean:220 re_log_comb_nonneg'`, banned *and* `private`). Taking `−ζ′/ζ` instead, the coefficients `Λ(n) ≥ 0` are non-negative on the nose and the inequality is `tsum_nonneg` applied to `3 + 4cos θ + cos 2θ = 2(1+cos θ)²`. |
 | `Zeta.cpow_neg_re`, `three_add_four_cos_nonneg`, `re_LS_LamC` | — | **absent-in-Coq** | Supporting: `((n:ℂ)^{−s}).re = n^{−σ}cos(t log n)`; the trig identity; and the termwise real part of the Dirichlet series (via `Complex.hasSum_re`). |
 | **`Zeta.tendsto_sub_mul_logDeriv`** | — | **absent-in-Coq *and* absent-in-mathlib** | **C9 item 3, phase 2:** if `f` is analytic at `z₀` with finite order `n`, then `(z − z₀)·(f′/f)(z) → n` as `z → z₀` off `z₀`. `Mathlib/Analysis/Calculus/LogDeriv.lean` has the full algebra of `logDeriv` (`mul`/`div`/`pow`/`comp`/`prod`) but **nothing about its behaviour at a zero or a pole** — `logDeriv` does not occur anywhere under `Analysis/Meromorphic/`. Built here from `AnalyticAt.analyticOrderAt_ne_top`'s factorisation `f =ᶠ (z − z₀)^n • g`. Nothing zeta-specific: a general fact about analytic functions, and the natural mathlib contribution out of this cluster. |
 | `Zeta.logDeriv_eq_order_div_add`, `logDeriv_sub_pow`, `logDeriv_eventuallyEq` | — | **absent-in-mathlib** | Supporting: the splitting `logDeriv f = n/(z−z₀) + logDeriv g` near a finite-order zero; the model pole `logDeriv ((·−z₀)^n) = n/(z−z₀)`; and locality of `logDeriv`. |
-| **`Zeta.zetaCont_ne_zero_of_one_le_re`** | — | **absent-in-Coq (overtake)** | **C9 item 3, COMPLETE:** `ζ(s) ≠ 0` for `Re s ≥ 1`, `s ≠ 1` — the Hadamard–de la Vallée Poussin theorem. Run on `−ζ′/ζ` rather than `log ζ`, so **no Euler product is used anywhere in this project**. The pole at `s = 1` and the hypothetical zeros at `1 + it₀`, `1 + 2it₀` are handled uniformly by one lemma with an *integer* exponent (`tendsto_sub_mul_logDeriv_of_factor`, exponent `−1` at the pole). The Coq route has no analogue: its `zetaC` has no pole structure at all, which is the gap `docs/newman_route_status.md` records. |
+| **`Zeta.zetaCont_ne_zero_of_one_le_re`** | `ZetaLineNonzero.v:103 zetaC_line_nonzero` | **cross-verified** | **C9 item 3, COMPLETE:** `ζ(s) ≠ 0` for `Re s ≥ 1`, `s ≠ 1` — the Hadamard–de la Vallée Poussin theorem. Run on `−ζ′/ζ` rather than `log ζ`, so **no Euler product is used anywhere in this project**. The pole at `s = 1` and the hypothetical zeros at `1 + it₀`, `1 + 2it₀` are handled uniformly by one lemma with an *integer* exponent (`tendsto_sub_mul_logDeriv_of_factor`, exponent `−1` at the pole). The Coq route has no analogue: its `zetaC` has no pole structure at all, which is the gap `docs/newman_route_status.md` records. |
 | `Zeta.zetaPoleFactor`, `zetaCont_eq_poleFactor`, `analyticOrderAt_zetaCont_ne_top` | — | **absent-in-Coq** | Supporting. The pole is *free from the construction*: `zetaCont := 1/(s−1) + zetaDiffSum`, so `zetaCont s = (s−1)^(−1)·(1 + (s−1)·zetaDiffSum s)` with the second factor analytic and equal to `1` at `s = 1`. mathlib's version of this fact lives in `Harmonic/ZetaAsymp.lean`, which is banned by dependency — and is not needed. Order-finiteness on the line is likewise local, not global: any ball around a point of `Re s = 1` contains points with `Re s > 1`, where `ζ ≠ 0`, so no connectedness argument is required. |
 | **`Zeta.differentiableOn_PhiMinus`** | — | **absent-in-Coq (overtake); closes the Rocq route's own blocker** | **C9 item 4, COMPLETE:** `Φ⁻ = −ζ′/ζ − 1/(s−1)` is holomorphic on an open set containing `Re s ≥ 1`. `docs/newman_route_status.md` records *"holomorphy of PhiMinus at s = 1"* as **ABSENT** — it is the Rocq route's gating blocker, because that development's `zetaC` has no Laurent/pole structure at `1` at all. Here it is nearly free: the pole was isolated *by construction*, so splitting `logDeriv` across `zetaCont = (s−1)^(−1)·zetaPoleFactor` makes the subtraction an **identity**, `Φ⁻ = −logDeriv zetaPoleFactor` (`PhiMinus_eq`), not an estimate. Holomorphy then reduces to `zetaPoleFactor ≠ 0`, which on `Re s ≥ 1` is exactly item 3. |
 | `Zeta.zetaPoleFactor_ne_zero`, `logDeriv_zetaCont_eq`, `isOpen_phiRegion` | — | **absent-in-Coq** | Supporting: `(s−1)·ζ(s) ≠ 0` on `Re s ≥ 1` (at `s = 1` by the normalisation `zetaPoleFactor 1 = 1`, elsewhere by item 3); the `logDeriv` splitting across the pole; openness of the region, from analyticity plus `ContinuousAt.eventually_ne`. |
@@ -206,6 +207,35 @@ have).
 | `docs/ncg_monoid_algebra_thesis.md:41-45` | **narrower-than-named** | Milestones 1–2 (`Tr(e^{−βN}) = ζ(β)`, primes as spectrum) build the **primon gas**, the commutative bosonic Fock picture that `Ell2Zeta.v` essentially already has — not Bost–Connes, whose content is entirely the crossed product `ℂ[ℚ/ℤ] ⋊ ℕ^×` and its KMS states. Likewise `HagedornTransition`'s β = 1 transition is classical free energy, the right shadow but not a KMS transition. |
 | `no_antipode` | **absent-in-Coq** | Listed in the plan doc as Brick 2 item 4 ("~5 lines") and described in `MonoidAlgebraZero.v:108`'s comment, but repo-wide grep finds **no such theorem**. `AdjRatioBreak.azero_no_inverse` refutes only `b ⋆ δ₀ = gunit`; the antipode axiom `m∘(S⊗id)∘Δ = η∘ε` is never contradicted. Planned Lean B5 proves it — an overtake. |
 | `HopfGroupTensor.tconv` | **narrower-than-named** | The Coq repo has **no tensor product**; `tconv` is a hand-rolled 4-fold sum on `A → B → Z` and `gconv_prod_tensor` is a *currying* identity. So "ℤ[M₆] ≅ ℤ[M₂] ⊗ ℤ[M₃]" is really "ℤ[M₂×M₃] ≅ (M₂ → M₃ → ℤ)". Planned Lean B10 states the genuine `⊗`. |
+
+### 3.2b Corrections to my own earlier entries
+
+Two errors of mine, found by a later audit of the Rocq repo. Recording them here because the
+whole point of this ledger is an honest account, and a wrong "overtake" verdict inflates the
+Lean side's contribution.
+
+- **`zetaCont_ne_zero_of_one_le_re` was NOT an overtake.** I classified C9 item 3
+  (`ζ(1+it) ≠ 0`) as absent-in-Coq. It is **not**: `spectral-theory/ZetaLineNonzero.v:103
+  zetaC_line_nonzero` proves exactly this, unconditionally, `Qed.`, with a 93-file dependency
+  closure containing **zero** `Axiom`/`Parameter`/`Admitted`. It is the genuine Mertens 3-4-1
+  argument (`ThreeFourOne.v` + the pole bound `zeta_cont_pole` + `CZetaHolo.zetaC_holo`), and
+  `zetaC` there is a real Euler–Maclaurin continuation, not a stand-in. The row above is
+  corrected to **cross-verified**. What *is* genuinely absent in Rocq remains C9 item 4
+  (`Φ⁻` holomorphic at `s = 1`) — the repo's own `docs/newman_route_status.md` says so.
+- **`XiC_zeros_in_strip` is conditional, and I stated it as unconditional.**
+  `spectral-theory/ZetaStripConfinement.v:76` sits inside `Section Confinement` with two
+  `Hypothesis` declarations, both annotated "(to be discharged later)": `H_compl` (the complex
+  completion identity `Λ(w) = π^{−w/2}Γ(w/2)ζ(w)` for `Re w > 1`) and `H_gamma` (Γ non-vanishing).
+  After `End Confinement` the exported statement carries both as premises. **`H_compl` is
+  precisely the off-ray link that finding #1 is about**, so the strip confinement does not
+  currently confine any zero of `ξ`.
+
+Also worth reporting upstream: `spectral-theory/ZetaStripConfinement.v` and
+`spectral-theory/RiemannHypothesis.v` are absent from `_CoqProject` (919 of 922 `.v` files are
+listed). Stale `.vo` files exist, so they compiled once, but they are not part of `make` — and
+they are the two most carefully-hedged RH files in the repo. Likely a namespace collision with
+`packages/GHS/RiemannHypothesis.v`, since `_CoqProject` maps every directory to the root
+namespace.
 
 ### 3.3 Not a td-theory finding — a mathlib gap
 

@@ -32,6 +32,7 @@ import TDLean.Zeta.LogDeriv
 import TDLean.Zeta.DirichletMul
 import TDLean.Zeta.VonMangoldt
 import TDLean.Zeta.Identity
+import TDLean.Zeta.RayIdentity
 import TDLean.Zeta.Mertens
 import TDLean.Zeta.LogDerivOrder
 import TDLean.Zeta.NonVanishing
@@ -875,3 +876,25 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.PNT.tendsto_integral_fNewman'
+
+/-! ### The identity theorem in real-ray form (LEDGER finding #1's actual tool) -/
+
+/-- info: 'TDLean.Zeta.eqOn_of_eqOn_seq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.eqOn_of_eqOn_seq
+
+/-- info: 'TDLean.Zeta.tendsto_realApproach' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.tendsto_realApproach
+
+/-- info: 'TDLean.Zeta.eqOn_of_eqOn_realRay' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.eqOn_of_eqOn_realRay
+
+/-- info: 'TDLean.Zeta.eqOn_realRay_nonvacuous' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.eqOn_realRay_nonvacuous
