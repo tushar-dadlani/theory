@@ -42,6 +42,7 @@ import TDLean.PNT.Substitution
 import TDLean.PNT.NewmanInput
 import TDLean.PNT.GNewman
 import TDLean.PNT.Region
+import TDLean.PNT.Tauberian
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -859,3 +860,18 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.PNT.hregion_gNewman
+
+/-- info: 'TDLean.PNT.tendsto_integral_fNewman' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.tendsto_integral_fNewman
+
+/-- info: 'TDLean.PNT.gT_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.gT_zero
+
+/-- info: 'TDLean.PNT.tendsto_integral_fNewman'' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.tendsto_integral_fNewman'

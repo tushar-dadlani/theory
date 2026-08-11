@@ -48,5 +48,6 @@ import TDLean.PNT.Substitution
 import TDLean.PNT.NewmanInput
 import TDLean.PNT.GNewman
 import TDLean.PNT.Region
+import TDLean.PNT.Tauberian
 
 import TDLean.Audit
