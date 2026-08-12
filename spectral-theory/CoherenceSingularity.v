@@ -76,3 +76,36 @@ Proof.
 Qed.
 
 Print Assumptions coherence_line.
+
+(* ================================================================= *)
+(*  The seam is a copy of R inside C: XiC is a REAL function there.   *)
+(*  "The primes' data reaches R (self-adjoint / real spectrum); RH is *)
+(*  the same reality condition applied in C -- the zeros reach R,     *)
+(*  i.e. land on the critical line ~= R."                             *)
+(* ================================================================= *)
+
+(* the critical line, parametrised by the real ordinate t *)
+Definition crit (t : R) : C := mkC (/ 2) t.
+
+Lemma XiC_crit_real : forall t, Im (XiC (crit t)) = 0.
+Proof. intro t; apply coherence_line; reflexivity. Qed.
+
+(* XiC restricted to the seam is the real-valued function xir : R -> R *)
+Definition xir (t : R) : R := Re (XiC (crit t)).
+
+Lemma XiC_crit_eq : forall t, XiC (crit t) = RtoC (xir t).
+Proof.
+  intro t. pose proof (XiC_crit_real t) as H. unfold xir, RtoC.
+  destruct (XiC (crit t)) as [x y]; simpl in *; subst y; reflexivity.
+Qed.
+
+(* RH: every zero "reaches R" -- it is the real-ordinate point crit(Im z). *)
+Theorem RH_zeros_reach_R :
+  RH_XiC <-> (forall z, XiC z = C0 -> z = crit (Im z)).
+Proof.
+  unfold RH_XiC; split; intros H z Hz.
+  - specialize (H z Hz). destruct z as [a b]; unfold crit; simpl in *; subst a; reflexivity.
+  - specialize (H z Hz). apply (f_equal Re) in H. unfold crit in H; simpl in H; exact H.
+Qed.
+
+Print Assumptions RH_zeros_reach_R.
