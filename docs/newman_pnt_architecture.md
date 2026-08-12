@@ -79,6 +79,25 @@ Chebyshev's `ψ(N)` (`vm_trace_eq_psi`). `D_Λ` is unbounded (`Λ(pᵏ)=log p`).
 So the **spectral** trace of `M_σ` is exactly the **analytic** `Φ` that drives the
 entire Perron/Newman apparatus — the operator-theoretic face of PNT.
 
+### The complex operator — `CDiagOperator.v`
+
+Its genuine **complex** (`s ∈ ℂ`) analogue. The repo has no complex Hilbert space, so the
+complex diagonal operator lives on `nat → C` with coordinate matrix elements:
+
+> **`M_s := CDmul(pterm s)`**,  `(M_s f)(n) = (Λ(n+1)(n+1)^{−s})·f(n)`
+
+- `Ce i` are eigenvectors with **complex eigenvalue** `pterm s i = Λ(i+1)(i+1)^{−s}`
+  (`CDmul_eigen`); spectrum `{Λ(n) n^{−s}} ⊂ ℂ`.
+- diagonal matrix element `Cdiag_elt (pterm s) n = pterm s n` (`Cdiag_elt_eq`);
+- **`trace_cv_Phi`** — the trace `Ctrace s N = Cpsum(pterm s) N` converges to `Φ(s)`
+  (this is `Phi_spec` dressed as an operator trace);
+- **`trace_cv_neg_zeta_ratio`** — that limit **is** `−ζ'/ζ(s)` (`phi_eq_neg_zeta_ratio`):
+  the operator's spectral trace is the analytic logarithmic derivative of ζ;
+- `Cdiag_elt_Cmod_real` — at `s = σ` real, the eigenvalue moduli are the real `WLam σ`
+  weights, bridging back to `Ell2MellinVM`.
+
+The bridge from **primes** (through `Λ`/`pterm`) to the **complex field** (`s ∈ ℂ`, ζ).
+
 ---
 
 ## What remains (the irreducible orchestration)
