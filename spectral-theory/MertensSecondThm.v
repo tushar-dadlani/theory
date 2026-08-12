@@ -112,3 +112,36 @@ Proof.
     apply Rmult_le_compat; [ exact Hdiff0 | left; apply Rinv_0_lt_compat; lra | exact Hhi | ].
     apply Rinv_le_contravar; lra.
 Qed.
+
+(* ----------------------------------------------------------------- *)
+(*  Rsum infrastructure for the final bound                          *)
+(* ----------------------------------------------------------------- *)
+
+Lemma Rsum_plus : forall f g a k, Rsum (fun n => f n + g n) a k = Rsum f a k + Rsum g a k.
+Proof.
+  intros f g a k; revert a; induction k as [|k IH]; intro a.
+  - unfold Rsum; cbn [seq map fold_right]; ring.
+  - rewrite !Rsum_succ_gen, IH; ring.
+Qed.
+
+Lemma Rsum_Rabs : forall f a k, Rabs (Rsum f a k) <= Rsum (fun n => Rabs (f n)) a k.
+Proof.
+  intros f a k; revert a; induction k as [|k IH]; intro a.
+  - unfold Rsum; cbn [seq map fold_right]. rewrite Rabs_R0; lra.
+  - rewrite !Rsum_succ_gen. eapply Rle_trans; [ apply Rabs_triang | ].
+    apply Rplus_le_compat; [ apply IH | apply Rle_refl ].
+Qed.
+
+Lemma Rsum_telescope : forall g a k, Rsum (fun n => g n - g (S n)) a k = g a - g (a + k)%nat.
+Proof.
+  intros g a k; revert a; induction k as [|k IH]; intro a.
+  - unfold Rsum; cbn [seq map fold_right]. rewrite Nat.add_0_r; ring.
+  - rewrite Rsum_succ_gen, IH. replace (a + S k)%nat with (S (a + k)) by lia. ring.
+Qed.
+
+Lemma Rsum_peel1 : forall f k, (1 <= k)%nat ->
+  Rsum f 1 k = (f 1%nat + Rsum f 2 (k - 1))%R.
+Proof.
+  intros f k Hk. replace k with (1 + (k - 1))%nat at 1 by lia.
+  rewrite Rsum_split. f_equal. unfold Rsum; cbn [seq map fold_right]; ring.
+Qed.
