@@ -54,5 +54,6 @@ import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry
 import TDLean.Operator.BCAlgebra
+import TDLean.Operator.QModZ
 
 import TDLean.Audit

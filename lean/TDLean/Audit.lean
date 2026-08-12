@@ -48,6 +48,7 @@ import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry
 import TDLean.Operator.BCAlgebra
+import TDLean.Operator.QModZ
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -1075,3 +1076,45 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Operator.Sadj_mem
+
+/-! ### Q/Z, its group algebra, and the BC coupling relation -/
+
+/-- info: 'TDLean.Operator.exists_nsmul_eq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.exists_nsmul_eq
+
+/-- info: 'TDLean.Operator.torsionEmb_torsion' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.torsionEmb_torsion
+
+/-- info: 'TDLean.Operator.torsionEmb_injective' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.torsionEmb_injective
+
+/-- info: 'TDLean.Operator.torsionEmb_surjective' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.torsionEmb_surjective
+
+/-- info: 'TDLean.Operator.nsmul_eq_iff' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.nsmul_eq_iff
+
+/-- info: 'TDLean.Operator.egen_mul' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.egen_mul
+
+/-- info: 'TDLean.Operator.egen_mul_neg' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.egen_mul_neg
+
+/-- info: 'TDLean.Operator.couple_indexes_fibre' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.couple_indexes_fibre

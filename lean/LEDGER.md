@@ -259,14 +259,19 @@ namespace.
 | **`Operator.bc_isometry`, `bc_semigroup`, `bc_coprime`, `bc_not_unitary`** | — | **absent-in-Coq (overtake)** | **The Bost–Connes relations as an algebra presentation**, in `Module.End ℂ (ℕ⁺ → ℂ)`: `Sₙ*Sₙ = 1`, `SₘSₙ = S₍ₘₙ₎`, `SₘSₙ* = Sₙ*Sₘ` for `gcd(m,n) = 1`, and `SₙSₙ* ≠ 1`. **BC3 is the substantive one** — it is what makes the `ℕˣ`-action work, its proof is Gauss's lemma (`m ∣ nk` with `gcd(m,n) = 1` ⟹ `m ∣ k`), and `not_comm_of_not_coprime` shows it is **sharp**: the relation fails at `m = n = 2`, so coprimality is doing real work rather than bookkeeping. |
 | `Operator.bcAlgebra`, `ip_coshift_adjoint` | — | **absent-in-Coq** | The generated subalgebra `Algebra.adjoin ℂ (range Sop ∪ range Sadj)`. The `*` is realised by the inner product: `ip_shift_adjoint` and `ip_coshift_adjoint` together say the generating set is closed under adjunction w.r.t. `⟪·,·⟫`. **Not** a C\*-algebra: no norm, no completion. |
 
+| **`Operator.nsmul_eq_iff`** | — | **absent-in-Coq (overtake)** | **The BC coupling fibre.** `nδ = γ ↔ δ = nthPart n γ + torsionEmb n k` for a unique `k : ZMod n` — the fibre in `μₙ e(γ) μₙ* = (1/n)∑_{nδ=γ} e(δ)` is exactly a coset of the `n`-torsion, hence has exactly `n` elements, which is what makes `1/n` the right normalisation. Needs both directions: `exists_nsmul_eq` (ℚ/ℤ is **divisible**, so the fibre is nonempty) and `torsionEmb_surjective`. |
+| **`Operator.torsionEmb_injective`**, `torsionEmb_surjective` | — | **the bridge to `ProfiniteCRT` / `ZmodUnitsCyclic`** | `(ℚ/ℤ)[n] ≅ ZMod n` via `k ↦ k/n`, so `Aut((ℚ/ℤ)[n]) ≅ (ZMod n)ˣ` — the object `ZmodUnitsCyclic` studies — and in the limit `Aut(ℚ/ℤ) = Ẑˣ`, the BC symmetry group. **This is where the 3.2 correction bites.** `PrimorialSpectralTheory.v:19` CLAIM A and `docs/ncg_monoid_algebra_thesis.md:24` identify the primorial tower's limit with `Ẑ`/`Ẑˣ`; it is not, because every primorial modulus is squarefree, so the tower reaches `∏ₚ 𝔽ₚˣ`, a **proper** quotient (`toZMod_not_injective` witnesses the failure). Getting the BC symmetry group needs the prime-**power** tower. |
+| `Operator.egen_mul`, `egen_mul_neg`, `QAlg` | — | **absent-in-Coq** | `ℂ[ℚ/ℤ]` with `e(γ₁)e(γ₂) = e(γ₁+γ₂)`, `e(0) = 1`, and `e(γ)e(−γ) = 1`. Note the contrast the whole construction turns on: the `e(γ)` **are** invertible; the `Sₙ` deliberately are not. |
+
 **Scope, stated plainly.** None of this approaches RH. Constructing an operator whose
 eigenvalues are the zeta zeros *is* the Hilbert–Pólya problem and is open. What is built is the
 **framework in which such a statement can be made at all** — inner product, adjoint, Hermitian
 self-adjointness, real spectrum, the diagonal zeta operator, and the number operator with its
 partition function — none of which existed on either side before. The spectrum of `N` is
 `{log n}`, not the zeros; building an operator with the zeros as spectrum *is* Hilbert–Pólya.
-The relations `BC0`–`BC3` are the `ℕˣ` half of the presentation. Still missing for BC proper:
-the `ℂ[ℚ/ℤ]` factor and relation `μₙ e(γ) μₙ* = (1/n)∑_{nδ=γ} e(δ)`; a C\*-completion (this is a
+The relations `BC0`–`BC3` are the `ℕˣ` half of the presentation. Still missing for BC proper: the coupling relation as an *operator identity* (the fibre and the
+normalisation are proved; realising `e(γ)` on `ℓ²(ℕ⁺)` and conjugating by `Sₙ` is not done);
+a C\*-completion (this is a
 plain subalgebra of endomorphisms, no norm); and KMS states, so no phase transition in the KMS
 sense. `partitionFunction_diverges`
 is the classical free-energy blow-up, not a KMS transition. `millennium-problems/Riemann.v:75` declares `Parameter H_operator` and
