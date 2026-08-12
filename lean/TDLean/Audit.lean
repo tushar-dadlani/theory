@@ -49,6 +49,7 @@ import TDLean.PNT.Transfer
 import TDLean.PNT.PiCount
 import TDLean.PNT.PrimeCountingAsymp
 import TDLean.FE.Theta.Transform
+import TDLean.FE.Mellin.Term
 import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry
@@ -1324,3 +1325,20 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.tsum_gaussian_transform
+
+/-! ### Cluster A3: the single-term Mellin integral -/
+
+/-- info: 'TDLean.FE.cpow_pos_eq_exp' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.cpow_pos_eq_exp
+
+/-- info: 'TDLean.FE.scale_factor' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.scale_factor
+
+/-- info: 'TDLean.FE.mellin_gaussian_term' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.mellin_gaussian_term
