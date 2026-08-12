@@ -63,6 +63,7 @@ import TDLean.Operator.RootSum
 import TDLean.Newman.Tauberian
 import TDLean.FE.Mellin.Split
 import TDLean.FE.Mellin.FunctionalEquation
+import TDLean.FE.Strip
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -1606,3 +1607,60 @@ import TDLean.FE.Mellin.FunctionalEquation
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.completedZeta_eq
+
+/-! ### Cluster A13: the critical strip, trivial zeros, and the Klein four-group -/
+
+/-- info: 'TDLean.FE.completedZeta_ne_zero_of_one_lt_re' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_ne_zero_of_one_lt_re
+
+/-- info: 'TDLean.FE.completedZeta_ne_zero_of_re_lt_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_ne_zero_of_re_lt_zero
+
+/-- info: 'TDLean.FE.completedZeta_zeros_in_strip' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_zeros_in_strip
+
+/-- info: 'TDLean.FE.completedZeta_ne_zero_nonvacuous' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_ne_zero_nonvacuous
+
+/-- info: 'TDLean.FE.zetaFE_eq_zetaSeries' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.zetaFE_eq_zetaSeries
+
+/-- info: 'TDLean.FE.zetaFE_trivial_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.zetaFE_trivial_zero
+
+/-- info: 'TDLean.FE.completedZeta_ne_zero_at_trivial' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_ne_zero_at_trivial
+
+/-- info: 'TDLean.FE.conj_psiTheta' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.conj_psiTheta
+
+/-- info: 'TDLean.FE.completedZeta_conj' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_conj
+
+/-- info: 'TDLean.FE.completedZeta_zero_quadruple' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_zero_quadruple
+
+/-- info: 'TDLean.FE.completedZeta_zeros_refl_invariant' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_zeros_refl_invariant
