@@ -61,6 +61,7 @@ import TDLean.Operator.QModZ
 import TDLean.Operator.Rep
 import TDLean.Operator.RootSum
 import TDLean.Newman.Tauberian
+import TDLean.FE.Mellin.Split
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -1525,3 +1526,25 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.integral_pole_terms
+
+/-! ### Cluster A9: the change of variable `t ↦ 1/u` -/
+
+/-- info: 'TDLean.FE.inv_image_Ioi_one' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.inv_image_Ioi_one
+
+/-- info: 'TDLean.FE.inv_cpow_ofReal' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.inv_cpow_ofReal
+
+/-- info: 'TDLean.FE.ofReal_sq_inv_eq_cpow' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.ofReal_sq_inv_eq_cpow
+
+/-- info: 'TDLean.FE.integral_Ioo_eq_integral_Ioi_inv' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.integral_Ioo_eq_integral_Ioi_inv
