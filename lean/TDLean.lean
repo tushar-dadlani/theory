@@ -55,5 +55,6 @@ import TDLean.Operator.Number
 import TDLean.Operator.Isometry
 import TDLean.Operator.BCAlgebra
 import TDLean.Operator.QModZ
+import TDLean.Operator.Rep
 
 import TDLean.Audit

@@ -263,14 +263,19 @@ namespace.
 | **`Operator.torsionEmb_injective`**, `torsionEmb_surjective` | — | **the bridge to `ProfiniteCRT` / `ZmodUnitsCyclic`** | `(ℚ/ℤ)[n] ≅ ZMod n` via `k ↦ k/n`, so `Aut((ℚ/ℤ)[n]) ≅ (ZMod n)ˣ` — the object `ZmodUnitsCyclic` studies — and in the limit `Aut(ℚ/ℤ) = Ẑˣ`, the BC symmetry group. **This is where the 3.2 correction bites.** `PrimorialSpectralTheory.v:19` CLAIM A and `docs/ncg_monoid_algebra_thesis.md:24` identify the primorial tower's limit with `Ẑ`/`Ẑˣ`; it is not, because every primorial modulus is squarefree, so the tower reaches `∏ₚ 𝔽ₚˣ`, a **proper** quotient (`toZMod_not_injective` witnesses the failure). Getting the BC symmetry group needs the prime-**power** tower. |
 | `Operator.egen_mul`, `egen_mul_neg`, `QAlg` | — | **absent-in-Coq** | `ℂ[ℚ/ℤ]` with `e(γ₁)e(γ₂) = e(γ₁+γ₂)`, `e(0) = 1`, and `e(γ)e(−γ) = 1`. Note the contrast the whole construction turns on: the `e(γ)` **are** invertible; the `Sₙ` deliberately are not. |
 
+| **`Operator.Eop_mul`, `norm_chi`, `ip_Eop_adjoint`** | — | **absent-in-Coq (overtake)** | **The Bost–Connes representation on `ℓ²(ℕ⁺)`:** `π(e(γ))εₘ = χ(m·γ)εₘ` with `χ(q) = e^{2πiq}`. `χ` is well-defined on `ℚ/ℤ` exactly because `e^{2πik} = 1` for integer `k` — which is *why* the group must be `ℚ/ℤ` and not `ℚ`. `‖χ‖ = 1`, so each `π(e(γ))` is **unitary**, and `ip_Eop_adjoint` gives its adjoint as `π(e(−γ))` — the sharp contrast with the `Sₙ`, which are isometries only. |
+| **`Operator.conj_Eop_apply_mul`**, `conj_Eop_apply_of_not_dvd` | — | **absent-in-Coq** | **The left-hand side of the coupling relation, computed as an operator identity:** `Sₙ π(e(γ)) Sₙ*` is diagonal, supported on multiples of `n`, with entry `χ(i·γ)` at `j = n·i`, and **zero** off the multiples — the projection `SₙSₙ*` showing through. |
+
 **Scope, stated plainly.** None of this approaches RH. Constructing an operator whose
 eigenvalues are the zeta zeros *is* the Hilbert–Pólya problem and is open. What is built is the
 **framework in which such a statement can be made at all** — inner product, adjoint, Hermitian
 self-adjointness, real spectrum, the diagonal zeta operator, and the number operator with its
 partition function — none of which existed on either side before. The spectrum of `N` is
 `{log n}`, not the zeros; building an operator with the zeros as spectrum *is* Hilbert–Pólya.
-The relations `BC0`–`BC3` are the `ℕˣ` half of the presentation. Still missing for BC proper: the coupling relation as an *operator identity* (the fibre and the
-normalisation are proved; realising `e(γ)` on `ℓ²(ℕ⁺)` and conjugating by `Sₙ` is not done);
+The relations `BC0`–`BC3` are the `ℕˣ` half of the presentation. Still missing for BC proper: the two sides of the coupling relation are each computed —
+`conj_Eop_apply_mul` (left) and `nsmul_eq_iff` (the fibre, right) — but **not yet equated**;
+that needs the root-of-unity sum `∑_{k<n} ζ^{jk} = n·[n ∣ j]`. Also: the representation is at
+`ρ = 1 ∈ Ẑ`, the general `π_ρ(e(γ))εₘ = χ(ρ(mγ))εₘ` needing `Ẑ` as an actual parameter group;
 a C\*-completion (this is a
 plain subalgebra of endomorphisms, no norm); and KMS states, so no phase transition in the KMS
 sense. `partitionFunction_diverges`

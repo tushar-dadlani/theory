@@ -49,6 +49,7 @@ import TDLean.Operator.Number
 import TDLean.Operator.Isometry
 import TDLean.Operator.BCAlgebra
 import TDLean.Operator.QModZ
+import TDLean.Operator.Rep
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -1118,3 +1119,50 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Operator.couple_indexes_fibre
+
+/-! ### The Bost-Connes representation on ell-2 -/
+
+/-- info: 'TDLean.Operator.chi_add' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.chi_add
+
+/-- info: 'TDLean.Operator.chi_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.chi_zero
+
+/-- info: 'TDLean.Operator.norm_chi' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.norm_chi
+
+/-- info: 'TDLean.Operator.chi_conj' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.chi_conj
+
+/-- info: 'TDLean.Operator.Eop_mul' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.Eop_mul
+
+/-- info: 'TDLean.Operator.Eop_mul_neg' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.Eop_mul_neg
+
+/-- info: 'TDLean.Operator.ip_Eop_adjoint' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.ip_Eop_adjoint
+
+/-- info: 'TDLean.Operator.conj_Eop_apply_mul' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.conj_Eop_apply_mul
+
+/-- info: 'TDLean.Operator.conj_Eop_apply_of_not_dvd' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.conj_Eop_apply_of_not_dvd
