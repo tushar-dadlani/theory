@@ -46,6 +46,7 @@ import TDLean.PNT.Region
 import TDLean.PNT.Tauberian
 import TDLean.PNT.Squeeze
 import TDLean.PNT.Transfer
+import TDLean.PNT.PiCount
 import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry
@@ -1275,3 +1276,20 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.PNT.tendsto_theta
+
+/-! ### C10 part 12: the prime-counting function -/
+
+/-- info: 'TDLean.PNT.theta_le_piCount_mul_log' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.theta_le_piCount_mul_log
+
+/-- info: 'TDLean.PNT.card_small_primes_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.card_small_primes_le
+
+/-- info: 'TDLean.PNT.piCount_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.piCount_le
