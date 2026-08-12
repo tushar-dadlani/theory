@@ -963,3 +963,4 @@ spectral-theory/CDiagOperator.v
 spectral-theory/MellinOperatorBridge.v
 spectral-theory/SpectralReflectionBridge.v
 spectral-theory/CoherenceSingularity.v
+spectral-theory/SelfDualCenter.v
