@@ -200,6 +200,14 @@ have).
 | `Zeta.norm_cpow_sub_le`, `norm_zetaDiff_le`, `summable_zetaDiff` | — | **absent-in-Coq** | The increment estimate and convergence of the difference series on `Re s > 0`. |
 | `Zeta.differentiableOn_zetaDiffSum` | — | **absent-in-Coq** | Holomorphy, via differentiation under the integral plus `differentiableOn_tsum_of_summable_norm` applied on balls (the term bound carries `‖s‖`, so it is uniform only on bounded sets). |
 
+### 3.1d Cluster A — the functional equation
+
+| Lean | Coq oracle | Verdict | Note |
+|---|---|---|---|
+| **`FE.tsum_gaussian_transform`** | `GaussThetaTransform.v:98 theta_transform` | **cross-verified** | **Jacobi's theta transformation:** `∑_{n∈ℤ} e^{−πan²} = a^{−1/2}∑_{n∈ℤ} e^{−πn²/a}`. The two proofs take *different routes*: Coq goes by pointwise Fourier-series convergence for a periodised Gaussian (`GaussPeriod*.v`, `FourierConvergeLoc.v`, ~2900 lines); Lean by general Poisson summation plus the Gaussian's Fourier self-duality. Independent routes to the same theorem is the strongest form of cross-verification this project produces. |
+| `FE.gaussian_isLittleO_atTop`, `gaussian_isLittleO_cocompact` | — | **absent-in-Coq** | The decay estimates. **Ban boundary, stated precisely:** `Gaussian.PoissonSummation` is gate-banned and contains the target theorem itself (`Real.tsum_exp_neg_mul_int_sq`); `Analysis.Fourier.PoissonSummation` (general) and `Gaussian.FourierTransform` (`fourier_gaussian_pi`) are **not** banned. Only the decay lemmas live exclusively in the banned file, so only they were rebuilt. **Correction to my own earlier claim:** I said cluster A's "easy route is closed by the gate", implying Poisson summation from scratch. Only the last mile is closed. |
+| `spectral-theory/LEDGER.md:239`, `JacobiTheta.v` footer | — | **stale** | Both still describe the theta transformation as "the open next milestone". It landed in Coq on 2026-07-31 (28 files, 5864 lines). Not a defect in the mathematics — a stale status note on a result that exists. |
+
 ### 3.2 Findings recorded during planning, pending Lean proof
 
 | Coq oracle | Verdict | Note |

@@ -1319,3 +1319,8 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.gaussian_isLittleO_cocompact
+
+/-- info: 'TDLean.FE.tsum_gaussian_transform' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.tsum_gaussian_transform

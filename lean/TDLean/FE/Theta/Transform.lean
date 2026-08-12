@@ -25,6 +25,7 @@ import Mathlib.Analysis.SpecialFunctions.Gaussian.FourierTransform
 namespace TDLean.FE
 
 open Complex Filter Asymptotics Real
+open scoped FourierTransform
 
 /-! ### Decay of the Gaussian -/
 
@@ -81,5 +82,57 @@ theorem gaussian_isLittleO_cocompact {a : ℝ} (ha : 0 < a) (s : ℝ) :
   · refine (gaussian_isLittleO_atTop ha s).congr' EventuallyEq.rfl ?_
     filter_upwards [eventually_ge_atTop (0 : ℝ)] with x hx
     rw [abs_of_nonneg hx]
+
+
+/-! ### The transformation -/
+
+/-- **Jacobi's theta transformation.** `∑_{n∈ℤ} e^{−πan²} = a^{−1/2} ∑_{n∈ℤ} e^{−πn²/a}`.
+
+    ORACLE: `GaussThetaTransform.v:98 theta_transform` (`θ(1/t) = √t·θ(t)`), proved there by
+    pointwise Fourier-series convergence for a periodised Gaussian; here by general Poisson
+    summation plus the Gaussian's Fourier self-duality. -/
+theorem tsum_gaussian_transform {a : ℝ} (ha : 0 < a) :
+    ∑' n : ℤ, Complex.exp (-(π : ℂ) * (a : ℂ) * (n : ℂ) ^ 2)
+      = 1 / (a : ℂ) ^ (1 / 2 : ℂ)
+        * ∑' n : ℤ, Complex.exp (-(π : ℂ) * ((1 / a : ℝ) : ℂ) * (n : ℂ) ^ 2) := by
+  have hane : (a : ℂ) ≠ 0 := by exact_mod_cast ha.ne'
+  have hare : (0 : ℝ) < ((a : ℂ)).re := by simpa using ha
+  have hainv : (0 : ℝ) < 1 / a := by positivity
+  set f : ℝ → ℂ := fun x => Complex.exp (-(π : ℂ) * (a : ℂ) * (x : ℂ) ^ 2) with hfdef
+  have hcont : Continuous f := by rw [hfdef]; fun_prop
+  -- the Fourier transform, rewritten with a real parameter `1/a`
+  have hrecip : -(π : ℂ) / (a : ℂ) = -(π : ℂ) * ((1 / a : ℝ) : ℂ) := by
+    push_cast; ring
+  have hFf : 𝓕 f = fun t : ℝ =>
+      1 / (a : ℂ) ^ (1 / 2 : ℂ) * Complex.exp (-(π : ℂ) * ((1 / a : ℝ) : ℂ) * (t : ℂ) ^ 2) := by
+    rw [hfdef, fourier_gaussian_pi hare]
+    funext t
+    rw [hrecip]
+  -- decay on both sides
+  have hdecay : f =O[cocompact ℝ] fun x : ℝ => |x| ^ (-2 : ℝ) :=
+    (gaussian_isLittleO_cocompact ha (-2)).isBigO
+  have hdecayF : (𝓕 f) =O[cocompact ℝ] fun x : ℝ => |x| ^ (-2 : ℝ) := by
+    rw [hFf]
+    exact ((gaussian_isLittleO_cocompact hainv (-2)).isBigO).const_mul_left _
+  -- Poisson summation at `x = 0`
+  have hpois := Real.tsum_eq_tsum_fourier_of_rpow_decay hcont (b := 2) (by norm_num)
+    hdecay hdecayF 0
+  have hzero : ((0 : ℝ) : UnitAddCircle) = 0 := by
+    simp
+  rw [hzero] at hpois
+  simp only [fourier_eval_zero, mul_one, zero_add] at hpois
+  have hLHS : ∑' n : ℤ, f ((n : ℤ) : ℝ)
+      = ∑' n : ℤ, Complex.exp (-(π : ℂ) * (a : ℂ) * ((n : ℤ) : ℂ) ^ 2) := by
+    refine tsum_congr fun n => ?_
+    change Complex.exp (-(π : ℂ) * (a : ℂ) * ((((n : ℤ) : ℝ)) : ℂ) ^ 2)
+      = Complex.exp (-(π : ℂ) * (a : ℂ) * ((n : ℤ) : ℂ) ^ 2)
+    norm_cast
+  have hRHS : ∑' n : ℤ, 𝓕 f ((n : ℤ) : ℝ)
+      = 1 / (a : ℂ) ^ (1 / 2 : ℂ)
+        * ∑' n : ℤ, Complex.exp (-(π : ℂ) * ((1 / a : ℝ) : ℂ) * ((n : ℤ) : ℂ) ^ 2) := by
+    rw [hFf, tsum_mul_left]
+    congr 1
+  rw [← hLHS, ← hRHS]
+  exact hpois
 
 end TDLean.FE
