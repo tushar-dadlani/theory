@@ -52,6 +52,7 @@ import TDLean.PNT.PiCount
 import TDLean.PNT.PrimeCountingAsymp
 import TDLean.FE.Theta.Transform
 import TDLean.FE.Mellin.Term
+import TDLean.FE.Mellin.Completed
 import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry
@@ -1453,3 +1454,8 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.lintegral_norm_summable
+
+/-- info: 'TDLean.FE.mellin_psiTheta' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.mellin_psiTheta

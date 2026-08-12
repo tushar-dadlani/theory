@@ -58,6 +58,7 @@ import TDLean.PNT.PiCount
 import TDLean.PNT.PrimeCountingAsymp
 import TDLean.FE.Theta.Transform
 import TDLean.FE.Mellin.Term
+import TDLean.FE.Mellin.Completed
 import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry
