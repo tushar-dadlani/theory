@@ -1459,3 +1459,30 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.mellin_psiTheta
+
+/-! ### Cluster A6: Gaussian summability and the theta-to-psi bridge -/
+
+/-- info: 'TDLean.FE.norm_gaussian' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.norm_gaussian
+
+/-- info: 'TDLean.FE.summable_gaussian_nat' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.summable_gaussian_nat
+
+/-- info: 'TDLean.FE.summable_gaussian_int' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.summable_gaussian_int
+
+/-- info: 'TDLean.FE.summable_psiNat' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.summable_psiNat
+
+/-- info: 'TDLean.FE.tsum_gaussian_eq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.tsum_gaussian_eq

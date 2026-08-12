@@ -135,4 +135,101 @@ theorem tsum_gaussian_transform {a : ℝ} (ha : 0 < a) :
   rw [← hLHS, ← hRHS]
   exact hpois
 
+
+/-! ### Summability
+
+    Poisson summation gave the identity without ever exposing summability as a standalone
+    fact, but the `ℤ`-to-`ℕ` decomposition (`tsum_of_add_one_of_neg_add_one`) needs it as a
+    hypothesis. Like the decay estimates, it lives only in the gate-banned
+    `Gaussian.PoissonSummation`, so it is rebuilt here — by comparison with a geometric
+    series, using `n ≤ n²`. -/
+
+theorem norm_gaussian {a : ℝ} (x : ℝ) :
+    ‖Complex.exp (-(π : ℂ) * (a : ℂ) * (x : ℂ) ^ 2)‖ = Real.exp (-(π * a) * x ^ 2) := by
+  have hcast : -(π : ℂ) * (a : ℂ) * (x : ℂ) ^ 2 = (((-(π * a) * x ^ 2 : ℝ)) : ℂ) := by
+    push_cast; ring
+  rw [hcast, ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs,
+    abs_of_pos (Real.exp_pos _)]
+
+theorem summable_gaussian_nat {a : ℝ} (ha : 0 < a) :
+    Summable (fun n : ℕ => Real.exp (-(π * a) * (n : ℝ) ^ 2)) := by
+  have hpa : 0 < π * a := by positivity
+  have hr : Real.exp (-(π * a)) < 1 := by
+    rw [Real.exp_lt_one_iff]; linarith
+  have hr0 : 0 ≤ Real.exp (-(π * a)) := (Real.exp_pos _).le
+  refine Summable.of_nonneg_of_le (fun n => (Real.exp_pos _).le) (fun n => ?_)
+    (summable_geometric_of_lt_one hr0 hr)
+  rw [← Real.exp_nat_mul]
+  refine Real.exp_le_exp.mpr ?_
+  have hn : (n : ℝ) ≤ (n : ℝ) ^ 2 := by
+    rcases Nat.eq_zero_or_pos n with rfl | hpos
+    · simp
+    · have h1 : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hpos
+      nlinarith
+  nlinarith
+
+/-- The `ℤ`-indexed Gaussian series is summable. -/
+theorem summable_gaussian_int {a : ℝ} (ha : 0 < a) :
+    Summable (fun n : ℤ => Complex.exp (-(π : ℂ) * (a : ℂ) * (n : ℂ) ^ 2)) := by
+  refine Summable.of_norm (Summable.of_nat_of_neg ?_ ?_)
+  · refine (summable_gaussian_nat ha).congr fun n => ?_
+    have hc : ((((n : ℕ) : ℤ)) : ℂ) = (((n : ℕ) : ℝ) : ℂ) := by push_cast; ring
+    rw [hc, norm_gaussian]
+  · refine (summable_gaussian_nat ha).congr fun n => ?_
+    have hc : (((-((n : ℕ) : ℤ)) : ℤ) : ℂ) = ((-((n : ℕ) : ℝ) : ℝ) : ℂ) := by push_cast; ring
+    rw [hc, norm_gaussian]
+    congr 1
+    ring
+
+
+/-! ### From the `ℤ`-sum to `ψ`
+
+    `θ(a) = ∑_{n∈ℤ} e^{−πan²} = 1 + 2ψ(a)` with `ψ(a) = ∑_{n≥1} e^{−πan²}`. The Gaussian is
+    even, so the `n < 0` half duplicates the `n > 0` half. -/
+
+/-- `ψ(a) = ∑_{n≥1} e^{−πan²}`, indexed over `ℕ` by `n ↦ n+1`. -/
+noncomputable def psiNat (a : ℝ) : ℂ :=
+  ∑' n : ℕ, Complex.exp (-(π : ℂ) * (a : ℂ) * ((n : ℂ) + 1) ^ 2)
+
+theorem summable_psiNat {a : ℝ} (ha : 0 < a) :
+    Summable (fun n : ℕ => Complex.exp (-(π : ℂ) * (a : ℂ) * ((n : ℂ) + 1) ^ 2)) := by
+  refine Summable.of_norm ?_
+  have hshift : Summable (fun n : ℕ => Real.exp (-(π * a) * ((n : ℝ) + 1) ^ 2)) := by
+    refine ((summable_nat_add_iff 1).mpr (summable_gaussian_nat ha)).congr fun n => ?_
+    congr 2
+    push_cast
+    ring
+  refine hshift.congr fun n => ?_
+  have hc : ((n : ℂ) + 1) = ((((n : ℝ) + 1 : ℝ)) : ℂ) := by push_cast; ring
+  rw [hc, norm_gaussian]
+
+set_option maxHeartbeats 1000000 in
+-- The `ℤ`-to-`ℕ` decomposition unifies against a named `f`, but the cast-heavy Gaussian
+-- argument still makes elaboration expensive; the default budget is not quite enough.
+/-- **`θ(a) = 1 + 2ψ(a)`.** -/
+theorem tsum_gaussian_eq {a : ℝ} (ha : 0 < a) :
+    ∑' n : ℤ, Complex.exp (-(π : ℂ) * (a : ℂ) * (n : ℂ) ^ 2) = 1 + 2 * psiNat a := by
+  set f : ℤ → ℂ := fun n => Complex.exp (-(π : ℂ) * (a : ℂ) * (n : ℂ) ^ 2) with hfdef
+  have hp : ∀ n : ℕ, f ((n : ℤ) + 1)
+      = Complex.exp (-(π : ℂ) * (a : ℂ) * ((n : ℂ) + 1) ^ 2) := by
+    intro n
+    simp only [hfdef]
+    congr 1
+    push_cast
+    ring
+  have hm : ∀ n : ℕ, f (-((n : ℤ) + 1))
+      = Complex.exp (-(π : ℂ) * (a : ℂ) * ((n : ℂ) + 1) ^ 2) := by
+    intro n
+    simp only [hfdef]
+    congr 1
+    push_cast
+    ring
+  have hsp : Summable (fun n : ℕ => f ((n : ℤ) + 1)) :=
+    (summable_psiNat ha).congr fun n => (hp n).symm
+  have hsm : Summable (fun n : ℕ => f (-((n : ℤ) + 1))) :=
+    (summable_psiNat ha).congr fun n => (hm n).symm
+  have hzero : f 0 = 1 := by simp [hfdef]
+  rw [tsum_of_add_one_of_neg_add_one hsp hsm, tsum_congr hp, tsum_congr hm, hzero, ← psiNat]
+  ring
+
 end TDLean.FE
