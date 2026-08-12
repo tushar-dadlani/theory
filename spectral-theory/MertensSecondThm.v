@@ -73,3 +73,42 @@ Theorem primeRecip_abel : forall M,
   = mprime (S M) * ff (S M)
     - Rsum (fun n => mprime n * (ff (S n) - ff n)) 1 M.
 Proof. intro M; rewrite primeRecip_via_bb; apply abel_id. Qed.
+
+(* ----------------------------------------------------------------- *)
+(*  Bounding: the main-term summand and ff monotonicity              *)
+(* ----------------------------------------------------------------- *)
+
+Lemma lnINR_pos : forall n, (2 <= n)%nat -> 0 < ln (INR n).
+Proof.
+  intros n Hn. rewrite <- ln_1. apply ln_increasing;
+    [ lra | rewrite <- INR_1; apply lt_INR; lia ].
+Qed.
+
+Lemma ff_pos : forall n, (2 <= n)%nat -> 0 < ff n.
+Proof. intros n Hn; unfold ff; apply Rinv_0_lt_compat, lnINR_pos; exact Hn. Qed.
+
+Lemma ff_dec : forall n, (2 <= n)%nat -> ff (S n) <= ff n.
+Proof.
+  intros n Hn; unfold ff. apply Rinv_le_contravar; [ apply lnINR_pos; exact Hn | ].
+  apply ln_le_mono; [ apply lt_0_INR; lia | apply le_INR; lia ].
+Qed.
+
+Definition Tterm (n : nat) : R := (ln (INR (S n)) - ln (INR n)) * ff (S n).
+
+Lemma Tterm_bracket : forall n, (2 <= n)%nat -> gll (S n) <= Tterm n <= gll n.
+Proof.
+  intros n Hn. unfold Tterm, gll, ff.
+  pose proof (harm_step n ltac:(lia)) as [Hlo Hhi].
+  assert (Hlnn : 0 < ln (INR n)) by (apply lnINR_pos; lia).
+  assert (HlnSn : 0 < ln (INR (S n))) by (apply lnINR_pos; lia).
+  assert (Hn0 : 0 < INR n) by (apply lt_0_INR; lia).
+  assert (HSn0 : 0 < INR (S n)) by (apply lt_0_INR; lia).
+  assert (HlnLE : ln (INR n) <= ln (INR (S n)))
+    by (apply ln_le_mono; [ lra | apply le_INR; lia ]).
+  assert (Hdiff0 : 0 <= ln (INR (S n)) - ln (INR n)) by lra.
+  split.
+  - rewrite Rinv_mult. apply Rmult_le_compat_r; [ left; apply Rinv_0_lt_compat; lra | exact Hlo ].
+  - rewrite Rinv_mult.
+    apply Rmult_le_compat; [ exact Hdiff0 | left; apply Rinv_0_lt_compat; lra | exact Hhi | ].
+    apply Rinv_le_contravar; lra.
+Qed.
