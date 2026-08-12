@@ -26,8 +26,9 @@
 (*    - concrete primorial instances (by computation)                *)
 (*                                                                    *)
 (*  NOT proved here (the deferred analytic core, = RH):              *)
-(*    - the constant e^gamma is left as an abstract real `egamma`     *)
-(*      (its construction + Mertens third theorem are future work);  *)
+(*    - Mertens' third theorem prod(1-1/p) ~ e^{-gamma}/ln x, which    *)
+(*      pins the criterion's constant (e^gamma itself is now built in  *)
+(*      EulerMascheroni.v, no longer an abstract parameter);           *)
 (*    - the equivalence Nicolas <-> RH itself (the deep Nicolas         *)
 (*      theorem, via the explicit formula / zero bounds) is only      *)
 (*      STATED, as the Prop `Nicolas_equiv_RH`, never asserted true.  *)
@@ -38,6 +39,7 @@ From Stdlib Require Import ZArith Znumtheory Arith Lia List Reals Lra.
 Require Import Totient DirichletConv DirichletMult DirichletPPow.
 Require Import PrimeFactorizationN PrimorialSpectralTheory.
 Require Import ComplexField RiemannXiEntire CZeta.
+Require Import EulerMascheroni.   (* provides the CONSTRUCTED egamma = exp gamma *)
 Import ListNotations.
 Local Open Scope nat_scope.
 
@@ -286,9 +288,11 @@ Proof. vm_compute; split; reflexivity. Qed.
 (*  D.  The Nicolas criterion, STATED as an RH-equivalent            *)
 (* ================================================================= *)
 
-(* e^gamma (Euler-Mascheroni), left abstract; its construction and    *)
-(* Mertens third theorem are the deferred analytic input.            *)
-Parameter egamma : R.
+(* e^gamma (Euler-Mascheroni) is now the CONSTRUCTED constant          *)
+(* EulerMascheroni.egamma = exp gamma (with 1 <= egamma <= e), no       *)
+(* longer an abstract parameter.  Only Mertens' third theorem -- the    *)
+(* asymptotic prod(1-1/p) ~ e^{-gamma}/ln x that makes this constant    *)
+(* the right one -- remains as deferred analytic input.                 *)
 
 (* N_k/phi(N_k) > e^gamma * ln ln N_k,  the Nicolas inequality at k.   *)
 Definition Nicolas_holds (k : nat) : Prop :=
