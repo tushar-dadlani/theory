@@ -62,6 +62,7 @@ import TDLean.Operator.Rep
 import TDLean.Operator.RootSum
 import TDLean.Newman.Tauberian
 import TDLean.FE.Mellin.Split
+import TDLean.FE.Mellin.FunctionalEquation
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -1548,3 +1549,60 @@ import TDLean.FE.Mellin.Split
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.integral_Ioo_eq_integral_Ioi_inv
+
+/-! ### Cluster A10-A12: decay, integrability, and the functional equation -/
+
+/-- info: 'TDLean.FE.norm_psiNat_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.norm_psiNat_le
+
+/-- info: 'TDLean.FE.norm_psiTheta_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.norm_psiTheta_le
+
+/-- info: 'TDLean.FE.aestronglyMeasurable_psiTheta' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.aestronglyMeasurable_psiTheta
+
+/-- info: 'TDLean.FE.integrableOn_rpow_mul_exp_neg_pi' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.integrableOn_rpow_mul_exp_neg_pi
+
+/-- info: 'TDLean.FE.integrableOn_cpow_mul_psiTheta' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.integrableOn_cpow_mul_psiTheta
+
+/-- info: 'TDLean.FE.folded_integrand_eq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.folded_integrand_eq
+
+/-- info: 'TDLean.FE.integrableOn_folded' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.integrableOn_folded
+
+/-- info: 'TDLean.FE.integrableOn_mellin_Ioo' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.integrableOn_mellin_Ioo
+
+/-- info: 'TDLean.FE.completedZeta_symm' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_symm
+
+/-- info: 'TDLean.FE.mellin_eq_completedZeta' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.mellin_eq_completedZeta
+
+/-- info: 'TDLean.FE.completedZeta_eq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_eq

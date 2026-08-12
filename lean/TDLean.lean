@@ -60,6 +60,9 @@ import TDLean.FE.Theta.Transform
 import TDLean.FE.Mellin.Term
 import TDLean.FE.Mellin.Completed
 import TDLean.FE.Mellin.Split
+import TDLean.FE.Theta.Decay
+import TDLean.FE.Mellin.Integrable
+import TDLean.FE.Mellin.FunctionalEquation
 import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry

@@ -53,24 +53,28 @@ theorem ofReal_sq_inv_eq_cpow {u : ℝ} (hu : 0 < u) :
   push_cast
   ring
 
+/-- The derivative of `u ↦ 1/u` on `(1,∞)`. Exposed because both the integral identity and
+    the integrability transfer need it. -/
+theorem hasDerivWithinAt_inv_Ioi_one {u : ℝ} (hu : u ∈ Ioi (1 : ℝ)) :
+    HasDerivWithinAt (fun y : ℝ => 1 / y) (-(u ^ 2)⁻¹) (Ioi (1 : ℝ)) u := by
+  have hu1 : (1 : ℝ) < u := hu
+  have hu0 : u ≠ 0 := by intro h; rw [h] at hu1; linarith
+  simp only [one_div]
+  exact (hasDerivAt_inv hu0).hasDerivWithinAt
+
+theorem injOn_inv_Ioi_one : Set.InjOn (fun u : ℝ => 1 / u) (Ioi (1 : ℝ)) := by
+  intro a _ b _ hab
+  simp only [one_div] at hab
+  exact inv_injective hab
+
 /-- **The change of variable.** The Mellin integral over `(0,1)` equals an integral over
     `(1,∞)` of `ψ(1/u)`, with the exponent reflected from `s/2−1` to `−s/2−1`. -/
 theorem integral_Ioo_eq_integral_Ioi_inv (s : ℂ) :
     (∫ t in Ioo (0 : ℝ) 1, (t : ℂ) ^ (s / 2 - 1) * psiTheta t)
       = ∫ u in Ioi (1 : ℝ), (u : ℂ) ^ (-s / 2 - 1) * psiTheta (1 / u) := by
-  have hderiv : ∀ u ∈ Ioi (1 : ℝ),
-      HasDerivWithinAt (fun y : ℝ => 1 / y) (-(u ^ 2)⁻¹) (Ioi (1 : ℝ)) u := by
-    intro u hu
-    have hu1 : (1 : ℝ) < u := hu
-    have hu0 : u ≠ 0 := by intro h; rw [h] at hu1; linarith
-    simp only [one_div]
-    exact (hasDerivAt_inv hu0).hasDerivWithinAt
-  have hinj : Set.InjOn (fun u : ℝ => 1 / u) (Ioi (1 : ℝ)) := by
-    intro a _ b _ hab
-    simp only [one_div] at hab
-    exact inv_injective hab
   have h := integral_image_eq_integral_abs_deriv_smul (f := fun y : ℝ => 1 / y)
-    (f' := fun u : ℝ => -(u ^ 2)⁻¹) measurableSet_Ioi hderiv hinj
+    (f' := fun u : ℝ => -(u ^ 2)⁻¹) measurableSet_Ioi
+    (fun u hu => hasDerivWithinAt_inv_Ioi_one hu) injOn_inv_Ioi_one
     (fun t : ℝ => (t : ℂ) ^ (s / 2 - 1) * psiTheta t)
   rw [inv_image_Ioi_one] at h
   rw [h]
