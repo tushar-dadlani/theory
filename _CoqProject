@@ -952,3 +952,4 @@ spectral-theory/NewmanLimits.v
 spectral-theory/Ell2MellinVM.v
 spectral-theory/CDiagOperator.v
 spectral-theory/MellinOperatorBridge.v
+spectral-theory/SpectralReflectionBridge.v
