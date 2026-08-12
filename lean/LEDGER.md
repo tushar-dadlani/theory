@@ -256,14 +256,19 @@ namespace.
 | **`Operator.numberOp_covariance`**, `numberOp_commutator` | — | **absent-in-Coq** | `N Sₙ = Sₙ(N + log n)`: the shift raises energy by `log n`. This is the crossed-product covariance relation and the generator of the BC time evolution `σ_t(Sₙ) = n^{it}Sₙ`. |
 | `Operator.ip_shift_adjoint`, `ell2_shift`, `coshift_coshift` | — | **absent-in-Coq** | The adjoint identity `⟪Sₙf, g⟫ = ⟪f, Sₙ*g⟫`, ℓ²-preservation, and the semigroup law. |
 
+| **`Operator.bc_isometry`, `bc_semigroup`, `bc_coprime`, `bc_not_unitary`** | — | **absent-in-Coq (overtake)** | **The Bost–Connes relations as an algebra presentation**, in `Module.End ℂ (ℕ⁺ → ℂ)`: `Sₙ*Sₙ = 1`, `SₘSₙ = S₍ₘₙ₎`, `SₘSₙ* = Sₙ*Sₘ` for `gcd(m,n) = 1`, and `SₙSₙ* ≠ 1`. **BC3 is the substantive one** — it is what makes the `ℕˣ`-action work, its proof is Gauss's lemma (`m ∣ nk` with `gcd(m,n) = 1` ⟹ `m ∣ k`), and `not_comm_of_not_coprime` shows it is **sharp**: the relation fails at `m = n = 2`, so coprimality is doing real work rather than bookkeeping. |
+| `Operator.bcAlgebra`, `ip_coshift_adjoint` | — | **absent-in-Coq** | The generated subalgebra `Algebra.adjoin ℂ (range Sop ∪ range Sadj)`. The `*` is realised by the inner product: `ip_shift_adjoint` and `ip_coshift_adjoint` together say the generating set is closed under adjunction w.r.t. `⟪·,·⟫`. **Not** a C\*-algebra: no norm, no completion. |
+
 **Scope, stated plainly.** None of this approaches RH. Constructing an operator whose
 eigenvalues are the zeta zeros *is* the Hilbert–Pólya problem and is open. What is built is the
 **framework in which such a statement can be made at all** — inner product, adjoint, Hermitian
 self-adjointness, real spectrum, the diagonal zeta operator, and the number operator with its
 partition function — none of which existed on either side before. The spectrum of `N` is
 `{log n}`, not the zeros; building an operator with the zeros as spectrum *is* Hilbert–Pólya.
-The isometries give the covariance relation but **not** the crossed-product C\*-algebra: there is
-no C\*-completion, no KMS states, and no phase transition in the KMS sense. `partitionFunction_diverges`
+The relations `BC0`–`BC3` are the `ℕˣ` half of the presentation. Still missing for BC proper:
+the `ℂ[ℚ/ℤ]` factor and relation `μₙ e(γ) μₙ* = (1/n)∑_{nδ=γ} e(δ)`; a C\*-completion (this is a
+plain subalgebra of endomorphisms, no norm); and KMS states, so no phase transition in the KMS
+sense. `partitionFunction_diverges`
 is the classical free-energy blow-up, not a KMS transition. `millennium-problems/Riemann.v:75` declares `Parameter H_operator` and
 `SpectralTripleRH.v` has `st_self_adjoint : True`; those are placeholders, not operators.
 

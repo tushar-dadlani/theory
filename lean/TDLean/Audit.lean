@@ -47,6 +47,7 @@ import TDLean.PNT.Tauberian
 import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry
+import TDLean.Operator.BCAlgebra
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -1022,3 +1023,55 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Operator.numberOp_commutator
+
+/-! ### The Bost-Connes relations as an algebra presentation -/
+
+/-- info: 'TDLean.Operator.shift_shift' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.shift_shift
+
+/-- info: 'TDLean.Operator.shift_coshift_comm' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.shift_coshift_comm
+
+/-- info: 'TDLean.Operator.not_comm_of_not_coprime' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.not_comm_of_not_coprime
+
+/-- info: 'TDLean.Operator.ip_coshift_adjoint' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.ip_coshift_adjoint
+
+/-- info: 'TDLean.Operator.bc_isometry' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.bc_isometry
+
+/-- info: 'TDLean.Operator.bc_semigroup' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.bc_semigroup
+
+/-- info: 'TDLean.Operator.bc_coprime' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.bc_coprime
+
+/-- info: 'TDLean.Operator.bc_not_unitary' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.bc_not_unitary
+
+/-- info: 'TDLean.Operator.Sop_mem' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.Sop_mem
+
+/-- info: 'TDLean.Operator.Sadj_mem' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.Sadj_mem
