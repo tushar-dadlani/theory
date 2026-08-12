@@ -48,6 +48,7 @@ import TDLean.PNT.Squeeze
 import TDLean.PNT.Transfer
 import TDLean.PNT.PiCount
 import TDLean.PNT.PrimeCountingAsymp
+import TDLean.FE.Theta.Transform
 import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry
@@ -1306,3 +1307,15 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.PNT.tendsto_piCount
+
+/-! ### Cluster A1: Gaussian decay (rebuilt; the banned file has these) -/
+
+/-- info: 'TDLean.FE.gaussian_isLittleO_atTop' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.gaussian_isLittleO_atTop
+
+/-- info: 'TDLean.FE.gaussian_isLittleO_cocompact' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.gaussian_isLittleO_cocompact
