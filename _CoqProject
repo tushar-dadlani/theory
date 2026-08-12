@@ -413,6 +413,7 @@ spectral-theory/KappaInvariant.v
 spectral-theory/KappaOmega.v
 spectral-theory/KroneckerSelfAdjoint.v
 spectral-theory/PrimorialSpectralTheory.v
+spectral-theory/NicolasCriterion.v
 spectral-theory/SpectralAlgebra.v
 spectral-theory/SpectralEvent.v
 spectral-theory/SpectralPrism.v
