@@ -65,6 +65,7 @@ import TDLean.FE.Mellin.Split
 import TDLean.FE.Mellin.FunctionalEquation
 import TDLean.FE.Strip
 import TDLean.FE.Holo
+import TDLean.FE.Transfer
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -1697,3 +1698,50 @@ import TDLean.FE.Holo
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.differentiableAt_completedZeta
+
+/-! ### Cluster A15: the identity transferred into the strip -/
+
+/-- info: 'TDLean.FE.poleFreeL_eq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.poleFreeL_eq
+
+/-- info: 'TDLean.FE.poleFreeR_eq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.poleFreeR_eq
+
+/-- info: 'TDLean.FE.differentiableOn_poleFreeL' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.differentiableOn_poleFreeL
+
+/-- info: 'TDLean.FE.differentiableOn_poleFreeR' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.differentiableOn_poleFreeR
+
+/-- info: 'TDLean.FE.eqOn_poleFree' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.eqOn_poleFree
+
+/-- info: 'TDLean.FE.completedZeta_eq_zetaCont' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_eq_zetaCont
+
+/-- info: 'TDLean.FE.completedZeta_eq_zero_iff' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_eq_zero_iff
+
+/-- info: 'TDLean.FE.zetaCont_zero_refl' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.zetaCont_zero_refl
+
+/-- info: 'TDLean.FE.zetaCont_zero_quadruple' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.zetaCont_zero_quadruple
