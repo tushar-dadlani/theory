@@ -16,6 +16,7 @@
   `integral_cpow_mul_exp_neg_mul_Ioi` are available.
 -/
 import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.PSeriesComplex
 
 namespace TDLean.FE
 
@@ -103,5 +104,78 @@ theorem norm_gaussian_term {s : ℂ} {r t : ℝ} (ht : 0 < t) :
       = t ^ (s.re - 1) * Real.exp (-(r * t)) := by
   rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos ht, Complex.norm_exp]
   simp [Complex.mul_re]
+
+
+/-! ### The lintegral bound -/
+
+/-- The real integrand `t^{σ−1}e^{−rt}` is integrable on `(0,∞)`. -/
+theorem integrableOn_real_term {σ : ℝ} (hσ : 0 < σ) {r : ℝ} (hr : 0 < r) :
+    IntegrableOn (fun t : ℝ => t ^ (σ - 1) * Real.exp (-(r * t))) (Ioi 0) := by
+  have h := integrableOn_gaussian_term (s := (σ : ℂ)) (by simpa using hσ) hr
+  refine MeasureTheory.IntegrableOn.congr_fun h.norm ?_ measurableSet_Ioi
+  intro t ht
+  dsimp only
+  rw [norm_gaussian_term (s := (σ : ℂ)) (r := r) ht]
+  simp
+
+/-- `∫₀^∞ ‖t^{s/2−1}e^{−rt}‖ dt = (1/r)^{Re s/2}·Γ(Re s/2)`. -/
+theorem integral_norm_term {s : ℂ} (hs : 0 < s.re) {r : ℝ} (hr : 0 < r) :
+    (∫ t in Ioi (0 : ℝ), ‖(t : ℂ) ^ (s / 2 - 1) * Complex.exp (-((r : ℂ) * (t : ℂ)))‖)
+      = (1 / r) ^ (s.re / 2) * Real.Gamma (s.re / 2) := by
+  have hs2 : 0 < s.re / 2 := by linarith
+  have hcongr : (∫ t in Ioi (0 : ℝ), ‖(t : ℂ) ^ (s / 2 - 1) * Complex.exp (-((r : ℂ) * (t : ℂ)))‖)
+      = ∫ t in Ioi (0 : ℝ), t ^ (s.re / 2 - 1) * Real.exp (-(r * t)) := by
+    refine setIntegral_congr_fun measurableSet_Ioi fun t ht => ?_
+    rw [norm_gaussian_term ht]
+    congr 2
+    rw [Complex.div_ofNat_re]
+  rw [hcongr, integral_rpow_mul_exp_neg_mul_Ioi hs2 hr]
+
+/-- **The bound `integral_tsum` needs:** the total mass is finite for `Re s > 1`. -/
+theorem lintegral_norm_summable {s : ℂ} (hs : 1 < s.re) :
+    ∑' n : ℕ+, ∫⁻ t in Ioi (0 : ℝ),
+        ‖(t : ℂ) ^ (s / 2 - 1)
+          * Complex.exp (-(((π * ((n : ℕ) : ℝ) ^ 2 : ℝ) : ℂ) * (t : ℂ)))‖ₑ ≠ ⊤ := by
+  have hs0 : 0 < s.re := by linarith
+  have hs2 : 0 < s.re / 2 := by linarith
+  have hpi : (0 : ℝ) < π := Real.pi_pos
+  -- each term is `ENNReal.ofReal` of the real integral
+  have hterm : ∀ n : ℕ+, (∫⁻ t in Ioi (0 : ℝ),
+      ‖(t : ℂ) ^ (s / 2 - 1)
+        * Complex.exp (-(((π * ((n : ℕ) : ℝ) ^ 2 : ℝ) : ℂ) * (t : ℂ)))‖ₑ)
+      = ENNReal.ofReal ((1 / (π * ((n : ℕ) : ℝ) ^ 2)) ^ (s.re / 2) * Real.Gamma (s.re / 2)) := by
+    intro n
+    have hn : (0 : ℝ) < ((n : ℕ) : ℝ) := by exact_mod_cast n.pos
+    have hr : (0 : ℝ) < π * ((n : ℕ) : ℝ) ^ 2 := by positivity
+    have hint := integrableOn_gaussian_term (s := s / 2)
+      (by rw [Complex.div_ofNat_re]; linarith) hr
+    rw [← integral_norm_term hs0 hr,
+      ofReal_integral_eq_lintegral_ofReal hint.norm
+        (Filter.Eventually.of_forall fun t => norm_nonneg _)]
+    exact lintegral_congr fun t => by rw [ofReal_norm_eq_enorm]
+  rw [tsum_congr hterm]
+  -- the resulting real series converges
+  have hsummable : Summable (fun n : ℕ+ =>
+      (1 / (π * ((n : ℕ) : ℝ) ^ 2)) ^ (s.re / 2) * Real.Gamma (s.re / 2)) := by
+    have hbase : ∀ n : ℕ+,
+        (1 / (π * ((n : ℕ) : ℝ) ^ 2)) ^ (s.re / 2) * Real.Gamma (s.re / 2)
+          = ((1 / π) ^ (s.re / 2) * Real.Gamma (s.re / 2)) * (1 / ((n : ℕ) : ℝ) ^ s.re) := by
+      intro n
+      have hn : (0 : ℝ) < ((n : ℕ) : ℝ) := by exact_mod_cast n.pos
+      have hsplit : (1 : ℝ) / (π * ((n : ℕ) : ℝ) ^ 2) = (1 / π) * (((n : ℕ) : ℝ) ^ 2)⁻¹ := by
+        field_simp
+      have hpow : ((((n : ℕ) : ℝ) ^ 2)⁻¹) ^ (s.re / 2) = 1 / ((n : ℕ) : ℝ) ^ s.re := by
+        rw [Real.inv_rpow (by positivity), ← Real.rpow_natCast ((n : ℕ) : ℝ) 2,
+          ← Real.rpow_mul hn.le, one_div]
+        congr 2
+        push_cast
+        ring
+      rw [hsplit, Real.mul_rpow (by positivity) (by positivity), hpow]
+      ring
+    rw [funext hbase]
+    exact ((Real.summable_one_div_nat_rpow.mpr hs).comp_injective
+      PNat.coe_injective).mul_left _
+  rw [← ENNReal.ofReal_tsum_of_nonneg (fun n => by positivity) hsummable]
+  exact ENNReal.ofReal_ne_top
 
 end TDLean.FE

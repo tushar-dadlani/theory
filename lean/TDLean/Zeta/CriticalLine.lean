@@ -20,6 +20,7 @@
   missing half is a named predicate rather than a comment.
 -/
 import TDLean.Zeta.Conj
+import TDLean.Zeta.NonVanishing
 
 namespace TDLean.Zeta
 
@@ -87,6 +88,32 @@ theorem zeros_refl_invariant (hFE : FunctionalEquationSymmetry) {s : ℂ}
     (h1 : 0 < ((starRingEnd ℂ) s).re) (h2 : (starRingEnd ℂ) s ≠ 1)
     (h3 : 0 < (refl s).re) (h : zetaCont s = 0) : zetaCont (refl s) = 0 :=
   hFE ((starRingEnd ℂ) s) h1 h2 h3 (zeros_conj_invariant h)
+
+
+/-! ### The critical strip — the half that is available
+
+    `zetaCont` is defined only on `Re s > 0`, so the strip's **left** edge is not merely
+    unproved here, it is not yet *statable*: there is no ζ at `Re s ≤ 0` to have zeros. The
+    functional equation supplies both the continuation and the reflection, which is why the
+    strip waits on cluster A. The **right** edge is immediate from item 3 of C9. -/
+
+/-- **The right edge of the critical strip.** Every zero in the domain has `Re s < 1`. -/
+theorem zetaCont_zero_re_lt_one {s : ℂ} (hs1 : s ≠ 1) (h : zetaCont s = 0) : s.re < 1 := by
+  by_contra hcon
+  push_neg at hcon
+  exact zetaCont_ne_zero_of_one_le_re hcon hs1 h
+
+/-- On its domain, the zeros of `zetaCont` lie in the open strip `0 < Re s < 1`. -/
+theorem zetaCont_zeros_in_strip {s : ℂ} (hs : 0 < s.re) (hs1 : s ≠ 1) (h : zetaCont s = 0) :
+    0 < s.re ∧ s.re < 1 :=
+  ⟨hs, zetaCont_zero_re_lt_one hs1 h⟩
+
+/-- Conjugation preserves the strip, so zeros come in conjugate pairs *within* it. -/
+theorem strip_conj_closed {s : ℂ} (hs : 0 < s.re) (hs1 : s ≠ 1) (h : zetaCont s = 0) :
+    0 < ((starRingEnd ℂ) s).re ∧ ((starRingEnd ℂ) s).re < 1 := by
+  have hre : ((starRingEnd ℂ) s).re = s.re := by simp
+  rw [hre]
+  exact zetaCont_zeros_in_strip hs hs1 h
 
 /-! ### Non-vacuity -/
 

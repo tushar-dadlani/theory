@@ -1421,3 +1421,35 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Zeta.criticalLine_nonvacuous
+
+/-! ### The critical strip (right edge) and the interchange bound -/
+
+/-- info: 'TDLean.Zeta.zetaCont_zero_re_lt_one' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zetaCont_zero_re_lt_one
+
+/-- info: 'TDLean.Zeta.zetaCont_zeros_in_strip' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zetaCont_zeros_in_strip
+
+/-- info: 'TDLean.Zeta.strip_conj_closed' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.strip_conj_closed
+
+/-- info: 'TDLean.FE.integrableOn_real_term' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.integrableOn_real_term
+
+/-- info: 'TDLean.FE.integral_norm_term' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.integral_norm_term
+
+/-- info: 'TDLean.FE.lintegral_norm_summable' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.lintegral_norm_summable
