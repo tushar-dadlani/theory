@@ -205,9 +205,11 @@ theorem log_le_four_mul_sqrt_sqrt {x : ℝ} (hx : 1 ≤ x) :
     _ ≤ 4 * (R - 1) := by linarith
     _ ≤ 4 * R := by linarith
 
-/-- **The correction is `O(x)`.** -/
-theorem psiErr_mul_log2_le {x : ℝ} (hx : 1 ≤ x) :
-    psiErr x * Real.log 2 ≤ 40 * x := by
+/-- The sharp intermediate bound: `ψ_err(x)·log 2 ≤ (√x + 1)(log x + 1)·log x`.
+    Kept separate from the `O(x)` corollary because the PNT transfer needs the `√x`, which
+    `40x` throws away. -/
+theorem psiErr_mul_log2_le' {x : ℝ} (hx : 1 ≤ x) :
+    psiErr x * Real.log 2 ≤ (Real.sqrt x + 1) * (Real.log x + 1) * Real.log x := by
   set S : ℝ := Real.sqrt x with hSdef
   set R : ℝ := Real.sqrt S with hRdef
   set L : ℝ := Real.log x with hLdef
@@ -247,6 +249,23 @@ theorem psiErr_mul_log2_le {x : ℝ} (hx : 1 ≤ x) :
     have hS1' : (0 : ℝ) ≤ S + 1 := by linarith
     refine mul_le_mul (mul_le_mul h2 h1 hnn1 hS1') (le_refl L) hL0 ?_
     positivity
+  calc psiErr x * Real.log 2
+      ≤ ((Nat.sqrt ⌊x⌋₊ : ℝ) + 1) * ((Nat.log 2 ⌊x⌋₊ : ℝ) + 1) * L * Real.log 2 := by
+        exact mul_le_mul_of_nonneg_right hstep hlog2.le
+    _ ≤ (S + 1) * (L + 1) * L := hmain
+
+/-- **The correction is `O(x)`.** -/
+theorem psiErr_mul_log2_le {x : ℝ} (hx : 1 ≤ x) :
+    psiErr x * Real.log 2 ≤ 40 * x := by
+  set S : ℝ := Real.sqrt x with hSdef
+  set R : ℝ := Real.sqrt S with hRdef
+  set L : ℝ := Real.log x with hLdef
+  have hL0 : 0 ≤ L := Real.log_nonneg hx
+  have hS1 : 1 ≤ S := by rw [hSdef]; exact Real.one_le_sqrt.mpr hx
+  have hR1 : 1 ≤ R := by rw [hRdef]; exact Real.one_le_sqrt.mpr hS1
+  have hRS : R ^ 2 = S := Real.sq_sqrt (by linarith)
+  have hL4R : L ≤ 4 * R := log_le_four_mul_sqrt_sqrt hx
+  have hS2 : S ^ 2 = x := Real.sq_sqrt (by linarith)
   have hfin : (S + 1) * (L + 1) * L ≤ 40 * x := by
     have hb1 : S + 1 ≤ 2 * S := by linarith
     have hb2 : L + 1 ≤ 5 * R := by linarith
@@ -258,11 +277,7 @@ theorem psiErr_mul_log2_le {x : ℝ} (hx : 1 ≤ x) :
       _ = 40 * S * S := by rw [hRS]
       _ = 40 * S ^ 2 := by ring
       _ = 40 * x := by rw [hS2]
-  calc psiErr x * Real.log 2
-      ≤ ((Nat.sqrt ⌊x⌋₊ : ℝ) + 1) * ((Nat.log 2 ⌊x⌋₊ : ℝ) + 1) * L * Real.log 2 := by
-        exact mul_le_mul_of_nonneg_right hstep hlog2.le
-    _ ≤ (S + 1) * (L + 1) * L := hmain
-    _ ≤ 40 * x := hfin
+  exact le_trans (psiErr_mul_log2_le' hx) hfin
 
 /-- **Chebyshev's bound (headline).** `ψ(x) ≤ C·x` with `C = log 4 + 40/log 2`.
     ORACLE: `ChebyshevPrime.v:268 chebyshev_theorem`. -/

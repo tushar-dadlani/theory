@@ -45,6 +45,7 @@ import TDLean.PNT.GNewman
 import TDLean.PNT.Region
 import TDLean.PNT.Tauberian
 import TDLean.PNT.Squeeze
+import TDLean.PNT.Transfer
 import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry
@@ -1252,3 +1253,25 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.PNT.tendsto_psi
+
+/-! ### C10 part 11: psi ~ x implies theta ~ x -/
+
+/-- info: 'TDLean.PNT.psiErr_mul_log2_le'' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.psiErr_mul_log2_le'
+
+/-- info: 'TDLean.PNT.psiErr_le_rpow' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.psiErr_le_rpow
+
+/-- info: 'TDLean.PNT.psiErr_div_tendsto_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.psiErr_div_tendsto_zero
+
+/-- info: 'TDLean.PNT.tendsto_theta' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.tendsto_theta
