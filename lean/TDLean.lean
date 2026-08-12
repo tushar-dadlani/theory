@@ -39,6 +39,8 @@ import TDLean.Zeta.DirichletMul
 import TDLean.Zeta.VonMangoldt
 import TDLean.Zeta.Identity
 import TDLean.Zeta.RayIdentity
+import TDLean.Zeta.Conj
+import TDLean.Zeta.CriticalLine
 import TDLean.Zeta.Mertens
 import TDLean.Zeta.LogDerivOrder
 import TDLean.Zeta.NonVanishing

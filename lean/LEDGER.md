@@ -210,6 +210,16 @@ have).
 | `FE.cpow_pos_eq_exp`, `scale_factor` | — | **absent-in-Coq** | `x^w = exp(log x·w)` for positive real `x`, and `(1/(πn²))^{s/2} = π^{−s/2}n^{−s}`. Reducing every `cpow` to `exp` of a real logarithm is what makes the scale factor a `ring` identity rather than a `cpow`-arithmetic fight. |
 | `spectral-theory/LEDGER.md:239`, `JacobiTheta.v` footer | — | **stale** | Both still describe the theta transformation as "the open next milestone". It landed in Coq on 2026-07-31 (28 files, 5864 lines). Not a defect in the mathematics — a stale status note on a result that exists. |
 
+### 3.1e The critical line — the symmetry package
+
+| Lean | Coq oracle | Verdict | Note |
+|---|---|---|---|
+| **`Zeta.zetaCont_conj`** | — | **absent-in-Coq (overtake)** | **`ζ(s̄) = conj(ζ(s))`**, hence `zetaCont_eq_zero_conj`: the zero set is symmetric about the **real axis**. Needs **no functional equation** — only that the Dirichlet coefficients are real. **A repo-wide search finds zero Coq results connecting `Cconj` to `zetaC`**: every conjugation result in `spectral-theory/` is about `XiC` (`ZetaZeroQuadruple.v:71,111,125`), which `ZetaXiLink.v:18` ties to ζ only on the real ray `s > 1`, so none of them constrains a zero of ζ off that ray. mathlib has no zeta-conjugation lemma either. |
+| `Zeta.conj_intervalIntegral` | — | **absent-in-mathlib** | Conjugation through an interval integral, **unconditionally**. mathlib has root-level `integral_conj` (`Bochner/ContinuousLinearMap.lean:175`, no integrability hypothesis) but no interval version; `intervalIntegral` unfolds to a difference of set integrals, so it follows in two lines. This dodged the `IsScalarTower ℝ ℂ ℂ` diamond entirely — the `conjCLE` route I had planned would have cost an integrability side goal. |
+| **`Zeta.refl_fixed_iff`** | `ZetaZeroQuadruple.v:142 line_reflection_fixed` | **cross-verified (strengthened)** | `refl z = 1 − z̄` is an involution, and **its fixed-point set is exactly the critical line**: `refl z = z ↔ Re z = 1/2`. The Coq statement is the forward direction only; the Lean form is an iff. |
+| `Zeta.RiemannHypothesis`, `RH_iff_zeros_refl_fixed` | `spectral-theory/RiemannHypothesis.v:33` (about `XiC`) | **statement only, not proved** | RH as a machine-checked proposition about **`zetaCont` itself**, plus the equivalence with `refl`-fixedness. The Coq statement is about `XiC`, so — per finding #1 — it is not yet provably equivalent to RH for ζ. |
+| `Zeta.FunctionalEquationSymmetry`, `zeros_refl_invariant` | — | **the gap, named** | `refl = (z ↦ 1−z) ∘ (z ↦ z̄)`. The conjugation half is **proved**; the `z ↦ 1−z` half **is** the functional equation and is not. Naming it as a predicate, with `zeros_refl_invariant` showing it suffices, makes the missing piece machine-visible instead of prose. **This does not approach RH.** |
+
 ### 3.2 Findings recorded during planning, pending Lean proof
 
 | Coq oracle | Verdict | Note |

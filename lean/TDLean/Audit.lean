@@ -33,6 +33,8 @@ import TDLean.Zeta.DirichletMul
 import TDLean.Zeta.VonMangoldt
 import TDLean.Zeta.Identity
 import TDLean.Zeta.RayIdentity
+import TDLean.Zeta.Conj
+import TDLean.Zeta.CriticalLine
 import TDLean.Zeta.Mertens
 import TDLean.Zeta.LogDerivOrder
 import TDLean.Zeta.NonVanishing
@@ -1352,3 +1354,70 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.norm_gaussian_term
+
+/-! ### Conjugation symmetry and the critical line -/
+
+/-- info: 'TDLean.Zeta.conj_cpow_ofReal_pos' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.conj_cpow_ofReal_pos
+
+/-- info: 'TDLean.Zeta.conj_intervalIntegral' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.conj_intervalIntegral
+
+/-- info: 'TDLean.Zeta.zetaDiff_conj' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zetaDiff_conj
+
+/-- info: 'TDLean.Zeta.zetaDiffSum_conj' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zetaDiffSum_conj
+
+/-- info: 'TDLean.Zeta.zetaCont_conj' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zetaCont_conj
+
+/-- info: 'TDLean.Zeta.zetaCont_eq_zero_conj' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zetaCont_eq_zero_conj
+
+/-- info: 'TDLean.Zeta.refl_involutive' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.refl_involutive
+
+/-- info: 'TDLean.Zeta.refl_fixed_iff' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.refl_fixed_iff
+
+/-- info: 'TDLean.Zeta.fixedPoints_refl' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.fixedPoints_refl
+
+/-- info: 'TDLean.Zeta.RH_iff_zeros_refl_fixed' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.RH_iff_zeros_refl_fixed
+
+/-- info: 'TDLean.Zeta.zeros_conj_invariant' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zeros_conj_invariant
+
+/-- info: 'TDLean.Zeta.zeros_refl_invariant' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.zeros_refl_invariant
+
+/-- info: 'TDLean.Zeta.criticalLine_nonvacuous' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Zeta.criticalLine_nonvacuous
