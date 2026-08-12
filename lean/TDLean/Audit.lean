@@ -1342,3 +1342,13 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.mellin_gaussian_term
+
+/-- info: 'TDLean.FE.integrableOn_gaussian_term' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.integrableOn_gaussian_term
+
+/-- info: 'TDLean.FE.norm_gaussian_term' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.norm_gaussian_term

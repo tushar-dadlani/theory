@@ -63,4 +63,45 @@ theorem mellin_gaussian_term {s : ℂ} (hs : 0 < s.re) (n : ℕ+) :
     (r := π * ((n : ℕ) : ℝ) ^ 2) hs2 hr
   rw [hmain, scale_factor n]
 
+
+/-! ### Integrability, and the norm — the two inputs `integral_tsum` needs -/
+
+/-- The scaled Gamma integrand is integrable on `(0,∞)`. mathlib has the *value* of this
+    integral (`integral_cpow_mul_exp_neg_mul_Ioi`) but not its integrability, so it is derived
+    here from the unscaled `Complex.GammaIntegral_convergent` by `t ↦ rt`. -/
+theorem integrableOn_gaussian_term {s : ℂ} (hs : 0 < s.re) {r : ℝ} (hr : 0 < r) :
+    IntegrableOn (fun t : ℝ => (t : ℂ) ^ (s - 1) * Complex.exp (-((r : ℂ) * (t : ℂ))))
+      (Ioi 0) := by
+  have hbase := Complex.GammaIntegral_convergent hs
+  have hscaled : IntegrableOn
+      (fun t : ℝ => (((r * t : ℝ)) : ℂ) ^ (s - 1) * Complex.exp (-(((r * t : ℝ)) : ℂ)))
+      (Ioi 0) := by
+    have h := (integrableOn_Ioi_comp_mul_left_iff
+      (fun x : ℝ => (x : ℂ) ^ (s - 1) * Complex.exp (-(x : ℂ))) 0 hr).mpr
+    simpa using h (by simpa [mul_comm] using hbase)
+  have hconst := hscaled.const_mul (((r : ℝ) : ℂ) ^ (-(s - 1)))
+  refine MeasureTheory.IntegrableOn.congr_fun hconst ?_ measurableSet_Ioi
+  intro t ht
+  dsimp only
+  have ht0 : (0 : ℝ) < t := ht
+  have hsplit : (((r * t : ℝ)) : ℂ) ^ (s - 1)
+      = ((r : ℝ) : ℂ) ^ (s - 1) * ((t : ℝ) : ℂ) ^ (s - 1) := by
+    rw [Complex.ofReal_mul]
+    exact Complex.mul_cpow_ofReal_nonneg hr.le ht0.le _
+  have hrne : ((r : ℝ) : ℂ) ≠ 0 := by exact_mod_cast hr.ne'
+  have hcancel : ((r : ℝ) : ℂ) ^ (1 - s) * ((r : ℝ) : ℂ) ^ (-1 + s) = 1 := by
+    rw [← Complex.cpow_add _ _ hrne]
+    norm_num
+  have hexp : (((r * t : ℝ)) : ℂ) = (r : ℂ) * (t : ℂ) := by push_cast; ring
+  rw [hsplit, hexp]
+  ring_nf
+  rw [hcancel, one_mul]
+
+/-- `‖t^{s−1}e^{−rt}‖ = t^{Re s−1}e^{−rt}` for `t > 0`. -/
+theorem norm_gaussian_term {s : ℂ} {r t : ℝ} (ht : 0 < t) :
+    ‖(t : ℂ) ^ (s - 1) * Complex.exp (-((r : ℂ) * (t : ℂ)))‖
+      = t ^ (s.re - 1) * Real.exp (-(r * t)) := by
+  rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos ht, Complex.norm_exp]
+  simp [Complex.mul_re]
+
 end TDLean.FE
