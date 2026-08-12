@@ -12,6 +12,7 @@
 import TDLean.FE.Mellin.Term
 import TDLean.Zeta.VonMangoldt
 import TDLean.FE.Theta.Transform
+import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
 namespace TDLean.FE
 
@@ -96,5 +97,66 @@ theorem psiTheta_transform {t : ℝ} (ht : 0 < t) :
     psiTheta (1 / t) = (((Real.sqrt t : ℝ) : ℂ) - 1) / 2
       + ((Real.sqrt t : ℝ) : ℂ) * psiTheta t := by
   rw [psiTheta_eq_psiNat, psiTheta_eq_psiNat, psiNat_transform ht]
+
+
+/-! ### The elementary pole terms
+
+    `∫₁^∞ (√u−1)/2 · u^{−s/2−1} du = 1/(s−1) − 1/s`. These two terms are what survive the
+    `(√u−1)/2` part of `psiTheta_transform`, and they are exactly the pole structure of the
+    completed zeta: a simple pole at `s = 1` and one at `s = 0`, swapped by `s ↦ 1−s`. -/
+
+theorem sqrt_eq_cpow_half {u : ℝ} (hu : 0 < u) :
+    (((Real.sqrt u : ℝ)) : ℂ) = (u : ℂ) ^ (1 / 2 : ℂ) := (cpow_half_eq_sqrt hu.le).symm
+
+/-- The integrand splits into two pure powers. -/
+theorem pole_integrand_eq {s : ℂ} {u : ℝ} (hu : 0 < u) :
+    ((((Real.sqrt u : ℝ)) : ℂ) - 1) / 2 * (u : ℂ) ^ (-s / 2 - 1)
+      = (1 / 2) * (u : ℂ) ^ (-s / 2 - 1 / 2) - (1 / 2) * (u : ℂ) ^ (-s / 2 - 1) := by
+  have hne : ((u : ℝ) : ℂ) ≠ 0 := by exact_mod_cast hu.ne'
+  have hsplit : (u : ℂ) ^ (1 / 2 : ℂ) * (u : ℂ) ^ (-s / 2 - 1)
+      = (u : ℂ) ^ (-s / 2 - 1 / 2) := by
+    rw [← Complex.cpow_add _ _ hne]
+    congr 1
+    ring
+  rw [sqrt_eq_cpow_half hu, ← hsplit]
+  ring
+
+theorem integral_pole_terms {s : ℂ} (hs : 1 < s.re) :
+    (∫ u in Ioi (1 : ℝ), ((((Real.sqrt u : ℝ)) : ℂ) - 1) / 2 * (u : ℂ) ^ (-s / 2 - 1))
+      = 1 / (s - 1) - 1 / s := by
+  have hsne : s ≠ 0 := by intro h; rw [h] at hs; simp at hs; linarith
+  have hs1 : s - 1 ≠ 0 := by
+    intro h
+    have : s = 1 := by linear_combination h
+    rw [this] at hs; simp at hs
+  have h1s : (1 : ℂ) - s ≠ 0 := by
+    intro h
+    exact hs1 (by linear_combination -h)
+  have hre1 : (-s / 2 - 1 / 2).re < -1 := by
+    simp only [Complex.sub_re, Complex.div_ofNat_re, Complex.neg_re, Complex.one_re]
+    linarith
+  have hre2 : (-s / 2 - 1).re < -1 := by
+    simp only [Complex.sub_re, Complex.div_ofNat_re, Complex.neg_re, Complex.one_re]
+    linarith
+  have hi1 := integrableOn_Ioi_cpow_of_lt hre1 (by norm_num : (0:ℝ) < 1)
+  have hi2 := integrableOn_Ioi_cpow_of_lt hre2 (by norm_num : (0:ℝ) < 1)
+  rw [setIntegral_congr_fun measurableSet_Ioi
+    (fun u hu => pole_integrand_eq (s := s) (by linarith [Set.mem_Ioi.mp hu]))]
+  have e1 : (∫ a in Ioi (1 : ℝ), (1 / 2 : ℂ) * (a : ℂ) ^ (-s / 2 - 1 / 2))
+      = (1 / 2 : ℂ) * ∫ a in Ioi (1 : ℝ), (a : ℂ) ^ (-s / 2 - 1 / 2) :=
+    MeasureTheory.integral_const_mul _ _
+  have e2 : (∫ a in Ioi (1 : ℝ), (1 / 2 : ℂ) * (a : ℂ) ^ (-s / 2 - 1))
+      = (1 / 2 : ℂ) * ∫ a in Ioi (1 : ℝ), (a : ℂ) ^ (-s / 2 - 1) :=
+    MeasureTheory.integral_const_mul _ _
+  rw [integral_sub (hi1.const_mul _) (hi2.const_mul _), e1, e2,
+    integral_Ioi_cpow_of_lt hre1 (by norm_num), integral_Ioi_cpow_of_lt hre2 (by norm_num)]
+  have hA : (-s / 2 - 1 / 2) + 1 ≠ 0 := fun h => h1s (by linear_combination 2 * h)
+  have hB : (-s / 2 - 1) + 1 ≠ 0 := fun h => hsne (by linear_combination -2 * h)
+  simp only [Complex.ofReal_one, Complex.one_cpow]
+  have hA' : (1 - s) * (1 - s)⁻¹ = 1 := mul_inv_cancel₀ h1s
+  have hB' : s * s⁻¹ = 1 := mul_inv_cancel₀ hsne
+  rw [div_sub_div _ _ hs1 hsne]
+  field_simp
+  linear_combination s * hA' + (1 - s) * hB'
 
 end TDLean.FE

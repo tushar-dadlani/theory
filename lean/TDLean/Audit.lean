@@ -1508,3 +1508,20 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.psiTheta_transform
+
+/-! ### Cluster A8: the elementary pole terms -/
+
+/-- info: 'TDLean.FE.sqrt_eq_cpow_half' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.sqrt_eq_cpow_half
+
+/-- info: 'TDLean.FE.pole_integrand_eq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.pole_integrand_eq
+
+/-- info: 'TDLean.FE.integral_pole_terms' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.integral_pole_terms
