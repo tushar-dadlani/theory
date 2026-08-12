@@ -266,17 +266,19 @@ namespace.
 | **`Operator.Eop_mul`, `norm_chi`, `ip_Eop_adjoint`** | — | **absent-in-Coq (overtake)** | **The Bost–Connes representation on `ℓ²(ℕ⁺)`:** `π(e(γ))εₘ = χ(m·γ)εₘ` with `χ(q) = e^{2πiq}`. `χ` is well-defined on `ℚ/ℤ` exactly because `e^{2πik} = 1` for integer `k` — which is *why* the group must be `ℚ/ℤ` and not `ℚ`. `‖χ‖ = 1`, so each `π(e(γ))` is **unitary**, and `ip_Eop_adjoint` gives its adjoint as `π(e(−γ))` — the sharp contrast with the `Sₙ`, which are isometries only. |
 | **`Operator.conj_Eop_apply_mul`**, `conj_Eop_apply_of_not_dvd` | — | **absent-in-Coq** | **The left-hand side of the coupling relation, computed as an operator identity:** `Sₙ π(e(γ)) Sₙ*` is diagonal, supported on multiples of `n`, with entry `χ(i·γ)` at `j = n·i`, and **zero** off the multiples — the projection `SₙSₙ*` showing through. |
 
+| **`Operator.bc_coupling`** | — | **absent-in-Coq (overtake)** | **The Bost–Connes coupling relation, closed as an operator identity:** `μₙ e(γ) μₙ* = (1/n)∑_{nδ=γ} e(δ)` on `ℓ²(ℕ⁺)`. Joins `conj_Eop_apply_mul` (left side) to `nsmul_eq_iff` (the fibre) via character orthogonality. With `bc_isometry`/`bc_semigroup`/`bc_coprime`, the **full BC presentation** is now machine-checked in this representation. |
+| **`Operator.sum_chi_torsion`** | — | **absent-in-Coq** | `∑_{k : ZMod n} χ(j·(k/n)) = n·[n ∣ j]` — character orthogonality on the `n`-torsion. This is what *forces* the `1/n` normalisation and makes the right-hand side vanish off multiples of `n`, matching the projection `SₙSₙ*`. Built on `Complex.isPrimitiveRoot_exp_of_coprime` plus `geom_sum_eq`. The finite-field analogue is the repo's own `CharactersModN.v` / `GaussSum.v`. |
+
 **Scope, stated plainly.** None of this approaches RH. Constructing an operator whose
 eigenvalues are the zeta zeros *is* the Hilbert–Pólya problem and is open. What is built is the
 **framework in which such a statement can be made at all** — inner product, adjoint, Hermitian
 self-adjointness, real spectrum, the diagonal zeta operator, and the number operator with its
 partition function — none of which existed on either side before. The spectrum of `N` is
 `{log n}`, not the zeros; building an operator with the zeros as spectrum *is* Hilbert–Pólya.
-The relations `BC0`–`BC3` are the `ℕˣ` half of the presentation. Still missing for BC proper: the two sides of the coupling relation are each computed —
-`conj_Eop_apply_mul` (left) and `nsmul_eq_iff` (the fibre, right) — but **not yet equated**;
-that needs the root-of-unity sum `∑_{k<n} ζ^{jk} = n·[n ∣ j]`. Also: the representation is at
-`ρ = 1 ∈ Ẑ`, the general `π_ρ(e(γ))εₘ = χ(ρ(mγ))εₘ` needing `Ẑ` as an actual parameter group;
-a C\*-completion (this is a
+The relations `BC0`–`BC3` are the `ℕˣ` half of the presentation. The BC **presentation** is now complete in this representation (`bc_isometry`, `bc_semigroup`,
+`bc_coprime`, `bc_not_unitary`, `bc_coupling`). Still missing for BC proper: the representation
+is at `ρ = 1 ∈ Ẑ`, the general `π_ρ(e(γ))εₘ = χ(ρ(mγ))εₘ` needing `Ẑ` as an actual parameter
+group; a C\*-completion (this is a
 plain subalgebra of endomorphisms, no norm); and KMS states, so no phase transition in the KMS
 sense. `partitionFunction_diverges`
 is the classical free-energy blow-up, not a KMS transition. `millennium-problems/Riemann.v:75` declares `Parameter H_operator` and

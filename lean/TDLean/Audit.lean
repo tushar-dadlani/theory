@@ -50,6 +50,7 @@ import TDLean.Operator.Isometry
 import TDLean.Operator.BCAlgebra
 import TDLean.Operator.QModZ
 import TDLean.Operator.Rep
+import TDLean.Operator.RootSum
 import TDLean.Newman.Tauberian
 
 /-! ### Cluster B -- monoid algebra of prime length -/
@@ -1166,3 +1167,30 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Operator.conj_Eop_apply_of_not_dvd
+
+/-! ### Root-of-unity sum and the BC coupling relation -/
+
+/-- info: 'TDLean.Operator.isPrimitiveRoot_zetaRoot' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.isPrimitiveRoot_zetaRoot
+
+/-- info: 'TDLean.Operator.chi_torsionEmb_nsmul' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.chi_torsionEmb_nsmul
+
+/-- info: 'TDLean.Operator.zetaRoot_pow_eq_one_iff' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.zetaRoot_pow_eq_one_iff
+
+/-- info: 'TDLean.Operator.sum_chi_torsion' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.sum_chi_torsion
+
+/-- info: 'TDLean.Operator.bc_coupling' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Operator.bc_coupling
