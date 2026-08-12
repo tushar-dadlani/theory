@@ -418,6 +418,7 @@ spectral-theory/NicolasCriterion.v
 spectral-theory/MertensThird.v
 spectral-theory/MertensPrime.v
 spectral-theory/MertensTailAnalytic.v
+spectral-theory/MertensTailBound.v
 spectral-theory/SpectralAlgebra.v
 spectral-theory/SpectralEvent.v
 spectral-theory/SpectralPrism.v
