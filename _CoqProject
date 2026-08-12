@@ -971,3 +971,4 @@ spectral-theory/BerryKeatingH.v
 spectral-theory/BerryKeatingRep.v
 spectral-theory/BerryKeatingDilation.v
 spectral-theory/DilationBoundary.v
+spectral-theory/SelfAdjointExtension.v
