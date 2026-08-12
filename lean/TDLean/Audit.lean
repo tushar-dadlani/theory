@@ -1486,3 +1486,25 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.tsum_gaussian_eq
+
+/-! ### Cluster A7: psi's transformation law -/
+
+/-- info: 'TDLean.FE.cpow_half_eq_sqrt' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.cpow_half_eq_sqrt
+
+/-- info: 'TDLean.FE.psiNat_transform' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.psiNat_transform
+
+/-- info: 'TDLean.FE.psiTheta_eq_psiNat' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.psiTheta_eq_psiNat
+
+/-- info: 'TDLean.FE.psiTheta_transform' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.psiTheta_transform

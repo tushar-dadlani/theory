@@ -11,6 +11,7 @@
 -/
 import TDLean.FE.Mellin.Term
 import TDLean.Zeta.VonMangoldt
+import TDLean.FE.Theta.Transform
 
 namespace TDLean.FE
 
@@ -64,5 +65,36 @@ theorem mellin_psiTheta {s : ℂ} (hs : 1 < s.re) :
   rw [← LS_one_eq_zetaSeries hsne, LS]
   refine tsum_congr fun n => ?_
   rw [Complex.cpow_neg, one_div]
+
+
+/-! ### Reconciling the two indexings
+
+    `mellin_psiTheta` is stated with `psiTheta`, indexed over `ℕ⁺`; the theta bridge produces
+    `psiNat`, indexed over `ℕ` by `n ↦ n+1`. They are the same sum. -/
+
+theorem psiTheta_eq_psiNat (t : ℝ) : psiTheta t = psiNat t := by
+  rw [psiTheta, psiNat]
+  have hinj : Function.Injective (fun n : ℕ => n.succPNat) := by
+    intro x y hxy
+    simpa using hxy
+  have hsupp : Function.support
+      (fun m : ℕ+ => Complex.exp (-(((π * ((m : ℕ) : ℝ) ^ 2 : ℝ) : ℂ) * (t : ℂ))))
+      ⊆ Set.range (fun n : ℕ => n.succPNat) := by
+    intro m _
+    refine ⟨(m : ℕ) - 1, ?_⟩
+    apply PNat.coe_injective
+    simp only [Nat.succPNat_coe]
+    exact Nat.succ_pred_eq_of_pos m.pos
+  refine (hinj.tsum_eq hsupp).symm.trans (tsum_congr fun n => ?_)
+  congr 1
+  simp only [Nat.succPNat_coe]
+  push_cast
+  ring
+
+/-- **The transformation law, in the form the split needs.** -/
+theorem psiTheta_transform {t : ℝ} (ht : 0 < t) :
+    psiTheta (1 / t) = (((Real.sqrt t : ℝ) : ℂ) - 1) / 2
+      + ((Real.sqrt t : ℝ) : ℂ) * psiTheta t := by
+  rw [psiTheta_eq_psiNat, psiTheta_eq_psiNat, psiNat_transform ht]
 
 end TDLean.FE

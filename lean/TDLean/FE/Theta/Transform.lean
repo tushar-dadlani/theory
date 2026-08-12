@@ -232,4 +232,28 @@ theorem tsum_gaussian_eq {a : ℝ} (ha : 0 < a) :
   rw [tsum_of_add_one_of_neg_add_one hsp hsm, tsum_congr hp, tsum_congr hm, hzero, ← psiNat]
   ring
 
+
+/-! ### The transformation law for `ψ` -/
+
+theorem cpow_half_eq_sqrt {a : ℝ} (ha : 0 ≤ a) :
+    ((a : ℝ) : ℂ) ^ (1 / 2 : ℂ) = ((Real.sqrt a : ℝ) : ℂ) := by
+  rw [show ((1 : ℂ) / 2) = (((1 / 2 : ℝ)) : ℂ) by norm_num, ← Complex.ofReal_cpow ha,
+    ← Real.sqrt_eq_rpow]
+
+/-- **`ψ(1/a) = (√a − 1)/2 + √a·ψ(a)`.** The form the Mellin split needs: the `√a·ψ(a)` term
+    is what turns the `(0,1)` piece into a `(1,∞)` piece with `s` replaced by `1−s`, and the
+    `(√a−1)/2` is what produces the two elementary pole terms. -/
+theorem psiNat_transform {a : ℝ} (ha : 0 < a) :
+    psiNat (1 / a) = (((Real.sqrt a : ℝ) : ℂ) - 1) / 2
+      + ((Real.sqrt a : ℝ) : ℂ) * psiNat a := by
+  have hainv : (0 : ℝ) < 1 / a := by positivity
+  have hsqpos : (0 : ℝ) < Real.sqrt a := Real.sqrt_pos.mpr ha
+  have hsq : ((Real.sqrt a : ℝ) : ℂ) ≠ 0 := by exact_mod_cast hsqpos.ne'
+  have h1 := tsum_gaussian_transform ha
+  rw [tsum_gaussian_eq ha, tsum_gaussian_eq hainv, cpow_half_eq_sqrt ha.le] at h1
+  have h2 : ((Real.sqrt a : ℝ) : ℂ) * (1 + 2 * psiNat a) = 1 + 2 * psiNat (1 / a) := by
+    rw [h1]
+    field_simp
+  linear_combination -h2 / 2
+
 end TDLean.FE
