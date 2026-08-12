@@ -47,6 +47,7 @@ import TDLean.PNT.Tauberian
 import TDLean.PNT.Squeeze
 import TDLean.PNT.Transfer
 import TDLean.PNT.PiCount
+import TDLean.PNT.PrimeCountingAsymp
 import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry
@@ -1293,3 +1294,15 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.PNT.piCount_le
+
+/-! ### C10 part 13: the Prime Number Theorem -/
+
+/-- info: 'TDLean.PNT.tendsto_rpow_mul_log_div' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.tendsto_rpow_mul_log_div
+
+/-- info: 'TDLean.PNT.tendsto_piCount' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.tendsto_piCount
