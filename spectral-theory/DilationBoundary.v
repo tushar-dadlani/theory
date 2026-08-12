@@ -76,6 +76,68 @@ Proof. exact spec_Bxi_zero. Qed.
 Lemma boundary_zeros_real : forall t, spec Bxi t <-> xir t = 0.
 Proof. exact spec_Bxi_xir. Qed.
 
+(* ----------------------------------------------------------------- *)
+(*  7.  NO ZERO OFF THE REFLECTION AXIS STRUCTURE                     *)
+(*                                                                    *)
+(*  The "reflection axis structure" is the Klein-4 group of XiC-      *)
+(*  symmetries {id, z|->1-z (FE), z|->conj z (Schwarz), z|->1-conj z   *)
+(*  (Sbar, the line reflection)}.  The fixed axis of the composite     *)
+(*  line reflection Sbar is exactly Re z = 1/2 (Sbar_fixed_iff).       *)
+(*                                                                    *)
+(*  The non-tautological content: the two nontrivial reflections --    *)
+(*  the functional-equation image 1-z and the Schwarz image conj z --  *)
+(*  COINCIDE precisely on the axis (refl_collapse_iff).  Off the axis   *)
+(*  they genuinely differ (offaxis_no_collapse): the zero orbit is a    *)
+(*  true 4-element quadruple.  For every point Bxi samples (crit t, on  *)
+(*  the axis) the orbit DEGENERATES to the mirror pair {crit t,         *)
+(*  crit(-t)} -- so Bxi has NO zero whose orbit escapes the axis.       *)
+(* ----------------------------------------------------------------- *)
+
+(* the FE-reflection 1-z and the Schwarz-reflection conj z agree iff    *)
+(* z is on the reflection axis Re z = 1/2 -- the orbit-collapse test.    *)
+Lemma refl_collapse_iff : forall z, Cminus C1 z = Cconj z <-> Re z = / 2.
+Proof.
+  intro z; split.
+  - intro H; apply (f_equal Re) in H; unfold Cminus, Cconj, C1 in H; simpl in H; lra.
+  - intro H; unfold Cminus, Cconj, C1; apply Ceq; simpl; lra.
+Qed.
+
+(* off the axis the two reflections DIFFER: a genuine 4-fold orbit.     *)
+Corollary offaxis_no_collapse : forall z, Re z <> / 2 -> Cminus C1 z <> Cconj z.
+Proof. intros z H Hc; apply H, refl_collapse_iff; exact Hc. Qed.
+
+(* on the seam the FE-image and Schwarz-image are both the mirror point  *)
+(* crit(-t); the line reflection Sbar fixes crit t.  The XiC-quadruple   *)
+(* {z, 1-z, conj z, 1-conj z} at z=crit t collapses to {crit t, crit(-t)}. *)
+Lemma FE_crit : forall t, Cminus C1 (crit t) = crit (- t).
+Proof. intro t; unfold crit, Cminus, C1; apply Ceq; simpl; lra. Qed.
+
+Lemma Sbar_crit_fixed : forall t, Sbar (crit t) = crit t.
+Proof. intro t; apply Sbar_fixed_iff; reflexivity. Qed.
+
+(* the boundary zero set is closed under the mirror reflection t |-> -t. *)
+Lemma Bxi_zero_reflect : forall t, spec Bxi t <-> spec Bxi (- t).
+Proof. intro t; unfold spec; rewrite Bxi_even; tauto. Qed.
+
+(* HEADLINE: every boundary zero sits ON the reflection axis -- its FE-  *)
+(* image and Schwarz-image coincide and Sbar fixes it.  None off it.     *)
+Theorem Bxi_no_offaxis_zero : forall t,
+  spec Bxi t -> Sbar (crit t) = crit t /\ Cminus C1 (crit t) = Cconj (crit t).
+Proof.
+  intros t _; split; [ apply Sbar_crit_fixed | rewrite FE_crit; apply crit_neg_conj ].
+Qed.
+
+(* and the whole XiC zero-orbit of a boundary zero is just the mirror     *)
+(* pair {crit t, crit(-t)} -- both selected by Bxi (Bxi_zero_reflect).    *)
+Corollary Bxi_zero_orbit_pair : forall t,
+  spec Bxi t -> XiC (crit t) = C0 /\ XiC (crit (- t)) = C0.
+Proof.
+  intros t Ht. pose proof (proj1 (spec_Bxi_zero t) Ht) as H0.
+  split; [ exact H0 | rewrite crit_neg_conj, XiC_conj, H0, Cconj_C0; reflexivity ].
+Qed.
+
 Print Assumptions Bxi_even.
 Print Assumptions Sphase_unit.
 Print Assumptions boundary_selects_zeros.
+Print Assumptions Bxi_no_offaxis_zero.
+Print Assumptions refl_collapse_iff.
