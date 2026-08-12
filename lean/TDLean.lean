@@ -64,6 +64,7 @@ import TDLean.FE.Theta.Decay
 import TDLean.FE.Mellin.Integrable
 import TDLean.FE.Mellin.FunctionalEquation
 import TDLean.FE.Strip
+import TDLean.FE.Holo
 import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry

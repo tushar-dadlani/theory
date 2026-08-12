@@ -64,6 +64,7 @@ import TDLean.Newman.Tauberian
 import TDLean.FE.Mellin.Split
 import TDLean.FE.Mellin.FunctionalEquation
 import TDLean.FE.Strip
+import TDLean.FE.Holo
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -1664,3 +1665,35 @@ import TDLean.FE.Strip
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.completedZeta_zeros_refl_invariant
+
+/-! ### Cluster A14: holomorphy of the tail transform and of Lambda -/
+
+/-- info: 'TDLean.FE.integrableOn_log_mul_rpow_mul_exp_neg_pi' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.integrableOn_log_mul_rpow_mul_exp_neg_pi
+
+/-- info: 'TDLean.FE.integrableOn_log_mul_cpow_mul_psiTheta' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.integrableOn_log_mul_cpow_mul_psiTheta
+
+/-- info: 'TDLean.FE.hasDerivAt_mellinTail' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.hasDerivAt_mellinTail
+
+/-- info: 'TDLean.FE.differentiable_mellinTail' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.differentiable_mellinTail
+
+/-- info: 'TDLean.FE.completedZeta_eq_mellinTail' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_eq_mellinTail
+
+/-- info: 'TDLean.FE.differentiableAt_completedZeta' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.differentiableAt_completedZeta
