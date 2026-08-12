@@ -44,6 +44,7 @@ import TDLean.PNT.NewmanInput
 import TDLean.PNT.GNewman
 import TDLean.PNT.Region
 import TDLean.PNT.Tauberian
+import TDLean.PNT.Squeeze
 import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry
@@ -1194,3 +1195,35 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.Operator.bc_coupling
+
+/-! ### C10 part 10: the squeeze machinery -/
+
+/-- info: 'TDLean.PNT.cauchy_tail' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.cauchy_tail
+
+/-- info: 'TDLean.PNT.overshoot_pos' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.overshoot_pos
+
+/-- info: 'TDLean.PNT.undershoot_neg' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.undershoot_neg
+
+/-- info: 'TDLean.PNT.integral_model' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.integral_model
+
+/-- info: 'TDLean.PNT.fNewman_ge_model' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.fNewman_ge_model
+
+/-- info: 'TDLean.PNT.integral_ge_overshoot' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.integral_ge_overshoot
