@@ -130,4 +130,116 @@ theorem integral_ge_overshoot {lam t : ℝ} (hlam : 1 < lam)
     field_simp
   linarith [hmono, hval]
 
+
+/-! ### The mirror bound, and the contradiction -/
+
+theorem fNewman_le_model {lam t : ℝ} (h : psi (Real.exp t) ≤ lam * Real.exp t) {s : ℝ}
+    (hs : s ≤ t) : fNewman s ≤ lam * Real.exp (t - s) - 1 := by
+  have hmono : psi (Real.exp s) ≤ psi (Real.exp t) := psi_mono (Real.exp_le_exp.mpr hs)
+  have hpos : (0 : ℝ) < Real.exp (-s) := Real.exp_pos _
+  have hkey : psi (Real.exp s) * Real.exp (-s) ≤ lam * Real.exp t * Real.exp (-s) :=
+    mul_le_mul_of_nonneg_right (le_trans hmono h) hpos.le
+  have hexp : Real.exp t * Real.exp (-s) = Real.exp (t - s) := by
+    rw [← Real.exp_add, sub_eq_add_neg]
+  rw [fNewman, ← hexp, ← mul_assoc]
+  linarith [hkey]
+
+theorem intervalIntegrable_fNewman' (a b : ℝ) :
+    IntervalIntegrable fNewman MeasureTheory.volume a b := by
+  have h1 : IntervalIntegrable (fun s : ℝ => psi (Real.exp s)) MeasureTheory.volume a b :=
+    (monotone_psi_exp.monotoneOn _).intervalIntegrable
+  exact (h1.mul_continuousOn (by fun_prop)).sub intervalIntegrable_const
+
+/-- **The undershoot bound.** -/
+theorem integral_le_undershoot {lam t : ℝ} (h0 : 0 < lam) (hlam : lam < 1)
+    (h : psi (Real.exp t) ≤ lam * Real.exp t) :
+    (∫ s in (t + Real.log lam)..t, fNewman s) ≤ -(lam - 1 - Real.log lam) := by
+  have hlogneg : Real.log lam < 0 := Real.log_neg h0 hlam
+  have hle : t + Real.log lam ≤ t := by linarith
+  have hint1 : IntervalIntegrable (fun s : ℝ => lam * Real.exp (t - s))
+      MeasureTheory.volume (t + Real.log lam) t := by
+    apply ContinuousOn.intervalIntegrable; fun_prop
+  have hmono := intervalIntegral.integral_mono_on hle
+    (intervalIntegrable_fNewman' _ _)
+    ((hint1.sub intervalIntegrable_const))
+    (fun s hs => fNewman_le_model h hs.2)
+  have hmodel : (∫ s in (t + Real.log lam)..t, lam * Real.exp (t - s) - 1)
+      = -(lam - 1 - Real.log lam) := by
+    have h1 := integral_model lam t (Real.log lam)
+    rw [Real.exp_neg, Real.exp_log h0] at h1
+    rw [intervalIntegral.integral_symm, h1]
+    field_simp
+  rw [hmodel] at hmono
+  exact hmono
+
+theorem integral_ofReal_fNewman (a b : ℝ) :
+    (∫ t in a..b, fNewmanC t) = (((∫ t in a..b, fNewman t : ℝ)) : ℂ) :=
+  intervalIntegral.integral_ofReal
+
+/-- **No overshoot.** For `λ > 1`, eventually `ψ(eᵗ) < λeᵗ`. -/
+theorem no_overshoot {lam : ℝ} (hlam : 1 < lam) :
+    ∀ᶠ t in atTop, psi (Real.exp t) < lam * Real.exp t := by
+  have hδ : 0 < lam - 1 - Real.log lam := overshoot_pos hlam
+  have hlogpos : 0 < Real.log lam := Real.log_pos hlam
+  obtain ⟨M, hM⟩ := cauchy_tail hδ
+  filter_upwards [eventually_ge_atTop M] with t ht
+  by_contra hcon
+  push_neg at hcon
+  have h1 := integral_ge_overshoot hlam hcon
+  have h2 := hM t (t + Real.log lam) ht (by linarith)
+  rw [integral_ofReal_fNewman, Complex.norm_real, Real.norm_eq_abs] at h2
+  have h3 : |∫ s in t..(t + Real.log lam), fNewman s| < lam - 1 - Real.log lam := h2
+  rw [abs_lt] at h3
+  linarith [h3.2, h1]
+
+/-- **No undershoot.** For `0 < λ < 1`, eventually `λeᵗ < ψ(eᵗ)`. -/
+theorem no_undershoot {lam : ℝ} (h0 : 0 < lam) (hlam : lam < 1) :
+    ∀ᶠ t in atTop, lam * Real.exp t < psi (Real.exp t) := by
+  have hδ : 0 < lam - 1 - Real.log lam := by
+    have := Real.log_lt_sub_one_of_pos h0 (by linarith : lam ≠ 1)
+    linarith
+  have hlogneg : Real.log lam < 0 := Real.log_neg h0 hlam
+  obtain ⟨M, hM⟩ := cauchy_tail hδ
+  filter_upwards [eventually_ge_atTop (M - Real.log lam)] with t ht
+  by_contra hcon
+  push_neg at hcon
+  have h1 := integral_le_undershoot h0 hlam hcon
+  have h2 := hM (t + Real.log lam) t (by linarith) (by linarith)
+  rw [integral_ofReal_fNewman, Complex.norm_real, Real.norm_eq_abs] at h2
+  have h3 : |∫ s in (t + Real.log lam)..t, fNewman s| < lam - 1 - Real.log lam := h2
+  rw [abs_lt] at h3
+  linarith [h3.1, h1]
+
+
+/-! ### `ψ(x) ~ x` -/
+
+theorem tendsto_psi_exp :
+    Tendsto (fun t : ℝ => psi (Real.exp t) / Real.exp t) atTop (nhds 1) := by
+  rw [Metric.tendsto_atTop]
+  intro ε hε
+  set e : ℝ := min ε (1 / 2) with he
+  have he0 : 0 < e := lt_min hε (by norm_num)
+  have he1 : e < 1 := lt_of_le_of_lt (min_le_right _ _) (by norm_num)
+  have hee : e ≤ ε := min_le_left _ _
+  obtain ⟨M1, hM1⟩ := eventually_atTop.mp (no_overshoot (lam := 1 + e) (by linarith))
+  obtain ⟨M2, hM2⟩ :=
+    eventually_atTop.mp (no_undershoot (lam := 1 - e) (by linarith) (by linarith))
+  refine ⟨max M1 M2, fun t ht => ?_⟩
+  have h1 := hM1 t (le_trans (le_max_left _ _) ht)
+  have h2 := hM2 t (le_trans (le_max_right _ _) ht)
+  have hexp : (0 : ℝ) < Real.exp t := Real.exp_pos t
+  have hd1 : psi (Real.exp t) / Real.exp t < 1 + e := by
+    rw [div_lt_iff₀ hexp]; linarith
+  have hd2 : 1 - e < psi (Real.exp t) / Real.exp t := by
+    rw [lt_div_iff₀ hexp]; linarith
+  rw [Real.dist_eq, abs_lt]
+  exact ⟨by linarith, by linarith⟩
+
+/-- **`ψ(x)/x → 1`** — the Chebyshev form of the Prime Number Theorem. -/
+theorem tendsto_psi : Tendsto (fun x : ℝ => psi x / x) atTop (nhds 1) := by
+  have h := tendsto_psi_exp.comp Real.tendsto_log_atTop
+  refine h.congr' ?_
+  filter_upwards [eventually_gt_atTop (0 : ℝ)] with x hx
+  simp only [Function.comp_apply, Real.exp_log hx]
+
 end TDLean.PNT

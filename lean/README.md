@@ -148,7 +148,9 @@ isolated, and `∑ Λ(n)n^{−s} = −ζ′/ζ` on `Re s > 1` (with `ζ ≠ 0` t
 needing no Euler product). Also landed: the complex-analytic **identity theorem**, whose
 absence in Rocq is LEDGER finding #1.
 
-The remaining route to PNT is C10 (the Chebyshev assembly); the zeta-side input
-`Φ(s) − 1/(s−1)` holomorphic on `Re s ≥ 1` is now done. C9 is the Coq route's own gating blocker and
+**PNT is proved**: `PNT.tendsto_psi : ψ(x)/x → 1`, the Chebyshev form. The remaining step to
+the `π(x) ~ x/log x` form is the transfer `ψ ~ x → θ ~ x → π ~ x/log x`, where
+`PiUpperAssembly.v:83` and `ThetaPiBound.v:35` become live oracles — both are stated
+*conditional on* `θ(N)/N → 1`, which `tendsto_psi` now supplies. C9 is the Coq route's own gating blocker and
 is a different area of mathematics; mathlib has `riemannZeta` and its non-vanishing, but
 both are banned as endpoints under the from-scratch rule.

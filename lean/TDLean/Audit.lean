@@ -1227,3 +1227,28 @@ import TDLean.Newman.Tauberian
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.PNT.integral_ge_overshoot
+
+/-- info: 'TDLean.PNT.integral_le_undershoot' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.integral_le_undershoot
+
+/-- info: 'TDLean.PNT.no_overshoot' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.no_overshoot
+
+/-- info: 'TDLean.PNT.no_undershoot' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.no_undershoot
+
+/-- info: 'TDLean.PNT.tendsto_psi_exp' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.tendsto_psi_exp
+
+/-- info: 'TDLean.PNT.tendsto_psi' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.PNT.tendsto_psi
