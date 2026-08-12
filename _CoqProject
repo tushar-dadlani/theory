@@ -421,6 +421,7 @@ spectral-theory/MertensTailAnalytic.v
 spectral-theory/MertensTailBound.v
 spectral-theory/MertensSecond.v
 spectral-theory/MertensSecondThm.v
+spectral-theory/MertensThirdThm.v
 spectral-theory/SpectralAlgebra.v
 spectral-theory/SpectralEvent.v
 spectral-theory/SpectralPrism.v
