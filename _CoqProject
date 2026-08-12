@@ -967,3 +967,4 @@ spectral-theory/SelfDualCenter.v
 spectral-theory/BerryKeating.v
 spectral-theory/BerryKeatingM2.v
 spectral-theory/BerryKeatingFree.v
+spectral-theory/BerryKeatingH.v
