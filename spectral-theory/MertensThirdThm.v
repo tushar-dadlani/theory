@@ -19,7 +19,7 @@
 
 From Stdlib Require Import Reals Lra Lia Arith List.
 Require Import ChebyshevBound ChebyshevPrime PrimePowerReindex
-        MertensPrime HarmonicSum MertensSecondThm.
+        MertensPrime MertensVonMangoldt HarmonicSum MertensSecondThm.
 Open Scope R_scope.
 
 Definition logProd (N : nat) : R := Rsum (fun d => iterm d * ln (1 - / INR d)) 1 N.
@@ -125,3 +125,56 @@ Proof.
 Qed.
 
 Print Assumptions mertens_third.
+
+(* ----------------------------------------------------------------- *)
+(*  Toward the EXACT constant: the prime-power tail constant P2       *)
+(*  exists (Rrem converges, monotone + bounded).                      *)
+(* ----------------------------------------------------------------- *)
+
+Lemma g_nonneg : forall d, 0 <= iterm d * (- ln (1 - / INR d) - / INR d).
+Proof.
+  intro d. destruct (le_lt_dec 2 d) as [Hd|Hd].
+  - apply Rmult_le_pos; [ apply iterm_nonneg | apply (rterm_bracket d); lia ].
+  - assert (Hi : iterm d = 0).
+    { unfold iterm; destruct d as [|[|d']];
+        [ change (primeb 0) with false | change (primeb 1) with false | lia ]; reflexivity. }
+    rewrite Hi; lra.
+Qed.
+
+Lemma Rrem_le1 : forall N, Rrem N <= 1.
+Proof.
+  intros N. destruct (le_lt_dec 2 N) as [H|H]; [ apply (Rrem_bound N H) | ].
+  assert (HR : Rrem N = 0).
+  { destruct N as [|[|k]]; [ reflexivity | | lia ].
+    unfold Rrem, Rsum; cbn [seq map fold_right]. change (iterm 1) with 0; ring. }
+  rewrite HR; lra.
+Qed.
+
+Lemma Rrem_growing : Un_growing Rrem.
+Proof.
+  intro n. unfold Rrem. rewrite Rsum_succ. pose proof (g_nonneg (S n)). lra.
+Qed.
+
+Lemma Rrem_ub : has_ub Rrem.
+Proof. exists 1. intros x [i ->]. apply Rrem_le1. Qed.
+
+Lemma cv_le_ub' : forall u l M, Un_cv u l -> (forall n, u n <= M) -> l <= M.
+Proof.
+  intros u l M Hcv Hub. destruct (Rle_or_lt l M) as [Hle | Hlt]; [ exact Hle | ].
+  exfalso. destruct (Hcv ((l - M) / 2) ltac:(lra)) as [K HK].
+  specialize (HK K (Nat.le_refl K)); specialize (Hub K).
+  unfold R_dist in HK; apply Rabs_def2 in HK; lra.
+Qed.
+
+(* P2 = sum_p sum_{k>=2} 1/(k p^k) exists as a real in [0,1]. *)
+Theorem P2_exists : { P2 : R | Un_cv Rrem P2 /\ 0 <= P2 <= 1 }.
+Proof.
+  destruct (growing_cv Rrem Rrem_growing Rrem_ub) as [P2 HP2].
+  exists P2. split; [ exact HP2 | split ].
+  - pose proof (growing_ineq Rrem P2 Rrem_growing HP2 0%nat) as H0.
+    unfold Rrem in H0; rewrite (Rsum_ext _ (fun _ => 0)) in H0 by (intros i Hi; apply in_seq in Hi; lia).
+    revert H0; unfold Rsum; cbn [seq map fold_right]; lra.
+  - apply (cv_le_ub' Rrem P2 1 HP2 Rrem_le1).
+Qed.
+
+Print Assumptions P2_exists.
