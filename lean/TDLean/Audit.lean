@@ -66,6 +66,7 @@ import TDLean.FE.Mellin.FunctionalEquation
 import TDLean.FE.Strip
 import TDLean.FE.Holo
 import TDLean.FE.Transfer
+import TDLean.FE.Continuation
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -1745,3 +1746,30 @@ import TDLean.FE.Transfer
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.zetaCont_zero_quadruple
+
+/-! ### Cluster A16: the full continuation and the genuine trivial zeros -/
+
+/-- info: 'TDLean.FE.differentiable_inv_Gamma_half' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.differentiable_inv_Gamma_half
+
+/-- info: 'TDLean.FE.differentiableAt_zetaFE' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.differentiableAt_zetaFE
+
+/-- info: 'TDLean.FE.zetaFE_eq_zetaCont' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.zetaFE_eq_zetaCont
+
+/-- info: 'TDLean.FE.zetaFE_trivial_zero_genuine' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.zetaFE_trivial_zero_genuine
+
+/-- info: 'TDLean.FE.zetaFE_eq_zero_iff_of_re_lt_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.zetaFE_eq_zero_iff_of_re_lt_zero
