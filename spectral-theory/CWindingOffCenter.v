@@ -1,0 +1,68 @@
+(* ================================================================= *)
+(*  CWindingOffCenter.v  (identity-theorem plan, brick B1 crux)        *)
+(*                                                                    *)
+(*  The OFF-CENTRE-POLE winding integral                              *)
+(*     oint_{|z|=R} dz/(z-w) = 2 pi i    for  |w| < R,                  *)
+(*  by PARAMETER DIFFERENTIATION (route 2 of docs/identity_theorem_    *)
+(*  plan.md): slide the pole  w_s = s*w  from the centre (s=0) to w    *)
+(*  (s=1); the winding W(s) has zero s-derivative (its derivative       *)
+(*  integrand is a loop of an exact form), so W is constant and         *)
+(*  W(1) = W(0) = 2 pi i (CWinding.winding_dz_z).                       *)
+(*                                                                    *)
+(*  Stage A here: preliminaries (pole stays inside; the denominator     *)
+(*  z - w_s never vanishes on the circle; modulus lower bound          *)
+(*  R - |w| > 0 via the reverse triangle inequality).                  *)
+(* ================================================================= *)
+
+From Stdlib Require Import Reals Lra.
+Require Import ComplexField Cmodulus CPathIntegral CWinding.
+Open Scope R_scope.
+
+(* reverse triangle inequality: |a| - |b| <= |a - b| *)
+Lemma Cmod_rev_triangle : forall a b, Cmod a - Cmod b <= Cmod (Cminus a b).
+Proof.
+  intros a b.
+  assert (Heq : Cadd (Cminus a b) b = a) by (apply Ceq; simpl; ring).
+  pose proof (Cmod_triangle (Cminus a b) b) as HT.
+  rewrite Heq in HT. lra.
+Qed.
+
+Section OffCenterWinding.
+Variable Rr : R.
+Variable w : C.
+Hypothesis HR : 0 < Rr.
+Hypothesis Hw : Cmod w < Rr.
+
+(* the sliding pole  w_s = s*w  and the winding integrand *)
+Definition wp (s : R) : C := Cmul (RtoC s) w.
+Definition wphi (s u : R) : C := Cmul (Cinv (Cminus (arc Rr u) (wp s))) (arc' Rr u).
+
+(* the pole stays within |w| of the centre for s in [0,1] *)
+Lemma wp_mod : forall s, 0 <= s <= 1 -> Cmod (wp s) <= Cmod w.
+Proof.
+  intros s Hs. unfold wp. rewrite Cmod_mul, Cmod_RtoC.
+  rewrite (Rabs_pos_eq s) by lra.
+  rewrite <- (Rmult_1_l (Cmod w)) at 2.
+  apply Rmult_le_compat_r; [ apply Cmod_nonneg | lra ].
+Qed.
+
+(* modulus lower bound on the denominator: R - |w| > 0 *)
+Lemma denom_lb : forall s u, 0 <= s <= 1 ->
+  0 < Rr - Cmod w <= Cmod (Cminus (arc Rr u) (wp s)).
+Proof.
+  intros s u Hs. split; [ lra | ].
+  eapply Rle_trans; [ | apply Cmod_rev_triangle ].
+  rewrite (Cmod_arc Rr u) by lra.
+  pose proof (wp_mod s Hs). lra.
+Qed.
+
+Lemma denom_ne : forall s u, 0 <= s <= 1 -> Cminus (arc Rr u) (wp s) <> C0.
+Proof.
+  intros s u Hs Hc.
+  pose proof (denom_lb s u Hs) as [Hpos Hle].
+  rewrite Hc, (proj2 (Cmod0 C0) eq_refl) in Hle. lra.
+Qed.
+
+End OffCenterWinding.
+
+Print Assumptions denom_lb.
