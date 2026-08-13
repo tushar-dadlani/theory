@@ -137,7 +137,13 @@ The precise blocker is located: `pathint_loop_except` (`CGoursatExcept`) — whi
 
 ✅ **DOMAIN-RESTRICTED B4 DONE** — `CTaylorRemDom.taylor_center_zero_D`, axiom-clean: all coefficient integrals `0` ⟹ `f w = 0` (`|w|<R`), for `f` differentiable only on the disk `|z|<R+1` (`Hfhol_disk`) + pointwise-continuous everywhere (`Fptc`, giving `CcontC f = ptcont_CcontC f Fptc`). Copy-adapted from the committed section — the *only* change is the single B1 call `cauchy_interior → cauchy_interior_dom` (the sole place global holomorphy was used).
 
-**Next:** the same swap through **`coeff_recur`** (`CDerivCoeff`, its `Hgd : forall z, is_Cderiv g z (gd z)` is global — restrict to the circle/disk) → **`identity_at_zero`** (`A_base` uses `cauchy_interior` at `w=0` → `cauchy_interior_dom`; `A_step` uses `coeff_recur`) → **B5/B6** (`identity_on_disk`/`identity_propagate`) → wire the clamped `FE_diff` chain via `cauchy_integral_holo` → discharge `GammaC_FE`. Each is the *same* mechanical `forall z → disk/pointwise` re-plumbing now demonstrated for B1 and B4.
+✅ **`coeff_recur_D`** (`CDerivCoeffDom`) — `∮ gd/z^{Sm} = (Sm)·∮ g/z^{S(Sm)}` for `g` disk-differentiable (`Hgd_disk`); `H_deriv` gains a `Cmod z<R+1` premise (its sole `Hgd` use), supplied by `loop_zero` from `|arc|=R<R+1`.
+
+✅ **`identity_at_zero_D`** (`CIdentityZeroDom`) — the identity theorem at 0 from a chain **disk-differentiable** (`Hchain_disk`) + **pointwise-continuous** (`Fptc`, giving `Hcc := ptcont_CcontC (Fptc k)`), vanishing at 0. Rebuild of `ChainZero` with `pki→pki_D`, `cauchy_interior→cauchy_interior_dom` (`A_base`), `coeff_recur→coeff_recur_D` (`A_step`), `taylor_center_zero→taylor_center_zero_D`. Compiled first try.
+
+**Domain-restricted tower so far:** B1 → coeff_recur → B4 → chain (identity_at_zero) — all axiom-clean.
+
+**Next:** **B5** (`identity_on_disk` — the shift + `identity_at_zero_D`; `real_deriv_zero`/`chain_vanishes_real` are already pointwise) → **B6** (`identity_propagate` — `identity_disk_at` uses `identity_at_zero`) → wire the clamped `FE_diff` chain via `cauchy_integral_holo` → discharge `GammaC_FE`. Same mechanical re-plumbing.
 
 *(Everything else is built and axiom-clean: the entire B1–B6 identity theorem for entire functions, and the full general-`n` Cauchy-integral analyticity master key `cauchy_integral_holo`.)*
 
