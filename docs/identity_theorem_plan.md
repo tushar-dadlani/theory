@@ -83,11 +83,20 @@ Generalize `trunc_cauchy` from the center `0` to an interior point `w`: `f(w) = 
 - **`chain_vanishes_real`** — a derivative chain whose head vanishes on an open real interval has *every* member vanishing there (induction on the chain index, each step `real_deriv_zero` on a shrunk sub-interval). This is B5: "`f=0` on ℝ⁺ ⟹ all derivatives vanish."
 - **`identity_on_disk`** (centre shift, combining with B4-chain): if `f` vanishes on a real nbhd of a real point `a`, then `f=0` on the whole disk `|z−a|<R`. Applies `identity_at_zero` to the *translated* chain `h k z := fseq k (z+a)` (chain via `Cderiv_comp_affine`), generalising centre `0→a` by shifting the function rather than re-proving the machinery.
 
-### B6 — Propagation over the convex half-plane  *(medium; needs a clopen/connectedness argument)*
-The set `Z = { z : Re z > 0, f ≡ 0 on a neighborhood of z }` is open by definition, contains ℝ⁺ (B4∘B5 at every real point), and is **closed** in the half-plane (at a limit point, all `f^{(n)}` vanish by continuity of the derivatives from B2, so B4 gives a zero neighborhood). The half-plane is convex, hence connected, so `Z` = the whole half-plane. Requires a small connectedness/clopen development (or a direct convex chain-of-disks argument along the segment from a real point to the target `w`, which convexity makes clean and may avoid general topology).
+### B6 — Propagation  *(✅ DONE — chain-of-disks, no general topology)*
+✅ `CIdentityProp.v`, axiom-clean. Took the **explicit chain-of-disks** route (avoids clopen/connectedness): for a holomorphic derivative chain with global circle bounds, if all derivatives vanish at one point `p`, then `fseq 0` vanishes everywhere.
+- **`deriv_zero_on_open`** — `g=0` on a complex nbhd of `p` ⟹ `g'(p)=0` (complex-nbhd analogue of `real_deriv_zero`).
+- **`identity_disk_at`** — all derivs `0` at `p` ⟹ `fseq 0 = 0` on `D(p,R)` (`identity_at_zero` on the translated chain).
+- **`chain_vanishes_disk`** — all derivs `0` at `p` ⟹ *every* deriv is `0` on `D(p,R)` (base `identity_disk_at`; step `deriv_zero_on_open` on a shrunk sub-disk).
+- **`propagate_step`** — all derivs `0` at `p`, `|q−p|<R` ⟹ all derivs `0` at `q`.
+- **`seg_all_vanish`** / **`identity_propagate`** — iterate the step along the segment `p→w` in `N` sub-`R` steps (`N > |w−p|/R` via `archimed`), reaching any `w` with **no hypothesis on `w`**.
 
 ## Assembly for the FE
 Take `f := GammaCFE.FE_diff`, `a := 1`. `FE_diff` is holomorphic on `Re>0` (`FE_diff_holo`) and `0` on ℝ⁺ (`FE_diff_vanishes_real`). B5→B4→B6 give `FE_diff ≡ 0`, i.e. the hypothesis of `GammaC_FE_from_identity`, closing `GammaC_FE`.
+
+**Status: the entire complex-analytic identity theorem is now built and axiom-clean** — B1 (`cauchy_interior`) → B2 (`cauchy_deriv`) → B3 (`kernel_geom`/`Cintf_Csum`/`taylor_remainder`) → B4 (`taylor_center_zero`) → derivative bridge (`Cderiv_Cpow`/`coeff_recur`) → chain (`identity_at_zero`) → B5 + centre shift (`real_deriv_zero`/`chain_vanishes_real`/`identity_on_disk`) → B6 (`identity_propagate`).
+
+**The one remaining gap is concrete, not conceptual:** exhibit the derivative chain `fseq` for `FE_diff` — each level holomorphic (`is_Cderiv (fseq k) z (fseq (S k) z)`), continuous (`CcontC`), and bounded on the relevant circles — and check `FE_diff` vanishes on a real interval in ℝ⁺. That instantiates `identity_on_disk` (+ `identity_propagate` for the half-plane) to discharge `GammaC_FE_from_identity`. This is a property of the specific Γ-integral function, not of the general machinery.
 
 ## Honest assessment (revised after finding Milestone C)
 
