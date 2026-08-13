@@ -70,6 +70,7 @@ import TDLean.FE.Continuation
 import TDLean.FE.Classical
 import TDLean.FE.CriticalValue
 import TDLean.FE.Xi
+import TDLean.FE.Growth
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -1897,3 +1898,25 @@ import TDLean.FE.Xi
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.xi_half_re_pos
+
+/-! ### Cluster A20: growth bounds (the Hadamard-route input) -/
+
+/-- info: 'TDLean.FE.integral_rpow_mul_exp_neg_pi' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.integral_rpow_mul_exp_neg_pi
+
+/-- info: 'TDLean.FE.norm_mellinTail_le_gamma' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.norm_mellinTail_le_gamma
+
+/-- info: 'TDLean.FE.norm_mellinTail_le_of_nonpos' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.norm_mellinTail_le_of_nonpos
+
+/-- info: 'TDLean.FE.norm_xi_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.norm_xi_le
