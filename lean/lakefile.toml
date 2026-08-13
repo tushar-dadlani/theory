@@ -1,0 +1,23 @@
+name = "TDLean"
+version = "0.1.0"
+keywords = ["math"]
+defaultTargets = ["TDLean"]
+
+[leanOptions]
+pp.unicode.fun = true
+autoImplicit = false
+relaxedAutoImplicit = false
+weak.linter.mathlibStandardSet = true
+maxSynthPendingDepth = 3
+
+# Pinned to the tag that matches the installed toolchain (leanprover/lean4:v4.29.0-rc6)
+# and the already-built mathlib in ../../millenium-problems/GHS/.lake, so `lake exe cache get`
+# is warm and no second toolchain is downloaded. Do NOT bump to master without first
+# checking free disk -- see lean/README.md.
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+rev = "v4.29.0-rc6"
+
+[[lean_lib]]
+name = "TDLean"
