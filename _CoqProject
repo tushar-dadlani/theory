@@ -1001,3 +1001,4 @@ spectral-theory/CIdentityRealDom.v
 spectral-theory/CIdentityPropDom.v
 spectral-theory/CFEChain.v
 spectral-theory/CCauchyCont.v
+spectral-theory/CFEChainCont.v
