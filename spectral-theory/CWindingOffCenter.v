@@ -14,9 +14,10 @@
 (*  R - |w| > 0 via the reverse triangle inequality).                  *)
 (* ================================================================= *)
 
-From Stdlib Require Import Reals Lra.
-Require Import ComplexField Cmodulus CIntegral2 CPathIntegral CPathFTC CWinding
-        Holomorphic CDeriv CHoloCalculus.
+From Stdlib Require Import Reals Lra Classical.
+Require Import ComplexField Cmodulus CIntegral2 CSegInt CPathIntegral CPathFTC
+        CWinding CLeibniz Holomorphic CDeriv CHoloCalculus.
+From Stdlib Require Import MVT.
 Open Scope R_scope.
 
 (* reverse triangle inequality: |a| - |b| <= |a - b| *)
@@ -463,6 +464,87 @@ Definition phi_safe (r u : R) : C := wphi (clamp r) u.
 Lemma phi_safe_cont : forall r, Ccont (fun u => phi_safe r u).
 Proof. intro r; unfold phi_safe; apply wphi_cont_in, clamp_pole_in. Qed.
 
+(* the uniform estimate transfers to phi_safe (clamp = id near s0) *)
+Lemma Hunif_safe : forall s0, 0 <= s0 <= 1 -> forall eps, 0 < eps ->
+  exists del, 0 < del /\ forall r t, 0 <= t <= 2 * PI -> Rabs (r - s0) < del ->
+    Cmod (Cminus (Cminus (phi_safe r t) (phi_safe s0 t)) (Cmul (wdphi s0 t) (RtoC (r - s0))))
+    <= eps * Rabs (r - s0).
+Proof.
+  intros s0 Hs0 eps Heps.
+  destruct (wphi_hunif s0 Hs0 eps Heps) as [del1 [Hdel1 Hb]].
+  pose proof d0_pos as Hd0.
+  exists (Rmin del1 d0). split.
+  - apply Rmin_glb_lt; [ exact Hdel1 | exact Hd0 ].
+  - intros r t Ht Hr.
+    assert (Hr1 : Rabs (r - s0) < del1) by (eapply Rlt_le_trans; [ exact Hr | apply Rmin_l ]).
+    assert (Hrd : Rabs (r - s0) < d0) by (eapply Rlt_le_trans; [ exact Hr | apply Rmin_r ]).
+    apply Rabs_def2 in Hrd.
+    assert (Hcr : clamp r = r) by (apply clamp_id; lra).
+    assert (Hcs0 : clamp s0 = s0) by (apply clamp_id; lra).
+    unfold phi_safe. rewrite Hcr, Hcs0. exact (Hb r t Ht Hr1).
+Qed.
+
+(* THE OFF-CENTRE WINDING (w <> 0):  oint_{|z|=R} dz/(z-w) = 2 pi i. *)
+Theorem winding_offcenter :
+  forall (Hf : Ccont (fun u => Cmul (Cinv (Cminus (arc Rr u) w)) (arc' Rr u))),
+  pathint (arc Rr) (arc' Rr) (fun z => Cinv (Cminus z w)) Hf 0 (2 * PI) = mkC 0 (2 * PI).
+Proof.
+  intro Hf.
+  pose (W := fun r => Cintf (fun t => phi_safe r t) (phi_safe_cont r) 0 (2 * PI)).
+  assert (Hd : forall s0, 0 <= s0 <= 1 ->
+    derivable_pt_lim (fun r => Re (W r)) s0 0 /\ derivable_pt_lim (fun r => Im (W r)) s0 0).
+  { intros s0 Hs0.
+    pose proof (wdphi_cont s0 Hs0) as Hdc.
+    assert (HJ : Cintf (fun t => wdphi s0 t) Hdc 0 (2 * PI) = C0)
+      by exact (Jg_zero s0 Hdc Hs0).
+    pose proof (leibniz_deriv phi_safe (fun _ t => wdphi s0 t) 0 (2 * PI) s0
+                  ltac:(generalize PI_RGT_0; lra)
+                  phi_safe_cont Hdc (Hunif_safe s0 Hs0)) as HL.
+    destruct HL as [HRe HIm]. unfold Ig, Jg in HRe, HIm. cbv beta in HRe, HIm.
+    rewrite HJ in HRe, HIm. unfold W. split; [ exact HRe | exact HIm ]. }
+  assert (HW01 : W 1 = W 0).
+  { apply Ceq.
+    - destruct (MVT_cor2 (fun r => Re (W r)) (fun _ => 0) 0 1 Rlt_0_1
+                 (fun c Hc => proj1 (Hd c Hc))) as [c [Hc _]]; lra.
+    - destruct (MVT_cor2 (fun r => Im (W r)) (fun _ => 0) 0 1 Rlt_0_1
+                 (fun c Hc => proj2 (Hd c Hc))) as [c [Hc _]]; lra. }
+  pose proof d0_pos as Hd0.
+  assert (Hc0 : clamp 0 = 0) by (apply clamp_id; lra).
+  assert (Hc1 : clamp 1 = 1) by (apply clamp_id; lra).
+  assert (HW0 : W 0 = mkC 0 (2 * PI)).
+  { transitivity (pathint (arc Rr) (arc' Rr) Cinv (arc_int_cont Rr HR) 0 (2 * PI)).
+    - unfold W, pathint. apply Cintf_ext. intro t. unfold phi_safe. rewrite Hc0.
+      unfold wphi.
+      replace (Cminus (arc Rr t) (wp 0)) with (arc Rr t)
+        by (unfold wp; apply Ceq; simpl; ring). reflexivity.
+    - exact (winding_dz_z Rr HR (arc_int_cont Rr HR)). }
+  assert (HW1 : W 1 = pathint (arc Rr) (arc' Rr) (fun z => Cinv (Cminus z w)) Hf 0 (2 * PI)).
+  { unfold W, pathint. apply Cintf_ext. intro t. unfold phi_safe. rewrite Hc1.
+    unfold wphi.
+    replace (Cminus (arc Rr t) (wp 1)) with (Cminus (arc Rr t) w)
+      by (unfold wp; apply Ceq; simpl; ring). reflexivity. }
+  rewrite <- HW1, HW01, HW0. reflexivity.
+Qed.
+
 End OffCenterWinding.
 
-Print Assumptions Jg_zero.
+(* ================================================================= *)
+(*  THE INTERIOR-POLE WINDING (any pole strictly inside the circle):   *)
+(*     oint_{|z|=R} dz/(z-w) = 2 pi i    for  |w| < R.                  *)
+(*  Combines winding_dz_z (w = 0) with winding_offcenter (w <> 0).      *)
+(* ================================================================= *)
+Theorem winding_interior : forall (Rr : R) (w : C) (HR : 0 < Rr) (Hw : Cmod w < Rr)
+  (Hf : Ccont (fun u => Cmul (Cinv (Cminus (arc Rr u) w)) (arc' Rr u))),
+  pathint (arc Rr) (arc' Rr) (fun z => Cinv (Cminus z w)) Hf 0 (2 * PI)
+  = mkC 0 (2 * PI).
+Proof.
+  intros Rr w HR Hw Hf.
+  destruct (classic (w = C0)) as [Hw0 | Hw0].
+  - subst w. rewrite <- (winding_dz_z Rr HR (arc_int_cont Rr HR)).
+    unfold pathint. apply Cintf_ext. intro t.
+    replace (Cminus (arc Rr t) C0) with (arc Rr t) by (apply Ceq; simpl; ring).
+    reflexivity.
+  - exact (winding_offcenter Rr w HR Hw Hw0 Hf).
+Qed.
+
+Print Assumptions winding_interior.
