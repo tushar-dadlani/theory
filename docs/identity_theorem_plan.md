@@ -77,8 +77,11 @@ Generalize `trunc_cauchy` from the center `0` to an interior point `w`: `f(w) = 
 ### B4 — All coefficients zero ⟹ locally zero  *(✅ DONE, centre form)*
 ✅ `CTaylorRem.taylor_center_zero`: if `∮_{|z|=R} f/z^{k+1} = 0` for all `k` then `f(w)=0` for every `|w|<R` — i.e. `f ≡ 0` on the disk. Proved via the finite Taylor-with-remainder + the `ρⁿ→0` remainder bound (see B3). The coefficient integrals `aₖ = ∮ f/z^{k+1}` are `= 2πi·f^{(k)}(0)/k!` by B2 iterated, so "all `aₖ=0`" ⟺ "all `f^{(k)}(0)=0`" (the bridge to B5). *(Currently at centre `0`; the general centre `a` is a translation.)*
 
-### B5 — Vanishing on ℝ⁺ ⟹ all derivatives zero at a real point  *(small–medium)*
-At real `a > 0`, `f = 0` on a real interval around `a`, so the restriction `t ↦ f(a+t)` is `≡ 0`, hence all its real derivatives vanish; holomorphy (Cauchy–Riemann) identifies `f^{(n)}(a)` with the `n`-th real-direction derivative, so `f^{(n)}(a) = 0` for all `n`. Feeds B4.
+### B5 — Vanishing on ℝ⁺ ⟹ all derivatives zero at a real point  *(✅ DONE)*
+✅ `CIdentityReal.v`, axiom-clean:
+- **`real_deriv_zero`** — if `g` vanishes on a real neighbourhood of `c` and `is_Cderiv g (mkC c 0) (gd (mkC c 0))`, then `gd (mkC c 0) = 0`. The real-direction difference quotient (`h = mkC t 0`) is `0`, so the derivative bound forces `Cmod(gd) ≤ e` for every `e>0`, hence `gd=0`.
+- **`chain_vanishes_real`** — a derivative chain whose head vanishes on an open real interval has *every* member vanishing there (induction on the chain index, each step `real_deriv_zero` on a shrunk sub-interval). This is B5: "`f=0` on ℝ⁺ ⟹ all derivatives vanish."
+- **`identity_on_disk`** (centre shift, combining with B4-chain): if `f` vanishes on a real nbhd of a real point `a`, then `f=0` on the whole disk `|z−a|<R`. Applies `identity_at_zero` to the *translated* chain `h k z := fseq k (z+a)` (chain via `Cderiv_comp_affine`), generalising centre `0→a` by shifting the function rather than re-proving the machinery.
 
 ### B6 — Propagation over the convex half-plane  *(medium; needs a clopen/connectedness argument)*
 The set `Z = { z : Re z > 0, f ≡ 0 on a neighborhood of z }` is open by definition, contains ℝ⁺ (B4∘B5 at every real point), and is **closed** in the half-plane (at a limit point, all `f^{(n)}` vanish by continuity of the derivatives from B2, so B4 gives a zero neighborhood). The half-plane is convex, hence connected, so `Z` = the whole half-plane. Requires a small connectedness/clopen development (or a direct convex chain-of-disks argument along the segment from a real point to the target `w`, which convexity makes clean and may avoid general topology).
