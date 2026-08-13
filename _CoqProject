@@ -979,3 +979,4 @@ spectral-theory/WeylWinding.v
 spectral-theory/HilbertPolyaCapstone.v
 spectral-theory/WeylTerm.v
 spectral-theory/MertensThirdReduction.v
+spectral-theory/GammaCRealAxis.v

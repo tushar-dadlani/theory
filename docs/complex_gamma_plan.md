@@ -36,8 +36,12 @@ Nothing named `Clog`/`Carg`/`arg` exists. Two options:
 
 **Recommendation: A2.** The Riemann–Siegel θ is a *continuous* argument accumulated along one line; building the global principal branch (A1) is strictly more than needed. Seed: `is_Cderiv_cont`, `Cderiv_div`, `Cexpf_ne0`.
 
-### Block B — Γ nonvanishing on `Re z > 0`  *(build; partially staged)*
-`log Γ` / `Γ'/Γ` need `GammaC z ≠ 0`. Currently only *assumed* (`H_gamma`, `ZetaStripConfinement.v:41`, on `Re>1`). Route: upgrade the existing non-strict `Gam_nonneg` to **strict** `0 < Gam s` on reals (via the integral of a positive kernel, or `Gam_recur` + `Gam_1`), then push across strips with `Gam_recur`/`GamN_FE` and `GammaC_agree`. Off the real axis, nonvanishing follows from the reflection/`Gam_recur` structure. Feeds A2 (well-defined `Γ'/Γ`).
+### Block B — Γ nonvanishing on `Re z > 0`  *(real axis DONE; off-axis is the standing gap)*
+`log Γ` / `Γ'/Γ` need `GammaC z ≠ 0`.
+
+- **Strict real positivity — already proven**: `XiReflection.Gam_pos : 0 < Gam a Ha` (via the `[1,2]` integral lower bound `int12_pos`). No need to rebuild from `Gam_nonneg`.
+- **Real-axis anchor — DONE** (`GammaCRealAxis.v`, axiom-clean): `GammaC` is real and strictly positive on `ℝ⁺` (`GammaC_real_Re/_Im`, `GammaC_real_pos`), hence nonvanishing there (`GammaC_ne0_real`), and `GammaC_real_axis_anchor : Im = 0 ∧ Re > 0` — the **arg-0 base point** the continuous-argument route (A2) starts from.
+- **Still open**: full `GammaC z ≠ 0` for all `Re z > 0` (i.e. "Γ has no zeros"). This has **no scaffolding** — no complex recurrence `GammaC(z+1)=z·GammaC(z)` (would need complex integration-by-parts), no reflection `Γ(z)Γ(1-z)=π/sin(πz)`, no Weierstrass product. It is the genuine remaining gap of Block B and must be built before `Γ'/Γ` is globally well-defined. (`H_gamma` in `ZetaStripConfinement.v:48` still *assumes* it on `Re>1`.) The A2 route only needs nonvanishing *along the path* from the real anchor to `¼+iT/2`, which is a narrower — but still unproven — target.
 
 ### Block C — `θ(T)` as a real function  *(thin glue; build after A,B)*
 ```
@@ -53,8 +57,8 @@ Connect `θ(T)` to `WeylTerm.Nsmooth`: prove `Nsmooth T = θ(T)/π + 1 + O(1)` (
 
 ## Recommended sequencing & first milestone
 
-1. **B (strict real positivity + nonvanishing)** — small, unblocks everything, useful on its own.
-2. **A2 (log-derivative `Γ'/Γ` + continuous argument along the line)** — the critical primitive, but bounded scope via A2.
+1. **B (real-axis anchor)** — ✅ **DONE** (`GammaCRealAxis.v`): strict real positivity (`Gam_pos`, already present) + `GammaC` real/positive/nonvanishing on `ℝ⁺` + the arg-0 anchor. Off-axis nonvanishing along the path remains a sub-target of A2.
+2. **A2 (log-derivative `Γ'/Γ` + continuous argument along the line)** — the critical primitive, but bounded scope via A2. Needs `Γ'/Γ = GammaC'/GammaC` well-defined along the path — i.e. path nonvanishing, the narrowed remnant of Block B.
 3. **C (`θ(T)` definition + its derivative `θ'(T) = ½ Im(Γ'/Γ)(¼+iT/2) − ½ ln π`)** — thin glue; **this is the recommended first shippable milestone**: an axiom-clean `θ(T)` with a proven derivative formula, even before the Stirling asymptotic.
 4. **D (Stirling leading term)** — scope separately; start with the leading term, defer the sharp remainder.
 5. **E (Weyl reconciliation)** — closes the loop to `WeylTerm.v`.
