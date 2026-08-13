@@ -57,6 +57,10 @@ Proof.
     by (rewrite Cmul_assoc, (Cinv_r c Hc), Cmul_1_r; reflexivity).
   rewrite Ha, Hb, H; reflexivity.
 Qed.
+Lemma Cmul_swap : forall a b c, Cmul a (Cmul b c) = Cmul b (Cmul a c).
+Proof. intros; apply Ceq; simpl; ring. Qed.
+Lemma Cinv_l_mul : forall a Y, a <> C0 -> Cmul (Cinv a) (Cmul a Y) = Y.
+Proof. intros a Y Ha; rewrite <- Cmul_assoc, (Cinv_l a Ha), Cmul_1_l; reflexivity. Qed.
 
 (* the arc parametrisation is a genuine C^1 loop *)
 Lemma arc_Re_deriv : forall r s,
@@ -112,6 +116,41 @@ Proof.
     [ change (continuity_pt (fun u => Re (f u) - Re (g u)) x)
     | change (continuity_pt (fun u => Im (f u) - Im (g u)) x) ];
     apply continuity_pt_minus; solve [ apply HfR | apply HgR | apply HfI | apply HgI ].
+Qed.
+
+(* THE REMAINDER IDENTITY: the second-order remainder of 1/(z - s w) in s *)
+(* collapses (after clearing denominators, the ring identity              *)
+(* (B-A)^2 = (w d)^2 with B - A = w d) to  w^2 d^2 / (A B^2).              *)
+Lemma rem_identity : forall A B w d : C,
+  A <> C0 -> B <> C0 -> Cminus B A = Cmul w d ->
+  Cminus (Cminus (Cinv A) (Cinv B)) (Cmul (Cmul w (Cinv (Cmul B B))) d)
+  = Cmul (Cmul (Cmul w w) (Cmul d d)) (Cmul (Cinv A) (Cinv (Cmul B B))).
+Proof.
+  intros A B w d HA HB Hrel.
+  assert (HBB : Cmul B B <> C0) by (apply Cmul_self_ne0; exact HB).
+  assert (HX : Cmul A (Cmul B B) <> C0)
+    by (intro Hc; apply HBB; exact (Cmul_eq0_l A (Cmul B B) HA Hc)).
+  apply (Cmul_cancel_r _ _ (Cmul A (Cmul B B)) HX).
+  assert (T1 : Cmul (Cinv A) (Cmul A (Cmul B B)) = Cmul B B)
+    by (apply Cinv_l_mul; exact HA).
+  assert (T2 : Cmul (Cinv B) (Cmul A (Cmul B B)) = Cmul A B)
+    by (rewrite (Cmul_swap (Cinv B) A (Cmul B B)), (Cinv_l_mul B B HB); reflexivity).
+  assert (T3 : Cmul (Cmul (Cmul w (Cinv (Cmul B B))) d) (Cmul A (Cmul B B))
+             = Cmul (Cmul w d) A).
+  { assert (H3a : Cmul (Cmul w (Cinv (Cmul B B))) d
+                = Cmul (Cmul w d) (Cinv (Cmul B B))) by (apply Ceq; simpl; ring).
+    rewrite H3a, Cmul_assoc, (Cmul_swap (Cinv (Cmul B B)) A (Cmul B B)),
+      (Cinv_l (Cmul B B) HBB), Cmul_1_r; reflexivity. }
+  assert (Hinner : Cmul (Cmul (Cinv A) (Cinv (Cmul B B))) (Cmul A (Cmul B B)) = C1)
+    by (rewrite Cmul_assoc, (Cmul_swap (Cinv (Cmul B B)) A (Cmul B B)),
+          (Cinv_l (Cmul B B) HBB), Cmul_1_r, (Cinv_l A HA); reflexivity).
+  rewrite !Cmul_minus_r, T1, T2, T3.
+  rewrite (Cmul_assoc (Cmul (Cmul w w) (Cmul d d))
+            (Cmul (Cinv A) (Cinv (Cmul B B))) (Cmul A (Cmul B B))),
+          Hinner, Cmul_1_r.
+  assert (Hww : Cmul (Cmul w w) (Cmul d d) = Cmul (Cmul w d) (Cmul w d))
+    by (apply Ceq; simpl; ring).
+  rewrite Hww, <- Hrel. apply Ceq; simpl; ring.
 Qed.
 
 Section OffCenterWinding.
