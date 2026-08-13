@@ -15,7 +15,8 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra.
-Require Import ComplexField Cmodulus CPathIntegral CWinding Holomorphic CDeriv CHoloCalculus.
+Require Import ComplexField Cmodulus CIntegral2 CPathIntegral CPathFTC CWinding
+        Holomorphic CDeriv CHoloCalculus.
 Open Scope R_scope.
 
 (* reverse triangle inequality: |a| - |b| <= |a - b| *)
@@ -47,6 +48,40 @@ Lemma arc_closed : forall r, arc r (2 * PI) = arc r 0.
 Proof.
   intro r. unfold arc.
   rewrite sin_2PI, cos_2PI, sin_0, cos_0. apply Ceq; cbn [Re Im]; ring.
+Qed.
+
+(* continuity of 1/f where f is a nonvanishing continuous C-valued map *)
+Lemma Ccont_inv : forall f, Ccont f -> (forall u, f u <> C0) ->
+  Ccont (fun u => Cinv (f u)).
+Proof.
+  intros f [HfR HfI] Hne. split; intro x;
+    [ change (continuity_pt
+                (fun u => Re (f u) / (Re (f u) * Re (f u) + Im (f u) * Im (f u))) x)
+    | change (continuity_pt
+                (fun u => - Im (f u) / (Re (f u) * Re (f u) + Im (f u) * Im (f u))) x) ];
+    apply continuity_pt_div;
+    solve [ apply HfR | apply HfI | apply continuity_pt_opp; apply HfI
+          | apply continuity_pt_plus; apply continuity_pt_mult;
+              solve [ apply HfR | apply HfI ]
+          | exact (Cnorm2_neq_0 (f x) (Hne x)) ].
+Qed.
+
+Lemma Cmul_self_ne0 : forall a, a <> C0 -> Cmul a a <> C0.
+Proof.
+  intros a Ha Hc. apply Ha, (proj1 (Cmod0 a)).
+  pose proof (Cmod_nonneg a) as Hn.
+  assert (H0 : Cmod a * Cmod a = 0)
+    by (rewrite <- Cmod_mul, Hc; apply (proj2 (Cmod0 C0) eq_refl)).
+  nra.
+Qed.
+
+Lemma Ccont_minus : forall f g, Ccont f -> Ccont g ->
+  Ccont (fun u => Cminus (f u) (g u)).
+Proof.
+  intros f g [HfR HfI] [HgR HgI]; split; intro x;
+    [ change (continuity_pt (fun u => Re (f u) - Re (g u)) x)
+    | change (continuity_pt (fun u => Im (f u) - Im (g u)) x) ];
+    apply continuity_pt_minus; solve [ apply HfR | apply HgR | apply HfI | apply HgI ].
 Qed.
 
 Section OffCenterWinding.
@@ -115,6 +150,44 @@ Proof.
     [ apply Cderiv_id | apply Cderiv_const ].
 Qed.
 
+(* continuity of the winding integrand and its s-derivative integrand *)
+Lemma denom_cont : forall s, Ccont (fun u => Cminus (arc Rr u) (wp s)).
+Proof. intro s; apply Ccont_minus; [ apply Ccont_arc | apply Ccont_const ]. Qed.
+
+Lemma wphi_cont : forall s, 0 <= s <= 1 -> Ccont (fun u => wphi s u).
+Proof.
+  intros s Hs. unfold wphi. apply Ccont_mul; [ | apply Ccont_arc' ].
+  apply Ccont_inv; [ apply denom_cont | intro u; apply denom_ne; exact Hs ].
+Qed.
+
+(* the derivative integrand written as f(z)*z' with f = fder s *)
+Definition fder (s : R) (z : C) : C :=
+  Cmul w (Cinv (Cmul (Cminus z (wp s)) (Cminus z (wp s)))).
+
+Lemma wdphi_cont : forall s, 0 <= s <= 1 -> Ccont (fun u => wdphi s u).
+Proof.
+  intros s Hs. unfold wdphi. apply Ccont_mul; [ | apply Ccont_arc' ].
+  apply Ccont_scal, Ccont_inv.
+  - apply Ccont_mul; apply denom_cont.
+  - intro u. apply Cmul_self_ne0, denom_ne; exact Hs.
+Qed.
+
+(* Jg = the closed-loop integral of the derivative integrand = 0,        *)
+(* since fder s has the primitive wprim s and the arc is a closed loop.   *)
+Lemma Jg_zero : forall s
+  (Hf : Ccont (fun u => Cmul (fder s (arc Rr u)) (arc' Rr u))),
+  0 <= s <= 1 ->
+  pathint (arc Rr) (arc' Rr) (fder s) Hf 0 (2 * PI) = C0.
+Proof.
+  intros s Hf Hs.
+  rewrite (pathint_FTC (wprim s) (fder s) (arc Rr) (arc' Rr) Hf 0 (2 * PI)).
+  - rewrite arc_closed. unfold Cminus, C0; apply Ceq; cbn [Re Im]; ring.
+  - generalize PI_RGT_0; lra.
+  - intros u _. unfold fder. apply wprim_deriv; exact Hs.
+  - intros u _; apply arc_Re_deriv.
+  - intros u _; apply arc_Im_deriv.
+Qed.
+
 End OffCenterWinding.
 
-Print Assumptions wprim_deriv.
+Print Assumptions Jg_zero.
