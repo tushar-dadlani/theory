@@ -114,7 +114,14 @@ Then `fseq k w := (k!/2πi)·∮ FE_diff/(z−w)^{k+1}` is a smooth chain that *
 - **`bracket_recur`** — the recurrence `B_{n+1} = A·Bₙ + (n+1)·h²·A·bⁿ⁺²` (`A=1/(ζ−h)`, `b=1/ζ`, `Bₙ = 1/(ζ−h)ⁿ − 1/ζⁿ − nh/ζⁿ⁺¹`), proved by `field` — sidesteps the `aⁿ−bⁿ` sum-factorization and makes the `h²` factor propagate.
 - **`bracket_gen_bound`** — `Cmod(Bₙ) ≤ |h|²·Wₙ` by induction on that recurrence (`Wₙ` an explicit `Fixpoint`, `Wn_nonneg`; `Cmod_triangle` + `Rinv_le_contravar`/`pow_incr` per summand).
 
-**Remaining:** `cauchy_est_gen` (ML estimate with `bracket_gen_bound` in place of `cauchy_bracket_bound`) + `cauchy_type_holo` for general `n` (both the *same shape* as the proved `n=1` case) → totalise `Phi` (radial clamp) → assemble the `FE_diff` chain → instantiate B5-shift/B6.
+✅ **ANALYTICITY MASTER KEY COMPLETE** — `CCauchyAnalytic.cauchy_integral_holo`, axiom-clean: for any continuous bounded `g` and `|w0|<R`,
+`is_Cderiv PhiN w0 (∮ n·g/(z−w0)ⁿ⁺¹)` where `PhiN w := ∮ g/(z−clampw w)ⁿ` is a **total** `C→C` function.
+- **`cauchy_est_gen`** / **`cauchy_type_holo_gen`** — the general-`n` ML estimate and ε-δ (same shape as `n=1`, with `bracket_gen_bound`; `Cpow_cont` for the continuity).
+- **the radial clamp** (`clampw`, `clampw_mod`, `clamp_ne`, `clampw_id`) — `clampw w = w` for `|w−w0|<(R−|w0|)/2`, else scaled to radius `ρ=(|w0|+R)/2<R`, keeping the pole strictly inside for *every* `w` so `PhiN` is total; fed into `cauchy_type_holo_gen` via `Cintf_ext`.
+
+So `w↦∮ g/(z−w)ⁿ` is holomorphic in `w` with derivative `n·∮ g/(z−w)ⁿ⁺¹` — supplying **both** the smooth chain and its domain-native definition.
+
+**Remaining (the wiring):** define `fseq k := (k!/2πi)·∮ FE_diff/(z−w)^{k+1}`, prove the chain relation `is_Cderiv (fseq k) w (fseq (S k) w)` (from `cauchy_integral_holo` with the `k!`↔`(k+1)!` normalization) and `fseq 0 = FE_diff` (from B1), then instantiate `identity_on_disk`/`identity_propagate` → `GammaC_FE`.
 
 ## Honest assessment (revised after finding Milestone C)
 
