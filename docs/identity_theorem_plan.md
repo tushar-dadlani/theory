@@ -96,7 +96,14 @@ Take `f := GammaCFE.FE_diff`, `a := 1`. `FE_diff` is holomorphic on `Re>0` (`FE_
 
 **Status: the entire complex-analytic identity theorem is now built and axiom-clean** — B1 (`cauchy_interior`) → B2 (`cauchy_deriv`) → B3 (`kernel_geom`/`Cintf_Csum`/`taylor_remainder`) → B4 (`taylor_center_zero`) → derivative bridge (`Cderiv_Cpow`/`coeff_recur`) → chain (`identity_at_zero`) → B5 + centre shift (`real_deriv_zero`/`chain_vanishes_real`/`identity_on_disk`) → B6 (`identity_propagate`).
 
-**The one remaining gap is concrete, not conceptual:** exhibit the derivative chain `fseq` for `FE_diff` — each level holomorphic (`is_Cderiv (fseq k) z (fseq (S k) z)`), continuous (`CcontC`), and bounded on the relevant circles — and check `FE_diff` vanishes on a real interval in ℝ⁺. That instantiates `identity_on_disk` (+ `identity_propagate` for the half-plane) to discharge `GammaC_FE_from_identity`. This is a property of the specific Γ-integral function, not of the general machinery.
+**The remaining work — mapped precisely (investigation, this session):** two structural gaps sit between the completed tower and the FE.
+
+1. **`FE_diff` has no smooth chain in the repo.** The tower needs `fseq : nat→C→C`, `fseq 0 = FE_diff`, `is_Cderiv (fseq k) z (fseq (S k) z)` (i.e. `FE_diff ∈ C^∞` with *named* derivative functions). The repo has only `GammaC_entire` (the **first** derivative, proof-dependent `dgnearC z Hz`) and `GammaNearCHolo`'s first-derivative kernel `dgnkC`. `GammaC`'s 2nd+ derivatives are **not built** (`CDeriv2`/`CZetaDeriv2` are for the *zeta* term `gtermC`, not `GammaC`).
+2. **The tower is phrased for *entire* functions.** `cauchy_interior`, `taylor_center_zero`, `identity_at_zero`, `identity_propagate` all take `HFhol : forall z, exists d, is_Cderiv F z d` (holomorphy *everywhere*). `GammaC` is meromorphic (poles at `0,−1,−2,…`), so `FE_diff` is holomorphic only on `Re>0` — the bricks need re-plumbing from "entire" to "holomorphic on a convex domain `U`, circles ⊆ `U`."
+
+**Master key that dissolves both:** the general **Cauchy-integral analyticity** lemma
+`cauchy_type_holo : d/dw ∮_{|z|=R} g(z)/(z−w)^n dz = n·∮ g(z)/(z−w)^{n+1} dz` (`|w|<R`).
+Then `fseq k w := (k!/2πi)·∮ FE_diff/(z−w)^{k+1}` is a smooth chain that *automatically lives on the domain* (defined wherever a circle fits inside `Re>0`), supplying **both** the chain (gap 1) **and** the domain-restriction (gap 2). This is exactly the complex differentiation-under-the-integral deferred at B2 (the `F∈C²` note) — the one genuine analytic ingredient left. Its `n=1` case is a direct `O(|h|²)`-remainder + `pathint_ML` estimate (the same shape as `CWindingOffCenter`'s remainder work); the general `n` adds a finite-difference-of-powers bracket. Recommended next brick.
 
 ## Honest assessment (revised after finding Milestone C)
 
