@@ -991,3 +991,4 @@ spectral-theory/CTaylorRem.v
 spectral-theory/CDerivCoeff.v
 spectral-theory/CIdentityZero.v
 spectral-theory/CIdentityReal.v
+spectral-theory/CIdentityProp.v
