@@ -141,9 +141,14 @@ The precise blocker is located: `pathint_loop_except` (`CGoursatExcept`) — whi
 
 ✅ **`identity_at_zero_D`** (`CIdentityZeroDom`) — the identity theorem at 0 from a chain **disk-differentiable** (`Hchain_disk`) + **pointwise-continuous** (`Fptc`, giving `Hcc := ptcont_CcontC (Fptc k)`), vanishing at 0. Rebuild of `ChainZero` with `pki→pki_D`, `cauchy_interior→cauchy_interior_dom` (`A_base`), `coeff_recur→coeff_recur_D` (`A_step`), `taylor_center_zero→taylor_center_zero_D`. Compiled first try.
 
-**Domain-restricted tower so far:** B1 → coeff_recur → B4 → chain (identity_at_zero) — all axiom-clean.
+✅ **B5** — `CIdentityRealDom.identity_on_disk_D`: `f=0` on a real nbhd of real `a` ⟹ `f=0` on the disk `|z−a|<R`, for a chain disk-differentiable (`Hchain_disk`, radius `R+1` about `a`) + pointwise-continuous (`Fptc`), with `eps≤R+1`. Shift over `identity_at_zero_D`; `chain_vanishes_real_D` takes the interval-restricted derivative hypothesis; `real_deriv_zero` reused verbatim.
 
-**Next:** **B5** (`identity_on_disk` — the shift + `identity_at_zero_D`; `real_deriv_zero`/`chain_vanishes_real` are already pointwise) → **B6** (`identity_propagate` — `identity_disk_at` uses `identity_at_zero`) → wire the clamped `FE_diff` chain via `cauchy_integral_holo` → discharge `GammaC_FE`. Same mechanical re-plumbing.
+✅ **B6** — `CIdentityPropDom.identity_propagate_D`: for a chain differentiable on a **convex** domain `U` closed under `(R+1)`-disks (`HUmargin`) + pointwise-continuous, all derivatives vanishing at one `p∈U` ⟹ `fseq 0` vanishes at every `w∈U`. The segment points `p_i = seg p w (i/N)` lie in `U` by `Convex U`; `identity_disk_at_D`/`chain_vanishes_disk_D`/`propagate_step_D` get `U z` from `HUmargin`.
+
+✅ **THE DOMAIN-RESTRICTED IDENTITY-THEOREM TOWER B1→B6 IS COMPLETE, all axiom-clean:**
+`cauchy_interior_dom` → `coeff_recur_D` → `taylor_center_zero_D` → `identity_at_zero_D` → `identity_on_disk_D` → `identity_propagate_D`.
+
+**Only remaining:** build the **clamped `FE_diff` derivative chain** — `fseq k := (k!/2πi)·PhiN`(the clamped Cauchy power integral of `FE_diff`, `CCauchyAnalytic`), differentiable on `Re>0` (`cauchy_integral_holo` at each interior point via `is_Cderiv_congr`), pointwise-continuous, bounded on circles, `fseq 0 = FE_diff` (B1), and `FE_diff=0` on a real interval in ℝ⁺ (`FE_diff_vanishes_real`). Instantiate `identity_on_disk_D`/`identity_propagate_D` on `U=Re>0` → discharge `GammaC_FE_from_identity`.
 
 *(Everything else is built and axiom-clean: the entire B1–B6 identity theorem for entire functions, and the full general-`n` Cauchy-integral analyticity master key `cauchy_integral_holo`.)*
 
