@@ -67,6 +67,7 @@ import TDLean.FE.Strip
 import TDLean.FE.Holo
 import TDLean.FE.Transfer
 import TDLean.FE.Continuation
+import TDLean.FE.Classical
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -1773,3 +1774,40 @@ import TDLean.FE.Continuation
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.zetaFE_eq_zero_iff_of_re_lt_zero
+
+/-! ### Cluster A17: the classical functional equation -/
+
+/-- info: 'TDLean.FE.gamma_half_sub_eq_zero_of_cos_eq_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.gamma_half_sub_eq_zero_of_cos_eq_zero
+
+/-- info: 'TDLean.FE.inv_Gamma_half_sub' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.inv_Gamma_half_sub
+
+/-- info: 'TDLean.FE.gamma_ratio' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.gamma_ratio
+
+/-- info: 'TDLean.FE.pi_power_collapse' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.pi_power_collapse
+
+/-- info: 'TDLean.FE.two_pi_cpow' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.two_pi_cpow
+
+/-- info: 'TDLean.FE.zetaFE_functional_equation' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.zetaFE_functional_equation
+
+/-- info: 'TDLean.FE.zetaFE_trivial_zero_via_cos' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.zetaFE_trivial_zero_via_cos
