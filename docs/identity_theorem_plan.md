@@ -135,7 +135,9 @@ The precise blocker is located: `pathint_loop_except` (`CGoursatExcept`) — whi
 - **`rphi_holo_off_dom`** — disk-restricted holomorphy off `w` (mirrors `CRemovableExt.rphi_holo_off` with `Fholo_disk`); **`rphi_bd`** reused verbatim (needs only `Hdw`).
 - **`cauchy_interior_dom`** — feeds these into `cauchy_interior_cond`.
 
-**Next:** thread the disk condition up through B4 (`taylor_center_zero`: its coefficient integrals / `coeff_recur` use `cauchy_interior` and `is_Cderiv` on the circle — swap to `cauchy_interior_dom` + disk-differentiability) → B5/B6 → wire the `FE_diff` chain (a clamped continuous extension of `FE_diff`, differentiable on the disk) via `cauchy_integral_holo` → discharge `GammaC_FE`.
+✅ **DOMAIN-RESTRICTED B4 DONE** — `CTaylorRemDom.taylor_center_zero_D`, axiom-clean: all coefficient integrals `0` ⟹ `f w = 0` (`|w|<R`), for `f` differentiable only on the disk `|z|<R+1` (`Hfhol_disk`) + pointwise-continuous everywhere (`Fptc`, giving `CcontC f = ptcont_CcontC f Fptc`). Copy-adapted from the committed section — the *only* change is the single B1 call `cauchy_interior → cauchy_interior_dom` (the sole place global holomorphy was used).
+
+**Next:** the same swap through **`coeff_recur`** (`CDerivCoeff`, its `Hgd : forall z, is_Cderiv g z (gd z)` is global — restrict to the circle/disk) → **`identity_at_zero`** (`A_base` uses `cauchy_interior` at `w=0` → `cauchy_interior_dom`; `A_step` uses `coeff_recur`) → **B5/B6** (`identity_on_disk`/`identity_propagate`) → wire the clamped `FE_diff` chain via `cauchy_integral_holo` → discharge `GammaC_FE`. Each is the *same* mechanical `forall z → disk/pointwise` re-plumbing now demonstrated for B1 and B4.
 
 *(Everything else is built and axiom-clean: the entire B1–B6 identity theorem for entire functions, and the full general-`n` Cauchy-integral analyticity master key `cauchy_integral_holo`.)*
 
