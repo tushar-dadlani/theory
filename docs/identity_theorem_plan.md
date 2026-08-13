@@ -46,10 +46,14 @@ Generalize `trunc_cauchy` from the center `0` to an interior point `w`: `f(w) = 
 - **the removable-quotient loop** `∮φ=0` (`CCauchyInterior.cauchy_interior_cond` via `pathint_loop_except` + `winding_interior`, plus reusable `disk_convex`/`disk_open`);
 - **the removable-singularity derivation** (`CRemovableExt`): the extension `rphi` of `(F(z)−F(w))/(z−w)` at `w`, with `CcontC` / holomorphy-off-`w` / boundedness / pointwise-continuity all **derived from `F`'s differentiability** (`rphi_bd`, `rphi_ptcont`, `rphi_cc`, `rphi_holo_off`), mirroring `PerronRemovable` and reusing its `ptcont_CcontC`/`is_Cderiv_congr`.
 
-**Next:** B2 (Cauchy derivative formula, by differentiating B1 under the integral) → B3 (Taylor) → B4/B5/B6 (identity theorem).
+✅ **B2 is DONE** — `CCauchyDeriv.cauchy_deriv`: `∮_{|z|=R} F(z)/(z−w)² dz = 2πi·F'(w)` (first-derivative Cauchy formula), via integration by parts (`pathint_FTC` closed loop) + B1 applied to `F'`. Axiom-clean.
 
-### B2 — Cauchy's derivative formula / holomorphic ⟹ C^∞  *(medium)*
-`f^{(n)}(w) = (n!/2πi) ∮_{C_R} f(z)/(z−w)^{n+1} dz`, by differentiating B1 under the integral sign (the `CLaplace`/`GammaNearCHolo` diff-under-integral template applies). Yields all higher complex derivatives and the standard bounds `|f^{(n)}(a)| ≤ n! M / R^n`.
+**Next:** B3 (Taylor / local power series) → B4/B5/B6 (identity theorem).
+
+### B2 — Cauchy's derivative formula  *(first-derivative case ✅ DONE)*
+✅ **`CCauchyDeriv.cauchy_deriv`**: `∮_{C_R} F(z)/(z−w)² dz = 2πi·F'(w)` for `|w|<R`, `F` with derivative `Fd` (`is_Cderiv F z (Fd z)`) and `Fd` itself holomorphic. Axiom-clean. **Route (avoids diff-under-integral):** integration by parts via the closed loop — `H(z)=F(z)/(z−w)` has `H' = Fd/(z−w) − F/(z−w)²` off `w` (`Hprim_deriv`), `∮_{arc} H'=0` (`loop_zero`, `pathint_FTC` — the same closed-loop-of-a-derivative engine as `Jg_zero`), the loop splits (`Cintf_sub`) into `∮ Fd/(z−w) − ∮ F/(z−w)² = 0`, and `∮ Fd/(z−w) = 2πi·Fd(w)` by B1 (`cauchy_interior`) applied to the holomorphic `Fd`. Needs `F ∈ C²` (i.e. `Fd` holomorphic) — exactly the regularity the entire functions in play have.
+
+*(Remaining for the general `f^{(n)}` / bounds `|f^{(n)}(a)| ≤ n!M/Rⁿ`: iterate the IBP `n` times — each step turns `∮ F/(z−w)^{k+1}` into `∮ F'/(z−w)^k` — assuming `F ∈ C^n`. The general "holomorphic ⟹ C^∞" (dropping the `C^n` hypothesis) would instead need complex diff-under-integral; for the FE application `FE_diff` is a difference of Γ-integrals and is `C^∞` by construction, so the IBP form suffices.)*
 
 ### B3 — Taylor's theorem (local power series)  *(THE CRUX)*
 For `|w−a| < R`: expand `1/(z−w) = Σ_n (w−a)^n/(z−a)^{n+1}` (geometric, ratio `|w−a|/R < 1`), which converges **uniformly** in `z` on `C_R`; integrate B1 term by term to get `f(w) = Σ_n a_n (w−a)^n` with `a_n = (1/2πi)∮ f/(z−a)^{n+1} = f^{(n)}(a)/n!`. The gating sub-lemma is **term-by-term integration of a uniformly convergent series over a contour** (a `CVU`/`pathint`-swap lemma), which the repo does not have and must be built (stdlib `CVU` + `pathint_ML` are the seeds).
