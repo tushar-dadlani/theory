@@ -72,6 +72,7 @@ import TDLean.FE.CriticalValue
 import TDLean.FE.Xi
 import TDLean.FE.Growth
 import TDLean.FE.CriticalFormula
+import TDLean.Numeric.Quadrature
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -1948,3 +1949,25 @@ import TDLean.FE.CriticalFormula
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.xi_eq_zero_of_Zline_eq_zero
+
+/-! ### Numeric: rigorous quadrature with explicit error bounds -/
+
+/-- info: 'TDLean.Numeric.norm_integral_sub_smul_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Numeric.norm_integral_sub_smul_le
+
+/-- info: 'TDLean.Numeric.norm_integral_sub_smul_le_of_lipschitz' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Numeric.norm_integral_sub_smul_le_of_lipschitz
+
+/-- info: 'TDLean.Numeric.norm_integral_sub_midpointSum_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Numeric.norm_integral_sub_midpointSum_le
+
+/-- info: 'TDLean.Numeric.norm_integral_Ioi_tail_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.Numeric.norm_integral_Ioi_tail_le
