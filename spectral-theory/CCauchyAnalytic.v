@@ -226,7 +226,49 @@ Proof.
   unfold M. apply Req_le. ring.
 Qed.
 
+(* ---- is_Cderiv packaging: the Cauchy integral is holomorphic in w ---- *)
+Theorem cauchy_type_holo1 : forall (Mg : R), 0 <= Mg -> (forall u, Cmod (g (arc Rr u)) <= Mg) ->
+  forall (Phi : C -> C) (HK2 : Ccont K2),
+  (forall w (Hc : Ccont (Kw w)), Cmod (Cminus w w0) < dd / 2 ->
+     Phi w = Cintf (Kw w) Hc 0 (2 * PI)) ->
+  is_Cderiv Phi w0 (Cintf K2 HK2 0 (2 * PI)).
+Proof.
+  intros Mg HMg Hgb Phi HK2 Hagree eps Heps.
+  pose proof dd_pos as Hdd.
+  set (C := 2 * (Mg * Rr * / (dd / 2 * (dd * dd))) * (2 * PI)).
+  assert (Hden : 0 < dd / 2 * (dd * dd)) by (apply Rmult_lt_0_compat; nra).
+  assert (HC0 : 0 <= C).
+  { unfold C. apply Rmult_le_pos; [ | generalize PI_RGT_0; lra ].
+    apply Rmult_le_pos; [ lra | ].
+    apply Rmult_le_pos; [ apply Rmult_le_pos; [ exact HMg | lra ] | left; apply Rinv_0_lt_compat; exact Hden ]. }
+  exists (Rmin (dd / 2) (eps / (C + 1))). split.
+  { apply Rmin_pos; [ lra | apply Rdiv_lt_0_compat; [ exact Heps | lra ] ]. }
+  intros h Hh.
+  assert (Hhalf : Cmod h < dd / 2) by (eapply Rlt_le_trans; [ exact Hh | apply Rmin_l ]).
+  assert (Hheps : Cmod h < eps / (C + 1)) by (eapply Rlt_le_trans; [ exact Hh | apply Rmin_r ]).
+  assert (HcW0 : Ccont (Kw w0)) by (apply Kw_cont; apply arc_w0_ne).
+  assert (HcWh : Ccont (Kw (Cadd w0 h))) by (apply Kw_cont; intro u; apply arc_w0h_ne; lra).
+  assert (HcBrem : Ccont (Brem h)) by (apply Brem_cont; lra).
+  rewrite (Hagree (Cadd w0 h) HcWh
+             ltac:(replace (Cminus (Cadd w0 h) w0) with h by ring; exact Hhalf)).
+  rewrite (Hagree w0 HcW0
+             ltac:(replace (Cminus w0 w0) with C0 by ring;
+                   rewrite (proj2 (Cmod0 C0) eq_refl); lra)).
+  replace (Cmul (Cintf K2 HK2 0 (2 * PI)) h)
+     with (Cmul h (Cintf K2 HK2 0 (2 * PI))) by ring.
+  eapply Rle_trans; [ apply (cauchy_est Mg HMg Hgb h HcWh HcW0 HK2 HcBrem Hhalf) | ].
+  fold C.
+  (* C * |h|^2 <= eps * |h| *)
+  assert (Hmh : 0 <= Cmod h) by apply Cmod_nonneg.
+  assert (Hlt : Cmod h * (C + 1) < eps).
+  { apply (Rmult_lt_reg_r (/ (C + 1))); [ apply Rinv_0_lt_compat; lra | ].
+    rewrite Rmult_assoc. rewrite Rinv_r by lra. rewrite Rmult_1_r.
+    unfold Rdiv in Hheps. exact Hheps. }
+  nra.
+Qed.
+
 End CauchyEst.
 
 Print Assumptions cauchy_bracket.
 Print Assumptions cauchy_est.
+Print Assumptions cauchy_type_holo1.
