@@ -129,9 +129,13 @@ So the master key supplies the derivative *at each point via its own circle/clam
 
 The precise blocker is located: `pathint_loop_except` (`CGoursatExcept`) — which `cauchy_interior_cond` uses for the removable loop — takes `HF : CcontC F` (**global** continuity, threaded into `seg_int`/`PrimE`), while its `HFhol`/`HFcont` are *already* domain-restricted to `U`. So the only global requirement is **continuity**, and `rphi` need only be continuous *off* `w` (from `F` continuous) plus *through* `w` (from `Hdw`) — **not** globally differentiable.
 
-✅ **Brick 1 DONE** — `CRemovableExtDom.quotient_ptcont`, axiom-clean: the removable quotient `(F(z)−F(w))/(z−w)` is pointwise continuous at any `z≠w` whenever `F` is merely **continuous** at `z` (ε-δ via the `a·u−b·v = (a−b)·u + b·(u−v)` split + `Cinv_diff` + the `|z'−w|≥m/2` lower bound). This discharges `rphi`'s continuity from a globally-*continuous* `F` (via `ptcont_CcontC`), instead of an entire one — so a function holomorphic only on a disk, but continuous everywhere on a clamped disk (like `FE_diff`), feeds the Cauchy machinery.
+✅ **DOMAIN-RESTRICTED B1 COMPLETE** — `CRemovableExtDom.cauchy_interior_dom`, axiom-clean: `∮_{|z|=R} F/(z−w) = 2πi·F(w)` for an `F` that is (i) differentiable at `w`, (ii) pointwise **continuous** everywhere, (iii) differentiable only on the disk `|z|<R+1` — **no entire assumption**. Bricks:
+- **`quotient_ptcont`** — the removable quotient is continuous at `z≠w` from mere continuity of `F` (ε-δ via `a·u−b·v = (a−b)·u + b·(u−v)` + `Cinv_diff` + `|z'−w|≥m/2`).
+- **`rphi_ptcont_dom`/`rphi_cc_dom`** — `CcontC rphi` from a globally-*continuous* `F` (`quotient_ptcont` off `w` + `Hdw` through `w`, then `ptcont_CcontC`).
+- **`rphi_holo_off_dom`** — disk-restricted holomorphy off `w` (mirrors `CRemovableExt.rphi_holo_off` with `Fholo_disk`); **`rphi_bd`** reused verbatim (needs only `Hdw`).
+- **`cauchy_interior_dom`** — feeds these into `cauchy_interior_cond`.
 
-**Next bricks:** `rphi_cc_dom` (= `ptcont_CcontC` of a `rphi_ptcont_dom` built from `quotient_ptcont` off `w` + `Hdw` through `w`), disk-restricted `rphi_holo_off`, then `cauchy_interior_dom`; then thread `U` up through B4/B5/B6; then wire the `FE_diff` chain via `cauchy_integral_holo`.
+**Next:** thread the disk condition up through B4 (`taylor_center_zero`: its coefficient integrals / `coeff_recur` use `cauchy_interior` and `is_Cderiv` on the circle — swap to `cauchy_interior_dom` + disk-differentiability) → B5/B6 → wire the `FE_diff` chain (a clamped continuous extension of `FE_diff`, differentiable on the disk) via `cauchy_integral_holo` → discharge `GammaC_FE`.
 
 *(Everything else is built and axiom-clean: the entire B1–B6 identity theorem for entire functions, and the full general-`n` Cauchy-integral analyticity master key `cauchy_integral_holo`.)*
 
