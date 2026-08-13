@@ -998,3 +998,4 @@ spectral-theory/CTaylorRemDom.v
 spectral-theory/CDerivCoeffDom.v
 spectral-theory/CIdentityZeroDom.v
 spectral-theory/CIdentityRealDom.v
+spectral-theory/CIdentityPropDom.v
