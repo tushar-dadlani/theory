@@ -121,7 +121,13 @@ Then `fseq k w := (k!/2πi)·∮ FE_diff/(z−w)^{k+1}` is a smooth chain that *
 
 So `w↦∮ g/(z−w)ⁿ` is holomorphic in `w` with derivative `n·∮ g/(z−w)ⁿ⁺¹` — supplying **both** the smooth chain and its domain-native definition.
 
-**Remaining (the wiring):** define `fseq k := (k!/2πi)·∮ FE_diff/(z−w)^{k+1}`, prove the chain relation `is_Cderiv (fseq k) w (fseq (S k) w)` (from `cauchy_integral_holo` with the `k!`↔`(k+1)!` normalization) and `fseq 0 = FE_diff` (from B1), then instantiate `identity_on_disk`/`identity_propagate` → `GammaC_FE`.
+**Remaining — the chain wiring exposes the domain-restriction (finding, this session).** Feeding `fseq k := (k!/2πi)·∮ FE_diff/(z−w)^{k+1}` into `identity_on_disk`/`identity_propagate` needs their chain hypotheses **globally** (`forall k z, is_Cderiv (fseq k) z (fseq (S k) z)`), which is *false* here for two reasons:
+1. **the tower is phrased for entire functions**, but `FE_diff` is meromorphic (poles at `0,−1,…`), holomorphic only on `Re>0`;
+2. **the Cauchy-integral chain is disk-local** — `cauchy_integral_holo` gives `is_Cderiv PhiN w0 (…)` at the clamp *centre* only, and `∮ g/(z−w)ⁿ` is defined only for `w` inside the circle; no single total `C→C` function is differentiable everywhere with the chain relation.
+
+So the master key supplies the derivative *at each point via its own circle/clamp*, but the tower's `forall z` hypothesis forbids stitching them into one global `fseq k`. **The genuine remaining work is the domain-restricted identity tower**: re-plumb B1 (`cauchy_interior`) → B6 (`identity_propagate`) from `forall z, …` to `forall z, U z → …` on a convex open `U` (circles kept inside `U`; `U = Re>0`). This threads a domain condition through `CRemovableExt` (removable extension's global continuity), `CCauchyFull`, `CTaylorRem`, `CDerivCoeff`, `CIdentityZero/Real/Prop` — a substantial re-plumbing, not bookkeeping. With it, `fseq k` (holomorphic on `Re>0` by `cauchy_integral_holo` around each interior point) + `fseq 0 = FE_diff` (B1) discharge `GammaC_FE_from_identity`.
+
+*(Everything else is built and axiom-clean: the entire B1–B6 identity theorem for entire functions, and the full general-`n` Cauchy-integral analyticity master key `cauchy_integral_holo`.)*
 
 ## Honest assessment (revised after finding Milestone C)
 
