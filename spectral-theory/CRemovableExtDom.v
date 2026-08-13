@@ -14,8 +14,22 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra Lia.
-Require Import ComplexField Cmodulus CDeriv CWindingOffCenter.
+Require Import ComplexField Cmodulus CSegInt Holomorphic CDeriv CWindingOffCenter
+        CRemovableExt PerronRemovable.
 Open Scope R_scope.
+
+Lemma minus_ne : forall a b, a <> b -> Cminus a b <> C0.
+Proof.
+  intros a b Hab Hc. apply Hab. apply Ceq;
+    [ apply (f_equal Re) in Hc | apply (f_equal Im) in Hc ];
+    unfold Cminus, C0 in Hc; cbn in Hc; lra.
+Qed.
+
+Lemma Cmod_pos_of_ne : forall c, c <> C0 -> 0 < Cmod c.
+Proof.
+  intros c Hc. pose proof (Cmod_nonneg c) as Hnn. destruct (Cmod0 c) as [H0 _].
+  assert (Cmod c <> 0) by (intro Hz; apply Hc, H0; exact Hz). lra.
+Qed.
 
 (* the inverse difference, as pure C-field algebra *)
 Lemma Cinv_diff : forall a b, a <> C0 -> b <> C0 ->
@@ -122,3 +136,57 @@ Proof.
 Qed.
 
 Print Assumptions quotient_ptcont.
+
+(* ================================================================= *)
+(*  rphi continuity from a globally-CONTINUOUS F (not entire)          *)
+(* ================================================================= *)
+
+Section RemovableDom.
+Variable F : C -> C.
+Variable w dw : C.
+Hypothesis Hdw : is_Cderiv F w dw.
+Hypothesis Fptc : forall z eps, 0 < eps -> exists del, 0 < del /\
+  forall z', Cmod (Cminus z' z) < del -> Cmod (Cminus (F z') (F z)) < eps.
+
+Lemma rphi_ptcont_dom : forall z eps, 0 < eps -> exists del, 0 < del /\
+  forall z', Cmod (Cminus z' z) < del ->
+    Cmod (Cminus (rphi F w dw z') (rphi F w dw z)) < eps.
+Proof.
+  intros z eps Heps. destruct (Ceq_dec z w) as [Hzw | Hzw].
+  - (* z = w: removability, from Hdw *)
+    subst z. rewrite rphi_w.
+    destruct (Hdw (eps / 2) ltac:(lra)) as [del [Hdel Hb]].
+    exists del; split; [ exact Hdel | ].
+    intros z' Hz'. destruct (Ceq_dec z' w) as [Hz'w | Hz'w].
+    + subst z'. rewrite rphi_w.
+      replace (Cminus dw dw) with C0 by (apply Ceq; simpl; ring).
+      rewrite (proj2 (Cmod0 C0) eq_refl); exact Heps.
+    + assert (Hne : Cminus z' w <> C0) by (apply minus_ne; exact Hz'w).
+      assert (Hpos : 0 < Cmod (Cminus z' w)) by (apply Cmod_pos_of_ne; exact Hne).
+      pose proof (Hb (Cminus z' w) Hz') as Hrem.
+      replace (Cadd w (Cminus z' w)) with z' in Hrem by (apply Ceq; simpl; ring).
+      rewrite (rphi_minus_dw F w dw z' Hz'w), Cmod_mul, (Cmod_inv _ Hne).
+      apply (Rmult_lt_reg_r (Cmod (Cminus z' w))); [ exact Hpos | ].
+      rewrite Rmult_assoc. rewrite Rinv_l by lra. rewrite Rmult_1_r.
+      eapply Rle_lt_trans; [ exact Hrem | nra ].
+  - (* z <> w: quotient continuity from F continuous at z *)
+    destruct (quotient_ptcont F w z Hzw (Fptc z) eps Heps) as [del0 [Hdel0 Hq]].
+    exists (Rmin del0 (Cmod (Cminus z w))); split.
+    { apply Rmin_pos; [ exact Hdel0 | apply Cmod_pos_of_ne, minus_ne; exact Hzw ]. }
+    intros z' Hz'.
+    assert (Hz'w : z' <> w).
+    { intro E; subst z'.
+      assert (Cmod (Cminus w z) = Cmod (Cminus z w))
+        by (rewrite <- Cmod_opp; f_equal; ring).
+      assert (Cmod (Cminus w z) < Cmod (Cminus z w))
+        by (eapply Rlt_le_trans; [ exact Hz' | apply Rmin_r ]). lra. }
+    rewrite (rphi_off F w dw z' Hz'w), (rphi_off F w dw z Hzw).
+    apply Hq. eapply Rlt_le_trans; [ exact Hz' | apply Rmin_l ].
+Qed.
+
+Lemma rphi_cc_dom : CcontC (rphi F w dw).
+Proof. apply ptcont_CcontC, rphi_ptcont_dom. Qed.
+
+End RemovableDom.
+
+Print Assumptions rphi_cc_dom.
