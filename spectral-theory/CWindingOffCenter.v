@@ -153,6 +153,28 @@ Proof.
   rewrite Hww, <- Hrel. apply Ceq; simpl; ring.
 Qed.
 
+(* pulling the common factor arc' out of the remainder *)
+Lemma factor_arc : forall iA iB iBB w a d : C,
+  Cminus (Cminus (Cmul iA a) (Cmul iB a)) (Cmul (Cmul (Cmul w iBB) a) d)
+  = Cmul (Cminus (Cminus iA iB) (Cmul (Cmul w iBB) d)) a.
+Proof. intros; apply Ceq; simpl; ring. Qed.
+
+(* Cmod of the unit and of an inverse *)
+Lemma Cmod_C1 : Cmod C1 = 1.
+Proof.
+  unfold Cmod, Cnorm2, C1; cbn [Re Im].
+  replace (1 * 1 + 0 * 0) with 1 by ring. apply sqrt_1.
+Qed.
+
+Lemma Cmod_inv : forall a, a <> C0 -> Cmod (Cinv a) = / Cmod a.
+Proof.
+  intros a Ha.
+  assert (Hm : Cmod a <> 0) by (intro H; apply Ha, (proj1 (Cmod0 a) H)).
+  apply (Rmult_eq_reg_r (Cmod a)); [ | exact Hm ].
+  rewrite <- Cmod_mul, (Cinv_l a Ha), Cmod_C1.
+  rewrite Rinv_l by exact Hm. reflexivity.
+Qed.
+
 Section OffCenterWinding.
 Variable Rr : R.
 Variable w : C.
