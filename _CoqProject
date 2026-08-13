@@ -985,3 +985,4 @@ spectral-theory/CWindingCenter.v
 spectral-theory/CCauchyInterior.v
 spectral-theory/CRemovableExt.v
 spectral-theory/CCauchyFull.v
+spectral-theory/CCauchyDeriv.v
