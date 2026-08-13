@@ -279,6 +279,122 @@ Proof.
   - intros u _; apply arc_Im_deriv.
 Qed.
 
+(* ---- Stage C pt4: the uniform first-order estimate Hunif ---- *)
+Definition margin : R := (Rr - Cmod w) / 2.
+Definition ballrad : R := (Rr - Cmod w) / (2 * (Cmod w + 1)).
+
+Lemma margin_pos : 0 < margin.
+Proof. unfold margin; lra. Qed.
+
+Lemma ballrad_pos : 0 < ballrad.
+Proof.
+  unfold ballrad; apply Rdiv_lt_0_compat; [ lra | pose proof (Cmod_nonneg w); lra ].
+Qed.
+
+(* on the ball |s - s0| < ballrad (s0 in [0,1]) the pole stays margin away *)
+Lemma denomA_lb : forall s s0 u, 0 <= s0 <= 1 -> Rabs (s - s0) < ballrad ->
+  margin <= Cmod (Cminus (arc Rr u) (wp s)).
+Proof.
+  intros s s0 u Hs0 Hd.
+  eapply Rle_trans; [ | apply Cmod_rev_triangle ].
+  rewrite (Cmod_arc Rr u) by lra.
+  assert (Hwp : Cmod (wp s) = Rabs s * Cmod w)
+    by (unfold wp; rewrite Cmod_mul, Cmod_RtoC; reflexivity).
+  rewrite Hwp.
+  pose proof (Cmod_nonneg w) as HW.
+  assert (Hs : Rabs s <= Rabs (s - s0) + 1).
+  { pose proof (Rabs_triang (s - s0) s0) as Ht.
+    replace (s - s0 + s0) with s in Ht by ring.
+    assert (Rabs s0 <= 1) by (rewrite Rabs_pos_eq; lra). lra. }
+  assert (H2 : 0 < 2 * (Cmod w + 1)) by lra.
+  pose proof (Rmult_lt_compat_l (2 * (Cmod w + 1)) (Rabs (s - s0)) ballrad H2 Hd) as Hd2.
+  unfold ballrad in Hd2.
+  replace (2 * (Cmod w + 1) * ((Rr - Cmod w) / (2 * (Cmod w + 1)))) with (Rr - Cmod w)
+    in Hd2 by (field; lra).
+  unfold margin. nra.
+Qed.
+
+(* B - A = w * (s - s0):  the pole difference *)
+Lemma poled_rel : forall s s0 u,
+  Cminus (Cminus (arc Rr u) (wp s0)) (Cminus (arc Rr u) (wp s))
+  = Cmul w (RtoC (s - s0)).
+Proof. intros; unfold wp, RtoC; apply Ceq; simpl; ring. Qed.
+
+(* THE UNIFORM FIRST-ORDER ESTIMATE (leibniz Hunif) *)
+Lemma wphi_hunif : forall s0, 0 <= s0 <= 1 -> forall eps, 0 < eps ->
+  exists del, 0 < del /\ forall s u, 0 <= u <= 2 * PI -> Rabs (s - s0) < del ->
+    Cmod (Cminus (Cminus (wphi s u) (wphi s0 u)) (Cmul (wdphi s0 u) (RtoC (s - s0))))
+    <= eps * Rabs (s - s0).
+Proof.
+  intros s0 Hs0 eps Heps.
+  pose proof margin_pos as Hmp. pose proof (Cmod_nonneg w) as HW.
+  set (Cc := Rr * (Cmod w * Cmod w) * (/ margin * / (margin * margin))).
+  assert (Hinvm : 0 < / margin) by (apply Rinv_0_lt_compat; exact Hmp).
+  assert (Hinvmm : 0 < / (margin * margin)) by (apply Rinv_0_lt_compat; nra).
+  assert (HCc : 0 <= Cc)
+    by (unfold Cc; apply Rmult_le_pos;
+        [ apply Rmult_le_pos; [ lra | nra ] | apply Rmult_le_pos; lra ]).
+  set (del := Rmin ballrad (eps / (Cc + 1))).
+  exists del. split.
+  - apply Rmin_glb_lt; [ apply ballrad_pos | apply Rdiv_lt_0_compat; lra ].
+  - intros s u Hu Hsdel.
+    assert (Hdb : Rabs (s - s0) < ballrad)
+      by (eapply Rlt_le_trans; [ exact Hsdel | apply Rmin_l ]).
+    assert (Hde : Rabs (s - s0) < eps / (Cc + 1))
+      by (eapply Rlt_le_trans; [ exact Hsdel | apply Rmin_r ]).
+    pose proof (denomA_lb s s0 u Hs0 Hdb) as HmA.
+    assert (HmB : margin <= Cmod (Cminus (arc Rr u) (wp s0)))
+      by (apply (denomA_lb s0 s0 u Hs0); rewrite Rminus_diag, Rabs_R0; apply ballrad_pos).
+    set (A := Cminus (arc Rr u) (wp s)) in *.
+    set (B := Cminus (arc Rr u) (wp s0)) in *.
+    assert (HpA : 0 < Cmod A) by lra.
+    assert (HpB : 0 < Cmod B) by lra.
+    assert (HA0 : A <> C0)
+      by (intro H; rewrite H, (proj2 (Cmod0 C0) eq_refl) in HmA; lra).
+    assert (HB0 : B <> C0)
+      by (intro H; rewrite H, (proj2 (Cmod0 C0) eq_refl) in HmB; lra).
+    assert (Hfact : Cminus (Cminus (wphi s u) (wphi s0 u)) (Cmul (wdphi s0 u) (RtoC (s - s0)))
+      = Cmul (Cmul (Cmul (Cmul w w) (Cmul (RtoC (s - s0)) (RtoC (s - s0))))
+                   (Cmul (Cinv A) (Cinv (Cmul B B)))) (arc' Rr u)).
+    { unfold wphi, wdphi; fold A B.
+      rewrite factor_arc, (rem_identity A B w (RtoC (s - s0)) HA0 HB0 (poled_rel s s0 u));
+        reflexivity. }
+    rewrite Hfact, Cmod_mul, (Cmod_arc' Rr u ltac:(lra)).
+    (* bound Cmod (product) * Rr  <=  Cc * |s-s0|^2  <=  eps * |s-s0| *)
+    assert (HP : Cmod (Cmul (Cmul w w) (Cmul (RtoC (s - s0)) (RtoC (s - s0))))
+               = Cmod w * Cmod w * (Rabs (s - s0) * Rabs (s - s0)))
+      by (rewrite !Cmod_mul, !Cmod_RtoC; reflexivity).
+    assert (HQ : Cmod (Cmul (Cinv A) (Cinv (Cmul B B))) <= / margin * / (margin * margin)).
+    { rewrite Cmod_mul, (Cmod_inv A HA0), (Cmod_inv (Cmul B B) (Cmul_self_ne0 B HB0)), Cmod_mul.
+      apply Rmult_le_compat.
+      - left; apply Rinv_0_lt_compat; exact HpA.
+      - left; apply Rinv_0_lt_compat; nra.
+      - apply Rinv_le_contravar; [ exact Hmp | exact HmA ].
+      - apply Rinv_le_contravar; [ nra | apply Rmult_le_compat; [ lra | lra | exact HmB | exact HmB ] ]. }
+    apply Rle_trans with (Cc * (Rabs (s - s0) * Rabs (s - s0))).
+    + rewrite Cmod_mul, HP.
+      pose proof (Cmod_nonneg (Cmul (Cinv A) (Cinv (Cmul B B)))) as HQ0.
+      unfold Cc.
+      apply Rle_trans with
+        (Cmod w * Cmod w * (Rabs (s - s0) * Rabs (s - s0))
+         * (/ margin * / (margin * margin)) * Rr).
+      * apply Rmult_le_compat_r; [ lra | ].
+        apply Rmult_le_compat_l; [ apply Rmult_le_pos; apply Rmult_le_pos; try lra;
+          apply Rabs_pos | exact HQ ].
+      * apply Req_le; ring.
+    + (* Cc * |s-s0|^2 <= eps * |s-s0| *)
+      pose proof (Rabs_pos (s - s0)) as Hab.
+      assert (Hcd : Cc * Rabs (s - s0) <= eps).
+      { apply Rle_trans with (Cc * (eps / (Cc + 1))).
+        - apply Rmult_le_compat_l; [ exact HCc | lra ].
+        - apply (Rmult_le_reg_r (Cc + 1)); [ lra | ].
+          replace (Cc * (eps / (Cc + 1)) * (Cc + 1)) with (Cc * eps) by (field; lra).
+          nra. }
+      apply Rle_trans with (Cc * Rabs (s - s0) * Rabs (s - s0)).
+      * apply Req_le; ring.
+      * apply Rmult_le_compat_r; [ exact Hab | exact Hcd ].
+Qed.
+
 End OffCenterWinding.
 
 Print Assumptions Jg_zero.
