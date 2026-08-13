@@ -982,3 +982,4 @@ spectral-theory/MertensThirdReduction.v
 spectral-theory/GammaCRealAxis.v
 spectral-theory/GammaCFE.v
 spectral-theory/CWindingCenter.v
+spectral-theory/CCauchyInterior.v
