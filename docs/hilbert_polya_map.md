@@ -87,7 +87,40 @@ the zero-pairing (`XiC_zero_reflect`).
 
 ---
 
-## 4. The one load-bearing gap (stated plainly)
+## 4. The dilation / boundary-triple / Weyl chain (the spectral line of work)
+
+A second, self-contained line of work replaces the "trace = `ζ`" diagonal operator
+with a **Mellin-diagonal dilation** whose **boundary condition is the completed
+`ξ`**, and studies it as a **boundary triple** (deficiency index `(1,1)`). It does
+*not* close the gap of §5 either, but it sharpens it decisively: the reality of the
+candidate eigenvalue-ordinates, previously *assumed*, is now a **theorem**, and the
+zero count is realised as a genuine **phase winding**. Every file below is
+axiom-clean (each ends with `Print Assumptions` on its headline results; only the
+four standard classical-Reals axioms).
+
+| File | Headline theorem(s) | Meaning |
+|---|---|---|
+| `CoherenceSingularity.v` | `coherence_line`, `XiC_crit_eq` | `ξ` is **real** on the critical line (the "coherence seam"); `xir t := Re ξ(½+it)` |
+| `SelfDualCenter.v` | `self_dual_center` | weight-1 self-duality pins the seam at `Re = ½` |
+| `BerryKeatingDilation.v` | `dilation_spectrum_is_zeros`, `hilbert_polya_target` | Mellin-diagonal dilation with boundary `B : ℝ → ℂ`; `spec Bxi t ⟺ ξ(½+it)=0`; the HP target stated as a `Prop` |
+| `DilationBoundary.v` | `Bxi_even`, `Bxi_no_offaxis_zero` | the `x↔1/x` boundary match **is** the evenness of `ξ`; **no zero off the reflection axis** |
+| `SelfAdjointExtension.v` | `icayley_real`, `extension_spectrum_real`, `hp_target_via_extension` | boundary triple; Cayley `c(z)=(z−i)/(z+i)`; **reality of the spectral point is DERIVED from the unit phase**, not inserted |
+| `WeylFunction.v` | `zeros_are_Dirichlet_phase`, `scattering_trivial` | Weyl function `Wxi t = c(xir t)`; **zeros = the Dirichlet phase `−1`**; scattering matrix `ξ(1−s)/ξ(s) = 1` (the FE) |
+| `WeylHerglotz.v` | `cayley_herglotz`, `phase_ordinate_bijection` | the Weyl map is **Herglotz** (upper half-plane → disk) and a **bijection** `ℝ ↔ U(1)∖{1}` |
+| `ZeroCounting.v` | `xir_continuity_pt`, `sign_change_zero_up`, `alternation_zeros` | `xir` continuous (from `XiC` holomorphic); a **sign change ⇒ a zero** (IVT); `n` alternations ⇒ `n` zeros (Turing/Sturm lower bound) |
+| `WeylWinding.v` | `Wxi_never_one`, `weyl_halfwinding_up`, `weyl_winding_count` | `Wxi` never touches `+1`; a sign change is a **half-winding** through the antipode `−1`; **counting zeros = counting phase windings** |
+| `HilbertPolyaCapstone.v` | `berry_keating_summary`, `extension_target_refines_dilation_target`, `hilbert_polya_open` | packages the whole proven chain; the extension target **refines** the dilation target; the single open step as one `Prop` |
+
+The end-to-end proven statement (`berry_keating_summary`): the boundary functional
+is `ξ` and even; it has no zero off the reflection axis; a self-adjoint extension
+*derives* a real spectral point from a unit phase; the Weyl function selects the
+zeros at the Dirichlet phase `−1`; the scattering matrix is trivial (the FE); the
+Weyl map is Herglotz and a bijection; and a sign change of `xir` is a half-winding
+of the Weyl phase through `−1`. All unconditional and axiom-clean.
+
+---
+
+## 5. The one load-bearing gap (stated plainly)
 
 Everything above is real and machine-checked. What is **missing** is the single
 Hilbert–Pólya link:
@@ -102,30 +135,51 @@ having the zeros *be* your eigenvalues. Berry–Keating asks for an operator who
 **eigenvalues** are those `t`; no transform in this repo carries the prime side to
 a *zeros* side.
 
-In the repo, that missing identification is **not proved** — it is asserted:
+In the repo, that missing identification is **not proved**. It is now stated
+**honestly and non-tautologically** by the §4 chain:
 
-- `SpectralTripleRH.v` line 250: `Axiom berry_keating_correspondence`. Its
-  conclusion is `on_critical_line_q (1#2)`, which unfolds to `1#2 == 1#2` — a
-  **tautology**, true regardless of the hypothesis. So `RH_from_spectral_triple`
-  (line 260) proves `1#2 == 1#2`, not RH.
-- `st_self_adjoint : True` (line 209), `on_critical_line := True`-style
-  placeholders, and the Merkle/JSON "certificates" are not Coq proofs of anything
-  about ζ.
+- **The current, honest statement of the gap** is
+  `SelfAdjointExtension.hp_target_via_extension`, surfaced as one `Prop`:
+  `HilbertPolyaCapstone.hilbert_polya_open`. It asserts the existence of a
+  unit-phase sequence `u` whose Cayley-preimage ordinates enumerate exactly the
+  on-seam zeros. Crucially, the **reality** of those ordinates is *no longer part
+  of the gap* — it is the theorem `icayley_real` (a unit phase yields a real
+  spectral point). What remains open is only that the **geometric** boundary phase
+  realising `XiC`'s zeros is that specific `u` — i.e. that the operator whose
+  boundary-triple Weyl function is `Wxi` is the geometric Berry–Keating dilation.
+  This is a genuine existence target, never asserted true.
 
-These files should be read as *scaffolding / statements of intent*, not proofs.
-Closing the gap — actually proving that the operator's spectrum consists of the
-zero ordinates — is **equivalent to RH itself**. The honest status: the operator
-and the reflection geometry are built and axiom-clean; the eigenvalue = zero
-identification is open, and the one-sided reduction (`RH_iff_no_left`) is a genuine
-narrowing of the target, not a proof of it.
+- **Legacy scaffolding, superseded.** An older file `SpectralTripleRH.v` (line 250)
+  contains `Axiom berry_keating_correspondence`, whose conclusion `on_critical_line_q
+  (1#2)` unfolds to `1#2 == 1#2` — a **tautology**; `st_self_adjoint : True` (line
+  209) and the Merkle/JSON "certificates" are `True`-placeholders, not proofs. Read
+  those as statements of intent. The §4 chain **replaces** that tautological
+  assertion with the honest `Prop` above and an axiom-clean body around it.
+
+Closing the gap — proving the geometric phase `u` exists / that the spectrum is the
+zero ordinates — is **equivalent to RH itself**. The honest status: the operator,
+the reflection geometry, the boundary-triple reality derivation, the Weyl-function
+identification, and zero-counting-as-winding are all built and axiom-clean; the
+single geometric-phase existence step is open, and the one-sided reduction
+(`RH_iff_no_left`) remains a genuine narrowing of the target, not a proof.
 
 ---
 
 ## What a next real step would look like
 
-Not another `Axiom`. Either (a) a proof that some concrete self-adjoint operator's
-resolvent/determinant equals the completed `ξ` (turning "trace = `ζ`" into
-"spectrum = zeros"), or (b) an analytic zero-free-region result that, via
-`RH_iff_no_left`, chips away at one half of the strip. Both are hard; only (b) is
-plausibly incremental within this repo's current analytic machinery
-(`zetaC_line_nonzero` is the `Re = 1` edge of exactly such a region).
+Not another `Axiom`. The gap is now sharp: identify the **geometric phase** — an
+operator whose boundary-triple Weyl function is `Wxi` (equivalently, discharge
+`hilbert_polya_open`). Concrete incremental routes:
+- (a) exhibit a concrete self-adjoint operator whose resolvent/determinant equals
+  the completed `ξ`, or whose Weyl function is `Wxi` (turning "trace = `ζ`" /
+  "boundary = `ξ`" into "spectrum = zeros");
+- (b) an analytic zero-free-region result that, via `RH_iff_no_left`, chips away at
+  one half of the strip (`zetaC_line_nonzero` is the `Re = 1` edge of such a region);
+- (c) a genuine **argument-principle / N(T) asymptotic** built on top of the
+  zero-counting-as-winding already proved (`weyl_winding_count`) — the Weyl-term
+  `N(T) ~ (T/2π)ln(T/2π) − T/2π` — which would need `ξ` growth/Stirling on vertical
+  lines.
+All are hard; (b) and (c) are the plausibly incremental ones within the repo's
+current analytic machinery. The unconditional achievement to build on: zeros are
+counted as **half-windings of the Weyl phase through the Dirichlet phase `−1`**
+(`WeylWinding.weyl_winding_count`).

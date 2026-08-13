@@ -976,3 +976,4 @@ spectral-theory/WeylFunction.v
 spectral-theory/WeylHerglotz.v
 spectral-theory/ZeroCounting.v
 spectral-theory/WeylWinding.v
+spectral-theory/HilbertPolyaCapstone.v
