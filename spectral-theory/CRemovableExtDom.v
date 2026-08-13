@@ -14,8 +14,9 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra Lia.
-Require Import ComplexField Cmodulus CSegInt Holomorphic CDeriv CWindingOffCenter
-        CRemovableExt PerronRemovable.
+Require Import ComplexField Cmodulus CIntegral2 CSegInt CPathIntegral Holomorphic
+        CDeriv CHoloCalculus CWindingOffCenter CRemovableExt CCauchyInterior
+        PerronRemovable.
 Open Scope R_scope.
 
 Lemma minus_ne : forall a b, a <> b -> Cminus a b <> C0.
@@ -187,6 +188,61 @@ Qed.
 Lemma rphi_cc_dom : CcontC (rphi F w dw).
 Proof. apply ptcont_CcontC, rphi_ptcont_dom. Qed.
 
+(* disk-restricted holomorphy off w: needs F differentiable only on the disk *)
+Variable R2 : R.
+Hypothesis Fholo_disk : forall z, Cmod z < R2 -> z <> w -> exists d, is_Cderiv F z d.
+
+Lemma rphi_holo_off_dom : forall z, Cmod z < R2 -> z <> w ->
+  exists d, is_Cderiv (rphi F w dw) z d.
+Proof.
+  intros z Hzd Hz. destruct (Fholo_disk z Hzd Hz) as [dF HdF].
+  assert (Hne : Cminus z w <> C0) by (apply minus_ne; exact Hz).
+  eexists.
+  apply (is_Cderiv_congr (rphi F w dw)
+           (fun z' => Cmul (Cminus (F z') (F w)) (Cinv (Cminus z' w)))
+           z _ (Cmod (Cminus z w))).
+  - apply Cmod_pos_of_ne; exact Hne.
+  - intros z' Hz'. apply rphi_off. intro E; subst z'.
+    assert (Cmod (Cminus w z) = Cmod (Cminus z w))
+      by (rewrite <- Cmod_opp; f_equal; ring). lra.
+  - apply (Cderiv_div (fun z' => Cminus (F z') (F w)) (fun z' => Cminus z' w) z
+             (Cminus dF C0) (Cminus C1 C0)).
+    + apply (Cderiv_minus F (fun _ => F w) z dF C0); [ exact HdF | apply Cderiv_const ].
+    + apply (Cderiv_minus (fun z' => z') (fun _ => w) z C1 C0);
+        [ apply Cderiv_id | apply Cderiv_const ].
+    + exact Hne.
+Qed.
+
 End RemovableDom.
 
+(* ================================================================= *)
+(*  DOMAIN-RESTRICTED B1: Cauchy formula for F holomorphic on the disk *)
+(* ================================================================= *)
+Theorem cauchy_interior_dom : forall (F : C -> C) (Rr : R) (w dw : C),
+  0 < Rr -> Cmod w < Rr ->
+  is_Cderiv F w dw ->
+  (forall z eps, 0 < eps -> exists del, 0 < del /\
+     forall z', Cmod (Cminus z' z) < del -> Cmod (Cminus (F z') (F z)) < eps) ->
+  (forall z, Cmod z < Rr + 1 -> z <> w -> exists d, is_Cderiv F z d) ->
+  forall (Hf : Ccont (fun u => Cmul (Cmul (F (arc Rr u)) (Cinv (Cminus (arc Rr u) w)))
+                                    (arc' Rr u))),
+  pathint (arc Rr) (arc' Rr) (fun z => Cmul (F z) (Cinv (Cminus z w))) Hf 0 (2 * PI)
+  = Cmul (mkC 0 (2 * PI)) (F w).
+Proof.
+  intros F Rr w dw HR HwR Hdw Fptc Fholo Hf.
+  assert (Harc_ne : forall u, arc Rr u <> w).
+  { intros u Hc. assert (HM : Cmod (arc Rr u) = Rr) by (apply Cmod_arc; lra).
+    rewrite Hc in HM. lra. }
+  apply (cauchy_interior_cond (Rr + 1) Rr w F (rphi F w dw)).
+  - exact HR.
+  - lra.
+  - exact HwR.
+  - exact (rphi_cc_dom F w dw Hdw Fptc).
+  - intro u. exact (rphi_off F w dw (arc Rr u) (Harc_ne u)).
+  - intros z Hzd Hz. exact (rphi_holo_off_dom F w dw (Rr + 1) Fholo z Hzd Hz).
+  - exact (rphi_bd F w dw Hdw).
+  - intros z Hzd eps He. exact (rphi_ptcont_dom F w dw Hdw Fptc z eps He).
+Qed.
+
 Print Assumptions rphi_cc_dom.
+Print Assumptions cauchy_interior_dom.
