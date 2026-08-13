@@ -148,7 +148,16 @@ The precise blocker is located: `pathint_loop_except` (`CGoursatExcept`) — whi
 ✅ **THE DOMAIN-RESTRICTED IDENTITY-THEOREM TOWER B1→B6 IS COMPLETE, all axiom-clean:**
 `cauchy_interior_dom` → `coeff_recur_D` → `taylor_center_zero_D` → `identity_at_zero_D` → `identity_on_disk_D` → `identity_propagate_D`.
 
-**Only remaining:** build the **clamped `FE_diff` derivative chain** — `fseq k := (k!/2πi)·PhiN`(the clamped Cauchy power integral of `FE_diff`, `CCauchyAnalytic`), differentiable on `Re>0` (`cauchy_integral_holo` at each interior point via `is_Cderiv_congr`), pointwise-continuous, bounded on circles, `fseq 0 = FE_diff` (B1), and `FE_diff=0` on a real interval in ℝ⁺ (`FE_diff_vanishes_real`). Instantiate `identity_on_disk_D`/`identity_propagate_D` on `U=Re>0` → discharge `GammaC_FE_from_identity`.
+**Only remaining: the `FE_diff` chain** (`CFEChain.v`). `fseq k := (k!/2πi)·PhiN`(the clamped Cauchy power integral of `FE_diff`, `CCauchyAnalytic.PhiN`). Steps:
+
+✅ **Brick 1** — `FE_diff_ptcont`: `FE_diff` pointwise-continuous on `Re>0` (from `FE_diff_holo` + `is_Cderiv_cont`). Axiom-clean. [`FE_diff_holo` (diff on `Re>0`) and `FE_diff_vanishes_real` (`0` on ℝ⁺) are the other two FE-specific facts, already in `GammaCFE`.]
+
+**Remaining bricks (in order):**
+1. **Global continuity of the clamped integral** — `PhiN g Rr c n` is continuous in `w` *everywhere* (the pole `clampw w` stays inside; a 0th-order ML difference estimate, simpler than `cauchy_est`). This is the one genuinely-new analytic ingredient needed (the tower's `Fptc` wants each `fseq k` globally continuous, and `FE_diff` itself is only continuous on `Re>0`, so the *clamped* integral — continuous everywhere — is what supplies it).
+2. **The chain relation** `is_Cderiv (fseq k) w0 (fseq (S k) w0)` for `w0∈Re>0` — `cauchy_integral_holo` gives it at the clamp centre; `is_Cderiv_congr` transfers it to any `w0` in the clamp-identity region (where `PhiN` = the true integral), with the `k!·(k+1)=(k+1)!` normalization.
+3. **`fseq 0 = FE_diff`** on `Re>0` — from B1 (`cauchy_interior`/`_dom`, the `n=1` integral = `2πi·FE_diff`).
+4. **Circle bounds** (`Hbd`) — `FE_diff` bounded on circles in `Re>0` (EVT on the compact circle, or a hypothesis), transferred through `PhiN`.
+5. **Instantiate** `identity_on_disk_D` (at a real `a>0`) + `identity_propagate_D` (`U=Re>0`, convex, closed under `(R+1)`-disks for `R` small vs `Re a`) → `FE_diff≡0` on `Re>0` → `GammaC_FE_from_identity`.
 
 *(Everything else is built and axiom-clean: the entire B1–B6 identity theorem for entire functions, and the full general-`n` Cauchy-integral analyticity master key `cauchy_integral_holo`.)*
 
