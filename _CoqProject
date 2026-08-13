@@ -973,3 +973,4 @@ spectral-theory/BerryKeatingDilation.v
 spectral-theory/DilationBoundary.v
 spectral-theory/SelfAdjointExtension.v
 spectral-theory/WeylFunction.v
+spectral-theory/WeylHerglotz.v
