@@ -36,10 +36,12 @@ of a uniformly convergent series), and the connectedness/clopen propagation.
 
 ## Building blocks (dependency order)
 
-### B1 — Cauchy integral formula at interior points  *(gateway; the removable half is already templated)*
+### B1 — Cauchy integral formula at interior points  *(the non-center winding — the crux — is now DONE)*
 Generalize `trunc_cauchy` from the center `0` to an interior point `w`: `f(w) = (1/2πi) ∮_{|z−a|=R} f(z)/(z−w) dz` for `|w−a| < R`. Split `f(z)/(z−w) = (f(z)−f(w))/(z−w) + f(w)/(z−w)`:
-- **removable quotient `φ = (f−f(w))/(z−w)`** → `∮ φ = 0`: this is *exactly* the `trunc_cauchy` construction with the pole moved from `0` to `w` — reuse `pathint_loop_except` / `PrimE_deriv` verbatim (φ holomorphic off `w`, continuous through `w`). Mechanical port of the existing ~200-line apparatus.
-- **non-center winding `∮_{|z−a|=R} dz/(z−w) = 2πi`** (`|w−a|<R`): the genuinely new analytic brick. `trunc_winding` gives the `w = a` (center) case; the off-center case needs an **annulus deformation** `∮_{C_R(a)} = ∮_{C_ε(w)}` (`1/(z−w)` holomorphic in the annulus between the circles — cut into convex pieces with `pathint_split` + `pathint_loop_conv`), then the small circle `∮_{C_ε(w)} dz/(z−w) = 2πi` by direct parametrisation. **This is the crux of B1 and the recommended first concrete brick.**
+- **removable quotient `φ = (f−f(w))/(z−w)`** → `∮ φ = 0`: this is *exactly* the `trunc_cauchy` construction with the pole moved from `0` to `w` — reuse `pathint_loop_except` / `PrimE_deriv` (φ holomorphic off `w`, continuous through `w`). Mechanical port of the existing ~200-line apparatus. *(remaining)*
+- **non-center winding `∮_{|z|=R} dz/(z−w) = 2πi`** (`|w|<R`): ✅ **DONE** — `CWindingOffCenter.winding_interior`, axiom-clean. Built (route 2, not the annulus but **parameter differentiation**): slide the pole `w_s = clamp(s)·w` from `0` to `w`; the winding's `s`-derivative is a loop of an exact form, hence `0` (`Jg_zero` via `pathint_FTC`); Leibniz (`leibniz_deriv`, with a clamped globally-continuous integrand) + MVT give `W(1)=W(0)`, and `winding_dz_z` gives `W(0)=2πi`. The heavy pieces: the remainder identity `w²(s−s0)²/(A B²)` (`rem_identity`, reduced to the ring identity `(B−A)²=(wδ)²`), the uniform first-order estimate (`wphi_hunif`), a `Cinv`-continuity lemma, and a small C-algebra/`Cmod` toolkit — all now in the repo and reusable.
+
+With the non-center winding done, **B1 reduces to the mechanical `trunc_cauchy` port** (pole `0→w`, reusing `pathint_loop_except`).
 
 ### B2 — Cauchy's derivative formula / holomorphic ⟹ C^∞  *(medium)*
 `f^{(n)}(w) = (n!/2πi) ∮_{C_R} f(z)/(z−w)^{n+1} dz`, by differentiating B1 under the integral sign (the `CLaplace`/`GammaNearCHolo` diff-under-integral template applies). Yields all higher complex derivatives and the standard bounds `|f^{(n)}(a)| ≤ n! M / R^n`.
