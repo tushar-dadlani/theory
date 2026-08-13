@@ -55,8 +55,14 @@ Generalize `trunc_cauchy` from the center `0` to an interior point `w`: `f(w) = 
 
 *(Remaining for the general `f^{(n)}` / bounds `|f^{(n)}(a)| ≤ n!M/Rⁿ`: iterate the IBP `n` times — each step turns `∮ F/(z−w)^{k+1}` into `∮ F'/(z−w)^k` — assuming `F ∈ C^n`. The general "holomorphic ⟹ C^∞" (dropping the `C^n` hypothesis) would instead need complex diff-under-integral; for the FE application `FE_diff` is a difference of Γ-integrals and is `C^∞` by construction, so the IBP form suffices.)*
 
-### B3 — Taylor's theorem (local power series)  *(THE CRUX)*
-For `|w−a| < R`: expand `1/(z−w) = Σ_n (w−a)^n/(z−a)^{n+1}` (geometric, ratio `|w−a|/R < 1`), which converges **uniformly** in `z` on `C_R`; integrate B1 term by term to get `f(w) = Σ_n a_n (w−a)^n` with `a_n = (1/2πi)∮ f/(z−a)^{n+1} = f^{(n)}(a)/n!`. The gating sub-lemma is **term-by-term integration of a uniformly convergent series over a contour** (a `CVU`/`pathint`-swap lemma), which the repo does not have and must be built (stdlib `CVU` + `pathint_ML` are the seeds).
+### B3 — Taylor's theorem (local power series)  *(THE CRUX — core ✅ DONE, assembly remaining)*
+**Key realization:** the identity theorem needs only the **finite** Taylor-with-remainder, not the infinite series — so the "uniformly convergent series" swap is *unnecessary*. Use the finite geometric decomposition of the kernel + an ML bound on the remainder → 0.
+
+✅ **B3 core done** — `CTaylor.v`, axiom-clean, the two reusable ingredients:
+- **`kernel_geom`** — the finite geometric kernel identity (centre 0): `1/(z−w) = Σ_{k<n} w^k/z^{k+1} + w^n/(z^n(z−w))`, pure C-field algebra by induction (`field`, keeping `z−w` visible so the relation `z=(z−w)+w` is available). Plus `Cpow_ne0`, `C1_ne0`.
+- **`Cintf_Csum`** — term-by-term integration of a **finite** sum over a contour, `∮(Σ_{k<n} g_k) = Σ_{k<n} ∮ g_k` (induction via `Cintf_add`; `Ccont_Csum` for the partial-sum continuity witnesses). This *is* the plan's "term-by-term integration" ingredient — finite, hence elementary.
+
+**Remaining assembly (B3→B4):** (i) multiply `kernel_geom` by `f(z)` and integrate (`Cintf_Csum` + B1) to get `2πi·f(w) = Σ_{k<n} w^k·aₖ + w^n·∮ f/(z^n(z−w))` with `aₖ = ∮ f/z^{k+1}`; (ii) ML-bound the remainder `|w^n·∮ f/(z^n(z−w))| ≤ (|w|/R)^n·2πRM/d → 0` (`pathint_ML` + `sup|f|` on the circle by EVT + `(|w|/R)^n→0`); (iii) conclude **B4**: if every `aₖ=0` then `2πi·f(w)=` remainder for all `n`, so `f(w)=0`. The remaining pieces are the modulus/ML plumbing and the geometric limit, not new analytic ideas.
 
 ### B4 — All coefficients zero ⟹ locally zero  *(small, given B3)*
 If `f^{(n)}(a) = 0` for all `n` then every Taylor coefficient is 0, so `f ≡ 0` on the disk `D(a,R)`.
