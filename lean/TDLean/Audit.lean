@@ -71,6 +71,7 @@ import TDLean.FE.Classical
 import TDLean.FE.CriticalValue
 import TDLean.FE.Xi
 import TDLean.FE.Growth
+import TDLean.FE.CriticalFormula
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -1920,3 +1921,30 @@ import TDLean.FE.Growth
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.norm_xi_le
+
+/-! ### Cluster A21: the critical line as one real function -/
+
+/-- info: 'TDLean.FE.mellinTail_conj' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.mellinTail_conj
+
+/-- info: 'TDLean.FE.xi_critical_formula' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.xi_critical_formula
+
+/-- info: 'TDLean.FE.xi_critical_formula_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.xi_critical_formula_zero
+
+/-- info: 'TDLean.FE.Zline_zero_pos' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.Zline_zero_pos
+
+/-- info: 'TDLean.FE.xi_eq_zero_of_Zline_eq_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.xi_eq_zero_of_Zline_eq_zero

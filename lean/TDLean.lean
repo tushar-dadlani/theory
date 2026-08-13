@@ -71,6 +71,7 @@ import TDLean.FE.Classical
 import TDLean.FE.CriticalValue
 import TDLean.FE.Xi
 import TDLean.FE.Growth
+import TDLean.FE.CriticalFormula
 import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry
