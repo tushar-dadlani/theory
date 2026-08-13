@@ -53,7 +53,11 @@ Generalize `trunc_cauchy` from the center `0` to an interior point `w`: `f(w) = 
 ### B2 — Cauchy's derivative formula  *(first-derivative case ✅ DONE)*
 ✅ **`CCauchyDeriv.cauchy_deriv`**: `∮_{C_R} F(z)/(z−w)² dz = 2πi·F'(w)` for `|w|<R`, `F` with derivative `Fd` (`is_Cderiv F z (Fd z)`) and `Fd` itself holomorphic. Axiom-clean. **Route (avoids diff-under-integral):** integration by parts via the closed loop — `H(z)=F(z)/(z−w)` has `H' = Fd/(z−w) − F/(z−w)²` off `w` (`Hprim_deriv`), `∮_{arc} H'=0` (`loop_zero`, `pathint_FTC` — the same closed-loop-of-a-derivative engine as `Jg_zero`), the loop splits (`Cintf_sub`) into `∮ Fd/(z−w) − ∮ F/(z−w)² = 0`, and `∮ Fd/(z−w) = 2πi·Fd(w)` by B1 (`cauchy_interior`) applied to the holomorphic `Fd`. Needs `F ∈ C²` (i.e. `Fd` holomorphic) — exactly the regularity the entire functions in play have.
 
-*(Remaining for the general `f^{(n)}` / bounds `|f^{(n)}(a)| ≤ n!M/Rⁿ`: iterate the IBP `n` times — each step turns `∮ F/(z−w)^{k+1}` into `∮ F'/(z−w)^k` — assuming `F ∈ C^n`. The general "holomorphic ⟹ C^∞" (dropping the `C^n` hypothesis) would instead need complex diff-under-integral; for the FE application `FE_diff` is a difference of Γ-integrals and is `C^∞` by construction, so the IBP form suffices.)*
+✅ **The iterate core is DONE** — `CDerivCoeff.v`, axiom-clean:
+- **`Cderiv_Cpow`** — `d/dz z^{n+1} = (n+1)z^n` (induction via the product rule).
+- **`coeff_recur`** — the centre IBP recurrence `∮_{|z|=R} g'(z)/z^{Sm} dz = (Sm)·∮ g(z)/z^{S(Sm)} dz` (`g'` = derivative of `g`), the centre analogue of `CCauchyDeriv`: `H=g/z^{Sm}` has `H' = g'/z^{Sm} − (Sm)·g/z^{S(Sm)}` off 0 (`H_deriv`, product rule + `Cderiv_invc` + `Cderiv_Cpow`, value massaged by `field`), `∮H'=0` (`pathint_FTC`), split by `Cintf_sub`/`Cintf_cmul_l`. This is `aₖ(g) = (1/k)·a_{k-1}(g')` for `aₖ = ∮ g/z^{k+1}`.
+
+**Remaining bridge:** the chain induction (`aₖ(fseq 0)=0` for all `k`, from `coeff_recur` + base `a_0(fseq i)=∮ fseq i/z = 2πi·(fseq i)(0)=0` via B1 at `w=0`, over a holomorphic derivative chain `fseq` with `fseq(Sk)=` derivative of `fseq k`), then feed into `taylor_center_zero` — giving the identity theorem at 0 from "all derivatives vanish at 0."
 
 ### B3 — Taylor's theorem (local power series)  *(THE CRUX — core ✅ DONE, assembly remaining)*
 **Key realization:** the identity theorem needs only the **finite** Taylor-with-remainder, not the infinite series — so the "uniformly convergent series" swap is *unnecessary*. Use the finite geometric decomposition of the kernel + an ML bound on the remainder → 0.
