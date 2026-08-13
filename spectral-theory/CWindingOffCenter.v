@@ -15,7 +15,7 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra.
-Require Import ComplexField Cmodulus CPathIntegral CWinding.
+Require Import ComplexField Cmodulus CPathIntegral CWinding Holomorphic CDeriv CHoloCalculus.
 Open Scope R_scope.
 
 (* reverse triangle inequality: |a| - |b| <= |a - b| *)
@@ -25,6 +25,28 @@ Proof.
   assert (Heq : Cadd (Cminus a b) b = a) by (apply Ceq; simpl; ring).
   pose proof (Cmod_triangle (Cminus a b) b) as HT.
   rewrite Heq in HT. lra.
+Qed.
+
+(* the arc parametrisation is a genuine C^1 loop *)
+Lemma arc_Re_deriv : forall r s,
+  derivable_pt_lim (fun x => Re (arc r x)) s (Re (arc' r s)).
+Proof.
+  intros r s. unfold arc, arc'; cbn [Re Im].
+  replace (- (r * sin s)) with (r * (- sin s)) by ring.
+  apply (derivable_pt_lim_scal cos r s (- sin s) (derivable_pt_lim_cos s)).
+Qed.
+
+Lemma arc_Im_deriv : forall r s,
+  derivable_pt_lim (fun x => Im (arc r x)) s (Im (arc' r s)).
+Proof.
+  intros r s. unfold arc, arc'; cbn [Re Im].
+  apply (derivable_pt_lim_scal sin r s (cos s) (derivable_pt_lim_sin s)).
+Qed.
+
+Lemma arc_closed : forall r, arc r (2 * PI) = arc r 0.
+Proof.
+  intro r. unfold arc.
+  rewrite sin_2PI, cos_2PI, sin_0, cos_0. apply Ceq; cbn [Re Im]; ring.
 Qed.
 
 Section OffCenterWinding.
@@ -63,6 +85,36 @@ Proof.
   rewrite Hc, (proj2 (Cmod0 C0) eq_refl) in Hle. lra.
 Qed.
 
+(* the s-derivative of the winding integrand: w/(z - w_s)^2 * z' *)
+Definition wdphi (s u : R) : C :=
+  Cmul (Cmul w (Cinv (Cmul (Cminus (arc Rr u) (wp s)) (Cminus (arc Rr u) (wp s)))))
+       (arc' Rr u).
+
+(* its primitive (in z):  -w/(z - w_s) *)
+Definition wprim (s : R) (z : C) : C := Cmul (Copp w) (Cinv (Cminus z (wp s))).
+
+(* wprim s is a primitive of  z |-> w/(z - w_s)^2  on the circle *)
+Lemma wprim_deriv : forall s u, 0 <= s <= 1 ->
+  is_Cderiv (wprim s) (arc Rr u)
+    (Cmul w (Cinv (Cmul (Cminus (arc Rr u) (wp s)) (Cminus (arc Rr u) (wp s))))).
+Proof.
+  intros s u Hs.
+  assert (HDD : Cminus (arc Rr u) (wp s) <> C0) by (apply denom_ne; exact Hs).
+  replace (Cmul w (Cinv (Cmul (Cminus (arc Rr u) (wp s)) (Cminus (arc Rr u) (wp s)))))
+     with (Cmul (Copp w)
+             (Cmul (Copp (Cinv (Cmul (Cminus (arc Rr u) (wp s)) (Cminus (arc Rr u) (wp s)))))
+                   (Cminus C1 C0))).
+  2:{ set (X := Cinv (Cmul (Cminus (arc Rr u) (wp s)) (Cminus (arc Rr u) (wp s)))).
+      unfold Copp, Cmul, Cminus, C1, C0; apply Ceq; cbn [Re Im]; ring. }
+  unfold wprim.
+  apply (Cderiv_cscal (Copp w) (fun z => Cinv (Cminus z (wp s))) (arc Rr u)
+           (Cmul (Copp (Cinv (Cmul (Cminus (arc Rr u) (wp s)) (Cminus (arc Rr u) (wp s)))))
+                 (Cminus C1 C0))).
+  apply (Cderiv_invc (fun z => Cminus z (wp s)) (arc Rr u) (Cminus C1 C0)); [ | exact HDD ].
+  apply (Cderiv_minus (fun z => z) (fun _ => wp s) (arc Rr u) C1 C0);
+    [ apply Cderiv_id | apply Cderiv_const ].
+Qed.
+
 End OffCenterWinding.
 
-Print Assumptions denom_lb.
+Print Assumptions wprim_deriv.
