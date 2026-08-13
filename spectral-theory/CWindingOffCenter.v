@@ -395,6 +395,74 @@ Proof.
       * apply Rmult_le_compat_r; [ exact Hab | exact Hcd ].
 Qed.
 
+(* ---- Stage D: clamp reparametrisation + Leibniz + MVT ---- *)
+Hypothesis Hw0 : w <> C0.
+
+Lemma Cmodw_pos : 0 < Cmod w.
+Proof.
+  pose proof (Cmod_nonneg w) as Hn.
+  assert (Cmod w <> 0) by (intro H; apply Hw0, (proj1 (Cmod0 w) H)). lra.
+Qed.
+
+Definition d0 : R := (Rr - Cmod w) / (2 * Cmod w).
+
+Lemma d0_pos : 0 < d0.
+Proof.
+  unfold d0. apply Rdiv_lt_0_compat; [ lra | pose proof Cmodw_pos; lra ].
+Qed.
+
+(* clamp the parameter into [-d0, 1+d0]: identity on [0,1] with margin d0 *)
+Definition clamp (r : R) : R := Rmax (- d0) (Rmin (1 + d0) r).
+
+Lemma clamp_id : forall r, - d0 <= r <= 1 + d0 -> clamp r = r.
+Proof.
+  intros r Hr. unfold clamp.
+  rewrite Rmin_right by lra. rewrite Rmax_right by lra. reflexivity.
+Qed.
+
+Lemma clamp_bound : forall r, - d0 <= clamp r <= 1 + d0.
+Proof.
+  intro r. pose proof d0_pos. unfold clamp. split.
+  - apply Rmax_l.
+  - apply Rmax_lub; [ lra | apply Rmin_l ].
+Qed.
+
+(* on the clamped range the pole stays strictly inside the circle *)
+Lemma clamp_pole_in : forall r, Cmod (wp (clamp r)) < Rr.
+Proof.
+  intro r. pose proof Cmodw_pos as HcW. pose proof d0_pos as Hd0.
+  pose proof (clamp_bound r) as [Hl Hu].
+  assert (Hwp : Cmod (wp (clamp r)) = Rabs (clamp r) * Cmod w)
+    by (unfold wp; rewrite Cmod_mul, Cmod_RtoC; reflexivity).
+  rewrite Hwp.
+  assert (Habs : Rabs (clamp r) <= 1 + d0)
+    by (apply Rabs_le; lra).
+  apply Rle_lt_trans with ((1 + d0) * Cmod w).
+  - apply Rmult_le_compat_r; [ lra | exact Habs ].
+  - unfold d0. field_simplify; [ | lra ]. nra.
+Qed.
+
+(* generalised nonvanishing / continuity: pole strictly inside *)
+Lemma denom_ne_in : forall s u, Cmod (wp s) < Rr -> Cminus (arc Rr u) (wp s) <> C0.
+Proof.
+  intros s u Hin Hc.
+  assert (Hle : Rr - Cmod (wp s) <= Cmod (Cminus (arc Rr u) (wp s))).
+  { eapply Rle_trans; [ | apply Cmod_rev_triangle ].
+    rewrite (Cmod_arc Rr u) by lra. lra. }
+  rewrite Hc, (proj2 (Cmod0 C0) eq_refl) in Hle. lra.
+Qed.
+
+Lemma wphi_cont_in : forall s, Cmod (wp s) < Rr -> Ccont (fun u => wphi s u).
+Proof.
+  intros s Hin. unfold wphi. apply Ccont_mul; [ | apply Ccont_arc' ].
+  apply Ccont_inv; [ apply denom_cont | intro u; apply denom_ne_in; exact Hin ].
+Qed.
+
+Definition phi_safe (r u : R) : C := wphi (clamp r) u.
+
+Lemma phi_safe_cont : forall r, Ccont (fun u => phi_safe r u).
+Proof. intro r; unfold phi_safe; apply wphi_cont_in, clamp_pole_in. Qed.
+
 End OffCenterWinding.
 
 Print Assumptions Jg_zero.
