@@ -103,7 +103,14 @@ Take `f := GammaCFE.FE_diff`, `a := 1`. `FE_diff` is holomorphic on `Re>0` (`FE_
 
 **Master key that dissolves both:** the general **Cauchy-integral analyticity** lemma
 `cauchy_type_holo : d/dw ∮_{|z|=R} g(z)/(z−w)^n dz = n·∮ g(z)/(z−w)^{n+1} dz` (`|w|<R`).
-Then `fseq k w := (k!/2πi)·∮ FE_diff/(z−w)^{k+1}` is a smooth chain that *automatically lives on the domain* (defined wherever a circle fits inside `Re>0`), supplying **both** the chain (gap 1) **and** the domain-restriction (gap 2). This is exactly the complex differentiation-under-the-integral deferred at B2 (the `F∈C²` note) — the one genuine analytic ingredient left. Its `n=1` case is a direct `O(|h|²)`-remainder + `pathint_ML` estimate (the same shape as `CWindingOffCenter`'s remainder work); the general `n` adds a finite-difference-of-powers bracket. Recommended next brick.
+Then `fseq k w := (k!/2πi)·∮ FE_diff/(z−w)^{k+1}` is a smooth chain that *automatically lives on the domain* (defined wherever a circle fits inside `Re>0`), supplying **both** the chain (gap 1) **and** the domain-restriction (gap 2). This is exactly the complex differentiation-under-the-integral deferred at B2 (the `F∈C²` note) — the one genuine analytic ingredient left.
+
+✅ **`n=1` case DONE** — `CCauchyAnalytic.v`, axiom-clean:
+- **`cauchy_bracket`** / **`cauchy_bracket_mod`** / **`cauchy_bracket_bound`** — the first-order Cauchy-kernel remainder `1/(ζ−h) − 1/ζ − h/ζ² = h²/((ζ−h)ζ²)`, its modulus, and the `O(|h|²)` bound (`field` + `Rinv_le_contravar`).
+- **`cauchy_est`** — the ML difference-quotient estimate: `Cmod((∮g/(z−(w0+h))) − (∮g/(z−w0)) − h·(∮g/(z−w0)²)) ≤ C·|h|²` for `|h|<dd/2` (`Brem_eq` pointwise identity + `Cintf_sub`/`Cintf_cmul_l` linearity + `pathint_ML`).
+- **`cauchy_type_holo1`** — `is_Cderiv Phi w0 (∮ g/(z−w0)²)` for any total `Phi` agreeing with `w↦∮g/(z−w)` on a `dd/2`-nbhd of `w0` (the ε-δ from `cauchy_est`).
+
+**Remaining:** the general `n` (finite-difference-of-powers bracket — `1/(ζ−h)ⁿ − 1/ζⁿ − nh/ζⁿ⁺¹ = O(|h|²)`), then totalise `Phi` (a radial clamp keeping the pole inside), then assemble the `FE_diff` chain and instantiate B5-shift/B6.
 
 ## Honest assessment (revised after finding Milestone C)
 
