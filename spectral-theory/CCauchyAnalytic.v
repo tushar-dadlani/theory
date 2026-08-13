@@ -17,7 +17,7 @@
 
 From Stdlib Require Import Reals Lra Lia.
 Require Import ComplexField Cmodulus CIntegral2 CSegInt CPathIntegral CGoursatLin
-        CLeibniz CDeriv Holomorphic CWindingOffCenter.
+        CLeibniz CDeriv Holomorphic RootsOfUnity CTaylor CWindingOffCenter.
 Open Scope R_scope.
 
 (* ---- the first-order Cauchy-kernel remainder, as pure C-field algebra ---- *)
@@ -60,6 +60,35 @@ Proof.
   - apply Rmult_le_compat; try lra.
     + apply Rmult_le_pos; lra.
     + apply Rmult_le_compat; lra.
+Qed.
+
+(* ================================================================= *)
+(*  General-n first-order Cauchy-kernel remainder, by recurrence       *)
+(* ================================================================= *)
+
+(* B_n(zeta,h) = 1/(zeta-h)^n - 1/zeta^n - n h / zeta^{n+1} *)
+Definition Bn (zeta h : C) (n : nat) : C :=
+  Cminus (Cminus (Cinv (Cpow (Cminus zeta h) n)) (Cinv (Cpow zeta n)))
+         (Cmul (RtoC (INR n)) (Cmul h (Cinv (Cpow zeta (S n))))).
+
+(* the key recurrence:  B_{n+1} = A B_n + (n+1) h^2 A b^{n+2}  *)
+(*   with A = 1/(zeta-h),  b^{n+2} = 1/zeta^{n+2}.                *)
+Lemma bracket_recur : forall zeta h n, zeta <> C0 -> Cminus zeta h <> C0 ->
+  Bn zeta h (S n)
+  = Cadd (Cmul (Cinv (Cminus zeta h)) (Bn zeta h n))
+         (Cmul (RtoC (INR (S n)))
+               (Cmul (Cmul h h)
+                     (Cmul (Cinv (Cminus zeta h)) (Cinv (Cpow zeta (S (S n))))))).
+Proof.
+  intros zeta h n Hz Hzh. unfold Bn. cbn [Cpow].
+  set (P := Cpow (Cminus zeta h) n). set (Q := Cpow zeta n).
+  assert (HP : P <> C0) by (apply Cpow_ne0; exact Hzh).
+  assert (HQ : Q <> C0) by (apply Cpow_ne0; exact Hz).
+  rewrite S_INR.
+  replace (RtoC (INR n + 1)) with (Cadd (RtoC (INR n)) C1)
+    by (apply Ceq; unfold RtoC, Cadd, C1; cbn [Re Im]; ring).
+  set (cn := RtoC (INR n)).
+  field. repeat split; assumption.
 Qed.
 
 (* ================================================================= *)
