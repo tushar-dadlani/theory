@@ -69,6 +69,7 @@ import TDLean.FE.Transfer
 import TDLean.FE.Continuation
 import TDLean.FE.Classical
 import TDLean.FE.CriticalValue
+import TDLean.FE.Xi
 import TDLean.Operator.Ell2C
 import TDLean.Operator.Number
 import TDLean.Operator.Isometry

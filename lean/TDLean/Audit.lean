@@ -69,6 +69,7 @@ import TDLean.FE.Transfer
 import TDLean.FE.Continuation
 import TDLean.FE.Classical
 import TDLean.FE.CriticalValue
+import TDLean.FE.Xi
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -1844,3 +1845,55 @@ import TDLean.FE.CriticalValue
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.completedZeta_half_re_lt_zero
+
+/-! ### Cluster A19: Riemann's xi, entire -/
+
+/-- info: 'TDLean.FE.differentiable_xi' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.differentiable_xi
+
+/-- info: 'TDLean.FE.xi_eq' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.xi_eq
+
+/-- info: 'TDLean.FE.xi_symm' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.xi_symm
+
+/-- info: 'TDLean.FE.xi_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.xi_zero
+
+/-- info: 'TDLean.FE.xi_one' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.xi_one
+
+/-- info: 'TDLean.FE.xi_eq_zero_iff' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.xi_eq_zero_iff
+
+/-- info: 'TDLean.FE.xi_zeros_in_strip' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.xi_zeros_in_strip
+
+/-- info: 'TDLean.FE.xi_conj_eq_self' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.xi_conj_eq_self
+
+/-- info: 'TDLean.FE.xi_im_eq_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.xi_im_eq_zero
+
+/-- info: 'TDLean.FE.xi_half_re_pos' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.xi_half_re_pos
