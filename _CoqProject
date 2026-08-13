@@ -995,3 +995,4 @@ spectral-theory/CIdentityProp.v
 spectral-theory/CCauchyAnalytic.v
 spectral-theory/CRemovableExtDom.v
 spectral-theory/CTaylorRemDom.v
+spectral-theory/CDerivCoeffDom.v
