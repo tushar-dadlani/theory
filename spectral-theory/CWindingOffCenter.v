@@ -28,6 +28,36 @@ Proof.
   rewrite Heq in HT. lra.
 Qed.
 
+(* ---- a small C-algebra toolkit (the repo only ships Cinv_l) ---- *)
+Lemma Cmul_comm : forall a b, Cmul a b = Cmul b a.
+Proof. intros; apply Ceq; simpl; ring. Qed.
+Lemma Cmul_assoc : forall a b c, Cmul (Cmul a b) c = Cmul a (Cmul b c).
+Proof. intros; apply Ceq; simpl; ring. Qed.
+Lemma Cmul_1_l : forall a, Cmul C1 a = a.
+Proof. intros; apply Ceq; simpl; ring. Qed.
+Lemma Cmul_1_r : forall a, Cmul a C1 = a.
+Proof. intros; apply Ceq; simpl; ring. Qed.
+Lemma Cmul_minus_r : forall a b c, Cmul (Cminus a b) c = Cminus (Cmul a c) (Cmul b c).
+Proof. intros; apply Ceq; simpl; ring. Qed.
+Lemma Cmul_C0_r : forall a, Cmul a C0 = C0.
+Proof. intros; apply Ceq; simpl; ring. Qed.
+Lemma Cinv_r : forall a, a <> C0 -> Cmul a (Cinv a) = C1.
+Proof. intros a Ha; rewrite Cmul_comm; apply Cinv_l; exact Ha. Qed.
+Lemma Cmul_eq0_l : forall a b, a <> C0 -> Cmul a b = C0 -> b = C0.
+Proof.
+  intros a b Ha Hab.
+  rewrite <- (Cmul_1_l b), <- (Cinv_l a Ha), Cmul_assoc, Hab, Cmul_C0_r; reflexivity.
+Qed.
+Lemma Cmul_cancel_r : forall a b c, c <> C0 -> Cmul a c = Cmul b c -> a = b.
+Proof.
+  intros a b c Hc H.
+  assert (Ha : a = Cmul (Cmul a c) (Cinv c))
+    by (rewrite Cmul_assoc, (Cinv_r c Hc), Cmul_1_r; reflexivity).
+  assert (Hb : b = Cmul (Cmul b c) (Cinv c))
+    by (rewrite Cmul_assoc, (Cinv_r c Hc), Cmul_1_r; reflexivity).
+  rewrite Ha, Hb, H; reflexivity.
+Qed.
+
 (* the arc parametrisation is a genuine C^1 loop *)
 Lemma arc_Re_deriv : forall r s,
   derivable_pt_lim (fun x => Re (arc r x)) s (Re (arc' r s)).
