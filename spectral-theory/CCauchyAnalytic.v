@@ -562,7 +562,78 @@ Qed.
 
 End CauchyEstGen.
 
+(* ================================================================= *)
+(*  The radial clamp: a TOTAL Phi realising oint g/(z-w)^n near w0     *)
+(* ================================================================= *)
+
+Section CauchyClamp.
+Variable g : C -> C.
+Variable Rr : R.
+Variable w0 : C.
+Variable n : nat.
+Hypothesis HR : 0 < Rr.
+Hypothesis Hw0 : Cmod w0 < Rr.
+Hypothesis Hg : CcontC g.
+Hypothesis Hgb : exists Mg, 0 <= Mg /\ forall u, Cmod (g (arc Rr u)) <= Mg.
+
+Definition rho := (Cmod w0 + Rr) / 2.
+Lemma rho_pos : 0 < rho. Proof. unfold rho; pose proof (Cmod_nonneg w0); lra. Qed.
+Lemma rho_lt : rho < Rr. Proof. unfold rho; lra. Qed.
+
+Definition clampw (w : C) : C :=
+  match Rle_dec (Cmod w) rho with
+  | left _ => w
+  | right _ => Cmul (RtoC (rho / Cmod w)) w
+  end.
+
+Lemma clampw_mod : forall w, Cmod (clampw w) <= rho.
+Proof.
+  intro w. unfold clampw. destruct (Rle_dec (Cmod w) rho) as [Hle | Hgt]; [ exact Hle | ].
+  apply Rnot_le_lt in Hgt. pose proof rho_pos.
+  rewrite Cmod_mul, Cmod_RtoC, Rabs_right by (apply Rle_ge, Rle_mult_inv_pos; lra).
+  apply Req_le. field. lra.
+Qed.
+
+Lemma clamp_ne : forall w u, Cminus (arc Rr u) (clampw w) <> C0.
+Proof.
+  intros w u Hc.
+  assert (Hle : Rr - rho <= Cmod (Cminus (arc Rr u) (clampw w))).
+  { eapply Rle_trans; [ | apply Cmod_rev_triangle ].
+    rewrite (Cmod_arc Rr u) by lra. pose proof (clampw_mod w). lra. }
+  pose proof rho_lt.
+  rewrite Hc, (proj2 (Cmod0 C0) eq_refl) in Hle. lra.
+Qed.
+
+Lemma clampw_id : forall w, Cmod (Cminus w w0) < (Rr - Cmod w0) / 2 -> clampw w = w.
+Proof.
+  intros w Hw. unfold clampw. destruct (Rle_dec (Cmod w) rho) as [Hle | Hgt];
+    [ reflexivity | exfalso ].
+  apply Rnot_le_lt in Hgt.
+  assert (Hcw : Cmod w <= Cmod w0 + Cmod (Cminus w w0)).
+  { replace w with (Cadd w0 (Cminus w w0)) at 1 by ring. apply Cmod_triangle. }
+  unfold rho in Hgt. lra.
+Qed.
+
+Definition PhiN (w : C) : C :=
+  Cintf (Kwn g Rr n (clampw w)) (Kwn_cont g Rr n Hg (clampw w) (clamp_ne w)) 0 (2 * PI).
+
+(* THE ANALYTICITY THEOREM: the Cauchy-power integral is holomorphic in w *)
+Theorem cauchy_integral_holo :
+  is_Cderiv PhiN w0 (Cintf (Dn g Rr w0 n) (Dn_cont g Rr w0 n HR Hw0 Hg) 0 (2 * PI)).
+Proof.
+  destruct Hgb as [Mg [HMg Hgbd]].
+  apply (cauchy_type_holo_gen g Rr w0 n HR Hw0 Hg Mg HMg Hgbd
+           PhiN (Dn_cont g Rr w0 n HR Hw0 Hg)).
+  intros w Hc Hw. unfold PhiN.
+  assert (Heq : clampw w = w)
+    by (apply clampw_id; unfold ddn in Hw; exact Hw).
+  apply (Cintf_ext (Kwn g Rr n (clampw w)) (Kwn g Rr n w)
+           (Kwn_cont g Rr n Hg (clampw w) (clamp_ne w)) Hc 0 (2 * PI)).
+  intro u. unfold Kwn. rewrite Heq. reflexivity.
+Qed.
+
+End CauchyClamp.
+
 Print Assumptions cauchy_bracket.
-Print Assumptions cauchy_est.
-Print Assumptions cauchy_type_holo1.
 Print Assumptions cauchy_type_holo_gen.
+Print Assumptions cauchy_integral_holo.
