@@ -68,6 +68,7 @@ import TDLean.FE.Holo
 import TDLean.FE.Transfer
 import TDLean.FE.Continuation
 import TDLean.FE.Classical
+import TDLean.FE.CriticalValue
 
 /-! ### Cluster B -- monoid algebra of prime length -/
 
@@ -1811,3 +1812,35 @@ import TDLean.FE.Classical
 [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms TDLean.FE.zetaFE_trivial_zero_via_cos
+
+/-! ### Cluster A18: Lambda real on the critical line, and Lambda(1/2) < 0 -/
+
+/-- info: 'TDLean.FE.completedZeta_refl' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_refl
+
+/-- info: 'TDLean.FE.completedZeta_conj_eq_self' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_conj_eq_self
+
+/-- info: 'TDLean.FE.completedZeta_im_eq_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_im_eq_zero
+
+/-- info: 'TDLean.FE.psiBound_le_two' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.psiBound_le_two
+
+/-- info: 'TDLean.FE.norm_integral_half_le' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.norm_integral_half_le
+
+/-- info: 'TDLean.FE.completedZeta_half_re_lt_zero' depends on axioms:
+[propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms TDLean.FE.completedZeta_half_re_lt_zero
