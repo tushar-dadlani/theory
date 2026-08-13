@@ -988,3 +988,4 @@ spectral-theory/CCauchyFull.v
 spectral-theory/CCauchyDeriv.v
 spectral-theory/CTaylor.v
 spectral-theory/CTaylorRem.v
+spectral-theory/CDerivCoeff.v
