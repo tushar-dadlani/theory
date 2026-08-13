@@ -110,7 +110,11 @@ Then `fseq k w := (k!/2πi)·∮ FE_diff/(z−w)^{k+1}` is a smooth chain that *
 - **`cauchy_est`** — the ML difference-quotient estimate: `Cmod((∮g/(z−(w0+h))) − (∮g/(z−w0)) − h·(∮g/(z−w0)²)) ≤ C·|h|²` for `|h|<dd/2` (`Brem_eq` pointwise identity + `Cintf_sub`/`Cintf_cmul_l` linearity + `pathint_ML`).
 - **`cauchy_type_holo1`** — `is_Cderiv Phi w0 (∮ g/(z−w0)²)` for any total `Phi` agreeing with `w↦∮g/(z−w)` on a `dd/2`-nbhd of `w0` (the ε-δ from `cauchy_est`).
 
-**Remaining:** the general `n` (finite-difference-of-powers bracket — `1/(ζ−h)ⁿ − 1/ζⁿ − nh/ζⁿ⁺¹ = O(|h|²)`), then totalise `Phi` (a radial clamp keeping the pole inside), then assemble the `FE_diff` chain and instantiate B5-shift/B6.
+✅ **general `n` bracket DONE** — `CCauchyAnalytic.v`, axiom-clean:
+- **`bracket_recur`** — the recurrence `B_{n+1} = A·Bₙ + (n+1)·h²·A·bⁿ⁺²` (`A=1/(ζ−h)`, `b=1/ζ`, `Bₙ = 1/(ζ−h)ⁿ − 1/ζⁿ − nh/ζⁿ⁺¹`), proved by `field` — sidesteps the `aⁿ−bⁿ` sum-factorization and makes the `h²` factor propagate.
+- **`bracket_gen_bound`** — `Cmod(Bₙ) ≤ |h|²·Wₙ` by induction on that recurrence (`Wₙ` an explicit `Fixpoint`, `Wn_nonneg`; `Cmod_triangle` + `Rinv_le_contravar`/`pow_incr` per summand).
+
+**Remaining:** `cauchy_est_gen` (ML estimate with `bracket_gen_bound` in place of `cauchy_bracket_bound`) + `cauchy_type_holo` for general `n` (both the *same shape* as the proved `n=1` case) → totalise `Phi` (radial clamp) → assemble the `FE_diff` chain → instantiate B5-shift/B6.
 
 ## Honest assessment (revised after finding Milestone C)
 
