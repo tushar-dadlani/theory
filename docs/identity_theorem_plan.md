@@ -62,10 +62,14 @@ Generalize `trunc_cauchy` from the center `0` to an interior point `w`: `f(w) = 
 - **`kernel_geom`** — the finite geometric kernel identity (centre 0): `1/(z−w) = Σ_{k<n} w^k/z^{k+1} + w^n/(z^n(z−w))`, pure C-field algebra by induction (`field`, keeping `z−w` visible so the relation `z=(z−w)+w` is available). Plus `Cpow_ne0`, `C1_ne0`.
 - **`Cintf_Csum`** — term-by-term integration of a **finite** sum over a contour, `∮(Σ_{k<n} g_k) = Σ_{k<n} ∮ g_k` (induction via `Cintf_add`; `Ccont_Csum` for the partial-sum continuity witnesses). This *is* the plan's "term-by-term integration" ingredient — finite, hence elementary.
 
-**Remaining assembly (B3→B4):** (i) multiply `kernel_geom` by `f(z)` and integrate (`Cintf_Csum` + B1) to get `2πi·f(w) = Σ_{k<n} w^k·aₖ + w^n·∮ f/(z^n(z−w))` with `aₖ = ∮ f/z^{k+1}`; (ii) ML-bound the remainder `|w^n·∮ f/(z^n(z−w))| ≤ (|w|/R)^n·2πRM/d → 0` (`pathint_ML` + `sup|f|` on the circle by EVT + `(|w|/R)^n→0`); (iii) conclude **B4**: if every `aₖ=0` then `2πi·f(w)=` remainder for all `n`, so `f(w)=0`. The remaining pieces are the modulus/ML plumbing and the geometric limit, not new analytic ideas.
+✅ **B3 assembly + B4 done** — `CTaylorRem.v`, axiom-clean:
+- **`taylor_remainder`** — `2πi·f(w) = Σ_{k<n} (∮ wᵏf/z^{k+1}) + ∮ f/(zⁿ(z−w))`, via the pointwise geometric split of the integrand (`kki_split` = `kernel_geom`×f + `distrib`), integrated with `Cintf_ext`/`Cintf_add`/`Cintf_Csum`, and B1 (`cauchy_interior`) on the LHS.
+- **`rem_ML`** — `pathint_ML` bound `|∮ f/(zⁿ(z−w))| ≤ 2·(Mf·R/d·ρⁿ)·2π` with `ρ=|w|/R<1`, `d=R−|w|`; pointwise `|f·trem·z'| ≤ Mf·R/d·ρⁿ` by `Cmod_mul`/`Cmod_Cpow`/`Cmod_inv`/`Cmod_arc'` + `Rinv_le_contravar` monotonicity.
+- **`le_all_pow_zero`** — `X ≤ K·ρⁿ ∀n (ρ<1) ⟹ X=0` (from stdlib `pow_lt_1_zero`) — the remainder→0 limit.
+- ✅ **`taylor_center_zero`** (B4, centre): `(∀k, ∮_{|z|=R} f/z^{k+1} = 0) ⟹ f(w)=0` for `|w|<R`. `sup|f|` on the circle is taken as a hypothesis `Hfbd` (exists by EVT; deferred). This IS B4.
 
-### B4 — All coefficients zero ⟹ locally zero  *(small, given B3)*
-If `f^{(n)}(a) = 0` for all `n` then every Taylor coefficient is 0, so `f ≡ 0` on the disk `D(a,R)`.
+### B4 — All coefficients zero ⟹ locally zero  *(✅ DONE, centre form)*
+✅ `CTaylorRem.taylor_center_zero`: if `∮_{|z|=R} f/z^{k+1} = 0` for all `k` then `f(w)=0` for every `|w|<R` — i.e. `f ≡ 0` on the disk. Proved via the finite Taylor-with-remainder + the `ρⁿ→0` remainder bound (see B3). The coefficient integrals `aₖ = ∮ f/z^{k+1}` are `= 2πi·f^{(k)}(0)/k!` by B2 iterated, so "all `aₖ=0`" ⟺ "all `f^{(k)}(0)=0`" (the bridge to B5). *(Currently at centre `0`; the general centre `a` is a translation.)*
 
 ### B5 — Vanishing on ℝ⁺ ⟹ all derivatives zero at a real point  *(small–medium)*
 At real `a > 0`, `f = 0` on a real interval around `a`, so the restriction `t ↦ f(a+t)` is `≡ 0`, hence all its real derivatives vanish; holomorphy (Cauchy–Riemann) identifies `f^{(n)}(a)` with the `n`-th real-direction derivative, so `f^{(n)}(a) = 0` for all `n`. Feeds B4.
