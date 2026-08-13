@@ -8,23 +8,38 @@ f holomorphic on Re z > 0,  f = 0 on ℝ⁺  ⟹  f ≡ 0 on Re z > 0.
 ```
 This directly discharges `GammaCFE.GammaC_FE_from_identity` (giving the full `GammaC(z+1)=z·GammaC(z)`), and is broadly reusable (uniqueness of analytic continuation anywhere in the corpus). The general statement (vanishing on any set with an accumulation point in a connected domain) is strictly harder; the ℝ⁺-on-a-convex-half-plane form above is the minimal sufficient target and the one to build.
 
-## What already exists (reuse — richer than expected)
+## What already exists (reuse — a whole "Milestone C" complex-analysis layer)
+
+A second survey found the substrate is **far richer** than first thought: an entire center-based
+Cauchy-integral-formula development is already proven, axiom-clean.
 
 | Capability | Where | Notes |
 |---|---|---|
 | Contour / path integrals, split, **ML estimate** | `CPathIntegral.v` | `pathint`, `seg`, `arc`, `pathint_split`, `pathint_ML` |
-| **Cauchy's theorem** (Goursat, triangles) + convex machinery | `CGoursat.v`, `CGoursatConv.v`, `CGoursatExcept.v` | triangle-integral vanishing, corner splits, convex combinations |
-| **Primitive on a convex domain** | `CPrimConv.v` | `Convex U`, `seg_int`/`tri_int` vanishing (`tri_int_deg*`, `tri_split_vertex`) — F holomorphic on convex U ⟹ has a primitive |
-| **Cauchy integral formula, center form** | `CCauchyFormula.v` | `cauchy_integral_formula`, `meanval0 : M 0 = 2π·F(0)`, `M_const` — the mean-value / center value `(1/2πi)∮ F/z = F(0)` |
+| **Path FTC** + loop-of-a-primitive is 0 | `CPathFTC.v` | `pathint_FTC`, `pathint_primitive_loop` (the engine) |
+| **Cauchy's theorem** (Goursat, triangles/convex) | `CGoursat.v`, `CGoursatConv.v` | triangle-integral vanishing, corner splits |
+| **Primitive on a convex domain ⟹ loop = 0** | `CPrimitive.v`, `CPrimConv.v` | `Prim_deriv`, `PrimC_deriv`, `pathint_loop_holo`, **`pathint_loop_conv`** (Cauchy's theorem, closed loop of a holomorphic F on convex U is 0) |
+| **Removable-singularity loop = 0** | `CGoursatExcept.v` | `tri_int_except`, `PrimE_deriv`, **`pathint_loop_except`** — loop of F holomorphic on convex U *except continuous at one point* is 0 (the exact tool for the Cauchy formula) |
+| **Cauchy integral formula, center form** | `CCauchyFormula.v`, `CMeanValue.v` | `cauchy_integral_formula`, `meanval0`, `M_const`, `circint_Fp_zero` — `(1/2πi)∮_{\|z\|=R} F/z = F(0)` |
+| **Center Cauchy formula via removable quotient + winding** | `CTruncCauchy.v` | **`trunc_cauchy`** (`∮_C F/z = 2πi·F(0)` on a truncated contour) assembled from the removable quotient `φ=(F−F(0))/z` (`pathint_loop_except`/`PrimE`) + **`trunc_winding`** (`∮_C dz/z = 2πi`) |
 | Holomorphic calculus, `is_Cderiv_cont` | `Holomorphic.v`, `CDeriv.v`, `CHoloCalculus.v` | product/chain/quotient, complex-diff ⟹ continuous |
 | Diff-under-the-integral in a complex parameter | `CLaplace.v`, `LaplaceFull.v`, `GammaNearCHolo.v` | template for Cauchy's derivative formula (B2) |
 
-**Missing:** general Cauchy formula at interior points, Cauchy's derivative formula, Taylor / local power series, term-by-term integration of a uniformly convergent series over a contour, and any connectedness/clopen argument.
+**So already done:** Cauchy's theorem, the removable-singularity loop, the **center** Cauchy formula,
+and the **center** winding `∮ dz/z = 2πi`. `CTruncCauchy.trunc_cauchy` is a complete (if intricate,
+Section-parametrised, ~200-line) template for the formula **at the origin**.
+
+**Still missing (the true remaining path):** the formula at **interior points** `w ≠ center` (the only
+thing Taylor needs), which reduces to the **non-center winding** `∮_{\|z−a\|=R} dz/(z−w) = 2πi`
+(`\|w−a\|<R`); then Cauchy's derivative formula, Taylor / local power series (term-by-term integration
+of a uniformly convergent series), and the connectedness/clopen propagation.
 
 ## Building blocks (dependency order)
 
-### B1 — General Cauchy integral formula at interior points  *(gateway; substantial)*
-Generalize the center-only formula to `f(w) = (1/2πi) ∮_{|z−a|=R} f(z)/(z−w) dz` for `|w−a| < R`. Route: apply Cauchy's theorem (Goursat) to `f(z)/(z−w)` on the disk with a small circle excised around `w` (keyhole/annulus), so `∮_{C_R} = ∮_{small circle}` → `2πi f(w)` by the mean value around `w`. Reuses `CGoursat*` + `pathint_ML` + `cauchy_integral_formula`. The punctured disk is not convex, so this needs a keyhole/annulus argument on top of the convex primitive machinery. **First recommended milestone — independently valuable.**
+### B1 — Cauchy integral formula at interior points  *(gateway; the removable half is already templated)*
+Generalize `trunc_cauchy` from the center `0` to an interior point `w`: `f(w) = (1/2πi) ∮_{|z−a|=R} f(z)/(z−w) dz` for `|w−a| < R`. Split `f(z)/(z−w) = (f(z)−f(w))/(z−w) + f(w)/(z−w)`:
+- **removable quotient `φ = (f−f(w))/(z−w)`** → `∮ φ = 0`: this is *exactly* the `trunc_cauchy` construction with the pole moved from `0` to `w` — reuse `pathint_loop_except` / `PrimE_deriv` verbatim (φ holomorphic off `w`, continuous through `w`). Mechanical port of the existing ~200-line apparatus.
+- **non-center winding `∮_{|z−a|=R} dz/(z−w) = 2πi`** (`|w−a|<R`): the genuinely new analytic brick. `trunc_winding` gives the `w = a` (center) case; the off-center case needs an **annulus deformation** `∮_{C_R(a)} = ∮_{C_ε(w)}` (`1/(z−w)` holomorphic in the annulus between the circles — cut into convex pieces with `pathint_split` + `pathint_loop_conv`), then the small circle `∮_{C_ε(w)} dz/(z−w) = 2πi` by direct parametrisation. **This is the crux of B1 and the recommended first concrete brick.**
 
 ### B2 — Cauchy's derivative formula / holomorphic ⟹ C^∞  *(medium)*
 `f^{(n)}(w) = (n!/2πi) ∮_{C_R} f(z)/(z−w)^{n+1} dz`, by differentiating B1 under the integral sign (the `CLaplace`/`GammaNearCHolo` diff-under-integral template applies). Yields all higher complex derivatives and the standard bounds `|f^{(n)}(a)| ≤ n! M / R^n`.
@@ -44,14 +59,16 @@ The set `Z = { z : Re z > 0, f ≡ 0 on a neighborhood of z }` is open by defini
 ## Assembly for the FE
 Take `f := GammaCFE.FE_diff`, `a := 1`. `FE_diff` is holomorphic on `Re>0` (`FE_diff_holo`) and `0` on ℝ⁺ (`FE_diff_vanishes_real`). B5→B4→B6 give `FE_diff ≡ 0`, i.e. the hypothesis of `GammaC_FE_from_identity`, closing `GammaC_FE`.
 
-## Honest assessment
+## Honest assessment (revised after finding Milestone C)
 
-- **Cost centers:** B1 (general Cauchy formula — keyhole/annulus on top of Goursat) and B3 (Taylor — needs term-by-term contour integration of a uniformly convergent series). B6 needs a modest connectedness argument. This is a **multi-file, mini-complex-analysis-library** effort — realistically the largest single undertaking proposed so far.
-- **Reusability:** very high. B1–B4 (Cauchy formula → derivative formula → Taylor → isolated zeros) unlock analyticity, the maximum principle, Liouville, and uniqueness throughout the corpus — not just the Γ FE.
+- **Already done:** Cauchy's theorem, removable-singularity loop, center Cauchy formula, center winding. The hard *foundations* exist.
+- **Cost centers now:** the **non-center winding** (B1's annulus deformation) and **Taylor** (B3's term-by-term contour integration of a uniformly convergent series). B6 needs a modest connectedness/clopen argument (eased by convexity). B1's removable half is a mechanical port of `trunc_cauchy`.
+- **Scale:** still a multi-file effort, but materially smaller than the original estimate — the center-based apparatus is a working template, so this is "generalise + extend," not "build from scratch."
+- **Reusability:** very high. B1–B4 (interior Cauchy formula → derivative formula → Taylor → isolated zeros) unlock analyticity, the maximum principle, Liouville, and uniqueness across the corpus — not just the Γ FE.
 
 ## Recommendation & the cheaper alternative
 
-- **If the goal is only the Γ functional equation:** the **complex IBP route is likely cheaper** — a single focused file (u-derivative of the Γ kernel `gnkC`, built from a base-power line-derivative + product rule; the componentwise FTC pattern of `CFTC.gC_FTC`; and the improper two-sided limits with boundary vanishing via `RpowerZero.Rpower_pos_cv0` and `exp` decay). It sidesteps general uniqueness entirely. See `docs/complex_gamma_plan.md`.
-- **If the goal is general complex-analysis capability:** build the identity theorem, starting with **B1 (general Cauchy integral formula at interior points)** as the first, independently-useful milestone, then B2 → B3.
+- **If the goal is only the Γ functional equation:** the **complex IBP route is likely cheaper** — a single focused file (u-derivative of the Γ kernel `gnkC` from a base-power line-derivative + product rule; the componentwise FTC pattern of `CFTC.gC_FTC`; improper two-sided limits with boundary vanishing via `RpowerZero.Rpower_pos_cv0` + `exp` decay). It sidesteps general uniqueness. See `docs/complex_gamma_plan.md`.
+- **If the goal is general complex-analysis capability (the reusable investment):** build the identity theorem. The center apparatus is done; proceed **B1 → B2 → B3 → B4/B5 → B6**.
 
-**Suggested first concrete step either way:** B1. It is the shared gateway (Cauchy formula at interior points), reuses the existing Goursat + center-formula + ML machinery, and is the prerequisite for B2/B3 and for much else besides.
+**First concrete brick: the non-center winding integral** `∮_{|z−a|=R} dz/(z−w) = 2πi` (`|w−a|<R`), via annulus deformation (`pathint_split` + `pathint_loop_conv` on convex pieces) + small-circle parametrisation. It is the one genuinely new analytic ingredient of B1; with it, B1 assembles by porting `trunc_cauchy` (pole `0 → w`). This is the shared gateway to B2/B3 and the maximum principle, Liouville, etc.
