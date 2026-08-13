@@ -91,6 +91,81 @@ Proof.
   field. repeat split; assumption.
 Qed.
 
+(* Cmod of a power (local, to avoid a heavy import) *)
+Lemma Cmod_Cpow : forall a k, Cmod (Cpow a k) = (Cmod a) ^ k.
+Proof.
+  intros a k; induction k as [|k IH]; cbn [Cpow pow];
+    [ apply Cmod_C1 | rewrite Cmod_mul, IH; reflexivity ].
+Qed.
+
+(* the inductive modulus bound  Cmod(B_n) <= |h|^2 . Wn *)
+Fixpoint Wn (mp m : R) (n : nat) : R :=
+  match n with
+  | O => 0
+  | S k => / mp * Wn mp m k + INR (S k) * / (mp * m ^ (S (S k)))
+  end.
+
+Lemma Wn_nonneg : forall mp m n, 0 < mp -> 0 < m -> 0 <= Wn mp m n.
+Proof.
+  intros mp m n Hmp Hm; induction n as [|n IH]; cbn [Wn].
+  - lra.
+  - apply Rplus_le_le_0_compat.
+    + apply Rmult_le_pos; [ left; apply Rinv_0_lt_compat; exact Hmp | exact IH ].
+    + apply Rmult_le_pos; [ apply pos_INR | left; apply Rinv_0_lt_compat;
+        apply Rmult_lt_0_compat; [ exact Hmp | apply pow_lt; exact Hm ] ].
+Qed.
+
+Lemma bracket_gen_bound : forall n zeta h mp m,
+  zeta <> C0 -> Cminus zeta h <> C0 ->
+  0 < mp -> mp <= Cmod (Cminus zeta h) ->
+  0 < m -> m <= Cmod zeta ->
+  Cmod (Bn zeta h n) <= Cmod h * Cmod h * Wn mp m n.
+Proof.
+  intros n; induction n as [|n IH]; intros zeta h mp m Hz Hzh Hmp Hmpb Hm Hmb.
+  - assert (HB0 : Bn zeta h 0 = C0)
+      by (unfold Bn; cbn [Cpow INR]; change (RtoC 0) with C0; ring).
+    rewrite HB0, (proj2 (Cmod0 C0) eq_refl). cbn [Wn]. rewrite Rmult_0_r. lra.
+  - rewrite (bracket_recur zeta h n Hz Hzh).
+    eapply Rle_trans; [ apply Cmod_triangle | ].
+    assert (Hmpp : 0 < Cmod (Cminus zeta h)) by lra.
+    assert (Hzp : 0 < Cmod zeta) by lra.
+    assert (Hhh : 0 <= Cmod h * Cmod h) by (apply Rmult_le_pos; apply Cmod_nonneg).
+    assert (Hpowpos : 0 < m ^ S (S n)) by (apply pow_lt; exact Hm).
+    assert (Hpowle : m ^ S (S n) <= (Cmod zeta) ^ S (S n))
+      by (apply pow_incr; split; [ lra | exact Hmb ]).
+    (* term 1:  |A.B_n| <= /mp . (|h|^2 Wn n) *)
+    assert (Ht1 : Cmod (Cmul (Cinv (Cminus zeta h)) (Bn zeta h n))
+                  <= / mp * (Cmod h * Cmod h * Wn mp m n)).
+    { rewrite Cmod_mul, (Cmod_inv _ Hzh).
+      apply Rle_trans with (/ Cmod (Cminus zeta h) * (Cmod h * Cmod h * Wn mp m n)).
+      - apply Rmult_le_compat_l; [ left; apply Rinv_0_lt_compat; exact Hmpp
+                                 | apply IH; assumption ].
+      - apply Rmult_le_compat_r;
+          [ apply Rmult_le_pos; [ exact Hhh | apply Wn_nonneg; assumption ]
+          | apply Rinv_le_contravar; [ exact Hmp | exact Hmpb ] ]. }
+    (* term 2:  <= |h|^2 . INR(S n) / (mp . m^{S(S n)}) *)
+    assert (Ha : / Cmod (Cminus zeta h) <= / mp)
+      by (apply Rinv_le_contravar; [ exact Hmp | exact Hmpb ]).
+    assert (Hb : / (Cmod zeta) ^ S (S n) <= / m ^ S (S n))
+      by (apply Rinv_le_contravar; [ exact Hpowpos | exact Hpowle ]).
+    assert (Ht2 : Cmod (Cmul (RtoC (INR (S n)))
+                    (Cmul (Cmul h h)
+                          (Cmul (Cinv (Cminus zeta h)) (Cinv (Cpow zeta (S (S n)))))))
+                  <= Cmod h * Cmod h * (INR (S n) * / (mp * m ^ S (S n)))).
+    { rewrite !Cmod_mul, Cmod_RtoC, (Rabs_right (INR (S n))) by (apply Rle_ge, pos_INR).
+      rewrite (Cmod_inv _ Hzh), (Cmod_inv _ (Cpow_ne0 _ _ Hz)), Cmod_Cpow.
+      apply Rle_trans with (INR (S n) * (Cmod h * Cmod h * (/ mp * / m ^ S (S n)))).
+      - apply Rmult_le_compat_l; [ apply pos_INR | ].
+        apply Rmult_le_compat_l; [ exact Hhh | ].
+        apply Rmult_le_compat;
+          [ left; apply Rinv_0_lt_compat; exact Hmpp
+          | left; apply Rinv_0_lt_compat, pow_lt; exact Hzp
+          | exact Ha | exact Hb ].
+      - apply Req_le. rewrite Rinv_mult. ring. }
+    eapply Rle_trans; [ apply Rplus_le_compat; [ exact Ht1 | exact Ht2 ] | ].
+    cbn [Wn]. apply Req_le. ring.
+Qed.
+
 (* ================================================================= *)
 (*  The ML integral estimate for the difference quotient              *)
 (* ================================================================= *)
