@@ -56,15 +56,21 @@ Every arrow is a `Qed` theorem in the repo (the prime→ζ arrows hold on `Re s 
 **Proven (this file + cited):** the prime-wave ↔ roots-of-unity Fourier dual; the `e^{it log x}` zero-wave as a
 formal unit-modulus character; and every individual link of the chain above.
 
-**The frontier (NOT in the repo — the honest gap):**
-1. **A complex-analytic `zetaC ↔ XiC` continuation off `Re s > 1`.** The prime/trace facts live where ζ has
-   *no* zeros (`Re s > 1`); carrying them to the zero locus needs an identity connecting `zetaC`'s complex
-   zeros to `XiC`'s — only the real `s>1` link (`XiC_is_completed_zeta`) exists.
-2. **The explicit formula / Mellin operator-intertwiner** — the actual identity summing the prime side
+**Gap 1 — now CLOSED** (`docs/zetaC_XiC_continuation.md`, `CZetaStripId.v` + `CZetaRegular*`/`CZetaMarchH`):
+the complex-analytic `zetaC ↔ XiC` continuation **off `Re s > 1`** is done. `XiC_completed_strip` proves
+`XiC z = ½z·π^{−z/2}·GammaC(z/2)·(z−1)·zetaC z` for all `Re z > 0`, so `zetaC z = 0 ⇒ XiC z = 0`
+(`zetaC_zero_implies_XiC_zero`, unconditional) and, given `GammaC(z/2) ≠ 0`, `XiC z = 0 ⟺ zetaC z = 0`
+in the strip (`XiC_zero_iff_zetaC_zero`). All axiom-clean. The load-bearing new fact is that `(z−1)·zetaC z`
+is holomorphic *across the pole* `z=1` (its value there, ζ's Laurent constant, is built as `ellsum`).
+
+**The frontier that remains (NOT in the repo — the honest gap):**
+1. **The explicit formula / Mellin operator-intertwiner** — the actual identity summing the prime side
    (`Σ Λ(n) n^{−s}`) over the zero-ordinates (the `Bxi`-spectrum). Nothing in the repo sums over zeros; the
    Perron tool (`PerronKernel`) stops at the `1/s` residue.
+2. **`GammaC(z/2) ≠ 0` on the strip** (a sub-fact of the reverse zero-equivalence): Γ never vanishes, but
+   only real-axis nonvanishing is in the repo.
 
-These two gaps **are** the explicit formula / the Hilbert–Pólya realization — the genuine open frontier. The
+Gap 1 **is** the explicit formula / the Hilbert–Pólya realization — the genuine open frontier. The
 Berry–Keating "zeros = spectrum" step is itself conditional on `hp_target_via_extension` (and RH on `RH_XiC`).
 
 ## Summary
