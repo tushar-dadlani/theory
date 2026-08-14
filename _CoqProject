@@ -1011,3 +1011,4 @@ spectral-theory/CCircleBound.v
 spectral-theory/CScaledDisk.v
 spectral-theory/CRealDisk.v
 spectral-theory/CPtcontPath.v
+spectral-theory/CClampedTower.v
