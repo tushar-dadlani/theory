@@ -1006,3 +1006,4 @@ spectral-theory/CClampCont.v
 spectral-theory/CAnalyticTower.v
 spectral-theory/CAnalyticTowerF.v
 spectral-theory/CContBounded.v
+spectral-theory/CDerivUnique.v
