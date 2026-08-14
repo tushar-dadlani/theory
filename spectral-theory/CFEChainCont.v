@@ -5,8 +5,8 @@
 (*  p1, p2 in the closed disk |p| <= rho < R,                          *)
 (*    | oint g/(z-p1)^n - oint g/(z-p2)^n | <= C . |p1 - p2|,           *)
 (*  via Cintf_sub + the kernel Lipschitz bound (CCauchyCont.            *)
-(*  Cinv_pow_diff_bound) + Cintf_ML.  This is the "integral continuous  *)
-(*  in the pole" half of the clamped-integral continuity.              *)
+(*  Cinv_pow_diff_bound) + Cintf_ML.  This is the integral-continuous-  *)
+(*  in-the-pole half of the clamped-integral continuity.               *)
 (*                                                                    *)
 (*  Axioms: standard classical-Reals only.                            *)
 (* ================================================================= *)
@@ -99,4 +99,60 @@ Qed.
 
 End PoleLip.
 
+(* ================================================================= *)
+(*  PhiN continuity from clampw continuity + pole_lipschitz            *)
+(* ================================================================= *)
+Theorem PhiN_ptcont : forall (g : C -> C) (Rr : R) (w0 : C) (m : nat)
+  (HR : 0 < Rr) (Hw0 : Cmod w0 < Rr) (Hg : CcontC g) (Mg : R),
+  (forall u, Cmod (g (arc Rr u)) <= Mg) ->
+  (forall w2 e, 0 < e -> exists del, 0 < del /\ forall w, Cmod (Cminus w w2) < del ->
+     Cmod (Cminus (clampw Rr w0 w) (clampw Rr w0 w2)) < e) ->
+  forall w2 eps, 0 < eps -> exists del, 0 < del /\
+    forall w, Cmod (Cminus w w2) < del ->
+      Cmod (Cminus (PhiN g Rr w0 (S m) HR Hw0 Hg w)
+                   (PhiN g Rr w0 (S m) HR Hw0 Hg w2)) < eps.
+Proof.
+  intros g Rr w0 m HR Hw0 Hg Mg Hgb Hclampcont w2 eps Heps.
+  assert (HMg : 0 <= Mg)
+    by (pose proof (Hgb 0); pose proof (Cmod_nonneg (g (arc Rr 0))); lra).
+  assert (HrR : rho Rr w0 < Rr) by (unfold rho; lra).
+  assert (Hrho0 : 0 <= rho Rr w0)
+    by (unfold rho; pose proof (Cmod_nonneg w0); lra).
+  remember (2 * (Mg * (INR (S m) * (Rr + rho Rr w0) ^ m
+              / ((Rr - rho Rr w0) ^ S m * (Rr - rho Rr w0) ^ S m)) * Rr) * (2 * PI))
+    as C eqn:HCeq.
+  assert (HC0 : 0 <= C).
+  { rewrite HCeq. apply Rmult_le_pos; [ | generalize PI_RGT_0; lra ].
+    apply Rmult_le_pos; [ lra | ].
+    apply Rmult_le_pos; [ apply Rmult_le_pos; [ exact HMg | ] | lra ].
+    apply Rle_mult_inv_pos;
+      [ apply Rmult_le_pos; [ apply pos_INR | apply pow_le; lra ]
+      | apply Rmult_lt_0_compat; apply pow_lt; lra ]. }
+  destruct (Hclampcont w2 (eps / (C + 1)) ltac:(apply Rdiv_lt_0_compat; lra))
+    as [del [Hdel Hcl]].
+  exists del; split; [ exact Hdel | ].
+  intros w Hw.
+  assert (Hpl : Cmod (Cminus (PhiN g Rr w0 (S m) HR Hw0 Hg w)
+                             (PhiN g Rr w0 (S m) HR Hw0 Hg w2))
+                <= C * Cmod (Cminus (clampw Rr w0 w) (clampw Rr w0 w2))).
+  { rewrite HCeq.
+    exact (pole_lipschitz g Rr (rho Rr w0) HR HrR Mg Hgb m
+             (clampw Rr w0 w) (clampw Rr w0 w2)
+             (Kwn_cont g Rr (S m) Hg (clampw Rr w0 w) (clamp_ne Rr w0 HR Hw0 w))
+             (Kwn_cont g Rr (S m) Hg (clampw Rr w0 w2) (clamp_ne Rr w0 HR Hw0 w2))
+             (clampw_mod Rr w0 HR w) (clampw_mod Rr w0 HR w2)). }
+  eapply Rle_lt_trans; [ exact Hpl | ].
+  set (X := Cmod (Cminus (clampw Rr w0 w) (clampw Rr w0 w2))).
+  assert (HX : X < eps / (C + 1)) by (apply Hcl; exact Hw).
+  assert (HX0 : 0 <= X) by (unfold X; apply Cmod_nonneg).
+  clearbody X.
+  assert (Hlt : X * (C + 1) < eps).
+  { apply (Rmult_lt_reg_r (/ (C + 1))); [ apply Rinv_0_lt_compat; lra | ].
+    rewrite Rmult_assoc. rewrite Rinv_r by lra. rewrite Rmult_1_r.
+    unfold Rdiv in HX. exact HX. }
+  apply Rle_lt_trans with (X * (C + 1)); [ | exact Hlt ].
+  rewrite Rmult_comm. apply Rmult_le_compat_l; [ exact HX0 | lra ].
+Qed.
+
 Print Assumptions pole_lipschitz.
+Print Assumptions PhiN_ptcont.
