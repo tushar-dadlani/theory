@@ -14,7 +14,7 @@
 From Stdlib Require Import Reals Lra.
 Require Import ComplexField Cmodulus Holomorphic CDeriv CIntegral2 CSegInt CPathIntegral
         PerronRemovable CIdentityZeroDom CDerivUnique CContBounded CCircleBound
-        CAnalyticTower CAnalyticTowerF.
+        CClampCont CPtcontPath CClampedTower CAnalyticTower CAnalyticTowerF.
 Open Scope R_scope.
 
 (* if the base level vanishes near 0, every level vanishes at 0 *)
@@ -55,87 +55,53 @@ Qed.
 
 Print Assumptions tower_vanish_from_local.
 
-Lemma Rabs_Re_le_Cmod : forall w, Rabs (Re w) <= Cmod w.
-Proof.
-  intro w. unfold Cmod, Cnorm2.
-  rewrite <- (sqrt_Rsqr_abs (Re w)).
-  apply sqrt_le_1_alt. unfold Rsqr.
-  pose proof (Rle_0_sqr (Im w)) as H. unfold Rsqr in H. nra.
-Qed.
-
 (* ================================================================= *)
-(*  The scaled/shifted local zero lemma.                              *)
+(*  The scaled/shifted local zero lemma (clamped -- needs only F         *)
+(*  pointwise-continuous + holomorphic on {Re>0}, NOT global CcontC).    *)
 (* ================================================================= *)
 Theorem scaled_disk_zero :
   forall (F : C -> C),
-    (forall z e, 0 < e -> exists del, 0 < del /\
+    (forall z, 0 < Re z -> forall e, 0 < e -> exists del, 0 < del /\
        forall z', Cmod (Cminus z' z) < del -> Cmod (Cminus (F z') (F z)) < e) ->
-    CcontC F ->
     (forall z, 0 < Re z -> exists d, is_Cderiv F z d) ->
-  forall z0 eps r0, 0 < eps -> 5 * eps < Re z0 -> 0 < r0 ->
+  forall z0 eps r0, 0 < eps -> 6 * eps < Re z0 -> 0 < r0 ->
     (forall z, Cmod (Cminus z z0) < r0 -> F z = C0) ->
     forall z, Cmod (Cminus z z0) < eps -> F z = C0.
 Proof.
-  intros F HFptc HFc HFhol z0 eps r0 Heps H5 Hr0 Hzero z Hz.
+  intros F HFptc HFhol z0 eps r0 Heps H6 Hr0 Hzero z Hz.
   assert (HR4 : 0 < 4) by lra.
-  set (G := fun w => F (Cadd (Cmul (RtoC eps) w) z0)).
-  assert (Hpt : forall w, Cmod w < 5 -> 0 < Re (Cadd (Cmul (RtoC eps) w) z0)).
-  { intros w Hw.
-    replace (Re (Cadd (Cmul (RtoC eps) w) z0)) with (eps * Re w + Re z0)
-      by (unfold Cadd, Cmul, RtoC; cbn [Re Im]; ring).
-    pose proof (Rabs_Re_le_Cmod w) as HRe.
-    pose proof (Rle_abs (Re w)) as Hra.
-    pose proof (Rle_abs (- Re w)) as Hra2. rewrite Rabs_Ropp in Hra2.
-    pose proof (Rabs_pos (Re w)). nra. }
-  assert (HGc : CcontC G).
-  { intros gam Hgam. apply HFc.
-    apply Ccont_add; [ apply Ccont_scal; exact Hgam | apply Ccont_const ]. }
-  assert (HGhol : forall w, Cmod w < 4 + 1 -> exists d, is_Cderiv G w d).
-  { intros w Hw.
-    destruct (HFhol (Cadd (Cmul (RtoC eps) w) z0) (Hpt w ltac:(lra))) as [dF HdF].
-    exists (Cmul (RtoC eps) dF).
-    exact (Cderiv_comp_affine F (RtoC eps) z0 w dF HdF). }
-  assert (HGptc : forall zz e, 0 < e -> exists del, 0 < del /\
-       forall z', Cmod (Cminus z' zz) < del -> Cmod (Cminus (G z') (G zz)) < e).
-  { intros zz e He.
-    destruct (HFptc (Cadd (Cmul (RtoC eps) zz) z0) e He) as [del [Hdel Hb]].
-    exists (del / eps). split; [ apply Rdiv_lt_0_compat; lra | ].
-    intros z' Hz'. unfold G. apply Hb.
-    replace (Cminus (Cadd (Cmul (RtoC eps) z') z0) (Cadd (Cmul (RtoC eps) zz) z0))
-      with (Cmul (RtoC eps) (Cminus z' zz)) by ring.
-    rewrite Cmod_mul, Cmod_RtoC, (Rabs_right eps) by lra.
-    apply Rlt_le_trans with (eps * (del / eps));
-      [ apply Rmult_lt_compat_l; lra | apply Req_le; field; lra ]. }
-  destruct (Ccont_circle_bounded G 4 HGc) as [Mg [HMg HGbd]].
-  assert (HGb : exists Mg', 0 <= Mg' /\ forall u, Cmod (G (arc 4 u)) <= Mg')
-    by (exists Mg; split; assumption).
-  (* base: fseq 0 vanishes near 0 *)
+  pose proof (Gclamp_cc F z0 eps Heps H6 HFptc) as HGc.
+  pose proof (Gclamp_ptc F z0 eps Heps H6 HFptc) as HGptc.
+  pose proof (Gclamp_hol F z0 eps Heps H6 HFhol) as HGhol.
+  destruct (Ccont_circle_bounded (Gclamp F z0 eps) 4 HGc) as [Mg [HMg HGbd]].
   set (delta := Rmin (r0 / eps) 2).
   assert (Hdelta : 0 < delta)
     by (apply Rmin_glb_lt; [ apply Rdiv_lt_0_compat; lra | lra ]).
-  assert (Hbase : forall w, Cmod w < delta -> fseq G 4 HR4 HGc 0 w = C0).
+  assert (Hbase : forall w, Cmod w < delta ->
+            fseq (Gclamp F z0 eps) 4 HR4 HGc 0 w = C0).
   { intros w Hw.
     assert (Hw2 : Cmod w < 4 / 2)
       by (eapply Rlt_le_trans; [ exact Hw | unfold delta; eapply Rle_trans;
           [ apply Rmin_r | lra ] ]).
-    rewrite (fseq0_eq G 4 HR4 HGc HGptc HGhol w Hw2). unfold G. apply Hzero.
+    rewrite (fseq0_eq (Gclamp F z0 eps) 4 HR4 HGc HGptc HGhol w Hw2).
+    rewrite (Gclamp_val F z0 eps w ltac:(lra)). apply Hzero.
     replace (Cminus (Cadd (Cmul (RtoC eps) w) z0) z0) with (Cmul (RtoC eps) w) by ring.
     rewrite Cmod_mul, Cmod_RtoC, (Rabs_right eps) by lra.
     apply Rlt_le_trans with (eps * (r0 / eps)).
     - apply Rmult_lt_compat_l; [ lra | ].
       eapply Rlt_le_trans; [ exact Hw | unfold delta; apply Rmin_l ].
     - apply Req_le; field; lra. }
-  pose proof (tower_vanish_from_local G 4 HR4 HGc HGb delta Hdelta Hbase) as Hvanish.
-  (* identity_at_zero_D at radius 1 *)
+  pose proof (tower_vanish_from_local (Gclamp F z0 eps) 4 HR4 HGc
+                (ex_intro _ Mg (conj HMg HGbd)) delta Hdelta Hbase) as Hvanish.
   assert (Hhbd : forall k, exists Mf, 0 <= Mf /\ forall u,
-            Cmod (fseq G 4 HR4 HGc k (arc 1 u)) <= Mf)
-    by (apply (fseq_bd G 4 1 HR4 HGc Mg HMg HGbd); lra).
-  pose proof (identity_at_zero_D 1 (fseq G 4 HR4 HGc) ltac:(lra)
-                (fun k zz Hzz => fseq_chain G 4 HR4 HGc HGb k zz
+            Cmod (fseq (Gclamp F z0 eps) 4 HR4 HGc k (arc 1 u)) <= Mf)
+    by (apply (fseq_bd (Gclamp F z0 eps) 4 1 HR4 HGc Mg HMg HGbd); lra).
+  pose proof (identity_at_zero_D 1 (fseq (Gclamp F z0 eps) 4 HR4 HGc) ltac:(lra)
+                (fun k zz Hzz => fseq_chain (Gclamp F z0 eps) 4 HR4 HGc
+                   (ex_intro _ Mg (conj HMg HGbd)) k zz
                    ltac:(replace (4 / 2) with (1 + 1) by lra; exact Hzz))
-                (fseq_cont G 4 HR4 HGc Mg HGbd)
+                (fseq_cont (Gclamp F z0 eps) 4 HR4 HGc Mg HGbd)
                 Hhbd Hvanish) as Hid.
-  (* transfer back to F z *)
   set (w := Cmul (RtoC (/ eps)) (Cminus z z0)).
   assert (Hwmod : Cmod w < 1).
   { unfold w. rewrite Cmod_mul, Cmod_RtoC, (Rabs_right (/ eps))
@@ -151,8 +117,9 @@ Proof.
     ring. }
   pose proof (Hid w Hwmod) as Hfw.
   assert (Hw2 : Cmod w < 4 / 2) by lra.
-  rewrite (fseq0_eq G 4 HR4 HGc HGptc HGhol w Hw2) in Hfw.
-  unfold G in Hfw. rewrite Hzw in Hfw. exact Hfw.
+  rewrite (fseq0_eq (Gclamp F z0 eps) 4 HR4 HGc HGptc HGhol w Hw2) in Hfw.
+  rewrite (Gclamp_val F z0 eps w ltac:(lra)) in Hfw.
+  rewrite Hzw in Hfw. exact Hfw.
 Qed.
 
 Print Assumptions scaled_disk_zero.
