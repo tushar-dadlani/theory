@@ -1017,3 +1017,4 @@ spectral-theory/CGammaComplete.v
 spectral-theory/ProfiniteInteger.v
 spectral-theory/ProfiniteBridge.v
 spectral-theory/PrimorialInfinity.v
+spectral-theory/PrimorialWaveSieve.v
