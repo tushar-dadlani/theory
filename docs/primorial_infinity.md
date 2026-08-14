@@ -76,3 +76,33 @@ factors via `crt_iso` at finite level only, exactly as `ProfiniteCRT` already st
 
 So: the infinity is the **completion**, and the archimedean `∞` is **reconstructed from the finite data**
 rather than adjoined — the system has, by design, no primitive `∞`.
+
+## A genuine-wave sieve on the tower (`PrimorialWaveSieve.v`)
+
+The primorial tower carries a **sieve made of genuine waves**. For each prime `p` the prime wave
+`pw p n = sin(π·n/p)` (a second-order harmonic, `y'' = −(π/p)²y`) vanishes *exactly* at the multiples of `p`
+(`pw_zero_iff`, from stdlib `sin_eq_0_0`/`sin_eq_0_1`). The sieve wave is their product,
+
+    SWl ps n  =  ∏_{p ∈ ps} sin(π·n/p),
+
+whose **survivors** (`SWl ps n ≠ 0`) are exactly the `n` no listed prime divides (`SWl_nonzero_iff`). Built
+along the tower: `SW_base` is the period-2 wave (`2^∞`), and `SW_step` multiplies in the next prime's wave —
+`2 → sieve 3 → 6^∞ → sieve 5 → 30^∞ → …`. The payoff `primes_via_wave`:
+
+> `n` is prime ⟺ `n` is a node of **no** prime-wave up to `√n` (it survives the wave-sieve until its own level).
+
+— Eratosthenes correctness (`composite_has_sqrt_factor`) in wave form. Master `primorial_wave_sieve`;
+standard classical-Reals axioms only.
+
+## The ∞ / 0 / −∞ triangle (`ProfiniteLimits.v`)
+
+The same tower analytically defines **zero** and **minus infinity** from **infinity**:
+
+| face | statement | where |
+|---|---|---|
+| **∞** | order-top of ω+1 (exponent → ∞) | `InvLimit.infty` / `infty_top` |
+| **0** | ring limit `p^k → 0` (`p^∞ = 0`) | `padic_pow_cv_zero`, `padic_top_is_zero` (= `Phi_infty`); Reals radius `Un_cv (|p^k|_p) 0` (`padic_radius_cv0`) |
+| **−∞** | log-size `log\|p^k\|_p = −k·ln p → −∞` | `padic_logsize_diverges` (as `cv_infty` of the negated — no `Rbar` in the repo) |
+
+Plus the order-**bottom** `Zbot := emb 0` (`bot_least`), dual to `infty`. Master `infinity_zero_neginfty`; the
+core (`p^k → 0`, bottom) is axiom-free, the Reals layer uses the 4 standard axioms.
