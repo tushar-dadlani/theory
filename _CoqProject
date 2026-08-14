@@ -1008,3 +1008,4 @@ spectral-theory/CAnalyticTowerF.v
 spectral-theory/CContBounded.v
 spectral-theory/CDerivUnique.v
 spectral-theory/CCircleBound.v
+spectral-theory/CScaledDisk.v
