@@ -102,3 +102,44 @@ Qed.
 
 Print Assumptions XiC_completed_strip.
 Print Assumptions zetaC_zero_implies_XiC_zero.
+
+(* ----------------------------------------------------------------- *)
+(*  the reverse direction, conditional on GammaC(z/2) <> 0            *)
+(* ----------------------------------------------------------------- *)
+Lemma Cmul_eq0_l : forall a b, Cmul a b = C0 -> a <> C0 -> b = C0.
+Proof.
+  intros a b Hab Ha.
+  transitivity (Cmul (Cinv a) (Cmul a b)); [ field; exact Ha | rewrite Hab; ring ].
+Qed.
+
+Theorem XiC_zero_iff_zetaC_zero :
+  forall z (H0 : 0 < Re z) (H1 : Cminus C1 z <> C0),
+    Re z < 1 -> GammaC (halfz z) <> C0 ->
+    (XiC z = C0 <-> zetaC z H0 H1 = C0).
+Proof.
+  intros z H0 H1 Hlt Hg. split.
+  - (* XiC = 0  ==>  zetaC = 0 *)
+    intro HX.
+    assert (HXQ : XiC z =
+      Cmul (Cmul (Cmul (Cmul (RtoC (/ 2)) z) (Cmul (archexp z) (GammaC (halfz z))))
+                 (Cminus z C1)) (zF z)).
+    { rewrite (XiC_completed_strip z H0). unfold RHSc. rewrite (BfnT_eq z H0 H1). ring. }
+    assert (HQ : Cmul (Cmul (Cmul (RtoC (/ 2)) z) (Cmul (archexp z) (GammaC (halfz z))))
+                      (Cminus z C1) <> C0).
+    { apply Cmul_ne0.
+      - apply Cmul_ne0.
+        + apply Cmul_ne0.
+          * intro Hc; apply (f_equal Re) in Hc; unfold RtoC, C0 in Hc; cbn [Re] in Hc.
+            pose proof (Rinv_0_lt_compat 2 ltac:(lra)); lra.
+          * intro Hc; apply (f_equal Re) in Hc; unfold C0 in Hc; cbn [Re] in Hc; lra.
+        + apply Cmul_ne0; [ unfold archexp, Cpw; apply Cexpf_ne0 | exact Hg ].
+      - intro Hc; apply (f_equal Re) in Hc;
+        unfold Cminus, Cadd, Copp, C1, C0 in Hc; cbn [Re Im] in Hc; lra. }
+    assert (HzF : zF z = C0).
+    { apply (Cmul_eq0_l _ _ (eq_trans (eq_sym HXQ) HX) HQ). }
+    rewrite (zF_eq z H0 H1) in HzF. exact HzF.
+  - (* zetaC = 0  ==>  XiC = 0 *)
+    intro HZ. apply (zetaC_zero_implies_XiC_zero z H0 H1 HZ).
+Qed.
+
+Print Assumptions XiC_zero_iff_zetaC_zero.
