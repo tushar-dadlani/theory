@@ -1013,3 +1013,4 @@ spectral-theory/CRealDisk.v
 spectral-theory/CPtcontPath.v
 spectral-theory/CClampedTower.v
 spectral-theory/CWalk.v
+spectral-theory/CGammaComplete.v
