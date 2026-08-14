@@ -1021,3 +1021,4 @@ spectral-theory/PrimorialWaveSieve.v
 spectral-theory/ProfiniteLimits.v
 spectral-theory/WaveSieveSpectral.v
 spectral-theory/CZetaXiComplex.v
+spectral-theory/CZetaRegular.v
