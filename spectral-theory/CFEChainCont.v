@@ -13,7 +13,7 @@
 
 From Stdlib Require Import Reals Lra Lia.
 Require Import ComplexField Cmodulus CIntegral2 CSegInt CPathIntegral CLeibniz
-        RootsOfUnity CWindingOffCenter CCauchyAnalytic CCauchyCont.
+        RootsOfUnity CWindingOffCenter CCauchyAnalytic CCauchyCont CClampCont.
 Open Scope R_scope.
 
 (* factor g and z' out of the kernel difference (fresh-var lemma: ring
@@ -154,5 +154,23 @@ Proof.
   rewrite Rmult_comm. apply Rmult_le_compat_l; [ exact HX0 | lra ].
 Qed.
 
+(* ================================================================= *)
+(*  Unconditional PhiN continuity: discharge the clamp-continuity      *)
+(*  hypothesis with clampw_ptcont (clampw is 2-Lipschitz).             *)
+(* ================================================================= *)
+Corollary PhiN_ptcont_uncond : forall (g : C -> C) (Rr : R) (w0 : C) (m : nat)
+  (HR : 0 < Rr) (Hw0 : Cmod w0 < Rr) (Hg : CcontC g) (Mg : R),
+  (forall u, Cmod (g (arc Rr u)) <= Mg) ->
+  forall w2 eps, 0 < eps -> exists del, 0 < del /\
+    forall w, Cmod (Cminus w w2) < del ->
+      Cmod (Cminus (PhiN g Rr w0 (S m) HR Hw0 Hg w)
+                   (PhiN g Rr w0 (S m) HR Hw0 Hg w2)) < eps.
+Proof.
+  intros g Rr w0 m HR Hw0 Hg Mg Hgb.
+  apply PhiN_ptcont with (Mg := Mg); [ exact Hgb | ].
+  apply clampw_ptcont; exact HR.
+Qed.
+
 Print Assumptions pole_lipschitz.
 Print Assumptions PhiN_ptcont.
+Print Assumptions PhiN_ptcont_uncond.
