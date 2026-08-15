@@ -858,3 +858,175 @@ Qed.
 
 Print Assumptions gnk_sub_le_Gam.
 
+(* ----------------------------------------------------------------- *)
+(*  the Gauss limit :  N^s betaI s N  ->  Gam s                        *)
+(* ----------------------------------------------------------------- *)
+
+Lemma Un_cv_le_const : forall (U : nat -> R) (l B : R),
+  (forall n, U n <= B) -> Un_cv U l -> l <= B.
+Proof.
+  intros U l B HUB HU.
+  destruct (Rle_lt_dec l B) as [Hle | Hlt]; [ exact Hle | exfalso ].
+  destruct (HU (l - B) ltac:(lra)) as [N HN]. specialize (HN N (le_n N)).
+  specialize (HUB N). unfold R_dist in HN. apply Rabs_def2 in HN. lra.
+Qed.
+
+(* pointwise  tnk s N <= gnk s 1  on [a,b] (b <= N), integrated *)
+Lemma tnk_le_gnk_int : forall s N a b (Ha : 0 < a) (Hab : a <= b) (HbN : b <= INR N),
+  RiemannInt (Hf_tnk s N a b Ha Hab) <= RiemannInt (Hf_near s 1 a b Ha Hab).
+Proof.
+  intros s N a b Ha Hab HbN.
+  apply RiemannInt_P19; [ exact Hab | ].
+  intros x [Hx1 Hx2]. unfold tnk, gnk.
+  replace (exp (- (1 * x))) with (exp (- x)) by (f_equal; ring).
+  rewrite (Rmult_comm ((1 - x / INR N) ^ N) (Rpower x (s - 1))).
+  apply Rmult_le_compat_l; [ left; apply Rpower_pos | ].
+  apply one_minus_pow_le_exp; lra.
+Qed.
+
+(* lower :  int_a^b tnk s N  <=  N^s betaI s N   for  a <= b <= N *)
+Lemma lower_bound : forall s N (Hs : 0 < s) (HN : (1 <= N)%nat) a b
+   (Ha : 0 < a) (Hab : a <= b) (HbN : b <= INR N),
+  RiemannInt (Hf_tnk s N a b Ha Hab) <= Rpower (INR N) s * betaI s N Hs.
+Proof.
+  intros s N Hs HN a b Ha Hab HbN.
+  assert (HNN : 0 < INR N) by (apply lt_0_INR; lia).
+  assert (Ha' : 0 < a / INR N)
+    by (unfold Rdiv; apply Rmult_lt_0_compat; [ exact Ha | apply Rinv_0_lt_compat; exact HNN ]).
+  assert (Hab' : a / INR N <= b / INR N)
+    by (unfold Rdiv; apply Rmult_le_compat_r;
+        [ left; apply Rinv_0_lt_compat; exact HNN | exact Hab ]).
+  assert (HbN1 : b / INR N <= 1).
+  { apply (Rmult_le_reg_r (INR N)); [ exact HNN | ]. rewrite Rmult_1_l.
+    unfold Rdiv; rewrite Rmult_assoc, Rinv_l, Rmult_1_r;
+      [ exact HbN | apply Rgt_not_eq; exact HNN ]. }
+  rewrite (cov_general s N a b Hs HN Ha Hab HbN Ha' Hab').
+  apply Rmult_le_compat_l; [ left; apply Rpower_pos | ].
+  exact (betaI_sub_le s N Hs (a / INR N) (b / INR N) Ha' Hab' HbN1).
+Qed.
+
+(* upper :  N^s betaI s N  <=  Gam s *)
+Lemma upper_bound : forall s N (Hs : 0 < s) (HN : (1 <= N)%nat),
+  Rpower (INR N) s * betaI s N Hs <= Gam s Hs.
+Proof.
+  intros s N Hs HN.
+  assert (HNN : 0 < INR N) by (apply lt_0_INR; lia).
+  assert (H1N : 1 <= INR N) by (rewrite <- INR_1; apply le_INR; exact HN).
+  set (dk := fun k => / (1 + INR k)).
+  assert (Hdk0 : forall k, 0 < dk k)
+    by (intro k; unfold dk; apply Rinv_0_lt_compat; pose proof (pos_INR k); lra).
+  assert (Hdk1 : forall k, dk k <= 1)
+    by (intro k; unfold dk; apply inv_le_1; pose proof (pos_INR k); lra).
+  assert (Hdkcv : Un_cv dk 0)
+    by (unfold dk; apply Un_cv_recip_0;
+        [ intro k; pose proof (pos_INR k); lra | apply cv_infty_1_INR ]).
+  assert (HdkN : forall k, dk k <= INR N)
+    by (intro k; apply Rle_trans with 1; [ apply Hdk1 | exact H1N ]).
+  assert (Huk0 : forall k, 0 < dk k / INR N)
+    by (intro k; apply Rdiv_lt_0_compat; [ apply Hdk0 | exact HNN ]).
+  assert (Huk1 : forall k, dk k / INR N <= 1).
+  { intro k. apply (Rmult_le_reg_r (INR N)); [ exact HNN | ]. rewrite Rmult_1_l.
+    unfold Rdiv; rewrite Rmult_assoc, Rinv_l, Rmult_1_r;
+      [ exact (HdkN k) | apply Rgt_not_eq; exact HNN ]. }
+  assert (Hukcv : Un_cv (fun k => dk k / INR N) 0).
+  { replace 0 with (0 * / INR N) by ring. unfold Rdiv.
+    apply (CV_mult dk (fun _ => / INR N) 0 (/ INR N) Hdkcv (Un_cv_const (/ INR N))). }
+  assert (Hbnd : forall k,
+            Rpower (INR N) s * rint01 (bnk s N) (Hf_bnk s N) (dk k / INR N) <= Gam s Hs).
+  { intro k.
+    assert (Hx : 0 < dk k) by apply Hdk0.
+    assert (HxN : dk k <= INR N) by apply HdkN.
+    pose proof (cov_partial s N (dk k) Hs HN Hx HxN (Huk0 k) (Huk1 k)) as Hcov.
+    rewrite (rint01_val (bnk s N) (Hf_bnk s N) (dk k / INR N) (Huk0 k) (Huk1 k)).
+    rewrite <- Hcov.
+    apply Rle_trans with (RiemannInt (Hf_near s 1 (dk k) (INR N) Hx HxN)).
+    - apply (tnk_le_gnk_int s N (dk k) (INR N) Hx HxN (Rle_refl (INR N))).
+    - apply (gnk_sub_le_Gam s Hs (dk k) (INR N) Hx HxN). }
+  assert (Hlim : Un_cv (fun k => Rpower (INR N) s * rint01 (bnk s N) (Hf_bnk s N) (dk k / INR N))
+                       (Rpower (INR N) s * betaI s N Hs)).
+  { apply (CV_mult (fun _ => Rpower (INR N) s)
+                   (fun k => rint01 (bnk s N) (Hf_bnk s N) (dk k / INR N))
+                   (Rpower (INR N) s) (betaI s N Hs) (Un_cv_const _)).
+    exact (betaI_spec s N Hs (fun k => dk k / INR N) Huk0 Huk1 Hukcv). }
+  exact (Un_cv_le_const _ (Rpower (INR N) s * betaI s N Hs) (Gam s Hs) Hbnd Hlim).
+Qed.
+
+(* int_d^A gnk  can be made within eps of Gam s  (shrink d, grow A) *)
+Lemma Gam_approx : forall s (Hs : 0 < s) eps, 0 < eps ->
+  exists d A (Hd : 0 < d) (HdA : d <= A),
+    Gam s Hs - RiemannInt (Hf_near s 1 d A Hd HdA) < eps.
+Proof.
+  intros s Hs eps Heps.
+  assert (Heps2 : 0 < eps / 2) by lra.
+  set (dk := fun k => / (1 + INR k)).
+  assert (Hdk0 : forall k, 0 < dk k)
+    by (intro k; unfold dk; apply Rinv_0_lt_compat; pose proof (pos_INR k); lra).
+  assert (Hdk1 : forall k, dk k <= 1)
+    by (intro k; unfold dk; apply inv_le_1; pose proof (pos_INR k); lra).
+  assert (Hdkcv : Un_cv dk 0)
+    by (unfold dk; apply Un_cv_recip_0;
+        [ intro k; pose proof (pos_INR k); lra | apply cv_infty_1_INR ]).
+  set (Ak := fun k => 1 + INR k).
+  assert (Hak1 : forall k, 1 <= Ak k) by (intro k; unfold Ak; pose proof (pos_INR k); lra).
+  assert (Hakinf : cv_infty Ak) by (unfold Ak; apply cv_infty_1_INR).
+  pose proof (proj2_sig (gnear_sig s 1 Hs Rlt_0_1) dk Hdk0 Hdk1 Hdkcv) as Hgn.
+  destruct (Hgn (eps / 2) Heps2) as [k0 Hk0]. specialize (Hk0 k0 (le_n k0)).
+  pose proof (proj2_sig (gtail_sig s 1 Rlt_0_1) Ak Hak1 Hakinf) as Hgt.
+  destruct (Hgt (eps / 2) Heps2) as [k1 Hk1]. specialize (Hk1 k1 (le_n k1)).
+  assert (Hd : 0 < dk k0) by apply Hdk0.
+  assert (Hd1 : dk k0 <= 1) by apply Hdk1.
+  assert (H1A : 1 <= Ak k1) by apply Hak1.
+  assert (HdA : dk k0 <= Ak k1) by lra.
+  exists (dk k0), (Ak k1), Hd, HdA.
+  pose proof (RiemannInt_P26 (Hf_near s 1 (dk k0) 1 Hd Hd1)
+                (Hf_near s 1 1 (Ak k1) Rlt_0_1 H1A)
+                (Hf_near s 1 (dk k0) (Ak k1) Hd HdA)) as H26.
+  pose proof (rint01_val (gnk s 1) (Hf_near s 1) (dk k0) Hd Hd1) as Hr01.
+  assert (Hpint : pint1 (gtk s 1) (gtk_int s 1) (Ak k1)
+                  = RiemannInt (Hf_near s 1 1 (Ak k1) Rlt_0_1 H1A)).
+  { unfold pint1. symmetry.
+    apply (RiemannInt_P18 (Hf_near s 1 1 (Ak k1) Rlt_0_1 H1A) (gtk_int s 1 1 (Ak k1)) H1A).
+    intros x [Hx1 HxA]. unfold gnk, gtk, clamp. rewrite (Rmax_right 1 x) by lra. reflexivity. }
+  assert (HGam : Gam s Hs = gnear s 1 Hs Rlt_0_1 + gtail s 1 Rlt_0_1)
+    by (unfold Gam, mellin; reflexivity).
+  unfold gnear, gtail in HGam.
+  unfold R_dist in Hk0, Hk1. apply Rabs_def2 in Hk0. apply Rabs_def2 in Hk1.
+  rewrite HGam, <- H26, <- Hr01, <- Hpint.
+  destruct Hk0 as [Hk0a Hk0b]. destruct Hk1 as [Hk1a Hk1b]. lra.
+Qed.
+
+Theorem gauss_limit : forall s (Hs : 0 < s),
+  Un_cv (fun N => Rpower (INR N) s * betaI s N Hs) (Gam s Hs).
+Proof.
+  intros s Hs eps Heps.
+  assert (Heps2 : 0 < eps / 2) by lra.
+  destruct (Gam_approx s Hs (eps / 2) Heps2) as [d [A [Hd [HdA HGapp]]]].
+  destruct (compact_cv s d A Hd HdA (eps / 2) Heps2) as [N1 HN1].
+  destruct (INR_unbounded A) as [N2 HN2].
+  exists (max N1 (max N2 1)). intros N HN.
+  assert (HNge_N1 : (N1 <= N)%nat) by lia.
+  assert (HNge_N2 : (N2 <= N)%nat) by lia.
+  assert (HNge1 : (1 <= N)%nat) by lia.
+  assert (HAN : A <= INR N)
+    by (apply Rle_trans with (INR N2); [ left; exact HN2 | apply le_INR; exact HNge_N2 ]).
+  pose proof (upper_bound s N Hs HNge1) as Hupper.
+  pose proof (lower_bound s N Hs HNge1 d A Hd HdA HAN) as Hlower.
+  specialize (HN1 N HNge_N1). unfold R_dist in HN1. apply Rabs_def2 in HN1.
+  destruct HN1 as [HN1a HN1b].
+  unfold R_dist. apply Rabs_def1; lra.
+Qed.
+
+Print Assumptions gauss_limit.
+
+(* the Gauss limit in closed form :  Gam s = lim N^s N! / (s(s+1)...(s+N)) *)
+Corollary gauss_limit_fact : forall s (Hs : 0 < s),
+  Un_cv (fun N => Rpower (INR N) s * (INR (fact N) / prodshift s (S N))) (Gam s Hs).
+Proof.
+  intros s Hs.
+  apply (Un_cv_ext (fun N => Rpower (INR N) s * betaI s N Hs)).
+  - intro N. rewrite (betaI_eq N s Hs). reflexivity.
+  - apply gauss_limit.
+Qed.
+
+Print Assumptions gauss_limit_fact.
+
