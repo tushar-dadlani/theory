@@ -867,6 +867,7 @@ spectral-theory/LiouvilleMobius.v
 spectral-theory/SelbergDynamics.v
 spectral-theory/CVonMangoldtSeries.v
 spectral-theory/Ell2VMPartition.v
+spectral-theory/Ell2Fock.v
 spectral-theory/CZetaDerivDirichlet.v
 spectral-theory/CListSum.v
 spectral-theory/CHyperbolaSwap.v
