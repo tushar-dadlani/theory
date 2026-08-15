@@ -18,7 +18,14 @@ short assembly (C) that closes the goal.
   gauss_limit      : Un_cv (fun N => N^s * betaI s N) (Gam s)
   gauss_limit_fact : Un_cv (fun N => N^s * (N! / prodshift s (S N))) (Gam s)
   ```
-- **C (Weierstrass assembly + complex lift + `GammaC≠0`) — REMAINING** → `GammaWeierstrass.v` (see below).
+- **C (Weierstrass assembly + complex lift + `GammaC≠0`) — PARTIALLY DONE** → `GammaWeierstrass.v`:
+  - **C.1 (product converges) — DONE**: `ln_lower_bound` (calculus, via MVT), `Wprod_cv` (`Wprod N → exp(Winf)`,
+    log-sum decreasing + bounded below by a telescoping `s²` majorant).
+  - **C.2 (real identity) — DONE**: `prodshift_RQ`, `RQ_Wprod`, `recip_G_eq`, then along `N = S n`
+    `real_weierstrass : Gam s · Pval = 1` (`Pval = s·e^{Winf}·e^{sγ}`), giving `Gam_ne0`, `Gam_pos : 0 < Gam s`.
+    The Euler–Mascheroni `γ` now appears on the archimedean (Γ) side, unconditionally.
+  - **C.3 (complex lift + discharge) — REMAINING**: `GammaC(z) ≠ 0` on `{Re>0}` and discharge
+    `GammaC(z/2)≠0` in `CZetaStripId.XiC_zero_iff_zetaC_zero`.
 
 ## Target (achieved)
 
