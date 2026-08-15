@@ -12,7 +12,7 @@
 
 From Stdlib Require Import Reals Rpower Lra Lia Factorial.
 Require Import GammaReal MellinElem ImproperCv0 ImproperCv1 RpowerZero ZetaContinuation
-        GammaFunction ContinuousCoV GammaExtend GammaRecur.
+        GammaFunction ContinuousCoV GammaExtend GammaRecur GammaGaussBounds.
 Open Scope R_scope.
 
 (* ----------------------------------------------------------------- *)
@@ -380,4 +380,95 @@ Proof.
 Qed.
 
 Print Assumptions cov_partial.
+
+(* ================================================================= *)
+(*  Content B, sub-lemma: the pointwise limit  (1-t/N)^N -> e^{-t}      *)
+(* ================================================================= *)
+Lemma ln_le_x1 : forall x, 0 < x -> ln x <= x - 1.
+Proof.
+  intros x Hx. pose proof (exp_ineq1_le (ln x)) as H.
+  rewrite exp_ln in H by exact Hx. lra.
+Qed.
+
+(* N * ln(1 - t/N) -> -t *)
+Lemma Nln_cv : forall t, 0 < t -> Un_cv (fun N => INR N * ln (1 - t / INR N)) (- t).
+Proof.
+  intros t Ht eps Heps.
+  destruct (INR_unbounded (t + t * t / eps)) as [N0 HN0].
+  assert (Haux : 0 <= t * t / eps) by (apply Rle_mult_inv_pos; [ nra | exact Heps ]).
+  exists (S N0). intros N HN.
+  assert (HNbig : t + t * t / eps < INR N).
+  { apply Rlt_le_trans with (INR N0); [ exact HN0 | apply le_INR; lia ]. }
+  assert (HNt : t < INR N) by lra.
+  assert (HNNpos : 0 < INR N) by lra.
+  set (x := t / INR N).
+  assert (Hxpos : 0 < x) by (unfold x; apply Rdiv_lt_0_compat; lra).
+  assert (HNx : INR N * x = t) by (unfold x; field; lra).
+  assert (Hx1 : x < 1).
+  { apply (Rmult_lt_reg_r (INR N)); [ exact HNNpos | ].
+    rewrite Rmult_1_l, (Rmult_comm x (INR N)), HNx; exact HNt. }
+  assert (H1x : 0 < 1 - x) by lra.
+  (* ln bounds *)
+  assert (Hub : ln (1 - x) <= - x) by (pose proof (ln_le_x1 (1 - x) H1x); lra).
+  assert (Hlb : - (x / (1 - x)) <= ln (1 - x)).
+  { pose proof (ln_le_x1 (/ (1 - x)) (Rinv_0_lt_compat _ H1x)) as H.
+    rewrite ln_Rinv in H by exact H1x.
+    assert (Heq : / (1 - x) - 1 = x / (1 - x)) by (field; lra). lra. }
+  (* N ln(1-x) in [-t/(1-x), -t] ; distance to -t bounded by t^2/(N-t) *)
+  assert (Hupper : INR N * ln (1 - x) <= - t).
+  { apply Rle_trans with (INR N * (- x));
+      [ apply Rmult_le_compat_l; [ lra | exact Hub ] | rewrite <- HNx; lra ]. }
+  assert (Hlower : - (t / (1 - x)) <= INR N * ln (1 - x)).
+  { apply Rle_trans with (INR N * (- (x / (1 - x)))).
+    - assert (INR N * (x / (1 - x)) = t / (1 - x))
+        by (unfold Rdiv; rewrite <- Rmult_assoc, HNx; reflexivity).
+      lra.
+    - apply Rmult_le_compat_l; [ lra | exact Hlb ]. }
+  unfold R_dist.
+  assert (Hdist : Rabs (INR N * ln (1 - x) - - t) <= t * t / (INR N - t)).
+  { rewrite Rabs_left1; [ | lra ].
+    (* -(N ln(1-x) + t) <= t^2/(N-t) ; i.e. -t/(1-x) - (-t) = -t^2/(N-t)-ish *)
+    assert (Hval : - (t / (1 - x)) - - t = - (t * t / (INR N - t))).
+    { assert (1 - x = (INR N - t) / INR N)
+        by (unfold x; field; lra).
+      rewrite H. field; lra. }
+    lra. }
+  apply Rle_lt_trans with (t * t / (INR N - t)); [ exact Hdist | ].
+  apply (Rmult_lt_reg_r (INR N - t)); [ lra | ].
+  replace (t * t / (INR N - t) * (INR N - t)) with (t * t) by (field; lra).
+  assert (Hrw : t * t = eps * (t * t / eps)) by (field; lra).
+  rewrite Hrw. apply Rmult_lt_compat_l; [ exact Heps | lra ].
+Qed.
+
+Lemma one_minus_pow_cv : forall t, 0 <= t ->
+  Un_cv (fun N => (1 - t / INR N) ^ N) (exp (- t)).
+Proof.
+  intros t Ht. destruct (Rle_lt_or_eq_dec 0 t Ht) as [Htpos | Ht0].
+  - assert (Hexp : Un_cv (fun N => exp (INR N * ln (1 - t / INR N))) (exp (- t)))
+      by (apply (continuity_seq exp (fun N => INR N * ln (1 - t / INR N)) (- t));
+          [ apply derivable_continuous; apply derivable_exp | apply Nln_cv; exact Htpos ]).
+    intros eps Heps. destruct (Hexp eps Heps) as [N1 HN1].
+    destruct (INR_unbounded t) as [N2 HN2].
+    exists (max N1 (S N2)). intros N HN.
+    assert (HNt : t < INR N)
+      by (apply Rlt_le_trans with (INR (S N2));
+          [ apply Rlt_le_trans with (INR N2); [ exact HN2 | apply le_INR; lia ]
+          | apply le_INR; pose proof (Nat.le_max_r N1 (S N2)); lia ]).
+    assert (HNNpos : 0 < INR N) by lra.
+    assert (H1x : 0 < 1 - t / INR N).
+    { assert (t / INR N < 1).
+      { apply (Rmult_lt_reg_r (INR N)); [ exact HNNpos | ].
+        replace (t / INR N * INR N) with t by (field; lra). lra. }
+      lra. }
+    assert (Heq : (1 - t / INR N) ^ N = exp (INR N * ln (1 - t / INR N))).
+    { rewrite <- (exp_ln (1 - t / INR N) H1x) at 1.
+      rewrite exp_pow_nat. f_equal. ring. }
+    rewrite Heq. apply HN1. pose proof (Nat.le_max_l N1 (S N2)); lia.
+  - subst t. intros eps Heps. exists 0%nat. intros N _.
+    replace (1 - 0 / INR N) with 1 by (unfold Rdiv; rewrite Rmult_0_l; lra).
+    rewrite pow1. replace (- 0) with 0 by ring. rewrite exp_0.
+    unfold R_dist. replace (1 - 1) with 0 by ring. rewrite Rabs_R0. exact Heps.
+Qed.
+
+Print Assumptions one_minus_pow_cv.
 
