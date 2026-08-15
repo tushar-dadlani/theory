@@ -299,3 +299,85 @@ Qed.
 
 Print Assumptions rpow_rescale.
 
+(* RiemannInt is proof-irrelevant in the endpoint value *)
+Lemma RiemannInt_endpoint : forall f a b b'
+    (pr : Riemann_integrable f a b) (pr' : Riemann_integrable f a b'),
+  b = b' -> RiemannInt pr = RiemannInt pr'.
+Proof. intros f a b b' pr pr' Heq. subst b'. apply RiemannInt_P5. Qed.
+
+(* pulling a constant out of a Riemann integral (continuous integrand) *)
+Lemma RiemannInt_scal_cont : forall (f : R -> R) (c a b : R) (Hab : a <= b)
+    (Hc : forall x, a <= x <= b -> continuity_pt f x)
+    (pr : Riemann_integrable f a b)
+    (prc : Riemann_integrable (fun x => c * f x) a b),
+  RiemannInt prc = c * RiemannInt pr.
+Proof.
+  intros f c a b Hab Hc pr prc.
+  assert (pr3 : Riemann_integrable (fun x => fct_cte 0 x + c * f x) a b)
+    by (apply continuity_implies_RiemannInt;
+        [ exact Hab | intros x Hx; apply continuity_pt_plus;
+          [ apply continuity_pt_const; unfold constant, fct_cte; reflexivity
+          | apply (continuity_pt_scal f c); apply Hc; exact Hx ] ]).
+  assert (Hpc : RiemannInt prc = RiemannInt pr3)
+    by (apply RiemannInt_P18; [ exact Hab | intros x Hx; unfold fct_cte; ring ]).
+  rewrite Hpc, (RiemannInt_P13 (RiemannInt_P14 a b 0) pr pr3).
+  rewrite (@RiemannInt_P15 a b 0 (RiemannInt_P14 a b 0)). ring.
+Qed.
+
+(* ----------------------------------------------------------------- *)
+(*  the change of variables  t = N u                                 *)
+(* ----------------------------------------------------------------- *)
+Lemma cov_partial : forall s N x (Hs : 0 < s) (HN : (1 <= N)%nat) (Hx : 0 < x)
+    (HxN : x <= INR N) (HxN0 : 0 < x / INR N) (HxN1 : x / INR N <= 1),
+  RiemannInt (Hf_tnk s N x (INR N) Hx HxN)
+  = Rpower (INR N) s * RiemannInt (Hf_bnk s N (x / INR N) 1 HxN0 HxN1).
+Proof.
+  intros s N x Hs HN Hx HxN HxN0 HxN1.
+  assert (HNN : 0 < INR N) by (apply lt_0_INR; lia).
+  set (g := fun t => t / INR N).
+  set (g' := fun _ : R => / INR N).
+  set (f := fun u => Rpower (INR N) s * bnk s N u).
+  assert (Hgd : forall t, x <= t <= INR N -> derivable_pt_lim g t (g' t)).
+  { intros t0 _. unfold g, g'. replace (/ INR N) with (1 * / INR N + t0 * 0) by ring.
+    apply (derivable_pt_lim_mult (fun t => t) (fun _ => / INR N) t0);
+      [ apply derivable_pt_lim_id | apply derivable_pt_lim_const ]. }
+  assert (Hg'c : forall t, x <= t <= INR N -> continuity_pt g' t)
+    by (intros; unfold g'; apply continuity_pt_const; unfold constant; reflexivity).
+  assert (Hgx : g x = x / INR N) by reflexivity.
+  assert (Hgb : g (INR N) = 1) by (unfold g; field; apply Rgt_not_eq; exact HNN).
+  assert (Hmap : forall t, x <= t <= INR N -> g x <= g t <= g (INR N)).
+  { intros t [Ht1 Ht2]. unfold g. split; apply Rmult_le_compat_r;
+      solve [ left; apply Rinv_0_lt_compat; exact HNN | lra ]. }
+  assert (Hfc : forall u, g x <= u <= g (INR N) -> continuity_pt f u).
+  { intros u Hu. rewrite Hgx, Hgb in Hu. unfold f. apply continuity_pt_mult;
+      [ apply continuity_pt_const; unfold constant; reflexivity | apply cont_bnk; lra ]. }
+  assert (HfL : forall t, x <= t <= INR N -> f (g t) * g' t = tnk s N t).
+  { intros t [Ht1 Ht2]. unfold f, g, g', bnk, tnk.
+    rewrite <- (rpow_rescale s (INR N) t HNN ltac:(lra)). ring. }
+  assert (prL : Riemann_integrable (fun t => f (g t) * g' t) x (INR N)).
+  { apply continuity_implies_RiemannInt; [ exact HxN | ].
+    intros t Ht. apply continuity_pt_mult.
+    - apply (continuity_pt_comp g f t).
+      + apply derivable_continuous_pt; exists (g' t); apply Hgd; exact Ht.
+      + apply Hfc; apply Hmap; exact Ht.
+    - apply Hg'c; exact Ht. }
+  assert (prR : Riemann_integrable f (g x) (g (INR N)))
+    by (apply continuity_implies_RiemannInt; [ rewrite Hgx, Hgb; exact HxN1 | exact Hfc ]).
+  assert (prR1 : Riemann_integrable f (x / INR N) 1).
+  { unfold f. apply continuity_implies_RiemannInt; [ exact HxN1 | ].
+    intros u Hu. apply continuity_pt_mult;
+      [ apply continuity_pt_const; unfold constant; reflexivity | apply cont_bnk; lra ]. }
+  (* chain the equalities *)
+  transitivity (RiemannInt prL).
+  { apply (RiemannInt_P18 (Hf_tnk s N x (INR N) Hx HxN) prL HxN
+             (fun t Ht => eq_sym (HfL t (conj (Rlt_le _ _ (proj1 Ht)) (Rlt_le _ _ (proj2 Ht)))))). }
+  transitivity (RiemannInt prR).
+  { exact (cov_local g g' f x (INR N) HxN Hgd Hg'c Hmap Hfc prL prR). }
+  transitivity (RiemannInt prR1).
+  { exact (RiemannInt_endpoint f (g x) (g (INR N)) 1 prR prR1 Hgb). }
+  exact (RiemannInt_scal_cont (bnk s N) (Rpower (INR N) s) (x / INR N) 1 HxN1
+           (fun u Hu => cont_bnk s N u ltac:(lra)) (Hf_bnk s N (x / INR N) 1 HxN0 HxN1) prR1).
+Qed.
+
+Print Assumptions cov_partial.
+
