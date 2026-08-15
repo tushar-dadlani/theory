@@ -254,3 +254,48 @@ Qed.
 
 Print Assumptions betaI_eq.
 
+(* ================================================================= *)
+(*  Content A2: the truncated Gauss integral and the change of vars    *)
+(*    int_x^N (1-t/N)^N t^{s-1} dt = N^s int_{x/N}^1 (1-u)^N u^{s-1} du  *)
+(* ================================================================= *)
+Require Import LocalCoV.
+
+Definition tnk (s : R) (N : nat) (t : R) : R :=
+  (1 - t / INR N) ^ N * Rpower t (s - 1).
+
+Lemma cont_tnk : forall s N t, 0 < t -> continuity_pt (tnk s N) t.
+Proof.
+  intros s N t Ht. unfold tnk. apply continuity_pt_mult.
+  - apply (continuity_pt_comp (fun t => 1 - t / INR N) (fun x => x ^ N) t).
+    + apply continuity_pt_minus;
+        [ apply continuity_pt_const; unfold constant; reflexivity
+        | apply (continuity_pt_mult (fun t => t) (fun _ => / INR N));
+            [ apply derivable_continuous_pt; exists 1; apply derivable_pt_lim_id
+            | apply continuity_pt_const; unfold constant; reflexivity ] ].
+    + apply derivable_continuous_pt; apply derivable_pt_pow.
+  - apply cont_Rpower_pos; exact Ht.
+Qed.
+
+Lemma Hf_tnk : forall s N x y, 0 < x -> x <= y ->
+  Riemann_integrable (tnk s N) x y.
+Proof.
+  intros s N x y Hx Hxy. apply continuity_implies_RiemannInt;
+    [ exact Hxy | intros t Ht; apply cont_tnk; lra ].
+Qed.
+
+(* the pointwise rescaling identity *)
+Lemma rpow_rescale : forall s NN t, 0 < NN -> 0 < t ->
+  Rpower NN s * Rpower (t / NN) (s - 1) * / NN = Rpower t (s - 1).
+Proof.
+  intros s NN t HNN Ht. unfold Rpower.
+  assert (HinvN : / NN = exp (- ln NN))
+    by (rewrite exp_Ropp, (exp_ln NN HNN); reflexivity).
+  rewrite HinvN, <- !exp_plus. f_equal.
+  assert (Hln : ln (t / NN) = ln t - ln NN).
+  { unfold Rdiv. rewrite ln_mult by (try exact Ht; apply Rinv_0_lt_compat; exact HNN).
+    rewrite ln_Rinv by exact HNN. ring. }
+  rewrite Hln. ring.
+Qed.
+
+Print Assumptions rpow_rescale.
+
