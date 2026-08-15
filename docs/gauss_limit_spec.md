@@ -6,11 +6,25 @@ foundations are committed and axiom-clean: `CInfProd.v` (infinite products), `CS
 representation of Gamma**, in two theorems (A: the IBP closed form; B: the convergence interchange), then a
 short assembly (C) that closes the goal.
 
-## Target
+## Status (2026-08)
+
+- **A (IBP closed form) — DONE**, axiom-clean in `GammaGaussLimit.v`:
+  `betaI_eq : betaI s N = N!/prodshift s (S N)`, and the change of variables `cov_partial`/`cov_general`.
+- **B (convergence interchange) — DONE**, axiom-clean in `GammaGaussLimit.v`. The crux (no repo DCT, hand-rolled):
+  `exp_sub_pow_bound` (uniform `e^{−t}−(1−t/N)^N ≤ t²/(N−t)`), `compact_cv` (`∫_a^b tnk_N → ∫_a^b gnk`), the
+  sub-integral bounds `betaI_sub_le` / `gnk_sub_le_Gam` (partial ≤ improper limit), `upper_bound`
+  (`N^s betaI ≤ Gam`), `lower_bound` (`∫_d^A tnk ≤ N^s betaI`), `Gam_approx`, assembled by an ε/2 squeeze into
+  ```
+  gauss_limit      : Un_cv (fun N => N^s * betaI s N) (Gam s)
+  gauss_limit_fact : Un_cv (fun N => N^s * (N! / prodshift s (S N))) (Gam s)
+  ```
+- **C (Weierstrass assembly + complex lift + `GammaC≠0`) — REMAINING** → `GammaWeierstrass.v` (see below).
+
+## Target (achieved)
 
 ```
-gauss_limit : forall s (Hs : 0 < s),
-  Un_cv (fun N => Rpower (INR N) s * INR (fact N) / prodshift s (S N)) (Gam s Hs).
+gauss_limit_fact : forall s (Hs : 0 < s),
+  Un_cv (fun N => Rpower (INR N) s * (INR (fact N) / prodshift s (S N))) (Gam s Hs).
 ```
 i.e. `Gam(s) = lim_N  N^s · N! / (s(s+1)···(s+N))`.  (`prodshift s (S N) = s(s+1)···(s+N)`,
 `GammaExtend.v:46`; `prodshift_shift : s·prodshift(s+1)N = prodshift s (S N)`, `:49`.)
