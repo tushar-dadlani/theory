@@ -29,12 +29,16 @@ short assembly (C) that closes the goal.
       has `dev = |wcf z k − 1| = O(1/k²)` (ring identity `−w²+(1+w)Rem` + `CexpRemainder.Cexpf_remainder`,
       summable via a `1/k²` telescoping bound), so `CInfProd.Pprod_cv` gives `Wc z`; `Pc z = z·e^{γz}·Wc z`
       with the anchor `Pc_agree : Pc (RtoC s) = RtoC (Pval s Hs)`.
-    - **C.3.2 (product holomorphy) — REMAINING, the hard brick**: `is_Cderiv Wc z (Wc z · S z)` where
-      `S z = ∑ −z/(k(k+z))` is the log-derivative sum. Toolkit survey confirms **no** "uniform limit of
-      holomorphic ⇒ holomorphic" lemma and **no** complex `Log` exist in the repo, so this must be a bespoke
-      product difference-quotient modeled on `CZetaHolo2.sum_deriv2` (finite-product derivative via
-      `Cpw_deriv`/`Cderiv_mul` — confirmed available — then a uniform `O(1/k²)` tail + second-order remainder
-      bound for the limit). This is a large greenfield analytic build (~several hundred lines).
+    - **C.3.2 (product holomorphy) — IN PROGRESS**:
+      - **enabling lemma DONE** (`CexpfDeriv.v`): `Cexpf_deriv : is_Cderiv Cexpf w (Cexpf w)` — proven directly
+        from `Cexpf_remainder` + the addition formula (the survey thought this didn't exist); plus the chain
+        rule `Cexpf_comp_deriv`.
+      - **factor + finite-product holomorphy DONE** (`GammaCHolo.v`): `wfac_deriv` (each `(1+w/n)e^{−w/n}`
+        holomorphic, via `Cderiv_mul_affine`/`Cderiv_comp_affine`), `Pprod_wcf_holo` (every finite partial
+        product `∏_{k=1}^N wcf_k` holomorphic, by induction with `Cderiv_mul`).
+      - **REMAINING, the hard brick**: holomorphy of the *infinite limit* `is_Cderiv Wc z (Wc z · S z)`,
+        `S z = ∑ −z/(k(k+z))`. No "uniform limit ⇒ holomorphic" lemma exists, so a bespoke uniform-tail
+        difference-quotient (`sum_deriv2`-style: `S` converges `O(1/k²)`, uniform tail + 2nd-order remainder).
     - **C.3.3 (reach + discharge) — REMAINING, easy once C.3.2 lands**: `F z = GammaC z · Pc z − C1` is
       holomorphic (`Cderiv_mul` + `GammaC_entire` + C.3.2), vanishes on `ℝ₊` (`Pc_agree` + `GammaC_agree` +
       `real_weierstrass`), so `CWalk.reach` gives `GammaC·Pc = 1` on `{Re>0}`, hence `GammaC ≠ 0`; specialize
