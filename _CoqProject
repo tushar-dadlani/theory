@@ -1032,3 +1032,4 @@ spectral-theory/CZetaStripId.v
 spectral-theory/CSine.v
 spectral-theory/CInfProd.v
 spectral-theory/GammaGaussBounds.v
+spectral-theory/GammaGaussLimit.v
