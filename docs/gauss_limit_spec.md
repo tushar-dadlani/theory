@@ -24,8 +24,21 @@ short assembly (C) that closes the goal.
   - **C.2 (real identity) — DONE**: `prodshift_RQ`, `RQ_Wprod`, `recip_G_eq`, then along `N = S n`
     `real_weierstrass : Gam s · Pval = 1` (`Pval = s·e^{Winf}·e^{sγ}`), giving `Gam_ne0`, `Gam_pos : 0 < Gam s`.
     The Euler–Mascheroni `γ` now appears on the archimedean (Γ) side, unconditionally.
-  - **C.3 (complex lift + discharge) — REMAINING**: `GammaC(z) ≠ 0` on `{Re>0}` and discharge
-    `GammaC(z/2)≠0` in `CZetaStripId.XiC_zero_iff_zetaC_zero`.
+  - **C.3 (complex lift + discharge) — IN PROGRESS** → `GammaCWeierstrass.v`:
+    - **C.3.1 (complex product + agreement) — DONE**: the complex factor `wcf z k = (1+z/k)e^{−z/k}`
+      has `dev = |wcf z k − 1| = O(1/k²)` (ring identity `−w²+(1+w)Rem` + `CexpRemainder.Cexpf_remainder`,
+      summable via a `1/k²` telescoping bound), so `CInfProd.Pprod_cv` gives `Wc z`; `Pc z = z·e^{γz}·Wc z`
+      with the anchor `Pc_agree : Pc (RtoC s) = RtoC (Pval s Hs)`.
+    - **C.3.2 (product holomorphy) — REMAINING, the hard brick**: `is_Cderiv Wc z (Wc z · S z)` where
+      `S z = ∑ −z/(k(k+z))` is the log-derivative sum. Toolkit survey confirms **no** "uniform limit of
+      holomorphic ⇒ holomorphic" lemma and **no** complex `Log` exist in the repo, so this must be a bespoke
+      product difference-quotient modeled on `CZetaHolo2.sum_deriv2` (finite-product derivative via
+      `Cpw_deriv`/`Cderiv_mul` — confirmed available — then a uniform `O(1/k²)` tail + second-order remainder
+      bound for the limit). This is a large greenfield analytic build (~several hundred lines).
+    - **C.3.3 (reach + discharge) — REMAINING, easy once C.3.2 lands**: `F z = GammaC z · Pc z − C1` is
+      holomorphic (`Cderiv_mul` + `GammaC_entire` + C.3.2), vanishes on `ℝ₊` (`Pc_agree` + `GammaC_agree` +
+      `real_weierstrass`), so `CWalk.reach` gives `GammaC·Pc = 1` on `{Re>0}`, hence `GammaC ≠ 0`; specialize
+      at `halfz z` to discharge `CZetaStripId.XiC_zero_iff_zetaC_zero` / `ZetaStripConfinement.H_gamma`.
 
 ## Target (achieved)
 
