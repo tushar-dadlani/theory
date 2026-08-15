@@ -10,9 +10,9 @@
 (*  Axioms: standard classical-Reals only.                            *)
 (* ================================================================= *)
 
-From Stdlib Require Import Reals Rpower Lra Lia.
-Require Import GammaReal MellinElem ImproperCv0 RpowerZero ZetaContinuation
-        GammaFunction ContinuousCoV GammaExtend.
+From Stdlib Require Import Reals Rpower Lra Lia Factorial.
+Require Import GammaReal MellinElem ImproperCv0 ImproperCv1 RpowerZero ZetaContinuation
+        GammaFunction ContinuousCoV GammaExtend GammaRecur.
 Open Scope R_scope.
 
 (* ----------------------------------------------------------------- *)
@@ -113,4 +113,144 @@ Proof.
     + unfold bnk. replace (s + 1 - 1) with s by ring. field. lra.
 Qed.
 
-Print Assumptions Fanti_deriv.
+(* ----------------------------------------------------------------- *)
+(*  the IBP recursion  betaI s (S N) = (S N / s) * betaI (s+1) N       *)
+(* ----------------------------------------------------------------- *)
+Lemma betaI_recur : forall s N (Hs : 0 < s) (Hs1 : 0 < s + 1),
+  betaI s (S N) Hs = INR (S N) / s * betaI (s + 1) N Hs1.
+Proof.
+  intros s N Hs Hs1.
+  assert (Hsne : s <> 0) by lra.
+  set (ek := fun k => / (1 + INR k)).
+  assert (Hp : forall k, 0 < 1 + INR k) by (intro k; pose proof (pos_INR k); lra).
+  assert (Hek0 : forall k, 0 < ek k) by (intro k; unfold ek; apply Rinv_0_lt_compat; apply Hp).
+  assert (Hek1 : forall k, ek k <= 1)
+    by (intro k; unfold ek; apply inv_le_1; pose proof (pos_INR k); lra).
+  assert (Hek_cv : Un_cv ek 0)
+    by (unfold ek; apply Un_cv_recip_0; [ intro k; apply Hp | apply cv_infty_1_INR ]).
+  set (Mint := fun k => rint01 (bnk s (S N)) (Hf_bnk s (S N)) (ek k)).
+  set (Nint := fun k => rint01 (bnk (s + 1) N) (Hf_bnk (s + 1) N) (ek k)).
+  assert (HMcv : Un_cv Mint (betaI s (S N) Hs))
+    by exact (betaI_spec s (S N) Hs ek Hek0 Hek1 Hek_cv).
+  assert (HNcv : Un_cv Nint (betaI (s + 1) N Hs1))
+    by exact (betaI_spec (s + 1) N Hs1 ek Hek0 Hek1 Hek_cv).
+  set (l := - (INR (S N) / s)).
+  assert (Hibp : forall k, Mint k + l * Nint k
+                 = - (/ s * (Rpower (ek k) s * (1 - ek k) ^ (S N)))).
+  { intro k.
+    set (g := fun u => bnk s (S N) u + l * bnk (s + 1) N u).
+    set (F := fun u => / s * (Rpower u s * (1 - u) ^ (S N))).
+    assert (Hgc : forall u, ek k <= u <= 1 -> continuity_pt g u).
+    { intros u [Hu1 Hu2]. assert (0 < u) by (pose proof (Hek0 k); lra). unfold g.
+      apply continuity_pt_plus;
+        [ apply cont_bnk; assumption
+        | apply continuity_pt_scal; apply cont_bnk; assumption ]. }
+    assert (Hint : Riemann_integrable g (ek k) 1)
+      by (apply continuity_implies_RiemannInt; [ apply Hek1 | exact Hgc ]).
+    assert (Hanti : antiderivative g F (ek k) 1).
+    { split; [ | apply Hek1 ]. intros u [Hu1 Hu2].
+      assert (Hupos : 0 < u) by (pose proof (Hek0 k); lra).
+      assert (Hd : derivable_pt_lim F u (g u)).
+      { unfold F, g, l. pose proof (Fanti_deriv s N u Hs Hupos) as HFa.
+        replace (bnk s (S N) u + - (INR (S N) / s) * bnk (s + 1) N u)
+          with (bnk s (S N) u - INR (S N) / s * bnk (s + 1) N u) by ring.
+        exact HFa. }
+      exists (exist (fun m => derivable_pt_lim F u m) (g u) Hd); reflexivity. }
+    assert (HFTC : RiemannInt Hint = F 1 - F (ek k))
+      by (apply (FTC_antideriv g F (ek k) 1 (Hek1 k) Hgc Hint Hanti)).
+    assert (Hlin : RiemannInt Hint = Mint k + l * Nint k).
+    { unfold Mint, Nint.
+      rewrite (rint01_val (bnk s (S N)) (Hf_bnk s (S N)) (ek k) (Hek0 k) (Hek1 k)).
+      rewrite (rint01_val (bnk (s + 1) N) (Hf_bnk (s + 1) N) (ek k) (Hek0 k) (Hek1 k)).
+      exact (RiemannInt_P13 (Hf_bnk s (S N) (ek k) 1 (Hek0 k) (Hek1 k))
+               (Hf_bnk (s + 1) N (ek k) 1 (Hek0 k) (Hek1 k)) Hint). }
+    assert (HF1 : F 1 = 0).
+    { unfold F. replace (1 - 1) with 0 by ring.
+      assert (H0N : (0:R) ^ (S N) = 0) by (simpl; ring). rewrite H0N. ring. }
+    rewrite Hlin in HFTC. rewrite HF1 in HFTC. rewrite HFTC. unfold F. ring. }
+  assert (Hbnd : Un_cv (fun k => Mint k + l * Nint k) 0).
+  { apply (Un_cv_ext (fun k => - (/ s * (Rpower (ek k) s * (1 - ek k) ^ (S N)))));
+      [ intro k; symmetry; apply Hibp | ].
+    replace 0 with (- 0) by ring. apply CV_opp.
+    replace 0 with (/ s * 0) by ring.
+    apply (CV_mult (fun _ => / s) (fun k => Rpower (ek k) s * (1 - ek k) ^ (S N))
+                   (/ s) 0); [ apply Un_cv_const | ].
+    (* Rpower ek s * (1-ek)^{S N} -> 0 : dominated by Rpower ek s -> 0 *)
+    apply (Un_cv_squeeze0 (fun k => Rpower (ek k) s * (1 - ek k) ^ (S N))
+                          (fun k => Rpower (ek k) s)).
+    - exists 0%nat; intros p _; split.
+      + apply Rmult_le_pos; [ left; unfold Rpower; apply exp_pos | apply pow_le;
+          pose proof (Hek1 p); lra ].
+      + rewrite <- (Rmult_1_r (Rpower (ek p) s)) at 2.
+        apply Rmult_le_compat_l; [ left; unfold Rpower; apply exp_pos | ].
+        apply Rle_trans with (1 ^ (S N));
+          [ apply pow_incr; pose proof (Hek0 p); pose proof (Hek1 p); lra
+          | rewrite pow1; apply Rle_refl ].
+    - apply Rpower_pos_cv0; [ exact Hs | exact Hek0 | exact Hek_cv ]. }
+  assert (Hlim : Un_cv (fun k => Mint k + l * Nint k)
+                   (betaI s (S N) Hs + l * betaI (s + 1) N Hs1)).
+  { apply CV_plus; [ exact HMcv | ].
+    apply (CV_mult (fun _ => l) Nint l (betaI (s + 1) N Hs1));
+      [ apply Un_cv_const | exact HNcv ]. }
+  assert (Heq0 : betaI s (S N) Hs + l * betaI (s + 1) N Hs1 = 0)
+    by (apply (UL_sequence (fun k => Mint k + l * Nint k)); [ exact Hlim | exact Hbnd ]).
+  apply (Rplus_eq_reg_r (l * betaI (s + 1) N Hs1)).
+  rewrite Heq0. unfold l. ring.
+Qed.
+
+Lemma prodshift_pos : forall s N, 0 < s -> 0 < prodshift s N.
+Proof.
+  intros s N Hs. induction N as [| N IH]; simpl.
+  - lra.
+  - apply Rmult_lt_0_compat; [ pose proof (pos_INR N); lra | exact IH ].
+Qed.
+
+(* ----------------------------------------------------------------- *)
+(*  the closed form  betaI s N = N! / (s(s+1)...(s+N))                *)
+(* ----------------------------------------------------------------- *)
+Lemma betaI_eq : forall N s (Hs : 0 < s),
+  betaI s N Hs = INR (fact N) / prodshift s (S N).
+Proof.
+  induction N as [| N IH]; intros s Hs.
+  - (* base: betaI s 0 = 1/s *)
+    assert (Hb : betaI s 0 Hs = / s).
+    { set (ek := fun k => / (1 + INR k)).
+      assert (Hp : forall k, 0 < 1 + INR k) by (intro k; pose proof (pos_INR k); lra).
+      assert (Hek0 : forall k, 0 < ek k)
+        by (intro k; unfold ek; apply Rinv_0_lt_compat; apply Hp).
+      assert (Hek1 : forall k, ek k <= 1)
+        by (intro k; unfold ek; apply inv_le_1; pose proof (pos_INR k); lra).
+      assert (Hek_cv : Un_cv ek 0)
+        by (unfold ek; apply Un_cv_recip_0; [ intro k; apply Hp | apply cv_infty_1_INR ]).
+      apply (UL_sequence (fun k => rint01 (bnk s 0) (Hf_bnk s 0) (ek k))).
+      - exact (betaI_spec s 0 Hs ek Hek0 Hek1 Hek_cv).
+      - apply (Un_cv_ext (fun k => / s - / s * Rpower (ek k) s)).
+        + intro k. rewrite (rint01_val (bnk s 0) (Hf_bnk s 0) (ek k) (Hek0 k) (Hek1 k)).
+          rewrite (RiemannInt_P18 (Hf_bnk s 0 (ek k) 1 (Hek0 k) (Hek1 k))
+                     (rpow_ri s (ek k) 1 (Hek0 k) (Hek1 k)) (Hek1 k)).
+          * rewrite (rpow_pint s (ek k) (Hek0 k) (Hek1 k) (Rgt_not_eq _ _ Hs)), Rpower_base1.
+            ring.
+          * intros x [Hx1 Hx2]. unfold bnk. simpl. ring.
+        + assert (Hz : Un_cv (fun k => / s * Rpower (ek k) s) 0).
+          { replace 0 with (/ s * 0) by ring.
+            apply (CV_mult (fun _ => / s) (fun k => Rpower (ek k) s) (/ s) 0);
+              [ apply Un_cv_const | apply Rpower_pos_cv0; [ exact Hs | exact Hek0 | exact Hek_cv ] ]. }
+          intros eps Heps. destruct (Hz eps Heps) as [Nn HN]. exists Nn. intros n Hn.
+          specialize (HN n Hn). unfold R_dist in *.
+          replace (/ s - / s * Rpower (ek n) s - / s)
+            with (- (/ s * Rpower (ek n) s - 0)) by ring.
+          rewrite Rabs_Ropp. exact HN. }
+    rewrite Hb. simpl. field. lra.
+  - assert (Hs1 : 0 < s + 1) by lra.
+    rewrite (betaI_recur s N Hs Hs1), (IH (s + 1) Hs1).
+    assert (Hfact : INR (fact (S N)) = INR (S N) * INR (fact N))
+      by (rewrite <- mult_INR; reflexivity).
+    assert (Hps : prodshift s (S (S N)) = s * prodshift (s + 1) (S N))
+      by (symmetry; apply prodshift_shift).
+    rewrite Hfact, Hps.
+    assert (Hpp : 0 < prodshift (s + 1) (S N)) by (apply prodshift_pos; lra).
+    field. split; apply Rgt_not_eq; lra.
+Qed.
+
+Print Assumptions betaI_eq.
+
