@@ -472,3 +472,64 @@ Qed.
 
 Print Assumptions one_minus_pow_cv.
 
+(* ================================================================= *)
+(*  Content B: the convergence interchange   N^s betaI s N -> Gam s     *)
+(* ================================================================= *)
+
+(* general change of variables on a compact [a,b] subset (0,N] *)
+Lemma cov_general : forall s N a b (Hs : 0 < s) (HN : (1 <= N)%nat)
+    (Ha : 0 < a) (Hab : a <= b) (HbN : b <= INR N)
+    (Ha' : 0 < a / INR N) (Hab' : a / INR N <= b / INR N),
+  RiemannInt (Hf_tnk s N a b Ha Hab)
+  = Rpower (INR N) s * RiemannInt (Hf_bnk s N (a / INR N) (b / INR N) Ha' Hab').
+Proof.
+  intros s N a b Hs HN Ha Hab HbN Ha' Hab'.
+  assert (HNN : 0 < INR N) by (apply lt_0_INR; lia).
+  set (g := fun t => t / INR N).
+  set (g' := fun _ : R => / INR N).
+  set (f := fun u => Rpower (INR N) s * bnk s N u).
+  assert (Hgd : forall t, a <= t <= b -> derivable_pt_lim g t (g' t)).
+  { intros t0 _. unfold g, g'. replace (/ INR N) with (1 * / INR N + t0 * 0) by ring.
+    apply (derivable_pt_lim_mult (fun t => t) (fun _ => / INR N) t0);
+      [ apply derivable_pt_lim_id | apply derivable_pt_lim_const ]. }
+  assert (Hg'c : forall t, a <= t <= b -> continuity_pt g' t)
+    by (intros; unfold g'; apply continuity_pt_const; unfold constant; reflexivity).
+  assert (Hga : g a = a / INR N) by reflexivity.
+  assert (Hgb : g b = b / INR N) by reflexivity.
+  assert (Hmap : forall t, a <= t <= b -> g a <= g t <= g b).
+  { intros t [Ht1 Ht2]. unfold g. split; apply Rmult_le_compat_r;
+      solve [ left; apply Rinv_0_lt_compat; exact HNN | lra ]. }
+  assert (Hfc : forall u, g a <= u <= g b -> continuity_pt f u).
+  { intros u Hu. rewrite Hga, Hgb in Hu. unfold f. apply continuity_pt_mult;
+      [ apply continuity_pt_const; unfold constant; reflexivity
+      | apply cont_bnk;
+        assert (0 < a / INR N) by exact Ha'; lra ]. }
+  assert (HfL : forall t, a <= t <= b -> f (g t) * g' t = tnk s N t).
+  { intros t [Ht1 Ht2]. unfold f, g, g', bnk, tnk.
+    rewrite <- (rpow_rescale s (INR N) t HNN ltac:(lra)). ring. }
+  assert (prL : Riemann_integrable (fun t => f (g t) * g' t) a b).
+  { apply continuity_implies_RiemannInt; [ exact Hab | ].
+    intros t Ht. apply continuity_pt_mult.
+    - apply (continuity_pt_comp g f t).
+      + apply derivable_continuous_pt; exists (g' t); apply Hgd; exact Ht.
+      + apply Hfc; apply Hmap; exact Ht.
+    - apply Hg'c; exact Ht. }
+  assert (prR : Riemann_integrable f (g a) (g b))
+    by (apply continuity_implies_RiemannInt; [ rewrite Hga, Hgb; exact Hab' | exact Hfc ]).
+  assert (prR1 : Riemann_integrable f (a / INR N) (b / INR N)).
+  { unfold f. apply continuity_implies_RiemannInt; [ exact Hab' | ].
+    intros u Hu. apply continuity_pt_mult;
+      [ apply continuity_pt_const; unfold constant; reflexivity | apply cont_bnk; lra ]. }
+  transitivity (RiemannInt prL).
+  { apply (RiemannInt_P18 (Hf_tnk s N a b Ha Hab) prL Hab
+             (fun t Ht => eq_sym (HfL t (conj (Rlt_le _ _ (proj1 Ht)) (Rlt_le _ _ (proj2 Ht)))))). }
+  transitivity (RiemannInt prR).
+  { exact (cov_local g g' f a b Hab Hgd Hg'c Hmap Hfc prL prR). }
+  transitivity (RiemannInt prR1).
+  { apply (RiemannInt_P5 prR prR1). }
+  exact (RiemannInt_scal_cont (bnk s N) (Rpower (INR N) s) (a / INR N) (b / INR N) Hab'
+           (fun u Hu => cont_bnk s N u ltac:(lra)) (Hf_bnk s N (a / INR N) (b / INR N) Ha' Hab') prR1).
+Qed.
+
+Print Assumptions cov_general.
+
