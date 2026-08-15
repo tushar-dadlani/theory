@@ -134,7 +134,10 @@ both sides of the `R × A_f` split.
   `U_χ = Dmul χ`, commuting with `D`, equivariant on modes with phase `χ(p)`, the symbols forming a group
   (`sym_compose`/`sym_trivial`), and the twisted partition function `Tr(U_χ e^{−βD}) = ∑ χ(n) n^{−β}` — `ζ` at
   `χ=1`, an `L(β,χ)` otherwise — converging for `β>1` (`twisted_partition_is_L`, via `Rseries_abs_cv`).
-- **Larger, remaining:** a *concrete* nontrivial Dirichlet character instantiated from `(Z/m)^×`
-  (`ZmodUnitsCyclic`/`LegendreSymbol`) with its multiplicativity, and the full KMS/phase-transition statement
-  of the crossed product; the √-normalised CCR (`[a_p, a_p†] = 1`) and full adjoint structure with ℓ²
-  reindexing; and — the deep gap — an operator whose *spectrum* is the ζ-zeros (`hilbert_polya_map §5`).
+- **Done:** `Ell2Chi4.chi4_symmetry` / `dirichlet_beta_converges` — a *concrete* non-principal character: the
+  real primitive Dirichlet character `χ₄` mod 4 (`+1,−1,0` on `n≡1,3,0/2 (mod 4)`), proven completely
+  multiplicative + unimodular, instantiating the symmetry to a non-vacuous one whose twisted partition function
+  is the **Dirichlet beta** `Tr(U_{χ₄} e^{−βD}) = ∑ χ₄(n) n^{−β} = β(β) = 1 − 3^{−β} + 5^{−β} − …`.
+- **Larger, remaining:** the full KMS/phase-transition statement of the crossed product; the √-normalised CCR
+  (`[a_p, a_p†] = 1`) and full adjoint structure with ℓ² reindexing; and — the deep gap — an operator whose
+  *spectrum* is the ζ-zeros (`hilbert_polya_map §5`).
