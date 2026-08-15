@@ -1042,3 +1042,4 @@ spectral-theory/GammaGaussBounds.v
 spectral-theory/GammaGaussLimit.v
 spectral-theory/GammaWeierstrass.v
 spectral-theory/GammaCWeierstrass.v
+spectral-theory/GammaCHolo.v
