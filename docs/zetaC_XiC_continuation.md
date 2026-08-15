@@ -55,3 +55,18 @@ limit at `1` — proven by a uniform-majorant ε/3 argument, `ellsum` being ζ's
   reflection / reciprocal-product needed to discharge it on the strip is **not present** and is named
   as the single remaining sub-fact — not asserted. The other prefactor factors (`½z`, `π^{−z/2}`,
   `z−1`) *are* proven nonzero.
+
+## Discharging `GammaC ≠ 0` on the strip — scoped, in progress
+
+The complex-side input is **built** (`CSine.v`): the entire complex sine `Csin`, `Csin(RtoC t)=RtoC(sin t)`,
+and `Csin(π w) ≠ 0` for `0<Re w<1`. With the identity-theorem machinery already in hand, `GammaC ≠ 0` on
+the strip reduces to the single **real** reflection lemma `Gam(s)·Gam(1−s) = π/sin(πs)` on `(0,1)`
+(then lift `g(z)=GammaC(z)·GammaC(1−z)·Csin(πz)` from the real axis to the strip; `g(1/2)=Gam(1/2)²≠0`).
+
+That real reflection is the load-bearing keystone, and a survey confirms **its entire supply chain is absent**:
+no reflection (real or complex), no Beta function, no sine/Gamma infinite product, no Fubini for improper
+integrals, no Hankel-contour representation. Each classical route is a dedicated foundational build:
+(a) `Beta = Γ·Γ/Γ` via Fubini + `∫₀^∞ v^{s−1}/(1+v) = π/sin(πs)`; (b) Weierstrass product (γ is available, but
+needs product convergence + the Gauss-limit = Euler-integral identity via dominated convergence); (c) the
+Hankel representation `1/Γ` entire. All are large; none admits a committable partial short of the whole
+lemma. **Status:** `Csin` done; the reflection keystone remains an open milestone.
