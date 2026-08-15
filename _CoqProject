@@ -870,6 +870,7 @@ spectral-theory/Ell2VMPartition.v
 spectral-theory/Ell2Fock.v
 spectral-theory/Ell2SpectralTriple.v
 spectral-theory/Ell2Symmetry.v
+spectral-theory/Ell2Chi4.v
 spectral-theory/CZetaDerivDirichlet.v
 spectral-theory/CListSum.v
 spectral-theory/CHyperbolaSwap.v
