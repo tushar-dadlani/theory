@@ -46,8 +46,17 @@ partition_function_is_zeta : forall b, 1 < b ->
 - `BerryKeatingH.v` — the `xp` Hamiltonian `H = qp+pq`(:27), `H_selfadj`(:29), vacuum `omega0`(:38),
   `omega0_H = 0`(:51).
 
-**No genuine Fock tower, no CCR/CAR on a completed many-body space, no coherent states.** Closest in spirit:
-`PrimonGas`+`LadderOps`; closest in rigour: `Ell2`+`Ell2Operator`.
+**(c) The bosonic Fock tower on `Ell2`** (`Ell2Fock.v`) — by unique factorisation the primon Fock space over
+the prime modes **is** `ℓ²(ℕ≥1)` itself (occupation vector `(k_p)` ↔ integer `∏ p^{k_p}` = basis vector `e_n`):
+- `Nop p = diag(v_p n)` — per-prime number/occupation operator, `Nop_eigen : N_p e_i = v_p(i)·e_i`;
+- `crea p : e_m ↦ e_{p·m}` (creation), `anni p : e_n ↦ e_{n/p}` (annihilation);
+- `anni p (crea p (e m)) = e m` (`a_p a_p† = I`, creation is an isometry); distinct modes commute
+  (`crea_crea_e`); vacuum `e_1` with `anni p (e 1) = 0` and `N_p(e 1) = 0`; all operators keep basis vectors in
+  `ℓ²`. Bundled in `primon_fock_tower`.
+
+No CCR/CAR on a *completed* many-body space, no √-normalised ladder / coherent states yet — the tower is the
+occupation-number (multiplicative-shift) representation on the single `Ell2`. Closest in spirit:
+`PrimonGas`+`LadderOps`; closest in rigour: `Ell2`+`Ell2Operator`+`Ell2Fock`.
 
 ## Dynamics (the flow)
 
@@ -113,6 +122,9 @@ both sides of the `R × A_f` split.
 ## What would make more of the link real (next steps)
 
 - **Done:** `Ell2Partition.partition_function_is_zeta` — `Tr(e^{−bH}) = ζ(b)`, `b>1`.
-- **Companion (in progress):** `Tr(D_Λ · e^{−bH}) = ∑ Λ(n) n^{−b} → −ζ'/ζ(b)` — the "prime-energy" observable.
-- **Larger:** the bosonic Fock tower over `Ell2` (occupation-number ℓ² over multi-indices `(k_p)` with genuine
-  `create`/`annihilate`/`number` + CCR); wiring the full NCG spectral triple (the `ncg` thesis milestone).
+- **Done:** `Ell2VMPartition.vm_partition_converges` — `Tr(D_Λ · e^{−bH}) = ∑ Λ(n) n^{−b} → −ζ'/ζ(b)`, `b>1`.
+- **Done:** `Ell2Fock.primon_fock_tower` — the bosonic Fock tower on `Ell2` (per-mode number/creation/
+  annihilation operators, `a_p a_p† = I`, commuting modes, vacuum `e_1`).
+- **Larger, remaining:** the √-normalised CCR (`[a_p, a_p†] = 1`) and adjoint structure as bounded/unbounded
+  operators with full ℓ² reindexing; wiring the full NCG spectral triple with the `Ẑ^×` symmetry (the `ncg`
+  thesis milestone); and — the deep gap — an operator whose *spectrum* is the ζ-zeros (`hilbert_polya_map §5`).
