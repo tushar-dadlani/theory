@@ -12,7 +12,7 @@
 
 From Stdlib Require Import Reals Rpower Lra Lia Factorial.
 Require Import GammaReal MellinElem ImproperCv0 ImproperCv1 RpowerZero ZetaContinuation
-        GammaFunction ContinuousCoV GammaExtend GammaRecur GammaGaussBounds.
+        GammaFunction ContinuousCoV GammaExtend GammaRecur GammaGaussBounds CImpZero.
 Open Scope R_scope.
 
 (* ----------------------------------------------------------------- *)
@@ -760,4 +760,101 @@ Proof.
 Qed.
 
 Print Assumptions compact_cv.
+
+(* ----------------------------------------------------------------- *)
+(*  sub-integral bounds :  a partial integral is <= the improper one   *)
+(* ----------------------------------------------------------------- *)
+
+Lemma gnk_int_nonneg : forall s a b (Ha : 0 < a) (Hab : a <= b),
+  0 <= RiemannInt (Hf_near s 1 a b Ha Hab).
+Proof.
+  intros s a b Ha Hab.
+  pose proof (@RiemannInt_P15 a b 0 (RiemannInt_P14 a b 0)) as H0.
+  apply Rle_trans with (RiemannInt (RiemannInt_P14 a b 0)).
+  - rewrite H0; ring_simplify; apply Rle_refl.
+  - apply RiemannInt_P19; [ exact Hab | intros x _; unfold fct_cte; apply gnk_nonneg ].
+Qed.
+
+(* int_a^b bnk <= betaI s N  for  0 < a <= b <= 1 *)
+Lemma betaI_sub_le : forall s N (Hs : 0 < s) a b (Ha : 0 < a) (Hab : a <= b) (Hb1 : b <= 1),
+  RiemannInt (Hf_bnk s N a b Ha Hab) <= betaI s N Hs.
+Proof.
+  intros s N Hs a b Ha Hab Hb1.
+  assert (Ha1 : a <= 1) by lra.
+  apply Rle_trans with (RiemannInt (Hf_bnk s N a 1 Ha Ha1)).
+  - assert (Hb : 0 < b) by lra.
+    pose proof (RiemannInt_P26 (Hf_bnk s N a b Ha Hab) (Hf_bnk s N b 1 Hb Hb1)
+                  (Hf_bnk s N a 1 Ha Ha1)) as H26.
+    assert (Hb10 : 0 <= RiemannInt (Hf_bnk s N b 1 Hb Hb1)).
+    { pose proof (@RiemannInt_P15 b 1 0 (RiemannInt_P14 b 1 0)) as H0.
+      apply Rle_trans with (RiemannInt (RiemannInt_P14 b 1 0)).
+      - rewrite H0; ring_simplify; apply Rle_refl.
+      - apply RiemannInt_P19; [ exact Hb1 | intros x [Hx0 Hx1]; unfold fct_cte;
+          apply bnk_nonneg; lra ]. }
+    lra.
+  - rewrite <- (rint01_val (bnk s N) (Hf_bnk s N) a Ha Ha1).
+    apply (rint01_le_improper (bnk s N) (Hf_bnk s N) (betaI s N Hs)
+             (betaI_spec s N Hs) (fun x Hx0 Hx1 => bnk_nonneg s N x Hx0 Hx1) a Ha Ha1).
+Qed.
+
+(* int_a^b (gnk s 1) <= Gam s   for  0 < a <= b   (split at the cut t = 1) *)
+Lemma gnk_sub_le_Gam : forall s (Hs : 0 < s) a b (Ha : 0 < a) (Hab : a <= b),
+  RiemannInt (Hf_near s 1 a b Ha Hab) <= Gam s Hs.
+Proof.
+  intros s Hs a b Ha Hab.
+  pose proof (gnear_pos s 1 Hs Rlt_0_1) as Hgnear0.
+  pose proof (gtail_pos s 1 Rlt_0_1) as Hgtail0.
+  assert (HGam : Gam s Hs = gnear s 1 Hs Rlt_0_1 + gtail s 1 Rlt_0_1)
+    by (unfold Gam, mellin; reflexivity).
+  (* SB1 : int_{a'}^1 gnk <= gnear   for 0 < a' <= 1 *)
+  assert (SB1 : forall a' (Ha' : 0 < a') (Ha'1 : a' <= 1),
+            RiemannInt (Hf_near s 1 a' 1 Ha' Ha'1) <= gnear s 1 Hs Rlt_0_1).
+  { intros a' Ha' Ha'1.
+    rewrite <- (rint01_val (gnk s 1) (Hf_near s 1) a' Ha' Ha'1).
+    apply (rint01_le_improper (gnk s 1) (Hf_near s 1) (gnear s 1 Hs Rlt_0_1)
+             (proj2_sig (gnear_sig s 1 Hs Rlt_0_1))
+             (fun x _ _ => gnk_nonneg s 1 x) a' Ha' Ha'1). }
+  (* SB2 : int_1^{b'} gnk <= gtail   for 1 <= b' *)
+  assert (SB2 : forall b' (H1b' : 1 <= b'),
+            RiemannInt (Hf_near s 1 1 b' Rlt_0_1 H1b') <= gtail s 1 Rlt_0_1).
+  { intros b' H1b'.
+    assert (Heqg : RiemannInt (Hf_near s 1 1 b' Rlt_0_1 H1b')
+                   = pint1 (gtk s 1) (gtk_int s 1) b').
+    { unfold pint1.
+      apply (RiemannInt_P18 (Hf_near s 1 1 b' Rlt_0_1 H1b') (gtk_int s 1 1 b') H1b').
+      intros x [Hx1 Hxb]. unfold gnk, gtk, clamp.
+      rewrite (Rmax_right 1 x) by lra. reflexivity. }
+    rewrite Heqg.
+    apply (pint1_le_improper (gtk s 1) (gtk_int s 1) (gtail s 1 Rlt_0_1)
+             (proj2_sig (gtail_sig s 1 Rlt_0_1))
+             (fun x _ => gtk_nonneg s 1 x) b' H1b'). }
+  destruct (Rle_lt_dec b 1) as [Hb1 | Hb1].
+  - (* b <= 1 *)
+    assert (Ha1 : a <= 1) by lra.
+    apply Rle_trans with (RiemannInt (Hf_near s 1 a 1 Ha Ha1)).
+    + assert (Hb : 0 < b) by lra.
+      pose proof (RiemannInt_P26 (Hf_near s 1 a b Ha Hab) (Hf_near s 1 b 1 Hb Hb1)
+                    (Hf_near s 1 a 1 Ha Ha1)) as H26.
+      pose proof (gnk_int_nonneg s b 1 Hb Hb1) as Hb10. lra.
+    + apply Rle_trans with (gnear s 1 Hs Rlt_0_1);
+        [ apply (SB1 a Ha Ha1) | rewrite HGam; lra ].
+  - destruct (Rle_lt_dec a 1) as [Ha1 | Ha1].
+    + (* a <= 1 < b : split at 1 *)
+      assert (H1b : 1 <= b) by lra.
+      pose proof (RiemannInt_P26 (Hf_near s 1 a 1 Ha Ha1) (Hf_near s 1 1 b Rlt_0_1 H1b)
+                    (Hf_near s 1 a b Ha Hab)) as H26.
+      pose proof (SB1 a Ha Ha1) as HS1. pose proof (SB2 b H1b) as HS2.
+      rewrite HGam; lra.
+    + (* 1 < a <= b *)
+      assert (H1a : 1 <= a) by lra.
+      assert (H1b : 1 <= b) by lra.
+      apply Rle_trans with (RiemannInt (Hf_near s 1 1 b Rlt_0_1 H1b)).
+      * pose proof (RiemannInt_P26 (Hf_near s 1 1 a Rlt_0_1 H1a) (Hf_near s 1 a b Ha Hab)
+                      (Hf_near s 1 1 b Rlt_0_1 H1b)) as H26.
+        pose proof (gnk_int_nonneg s 1 a Rlt_0_1 H1a) as H1a0. lra.
+      * apply Rle_trans with (gtail s 1 Rlt_0_1);
+          [ apply (SB2 b H1b) | rewrite HGam; lra ].
+Qed.
+
+Print Assumptions gnk_sub_le_Gam.
 
