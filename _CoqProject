@@ -753,6 +753,7 @@ spectral-theory/CDeriv.v
 spectral-theory/CDerivLine.v
 spectral-theory/CDeriv2.v
 spectral-theory/CexpRemainder.v
+spectral-theory/CexpfDeriv.v
 spectral-theory/CImproperIntegral.v
 spectral-theory/ThetaTailEntire.v
 spectral-theory/RiemannXiEntire.v
