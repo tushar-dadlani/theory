@@ -125,6 +125,11 @@ both sides of the `R × A_f` split.
 - **Done:** `Ell2VMPartition.vm_partition_converges` — `Tr(D_Λ · e^{−bH}) = ∑ Λ(n) n^{−b} → −ζ'/ζ(b)`, `b>1`.
 - **Done:** `Ell2Fock.primon_fock_tower` — the bosonic Fock tower on `Ell2` (per-mode number/creation/
   annihilation operators, `a_p a_p† = I`, commuting modes, vacuum `e_1`).
-- **Larger, remaining:** the √-normalised CCR (`[a_p, a_p†] = 1`) and adjoint structure as bounded/unbounded
-  operators with full ℓ² reindexing; wiring the full NCG spectral triple with the `Ẑ^×` symmetry (the `ncg`
-  thesis milestone); and — the deep gap — an operator whose *spectrum* is the ζ-zeros (`hilbert_polya_map §5`).
+- **Done:** `Ell2SpectralTriple.primon_spectral_triple` — the Bost–Connes spectral triple `(A, H, D)`:
+  `H = Ell2`, `D = diag(log n)` the Dirac/energy operator, the commutative core `Dmul a` commuting with `D`,
+  the bounded-commutator/derivation axiom `[D, a_p†] = (log p)·a_p†`, and `Tr(e^{−βD}) = ζ(β)`. This is the
+  `(A,H,D)` core the `docs/ncg_monoid_algebra_thesis.md` flagged as the missing construction.
+- **Larger, remaining:** the `Ẑ^×` profinite-symmetry action (from `ProfiniteCRT`/cyclic-units) and the
+  KMS/phase-transition statement of the crossed product; the √-normalised CCR (`[a_p, a_p†] = 1`) and full
+  adjoint structure with ℓ² reindexing; and — the deep gap — an operator whose *spectrum* is the ζ-zeros
+  (`hilbert_polya_map §5`).
