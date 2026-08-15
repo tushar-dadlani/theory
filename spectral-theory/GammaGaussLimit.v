@@ -533,3 +533,61 @@ Qed.
 
 Print Assumptions cov_general.
 
+Lemma exp_le : forall x y, x <= y -> exp x <= exp y.
+Proof.
+  intros x y H. destruct (Rle_lt_or_eq_dec x y H) as [Hlt | Heq];
+    [ left; apply exp_increasing; exact Hlt | rewrite Heq; apply Rle_refl ].
+Qed.
+
+(* uniform bound:  0 <= e^{-t} - (1-t/N)^N <= t^2/(N-t)  *)
+Lemma exp_sub_pow_bound : forall t N, 0 < t -> t < INR N ->
+  exp (- t) - (1 - t / INR N) ^ N <= t * t / (INR N - t).
+Proof.
+  intros t N Ht HtN.
+  assert (HNN : 0 < INR N) by lra.
+  assert (Hx1 : t / INR N < 1).
+  { apply (Rmult_lt_reg_r (INR N)); [ lra | ].
+    replace (t / INR N * INR N) with t by (field; lra). lra. }
+  assert (H1x : 0 < 1 - t / INR N) by lra.
+  assert (Hpow : (1 - t / INR N) ^ N = exp (INR N * ln (1 - t / INR N))).
+  { rewrite <- (exp_ln (1 - t / INR N) H1x) at 1. rewrite exp_pow_nat. f_equal. ring. }
+  rewrite Hpow.
+  set (x := t / INR N).
+  assert (HNx : INR N * x = t) by (unfold x; field; lra).
+  assert (Hxne : 1 - x <> 0) by (unfold x; apply Rgt_not_eq; lra).
+  assert (HNne : INR N <> 0) by (apply Rgt_not_eq; lra).
+  assert (Htne : INR N - t <> 0) by (apply Rgt_not_eq; lra).
+  assert (Hlb : - t - t * t / (INR N - t) <= INR N * ln (1 - x)).
+  { assert (H1x' : 0 < 1 - x) by (unfold x; lra).
+    assert (Hln : - (x / (1 - x)) <= ln (1 - x)).
+    { pose proof (ln_le_x1 (/ (1 - x)) (Rinv_0_lt_compat _ H1x')) as H.
+      rewrite ln_Rinv in H by exact H1x'.
+      assert (Heq2 : / (1 - x) - 1 = x / (1 - x)) by (field; exact Hxne).
+      rewrite Heq2 in H. lra. }
+    apply Rle_trans with (INR N * (- (x / (1 - x)))).
+    - assert (Heq : INR N * (- (x / (1 - x))) = - (t / (1 - x)))
+        by (rewrite <- HNx; field; exact Hxne).
+      assert (Ht1x : t / (1 - x) = t + t * t / (INR N - t)).
+      { assert (H1xe : 1 - x = (INR N - t) / INR N) by (unfold x; field; exact HNne).
+        rewrite H1xe. field; split; assumption. }
+      rewrite Heq, Ht1x. lra.
+    - apply Rmult_le_compat_l; [ lra | exact Hln ]. }
+  assert (Hge : exp (- t) * exp (- (t * t / (INR N - t))) <= exp (INR N * ln (1 - x)))
+    by (rewrite <- exp_plus; apply exp_le; lra).
+  assert (Hexp1 : exp (- t) <= 1) by (rewrite <- exp_0; apply exp_le; lra).
+  assert (H1e : 1 - exp (- (t * t / (INR N - t))) <= t * t / (INR N - t))
+    by (pose proof (exp_ineq1_le (- (t * t / (INR N - t)))); lra).
+  assert (He2 : 0 <= 1 - exp (- (t * t / (INR N - t)))).
+  { assert (exp (- (t * t / (INR N - t))) <= 1)
+      by (rewrite <- exp_0; apply exp_le; apply Ropp_le_cancel; rewrite Ropp_involutive, Ropp_0;
+          apply Rle_mult_inv_pos; [ nra | lra ]). lra. }
+  apply Rle_trans with (exp (- t) - exp (- t) * exp (- (t * t / (INR N - t)))).
+  - apply Rplus_le_compat_l, Ropp_le_contravar. exact Hge.
+  - replace (exp (- t) - exp (- t) * exp (- (t * t / (INR N - t))))
+      with (exp (- t) * (1 - exp (- (t * t / (INR N - t))))) by ring.
+    apply Rle_trans with (1 * (t * t / (INR N - t))); [ | lra ].
+    apply Rmult_le_compat; [ left; apply exp_pos | exact He2 | exact Hexp1 | exact H1e ].
+Qed.
+
+Print Assumptions exp_sub_pow_bound.
+
