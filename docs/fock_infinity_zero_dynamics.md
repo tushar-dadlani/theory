@@ -129,7 +129,12 @@ both sides of the `R × A_f` split.
   `H = Ell2`, `D = diag(log n)` the Dirac/energy operator, the commutative core `Dmul a` commuting with `D`,
   the bounded-commutator/derivation axiom `[D, a_p†] = (log p)·a_p†`, and `Tr(e^{−βD}) = ζ(β)`. This is the
   `(A,H,D)` core the `docs/ncg_monoid_algebra_thesis.md` flagged as the missing construction.
-- **Larger, remaining:** the `Ẑ^×` profinite-symmetry action (from `ProfiniteCRT`/cyclic-units) and the
-  KMS/phase-transition statement of the crossed product; the √-normalised CCR (`[a_p, a_p†] = 1`) and full
-  adjoint structure with ℓ² reindexing; and — the deep gap — an operator whose *spectrum* is the ζ-zeros
-  (`hilbert_polya_map §5`).
+- **Done:** `Ell2Symmetry.character_symmetry` — the `Ẑ^×` character symmetry: a completely-multiplicative
+  unimodular symbol `χ` (a Dirichlet character = character of `(Z/m)^×`, the Pontryagin dual of `Ẑ^×`) acts by
+  `U_χ = Dmul χ`, commuting with `D`, equivariant on modes with phase `χ(p)`, the symbols forming a group
+  (`sym_compose`/`sym_trivial`), and the twisted partition function `Tr(U_χ e^{−βD}) = ∑ χ(n) n^{−β}` — `ζ` at
+  `χ=1`, an `L(β,χ)` otherwise — converging for `β>1` (`twisted_partition_is_L`, via `Rseries_abs_cv`).
+- **Larger, remaining:** a *concrete* nontrivial Dirichlet character instantiated from `(Z/m)^×`
+  (`ZmodUnitsCyclic`/`LegendreSymbol`) with its multiplicativity, and the full KMS/phase-transition statement
+  of the crossed product; the √-normalised CCR (`[a_p, a_p†] = 1`) and full adjoint structure with ℓ²
+  reindexing; and — the deep gap — an operator whose *spectrum* is the ζ-zeros (`hilbert_polya_map §5`).
