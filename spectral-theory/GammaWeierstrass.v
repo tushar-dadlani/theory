@@ -194,6 +194,117 @@ Proof.
   apply (continuity_seq exp LW L); [ apply derivable_continuous, derivable_exp | exact HL ].
 Qed.
 
-Print Assumptions Wprod_cv.
+(* ----------------------------------------------------------------- *)
+(*  the regrouping :  1/G_N = s * Wprod_N * exp(s (H_N - ln N))         *)
+(* ----------------------------------------------------------------- *)
+
+(* prodshift s (S N) = s(s+1)...(s+N) = s * N! * prod_{k=1}^N (1+s/k) *)
+Lemma prodshift_RQ : forall N, prodshift s (S N) = s * INR (fact N) * RQ N.
+Proof.
+  induction N as [| N IH].
+  - simpl. ring.
+  - change (prodshift s (S (S N))) with ((s + INR (S N)) * prodshift s (S N)).
+    rewrite IH. change (RQ (S N)) with (RQ N * rq (S N)). unfold rq.
+    replace (fact (S N)) with (S N * fact N)%nat by reflexivity.
+    rewrite mult_INR. field. apply Rgt_not_eq, Snpos.
+Qed.
+
+(* the e^{-s/k} convergence factors regroup against exp(s H_N) *)
+Lemma wq_rq_exp : forall n, wq (S n) * exp (s / INR (S n)) = rq (S n).
+Proof.
+  intro n. unfold wq, rq. rewrite Rmult_assoc, <- exp_plus.
+  replace (- (s / INR (S n)) + s / INR (S n)) with 0 by ring.
+  rewrite exp_0. ring.
+Qed.
+
+(* prod_{k=1}^N (1+s/k) = Wprod_N * exp(s H_N) *)
+Lemma RQ_Wprod : forall N, RQ N = Wprod N * exp (s * Harm N).
+Proof.
+  induction N as [| N IH].
+  - change (RQ 0) with 1. change (Wprod 0) with 1.
+    assert (Harm 0 = 0) by reflexivity. rewrite H, Rmult_0_r, exp_0. ring.
+  - change (RQ (S N)) with (RQ N * rq (S N)).
+    change (Wprod (S N)) with (Wprod N * wq (S N)).
+    rewrite IH, Harm_rec.
+    replace (s * (Harm N + / INR (S N))) with (s * Harm N + s / INR (S N))
+      by (unfold Rdiv; ring).
+    rewrite exp_plus, <- (wq_rq_exp N). ring.
+Qed.
+
+Definition G (N : nat) : R := Rpower (INR N) s * (INR (fact N) / prodshift s (S N)).
+Definition recipG (N : nat) : R := prodshift s (S N) / (Rpower (INR N) s * INR (fact N)).
+
+Lemma recip_G_eq : forall N, (1 <= N)%nat ->
+  recipG N = s * Wprod N * exp (s * gseq N).
+Proof.
+  intros N HN. assert (HNN : 0 < INR N) by (apply lt_0_INR; lia).
+  unfold recipG. rewrite (prodshift_RQ N), (RQ_Wprod N). unfold gseq.
+  replace (s * (Harm N - ln (INR N))) with (s * Harm N + - (s * ln (INR N))) by ring.
+  rewrite exp_plus, exp_Ropp.
+  assert (HRp : Rpower (INR N) s = exp (s * ln (INR N))) by reflexivity.
+  rewrite HRp. field.
+  split; [ apply Rgt_not_eq, exp_pos | apply INR_fact_neq_0 ].
+Qed.
+
+Lemma GtimesRecip : forall N, G N * recipG N = 1.
+Proof.
+  intro N. unfold G, recipG. field.
+  repeat split;
+    solve [ apply Rgt_not_eq, prodshift_pos; exact Hs
+          | apply INR_fact_neq_0
+          | apply Rgt_not_eq, Rpower_pos ].
+Qed.
+
+Lemma Un_cv_shiftS : forall (u : nat -> R) l, Un_cv u l -> Un_cv (fun n => u (S n)) l.
+Proof.
+  intros u l H eps He. destruct (H eps He) as [N HN]. exists N. intros n Hn.
+  apply HN. lia.
+Qed.
+
+(* ----------------------------------------------------------------- *)
+(*  the real Weierstrass identity  Gam(s) * P(s) = 1                   *)
+(* ----------------------------------------------------------------- *)
+
+Definition Pval : R := s * exp Winf * exp (s * gamma).
+
+Theorem real_weierstrass : Gam s Hs * Pval = 1.
+Proof.
+  (* along the subsequence N = S n *)
+  assert (HG : Un_cv (fun n => G (S n)) (Gam s Hs)).
+  { apply Un_cv_shiftS. exact (gauss_limit_fact s Hs). }
+  assert (HsW : Un_cv (fun n => s * Wprod (S n)) (s * exp Winf)).
+  { apply (CV_mult (fun _ => s) (fun n => Wprod (S n)) s (exp Winf)
+             (Un_cv_const s) (Un_cv_shiftS Wprod (exp Winf) Wprod_cv)). }
+  assert (Hg : Un_cv (fun n => s * gseq (S n)) (s * gamma)).
+  { apply (CV_mult (fun _ => s) (fun n => gseq (S n)) s gamma
+             (Un_cv_const s) gamma_is_limit). }
+  assert (Hexpg : Un_cv (fun n => exp (s * gseq (S n))) (exp (s * gamma))).
+  { apply (continuity_seq exp (fun n => s * gseq (S n)) (s * gamma)
+             (derivable_continuous exp derivable_exp (s * gamma)) Hg). }
+  assert (Hrecip : Un_cv (fun n => recipG (S n)) Pval).
+  { unfold Pval. apply (Un_cv_ext (fun n => s * Wprod (S n) * exp (s * gseq (S n)))).
+    - intro n; symmetry; apply recip_G_eq; lia.
+    - apply (CV_mult (fun n => s * Wprod (S n)) (fun n => exp (s * gseq (S n)))
+               (s * exp Winf) (exp (s * gamma)) HsW Hexpg). }
+  (* G (S n) * recipG (S n) converges to  Gam s * Pval  and is constantly 1 *)
+  assert (Hprod : Un_cv (fun n => G (S n) * recipG (S n)) (Gam s Hs * Pval)).
+  { apply (CV_mult (fun n => G (S n)) (fun n => recipG (S n))
+             (Gam s Hs) Pval HG Hrecip). }
+  assert (Hone : Un_cv (fun n => G (S n) * recipG (S n)) 1).
+  { apply (Un_cv_ext (fun _ => 1)); [ intro n; symmetry; apply GtimesRecip | apply Un_cv_const ]. }
+  exact (UL_sequence _ _ _ Hprod Hone).
+Qed.
+
+Theorem Gam_ne0 : Gam s Hs <> 0.
+Proof.
+  intro Hc. pose proof real_weierstrass as H. rewrite Hc, Rmult_0_l in H. lra.
+Qed.
+
+Theorem Gam_pos : 0 < Gam s Hs.
+Proof.
+  pose proof (Gam_nonneg s Hs) as Hge. pose proof Gam_ne0 as Hne. lra.
+Qed.
+
+Print Assumptions real_weierstrass.
 
 End RealWeierstrass.
