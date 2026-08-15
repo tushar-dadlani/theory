@@ -591,3 +591,173 @@ Qed.
 
 Print Assumptions exp_sub_pow_bound.
 
+(* ----------------------------------------------------------------- *)
+(*  compact convergence :  int_a^b tnk s N  ->  int_a^b (gnk s 1)      *)
+(* ----------------------------------------------------------------- *)
+
+Lemma ln_le : forall x y, 0 < x -> x <= y -> ln x <= ln y.
+Proof.
+  intros x y Hx Hxy. destruct (Rle_lt_or_eq_dec x y Hxy) as [Hlt | Heq];
+    [ left; apply ln_increasing; [ exact Hx | exact Hlt ] | rewrite Heq; apply Rle_refl ].
+Qed.
+
+Lemma Rpower_pos : forall x y, 0 < Rpower x y.
+Proof. intros x y; unfold Rpower; apply exp_pos. Qed.
+
+(* Rpower t p (t in [a,b], a>0) is bounded by the sum of the endpoint values *)
+Lemma Rpower_bound_compact : forall a b t p, 0 < a -> a <= t -> t <= b ->
+  Rpower t p <= Rpower a p + Rpower b p.
+Proof.
+  intros a b t p Ha Hat Htb.
+  assert (Ht : 0 < t) by lra.
+  assert (Hlna : ln a <= ln t) by (apply ln_le; [ exact Ha | exact Hat ]).
+  assert (Hlnb : ln t <= ln b) by (apply ln_le; [ exact Ht | exact Htb ]).
+  pose proof (Rpower_pos a p) as Hpa. pose proof (Rpower_pos b p) as Hpb.
+  destruct (Rle_lt_dec 0 p) as [Hp | Hp].
+  - assert (Rpower t p <= Rpower b p).
+    { unfold Rpower; apply exp_le; apply Rmult_le_compat_l; [ exact Hp | exact Hlnb ]. }
+    lra.
+  - assert (Rpower t p <= Rpower a p).
+    { unfold Rpower; apply exp_le.
+      apply Rmult_le_compat_neg_l with (r := p); [ lra | exact Hlna ]. }
+    lra.
+Qed.
+
+(* C / (INR N - b)  ->  0  as N -> infinity  *)
+Lemma recip_lin_cv0 : forall C b, Un_cv (fun N => C * / (INR N - b)) 0.
+Proof.
+  intros C b eps Heps.
+  destruct (INR_unbounded (b + Rabs C * / eps + 1)) as [N0 HN0].
+  exists N0. intros n Hn.
+  assert (Hle : INR N0 <= INR n) by (apply le_INR; exact Hn).
+  assert (Hinv : 0 < / eps) by (apply Rinv_0_lt_compat; exact Heps).
+  assert (Hq : 0 <= Rabs C * / eps)
+    by (apply Rmult_le_pos; [ apply Rabs_pos | left; exact Hinv ]).
+  assert (Hpos : 0 < INR n - b) by lra.
+  unfold R_dist. rewrite Rminus_0_r, Rabs_mult.
+  rewrite (Rabs_right (/ (INR n - b)));
+    [ | apply Rle_ge; left; apply Rinv_0_lt_compat; exact Hpos ].
+  apply (Rmult_lt_reg_r (INR n - b)); [ exact Hpos | ].
+  rewrite Rmult_assoc, Rinv_l; [ | apply Rgt_not_eq; exact Hpos ].
+  rewrite Rmult_1_r.
+  apply Rlt_le_trans with (eps * (Rabs C * / eps + 1)).
+  - replace (eps * (Rabs C * / eps + 1)) with (Rabs C + eps)
+      by (field; apply Rgt_not_eq; exact Heps).
+    lra.
+  - apply Rmult_le_compat_l; [ left; exact Heps | lra ].
+Qed.
+
+Lemma Un_cv_const_minus : forall (w : nat -> R) (c : R),
+  Un_cv w 0 -> Un_cv (fun N => c - w N) c.
+Proof.
+  intros w c Hw eps Heps.
+  destruct (Hw eps Heps) as [N HN]. exists N. intros n Hn.
+  specialize (HN n Hn). unfold R_dist in *.
+  replace (c - w n - c) with (- (w n - 0)) by ring.
+  rewrite Rabs_Ropp. exact HN.
+Qed.
+
+(* pointwise:  0 <= gnk s 1 t - tnk s N t <= M * (b^2/(N-b))  on [a,b], b<N *)
+Lemma gnk_sub_tnk_bounds : forall s a b N t,
+  0 < a -> a <= t -> t <= b -> b < INR N ->
+  0 <= gnk s 1 t - tnk s N t /\
+  gnk s 1 t - tnk s N t <=
+    (Rpower a (s - 1) + Rpower b (s - 1)) * (b * b / (INR N - b)).
+Proof.
+  intros s a b N t Ha Hat Htb HbN.
+  assert (Ht : 0 < t) by lra.
+  assert (Hb0 : 0 < b) by lra.
+  assert (HtN : t < INR N) by lra.
+  assert (HNb : 0 < INR N - b) by lra.
+  assert (HNt : 0 < INR N - t) by lra.
+  unfold gnk, tnk.
+  replace (exp (- (1 * t))) with (exp (- t)) by (f_equal; ring).
+  set (R := Rpower t (s - 1)).
+  assert (HR0 : 0 <= R) by (unfold R; left; apply Rpower_pos).
+  set (E := exp (- t) - (1 - t / INR N) ^ N).
+  replace (R * exp (- t) - (1 - t / INR N) ^ N * R) with (R * E)
+    by (unfold E; ring).
+  assert (HE0 : 0 <= E).
+  { unfold E. pose proof (one_minus_pow_le_exp t N (Rlt_le _ _ Ht) (Rlt_le _ _ HtN)). lra. }
+  assert (HEb : E <= t * t / (INR N - t))
+    by (unfold E; apply exp_sub_pow_bound; [ exact Ht | exact HtN ]).
+  assert (Hstep : t * t / (INR N - t) <= b * b / (INR N - b)).
+  { apply Rmult_le_compat.
+    - apply Rmult_le_pos; lra.
+    - left; apply Rinv_0_lt_compat; exact HNt.
+    - apply Rmult_le_compat; lra.
+    - apply Rinv_le_contravar; [ exact HNb | lra ]. }
+  assert (Hbb0 : 0 <= b * b / (INR N - b)).
+  { apply Rmult_le_pos; [ apply Rmult_le_pos; lra | left; apply Rinv_0_lt_compat; exact HNb ]. }
+  split.
+  - apply Rmult_le_pos; [ exact HR0 | exact HE0 ].
+  - apply Rle_trans with (R * (b * b / (INR N - b))).
+    + apply Rmult_le_compat_l; [ exact HR0 | lra ].
+    + apply Rmult_le_compat_r; [ exact Hbb0 | ].
+      unfold R; apply Rpower_bound_compact; [ exact Ha | exact Hat | exact Htb ].
+Qed.
+
+(* the integral gap is nonnegative and O(1/(N-b)) *)
+Lemma int_diff_bound : forall s a b N (Ha : 0 < a) (Hab : a <= b), b < INR N ->
+  0 <= RiemannInt (Hf_near s 1 a b Ha Hab) - RiemannInt (Hf_tnk s N a b Ha Hab) /\
+  RiemannInt (Hf_near s 1 a b Ha Hab) - RiemannInt (Hf_tnk s N a b Ha Hab)
+    <= (b - a) * (Rpower a (s - 1) + Rpower b (s - 1)) * (b * b) * / (INR N - b).
+Proof.
+  intros s a b N Ha Hab HbN.
+  set (Hfe := Hf_near s 1 a b Ha Hab).
+  set (Hge := Hf_tnk s N a b Ha Hab).
+  set (M := Rpower a (s - 1) + Rpower b (s - 1)).
+  set (K := M * (b * b / (INR N - b))).
+  pose proof (@RiemannInt_P10 (gnk s 1) (tnk s N) a b (-1) Hfe Hge) as prd.
+  pose proof (RiemannInt_P13 Hfe Hge prd) as Hval.
+  assert (Heq : RiemannInt prd = RiemannInt Hfe - RiemannInt Hge)
+    by (rewrite Hval; ring).
+  assert (Hlo : 0 <= RiemannInt prd).
+  { pose proof (@RiemannInt_P15 a b 0 (RiemannInt_P14 a b 0)) as H0.
+    apply Rle_trans with (RiemannInt (RiemannInt_P14 a b 0)).
+    - rewrite H0; ring_simplify; apply Rle_refl.
+    - apply RiemannInt_P19; [ lra | ].
+      intros x Hx. unfold fct_cte.
+      destruct (gnk_sub_tnk_bounds s a b N x Ha (Rlt_le _ _ (proj1 Hx))
+                  (Rlt_le _ _ (proj2 Hx)) HbN) as [Hlo2 _]. lra. }
+  assert (Hup : RiemannInt prd <= K * (b - a)).
+  { pose proof (@RiemannInt_P15 a b K (RiemannInt_P14 a b K)) as H0.
+    apply Rle_trans with (RiemannInt (RiemannInt_P14 a b K)).
+    - apply RiemannInt_P19; [ lra | ].
+      intros x Hx. unfold fct_cte.
+      destruct (gnk_sub_tnk_bounds s a b N x Ha (Rlt_le _ _ (proj1 Hx))
+                  (Rlt_le _ _ (proj2 Hx)) HbN) as [_ Hub2].
+      unfold K, M. lra.
+    - rewrite H0; apply Rle_refl. }
+  rewrite Heq in Hlo, Hup.
+  split.
+  - exact Hlo.
+  - eapply Rle_trans; [ exact Hup | ].
+    unfold K, M. apply Req_le. field. apply Rgt_not_eq; lra.
+Qed.
+
+Lemma compact_cv : forall s a b (Ha : 0 < a) (Hab : a <= b),
+  Un_cv (fun N => RiemannInt (Hf_tnk s N a b Ha Hab))
+        (RiemannInt (Hf_near s 1 a b Ha Hab)).
+Proof.
+  intros s a b Ha Hab.
+  set (L := RiemannInt (Hf_near s 1 a b Ha Hab)).
+  set (C := (b - a) * (Rpower a (s - 1) + Rpower b (s - 1)) * (b * b)).
+  assert (He : Un_cv (fun N => L - RiemannInt (Hf_tnk s N a b Ha Hab)) 0).
+  { apply (Un_cv_squeeze0 (fun N => L - RiemannInt (Hf_tnk s N a b Ha Hab))
+                          (fun N => C * / (INR N - b))).
+    - destruct (INR_unbounded b) as [N0 HN0].
+      exists (S N0). intros n Hn.
+      assert (HbN : b < INR n)
+        by (apply Rlt_le_trans with (INR N0); [ exact HN0 | apply le_INR; lia ]).
+      destruct (int_diff_bound s a b n Ha Hab HbN) as [Hlo Hup].
+      split; [ exact Hlo | ].
+      eapply Rle_trans; [ exact Hup | unfold C; apply Req_le; ring ].
+    - apply recip_lin_cv0. }
+  apply (Un_cv_ext (fun N => L - (L - RiemannInt (Hf_tnk s N a b Ha Hab)))).
+  - intro N; ring.
+  - apply Un_cv_const_minus; exact He.
+Qed.
+
+Print Assumptions compact_cv.
+
