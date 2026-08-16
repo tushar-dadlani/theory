@@ -20,7 +20,7 @@
 From Stdlib Require Import Reals Lra Lia.
 Require Import ComplexField Cmodulus CexpFull Holomorphic CDeriv CHoloCalculus CAnalyticTower
         CWalk GammaC GammaReal GammaWeierstrass EulerMascheroni CexpfDeriv
-        CZetaXiComplex CZetaStripId CZetaDeriv2 RiemannXiEntire CZeta.
+        CZetaXiComplex CZetaStripId CZetaDeriv2 RiemannXiEntire CZeta GammaCLogSum.
 Open Scope R_scope.
 
 Section GammaCNe0.
@@ -109,4 +109,19 @@ Qed.
 
 End GammaCNe0.
 
-Print Assumptions GammaC_ne0.
+(* ================================================================= *)
+(*  Discharge the Section interface with the concrete log-sum from       *)
+(*  GammaCLogSum (Lf / Lf_holo / Lf_agree).  The results below are now    *)
+(*  UNCONDITIONAL: no hypothesis on Gamma remains.                        *)
+(* ================================================================= *)
+
+Theorem GammaC_ne0_final : forall w, 0 < Re w -> GammaC w <> C0.
+Proof. exact (GammaC_ne0 Lf Lf_holo Lf_agree). Qed.
+
+Theorem XiC_zero_iff_zetaC_zero_final :
+  forall z (H0 : 0 < Re z) (H1 : Cminus C1 z <> C0),
+    Re z < 1 -> (XiC z = C0 <-> zetaC z H0 H1 = C0).
+Proof. exact (XiC_zero_iff_zetaC_zero_uncond Lf Lf_holo Lf_agree). Qed.
+
+Print Assumptions GammaC_ne0_final.
+Print Assumptions XiC_zero_iff_zetaC_zero_final.

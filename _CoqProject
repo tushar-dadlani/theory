@@ -1044,4 +1044,5 @@ spectral-theory/GammaWeierstrass.v
 spectral-theory/GammaCWeierstrass.v
 spectral-theory/GammaCHolo.v
 spectral-theory/GammaCLogTerm.v
+spectral-theory/GammaCLogSum.v
 spectral-theory/GammaCNe0.v
