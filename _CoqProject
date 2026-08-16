@@ -1047,3 +1047,4 @@ spectral-theory/GammaCLogTerm.v
 spectral-theory/GammaCLogSum.v
 spectral-theory/GammaCNe0.v
 spectral-theory/ExplicitFormulaMainTerm.v
+spectral-theory/ExplicitFormulaPole01.v
