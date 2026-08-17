@@ -1050,3 +1050,4 @@ spectral-theory/ExplicitFormulaMainTerm.v
 spectral-theory/ExplicitFormulaPole01.v
 spectral-theory/ExplicitFormulaPoleZero.v
 spectral-theory/CauchyRectangle.v
+spectral-theory/ExplicitFormulaResidueThm.v
