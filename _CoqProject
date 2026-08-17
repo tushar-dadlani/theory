@@ -1056,3 +1056,4 @@ spectral-theory/ExplicitFormulaXiZetaBridge.v
 spectral-theory/ExplicitFormulaDigamma.v
 spectral-theory/ExplicitFormulaXiLogDeriv.v
 spectral-theory/CountTwoCollapse.v
+spectral-theory/FirstPrimeZeta.v
