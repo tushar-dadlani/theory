@@ -730,6 +730,7 @@ spectral-theory/GaussThetaTransform.v
 spectral-theory/RiemannPsi.v
 spectral-theory/ThetaTailBounds.v
 spectral-theory/XirIntegralReduction.v
+spectral-theory/MellinTailBound.v
 spectral-theory/RiemannPsiCont.v
 spectral-theory/ImproperCv1.v
 spectral-theory/MellinElem.v
