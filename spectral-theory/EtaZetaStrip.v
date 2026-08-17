@@ -130,3 +130,31 @@ Proof.
 Qed.
 
 Print Assumptions eta_zeta_cont_strip.
+
+(* ===== payoff: the collapse argument now reaches the strip 0<s<1 ===== *)
+(* a zero of eta IS the alternating sum collapsing to 0 at infinity --
+   now with NO 1<s gate, so it holds throughout the critical strip. *)
+Theorem eta_zero_iff_collapse_strip : forall s (Hs0 : 0 < s) (Hs1 : s <> 1),
+  ((1 - Rpower 2 (1 - s)) * zeta_cont s Hs0 Hs1 = 0 <-> collapses (eta_partial s)).
+Proof.
+  intros s Hs0 Hs1. unfold collapses. split.
+  - intro Hz. pose proof (eta_zeta_cont_strip s Hs0 Hs1) as H. rewrite Hz in H. exact H.
+  - intro Hc. pose proof (eta_zeta_cont_strip s Hs0 Hs1) as H.
+    exact (UL_sequence _ _ _ H Hc).
+Qed.
+
+(* away from the first-prime factor zeros, that collapse (anywhere in 0<s, s<>1)
+   is exactly a ZETA zero -- in particular a nontrivial zero at 0<s<1. *)
+Corollary eta_collapse_iff_zeta_zero_strip : forall s (Hs0 : 0 < s) (Hs1 : s <> 1),
+  1 - Rpower 2 (1 - s) <> 0 ->
+  (collapses (eta_partial s) <-> zeta_cont s Hs0 Hs1 = 0).
+Proof.
+  intros s Hs0 Hs1 Hfac.
+  rewrite <- (eta_zero_iff_collapse_strip s Hs0 Hs1). split.
+  - intro Hz. apply Rmult_integral in Hz. destruct Hz as [Hz | Hz];
+      [ exfalso; apply Hfac; exact Hz | exact Hz ].
+  - intro Hz. rewrite Hz. ring.
+Qed.
+
+Print Assumptions eta_zeta_cont_strip.
+Print Assumptions eta_collapse_iff_zeta_zero_strip.
