@@ -1058,3 +1058,4 @@ spectral-theory/ExplicitFormulaXiLogDeriv.v
 spectral-theory/CountTwoCollapse.v
 spectral-theory/FirstPrimeZeta.v
 spectral-theory/EtaZeta.v
+spectral-theory/ZeroAsLimit.v
