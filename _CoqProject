@@ -1053,3 +1053,4 @@ spectral-theory/CauchyRectangle.v
 spectral-theory/ExplicitFormulaResidueThm.v
 spectral-theory/ExplicitFormulaRegionResidue.v
 spectral-theory/ExplicitFormulaXiZetaBridge.v
+spectral-theory/ExplicitFormulaDigamma.v
