@@ -1059,3 +1059,4 @@ spectral-theory/CountTwoCollapse.v
 spectral-theory/FirstPrimeZeta.v
 spectral-theory/EtaZeta.v
 spectral-theory/ZeroAsLimit.v
+spectral-theory/EtaZetaStrip.v
