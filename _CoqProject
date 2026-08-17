@@ -1062,3 +1062,4 @@ spectral-theory/ZeroAsLimit.v
 spectral-theory/EtaZetaStrip.v
 spectral-theory/CriticalLine.v
 spectral-theory/EtaZetaStripC.v
+spectral-theory/CritLineZeroCollapse.v
