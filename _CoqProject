@@ -733,6 +733,7 @@ spectral-theory/XirIntegralReduction.v
 spectral-theory/MellinTailBound.v
 spectral-theory/ExpTailIntegral.v
 spectral-theory/ReTCTailBound.v
+spectral-theory/XiGrowthBound.v
 spectral-theory/IntervalArith.v
 spectral-theory/ExpEnclosure.v
 spectral-theory/RiemannPsiCont.v
