@@ -950,6 +950,7 @@ spectral-theory/SieveDensity.v
 spectral-theory/EulerProductZetaS.v
 spectral-theory/PrimorialGrid.v
 spectral-theory/PrimorialRiemann.v
+spectral-theory/RiemannSumGeneral.v
 spectral-theory/PerronPower.v
 spectral-theory/ArakelovDegree.v
 spectral-theory/RectWinding.v
