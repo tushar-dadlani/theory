@@ -20,7 +20,7 @@
 
 From Stdlib Require Import Reals Lra.
 Require Import ComplexField Cmodulus RiemannXiEntire ThetaTailEntire MellinTail
-        ImproperCv1 CImproperIntegral PerronEdge.
+        ImproperCv1 CImproperIntegral PerronEdge TGrowthBound.
 Open Scope R_scope.
 
 (* XiC in factored form: 1/2 + 1/2.z.(z-1).(TC z + TC(1-z)) *)
@@ -91,3 +91,41 @@ Qed.
 
 Print Assumptions XiC_mod_reduction.
 Print Assumptions TC_mod_le.
+
+(* ===== the order-1 growth bound ===== *)
+(* the T-growth majorant as a function of sigma *)
+Definition Tgb (s : R) : R :=
+  / (1 - exp (- PI)) * (Rpower (s / PI) (s / 2) * exp (- (s / 2)))
+  * (exp (- (PI / 2)) / (PI / 2)).
+
+Lemma T_le_Tgb : forall s, 1 / 2 <= s -> T s <= Tgb s.
+Proof. intros s Hs. unfold Tgb. apply T_growth; exact Hs. Qed.
+
+(* XiC is of order 1:  Cmod(XiC z) <= 1/2 + (|z|+1)^2 . Tgb(|z|+1),
+   and Tgb(s) = exp(O(s ln s)) (the Rpower (s/pi)^{s/2} factor). *)
+Theorem XiC_growth : forall z,
+  Cmod (XiC z) <= / 2 + (Cmod z + 1) ^ 2 * Tgb (Cmod z + 1).
+Proof.
+  intro z. pose proof (Cmod_nonneg z) as Hz. pose proof (Cmod_Re z) as HRe.
+  set (M := Cmod z + 1).
+  assert (HMhalf : 1 / 2 <= M) by (unfold M; lra).
+  eapply Rle_trans; [ apply XiC_mod_reduction | ].
+  apply Rplus_le_compat_l.
+  assert (HA : Cmod (TC z) <= Tgb M).
+  { eapply Rle_trans; [ apply TC_mod_le | ].
+    apply Rle_trans with (T M); [ apply T_mono | apply T_le_Tgb; exact HMhalf ].
+    unfold M. pose proof (Rle_abs (Re z)); lra. }
+  assert (HB : Cmod (TC (Cminus C1 z)) <= Tgb M).
+  { eapply Rle_trans; [ apply TC_mod_le | ].
+    replace (Re (Cminus C1 z)) with (1 - Re z)
+      by (unfold Cminus, C1; cbn [Re]; ring).
+    apply Rle_trans with (T M); [ apply T_mono | apply T_le_Tgb; exact HMhalf ].
+    unfold M. pose proof (Rle_abs (- Re z)) as Habs; rewrite Rabs_Ropp in Habs; lra. }
+  apply Rle_trans with (/ 2 * M ^ 2 * (2 * Tgb M)).
+  - apply Rmult_le_compat_l.
+    + apply Rmult_le_pos; [ lra | apply pow_le; unfold M; lra ].
+    + lra.
+  - unfold M; right; field.
+Qed.
+
+Print Assumptions XiC_growth.
