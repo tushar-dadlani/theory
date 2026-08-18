@@ -948,6 +948,7 @@ spectral-theory/EulerProductAssembly.v
 spectral-theory/PrimeReciprocalCollapse.v
 spectral-theory/SieveDensity.v
 spectral-theory/EulerProductZetaS.v
+spectral-theory/PrimorialDFTEuler.v
 spectral-theory/PrimorialGrid.v
 spectral-theory/PrimorialRiemann.v
 spectral-theory/RiemannSumGeneral.v
