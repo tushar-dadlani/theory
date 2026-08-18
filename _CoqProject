@@ -946,6 +946,7 @@ spectral-theory/SelbergD2Reduce.v
 spectral-theory/PrimeInfinities.v
 spectral-theory/EulerProductAssembly.v
 spectral-theory/PrimeReciprocalCollapse.v
+spectral-theory/SieveDensity.v
 spectral-theory/PerronPower.v
 spectral-theory/ArakelovDegree.v
 spectral-theory/RectWinding.v
