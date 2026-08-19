@@ -1109,3 +1109,4 @@ spectral-theory/CSegIntCont.v
 spectral-theory/CCutoff.v
 spectral-theory/CGcutCont.v
 spectral-theory/ZeroFreeMVPDisk.v
+spectral-theory/XiNonzero.v
