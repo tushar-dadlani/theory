@@ -1101,3 +1101,4 @@ spectral-theory/ZeroFreeMVP.v
 spectral-theory/JensenOneZero.v
 spectral-theory/PeriodShift.v
 spectral-theory/JensenZeroFactorC.v
+spectral-theory/JensenMultiZero.v
