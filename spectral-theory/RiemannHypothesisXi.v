@@ -1,5 +1,5 @@
 (* ================================================================= *)
-(*  RiemannHypothesis.v  —  the statement of the Riemann Hypothesis    *)
+(*  RiemannHypothesisXi.v  —  the statement of the Riemann Hypothesis    *)
 (*  in this development's machinery.                                   *)
 (*                                                                    *)
 (*  XiC is the entire completed zeta xi (RiemannXiEntire.v): total,    *)
