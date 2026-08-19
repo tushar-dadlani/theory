@@ -9,6 +9,7 @@
 (*                                                                    *)
 (*        every rho in l a genuine zero, 0 < |rho| < Rj                *)
 (*        l COMPLETE: every zero of F in |z| < Rj is in l              *)
+(*        INR (length l) <= ln (2 M / |F(0)|) / ln 3   -- the COUNT     *)
 (*        (#{rho in l : |rho| <= Rj/2}) . ln 2                          *)
 (*            <= (1/2PI) INT ln|F(Rj e^{it})| dt - ln|F(0)|.           *)
 (*                                                                    *)
@@ -80,6 +81,7 @@ Theorem jensen_count_complete : forall (F : C -> C) (RB Rc M : R),
     (forall rho, In rho l -> 0 < Cmod rho < Rj) /\
     (forall rho, In rho l -> F rho = C0) /\
     (forall z, Cmod z < Rj -> F z = C0 -> In z l) /\
+    INR (length l) <= ln (2 * M / Cmod (F C0)) / ln 3 /\
     forall pr : Riemann_integrable (fun t => ln (Cmod (F (arc Rj t)))) 0 (2 * PI),
       INR (count_le (Rj / 2) l) * ln 2
       <= RiemannInt pr / (2 * PI) - ln (Cmod (F C0)).
@@ -112,6 +114,11 @@ Proof.
     destruct (classic (prodfac l z = C0)) as [Hp | Hp]; [ exact Hp | exfalso ].
     exact (Cmul_ne0 (prodfac l z) (G z) Hp HGz (eq_sym Hidz)). }
   split; [ exact Hcomplete | ].
+  (* the explicit count bound, straight from the decay estimate *)
+  split.
+  { apply (peel_count_explicit F G Rc M l HRc HF0 Hid Hptc);
+      [ intros z Hz; apply Hhol; lra | exact HM | ].
+    intros w Hw. left. apply Hsm; exact Hw. }
   (* and now the Jensen count, with the cofactor zero-free on Cmod z < Rc/4 *)
   apply (jensen_count_zeros F G (Rc / 4) Rj l HRj0 HRjb Hid Hptc).
   - intros z Hz. apply Hhol. lra.

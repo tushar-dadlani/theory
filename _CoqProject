@@ -1124,3 +1124,4 @@ spectral-theory/CCentreBound.v
 spectral-theory/CPeelBound.v
 spectral-theory/CZeroFree.v
 spectral-theory/JensenCountComplete.v
+spectral-theory/XiZeroCount.v
