@@ -132,3 +132,65 @@ Proof.
 Qed.
 
 Print Assumptions deriv_holo_radius.
+
+(* ================================================================= *)
+(*  A CANONICAL DERIVATIVE FUNCTION.                                   *)
+(*                                                                    *)
+(*  The Jensen disk lemmas (zero_free_MVP_disk and everything above it) *)
+(*  need the derivative as a FUNCTION Fp, not pointwise existentials --  *)
+(*  zero_free_MVP_disk forms the logarithmic derivative                 *)
+(*  g = fun w => Fp w / F w.  But the peel (CZeroListFactor.DivBy)      *)
+(*  hands back cofactors known only as "forall z, exists d, ...", and    *)
+(*  turning that into a function needs a choice axiom.                  *)
+(*                                                                    *)
+(*  No axiom is needed: the tower ALREADY names the derivative.  Level 1 *)
+(*  of the Cauchy-power tower, fseq F Rr HR HFc 1, differentiates F on   *)
+(*  the inner disk (same argument as F_deriv_fs1 above, which never used *)
+(*  a given Fp), and level 2 differentiates level 1.  So the canonical   *)
+(*  Fp comes with its own holomorphy for free.                          *)
+(* ================================================================= *)
+Theorem holo_deriv_fun : forall (F : C -> C) (Rr : R) (HR : 0 < Rr),
+  (forall z eps, 0 < eps -> exists del, 0 < del /\
+     forall z', Cmod (Cminus z' z) < del -> Cmod (Cminus (F z') (F z)) < eps) ->
+  (forall z, Cmod z < Rr + 1 -> exists d, is_Cderiv F z d) ->
+  exists Fp : C -> C,
+    (forall z, Cmod z < Rr / 2 -> is_Cderiv F z (Fp z)) /\
+    (forall z, Cmod z < Rr / 2 -> exists d, is_Cderiv Fp z d).
+Proof.
+  intros F Rr HR HFptc HFhol.
+  pose (HFc := ptcont_CcontC F HFptc).
+  pose (HFgb := Ccont_circle_bounded F Rr HFc).
+  exists (fseq F Rr HR HFc 1). split.
+  - intros z Hz.
+    apply (is_Cderiv_congr F (fseq F Rr HR HFc 0) z (fseq F Rr HR HFc 1 z)
+             (Rr / 2 - Cmod z)).
+    + lra.
+    + intros w Hw. symmetry.
+      apply (fseq0_eq F Rr HR HFc HFptc HFhol w).
+      assert (Htri : Cmod w <= Cmod (Cminus w z) + Cmod z)
+        by (replace w with (Cadd (Cminus w z) z) at 1 by ring; apply Cmod_triangle).
+      lra.
+    + exact (fseq_chain F Rr HR HFc HFgb 0 z Hz).
+  - intros z Hz. exists (fseq F Rr HR HFc 2 z).
+    exact (fseq_chain F Rr HR HFc HFgb 1 z Hz).
+Qed.
+
+Print Assumptions holo_deriv_fun.
+
+(* the target-radius form: exactly the (HFhol, HFphol) pair that
+   zero_free_MVP_disk / jensen_multi_zero_D / jensen_count_D ask for *)
+Corollary holo_deriv_fun_radius : forall (F : C -> C) (R2 : R),
+  0 < R2 ->
+  (forall z eps, 0 < eps -> exists del, 0 < del /\
+     forall z', Cmod (Cminus z' z) < del -> Cmod (Cminus (F z') (F z)) < eps) ->
+  (forall z, Cmod z < 2 * R2 + 1 -> exists d, is_Cderiv F z d) ->
+  exists Fp : C -> C,
+    (forall z, Cmod z < R2 -> is_Cderiv F z (Fp z)) /\
+    (forall z, Cmod z < R2 -> exists d, is_Cderiv Fp z d).
+Proof.
+  intros F R2 HR2 HFptc HFhol.
+  destruct (holo_deriv_fun F (2 * R2) ltac:(lra) HFptc HFhol) as [Fp [H1 H2]].
+  exists Fp. split; intros z Hz; [ apply H1 | apply H2 ]; lra.
+Qed.
+
+Print Assumptions holo_deriv_fun_radius.

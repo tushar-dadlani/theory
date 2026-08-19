@@ -1119,3 +1119,4 @@ spectral-theory/JensenCountDisk.v
 spectral-theory/CDerivHoloDisk.v
 spectral-theory/CZeroFactorDisk.v
 spectral-theory/CZeroListFactor.v
+spectral-theory/JensenCountZeros.v
