@@ -7,6 +7,7 @@
 (*      |F| <= M on the circle |z| = Rc, produces a zero list l and a   *)
 (*      Jensen radius Rj with                                          *)
 (*                                                                    *)
+(*        Rc/8 <= Rj < Rc/4   (a LOWER bound too -- see below)          *)
 (*        every rho in l a genuine zero, 0 < |rho| < Rj                *)
 (*        l COMPLETE: every zero of F in |z| < Rj is in l              *)
 (*        INR (length l) <= ln (2 M / |F(0)|) / ln 3   -- the COUNT     *)
@@ -77,7 +78,7 @@ Theorem jensen_count_complete : forall (F : C -> C) (RB Rc M : R),
   disk_holo F RB ->
   (forall u, Cmod (F (arc Rc u)) <= M) ->
   exists (l : list C) (Rj : R),
-    0 < Rj /\ Rj < Rc / 4 /\
+    0 < Rj /\ Rj < Rc / 4 /\ Rc / 8 <= Rj /\
     (forall rho, In rho l -> 0 < Cmod rho < Rj) /\
     (forall rho, In rho l -> F rho = C0) /\
     (forall z, Cmod z < Rj -> F z = C0 -> In z l) /\
@@ -95,7 +96,9 @@ Proof.
   assert (HRj0 : 0 < Rj) by (unfold Rj; lra).
   assert (HRjb : Rj < Rc / 4) by (unfold Rj; lra).
   assert (HrRj : rmax < Rj) by (unfold Rj; lra).
+  assert (HRjlo : Rc / 8 <= Rj) by (unfold Rj; lra).
   exists l, Rj. split; [ exact HRj0 | ]. split; [ exact HRjb | ].
+  split; [ exact HRjlo | ].
   (* every listed point is a genuine nonzero zero of F *)
   assert (Hzero : forall rho, In rho l -> F rho = C0).
   { intros rho Hin. rewrite (Hid rho), (prodfac_zero_in l rho Hin). ring. }

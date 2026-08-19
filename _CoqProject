@@ -1125,3 +1125,5 @@ spectral-theory/CPeelBound.v
 spectral-theory/CZeroFree.v
 spectral-theory/JensenCountComplete.v
 spectral-theory/XiZeroCount.v
+spectral-theory/XiZeroDensity.v
+spectral-theory/CDyadicSum.v

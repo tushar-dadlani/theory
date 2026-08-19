@@ -2,7 +2,8 @@
 (*  XiZeroCount.v  —  THE HADAMARD KEYSTONE TARGET, for xi.            *)
 (*                                                                    *)
 (*    xi_zero_count : for every circle radius Rc > 0 there are a       *)
-(*      finite list l of zeros of XiC and a Jensen radius Rj < Rc/4    *)
+(*      finite list l of zeros of XiC and a Jensen radius              *)
+(*      Rc/8 <= Rj < Rc/4                                              *)
 (*      such that                                                     *)
 (*                                                                    *)
 (*        every rho in l is a genuine zero, 0 < |rho| < Rj            *)
@@ -85,7 +86,7 @@ Qed.
 (* ----------------------------------------------------------------- *)
 Theorem xi_zero_count : forall Rc : R, 0 < Rc ->
   exists (l : list C) (Rj : R),
-    0 < Rj /\ Rj < Rc / 4 /\
+    0 < Rj /\ Rj < Rc / 4 /\ Rc / 8 <= Rj /\
     (forall rho, In rho l -> 0 < Cmod rho < Rj) /\
     (forall rho, In rho l -> XiC rho = C0) /\
     (forall z, Cmod z < Rj -> XiC z = C0 -> In z l) /\
@@ -98,9 +99,9 @@ Proof.
   destruct (jensen_count_complete XiC (Rc + 2) Rc (XiM Rc) HRc ltac:(lra)
               XiC_ne0_at0 XiC_ptcont (XiC_disk_holo (Rc + 2))
               (XiC_circle_bound Rc HRc))
-    as [l [Rj [HRj0 [HRjb [Hin [Hzero [Hcomp [Hcount Hjensen]]]]]]]].
+    as [l [Rj [HRj0 [HRjb [HRjlo [Hin [Hzero [Hcomp [Hcount Hjensen]]]]]]]]].
   exists l, Rj.
-  split; [ exact HRj0 | ]. split; [ exact HRjb | ].
+  split; [ exact HRj0 | ]. split; [ exact HRjb | ]. split; [ exact HRjlo | ].
   split; [ exact Hin | ]. split; [ exact Hzero | ].
   split; [ exact Hcomp | ]. split; [ | exact Hjensen ].
   (* 2 * XiM Rc / Cmod (XiC C0) = 4 * XiM Rc, since |xi(0)| = 1/2 *)
