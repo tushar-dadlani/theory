@@ -1102,3 +1102,4 @@ spectral-theory/JensenOneZero.v
 spectral-theory/PeriodShift.v
 spectral-theory/JensenZeroFactorC.v
 spectral-theory/JensenMultiZero.v
+spectral-theory/JensenCount.v
