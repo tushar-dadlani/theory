@@ -802,6 +802,7 @@ spectral-theory/EulerProductZetaCont.v
 spectral-theory/CPowMul.v
 spectral-theory/CDirichlet.v
 spectral-theory/CEulerFactorSmooth.v
+spectral-theory/CEulerProductConv.v
 spectral-theory/CEulerProductZeta.v
 spectral-theory/ZetaZeroPairing.v
 spectral-theory/ZetaZeroQuadruple.v
@@ -1017,6 +1018,7 @@ spectral-theory/MertensThirdReduction.v
 spectral-theory/GammaCRealAxis.v
 spectral-theory/GammaCFE.v
 spectral-theory/CWindingCenter.v
+spectral-theory/CWindingOffCenter.v
 spectral-theory/CCauchyInterior.v
 spectral-theory/CRemovableExt.v
 spectral-theory/CCauchyFull.v
@@ -1110,3 +1112,5 @@ spectral-theory/CCutoff.v
 spectral-theory/CGcutCont.v
 spectral-theory/ZeroFreeMVPDisk.v
 spectral-theory/XiNonzero.v
+spectral-theory/ZetaStripConfinement.v
+spectral-theory/RiemannHypothesis.v
