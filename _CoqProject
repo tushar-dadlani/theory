@@ -1098,3 +1098,4 @@ spectral-theory/CPrimitiveEntire.v
 spectral-theory/CLogFExpEntire.v
 spectral-theory/CHoloCcontC.v
 spectral-theory/ZeroFreeMVP.v
+spectral-theory/JensenOneZero.v
