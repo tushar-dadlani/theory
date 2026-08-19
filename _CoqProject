@@ -1114,3 +1114,5 @@ spectral-theory/ZeroFreeMVPDisk.v
 spectral-theory/XiNonzero.v
 spectral-theory/ZetaStripConfinement.v
 spectral-theory/RiemannHypothesis.v
+spectral-theory/JensenMultiZeroDisk.v
+spectral-theory/JensenCountDisk.v
