@@ -1100,3 +1100,4 @@ spectral-theory/CHoloCcontC.v
 spectral-theory/ZeroFreeMVP.v
 spectral-theory/JensenOneZero.v
 spectral-theory/PeriodShift.v
+spectral-theory/JensenZeroFactorC.v
