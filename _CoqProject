@@ -1107,3 +1107,4 @@ spectral-theory/CSegFTCDisk.v
 spectral-theory/CMeanValueDisk.v
 spectral-theory/CSegIntCont.v
 spectral-theory/CCutoff.v
+spectral-theory/CGcutCont.v
