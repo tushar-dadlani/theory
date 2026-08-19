@@ -1096,3 +1096,4 @@ spectral-theory/CDerivConst.v
 spectral-theory/CLogFExp.v
 spectral-theory/CPrimitiveEntire.v
 spectral-theory/CLogFExpEntire.v
+spectral-theory/CHoloCcontC.v
