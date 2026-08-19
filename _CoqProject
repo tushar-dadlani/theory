@@ -1094,3 +1094,4 @@ spectral-theory/CritLineZeroCollapse.v
 spectral-theory/CPrimitiveDisk.v
 spectral-theory/CDerivConst.v
 spectral-theory/CLogFExp.v
+spectral-theory/CPrimitiveEntire.v
