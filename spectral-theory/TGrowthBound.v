@@ -216,3 +216,17 @@ Proof.
 Qed.
 
 Print Assumptions T_growth.
+
+(* T is monotone increasing in sigma (Rpower increases with the exponent) *)
+Lemma T_mono : forall a b, a <= b -> T a <= T b.
+Proof.
+  intros a b Hab.
+  apply (improper_mono (wker a) (wker b) (wker_int a) (wker_int b) (T a) (T b)).
+  - intros u Hu. unfold wker.
+    apply Rmult_le_compat_r; [ apply Psi_nonneg | ].
+    apply Rpower_exp_le; [ apply clamp_ge1 | lra ].
+  - exact (T_spec a).
+  - exact (T_spec b).
+Qed.
+
+Print Assumptions T_mono.
