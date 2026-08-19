@@ -1104,3 +1104,4 @@ spectral-theory/JensenZeroFactorC.v
 spectral-theory/JensenMultiZero.v
 spectral-theory/JensenCount.v
 spectral-theory/CSegFTCDisk.v
+spectral-theory/CMeanValueDisk.v
