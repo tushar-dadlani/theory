@@ -1092,3 +1092,4 @@ spectral-theory/CriticalLine.v
 spectral-theory/EtaZetaStripC.v
 spectral-theory/CritLineZeroCollapse.v
 spectral-theory/CPrimitiveDisk.v
+spectral-theory/CDerivConst.v
