@@ -953,6 +953,7 @@ spectral-theory/EventMonoidZeta.v
 spectral-theory/WeilPositivityReduction.v
 spectral-theory/UniformIntegralSwap.v
 spectral-theory/JensenIntegral.v
+spectral-theory/JensenZeroFactor.v
 spectral-theory/PrimorialGrid.v
 spectral-theory/PrimorialRiemann.v
 spectral-theory/RiemannSumGeneral.v
