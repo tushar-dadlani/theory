@@ -21,7 +21,7 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra FunctionalExtensionality.
-Require Import ComplexField Cmodulus CImproperIntegral CIntegral2.
+Require Import ComplexField Cmodulus CSeries CImproperIntegral CIntegral2 CHoloCcontC.
 Open Scope R_scope.
 
 (* ----------------------------------------------------------------- *)
@@ -154,6 +154,40 @@ Proof.
     apply RInt_lin2. }
   apply Ceq; [ rewrite HRe, Re_Cadd | rewrite HIm, Im_Cadd ]; ring.
 Qed.
+
+(* ----------------------------------------------------------------- *)
+(*  E.  domination: |INT f| bounded by the integral of a DOMINATING     *)
+(*      FUNCTION, not merely by a constant.                            *)
+(*                                                                    *)
+(*  CIntegral2.RInt_abs_bound / Cintf_ML dominate by a constant, which  *)
+(*  is useless for Borel-Caratheodory: there the dominating quantity    *)
+(*  2 M - 2 Re G varies over the circle and it is precisely its         *)
+(*  INTEGRAL (pinned by the mean value property) that is controlled.    *)
+(*  The factor 2 is the Re/Im split and only moves a constant.          *)
+(* ----------------------------------------------------------------- *)
+Theorem Cintf_dom : forall (f : R -> C) (Hf : Ccont f) (g : R -> R) (a b : R)
+  (prg : Riemann_integrable g a b),
+  a <= b -> (forall t, a <= t <= b -> Cmod (f t) <= g t) ->
+  Cmod (Cintf f Hf a b) <= 2 * RiemannInt prg.
+Proof.
+  intros f Hf g a b prg Hab Hdom.
+  set (prR := cont_RI _ (proj1 Hf) a b).
+  set (prI := cont_RI _ (proj2 Hf) a b).
+  assert (HR : Rabs (RiemannInt prR) <= RiemannInt prg).
+  { eapply Rle_trans; [ apply (RiemannInt_P17 prR (RiemannInt_P16 prR) Hab) | ].
+    apply RiemannInt_P19; [ exact Hab | ].
+    intros x Hx.
+    apply Rle_trans with (Cmod (f x)); [ apply Cmod_Re_le | apply Hdom; lra ]. }
+  assert (HI : Rabs (RiemannInt prI) <= RiemannInt prg).
+  { eapply Rle_trans; [ apply (RiemannInt_P17 prI (RiemannInt_P16 prI) Hab) | ].
+    apply RiemannInt_P19; [ exact Hab | ].
+    intros x Hx.
+    apply Rle_trans with (Cmod (f x)); [ apply Cmod_Im_le | apply Hdom; lra ]. }
+  eapply Rle_trans; [ apply Cmod_le_ReIm | ].
+  rewrite Re_Cintf, Im_Cintf. fold prR. fold prI. lra.
+Qed.
+
+Print Assumptions Cintf_dom.
 
 Print Assumptions Cintf_scal.
 Print Assumptions Cintf_add.
