@@ -92,6 +92,11 @@ Proof.
   apply (shift_invsq_tail rho Tsum M invsq_nonneg Tsum_spec).
 Qed.
 
+(* the tail product converges pointwise -- same generalisation *)
+Definition tail_prod_cv (M : nat) (z : C)
+  : { P : C | CUn_cv (Pprod (fun j => Efac z (rsh M j))) P } :=
+  hadamard_prod_cv_gen (rsh M) (Ttl M) (rsh_low M) (rsh_sum M) z.
+
 (* ----------------------------------------------------------------- *)
 (*  A.  the tail products stay near 1, uniformly on the disk           *)
 (* ----------------------------------------------------------------- *)

@@ -123,38 +123,59 @@ Proof.
   pose proof (H (S N)). lra.
 Qed.
 
-Theorem Efac_devsum_cv : forall (rho : nat -> C),
-  ZeroEnum rho -> (forall n, 1 <= Cmod (rho n)) ->
+(* the enumeration enters ONLY through a cap on the inverse-square sums,
+   so state it that way: a SHIFTED tail of an enumeration satisfies the
+   same shape, which is what XiTailProd instantiates. *)
+Lemma enum_invsq_cap : forall rho, ZeroEnum rho ->
+  (forall n, 1 <= Cmod (rho n)) ->
+  forall N, sum_f_R0 (fun n => invsq (rho n)) N <= 4 * agrow.
+Proof.
+  intros rho He Hl N. rewrite <- sumlist_takeN. apply enum_sum_bound; assumption.
+Qed.
+
+Theorem Efac_devsum_cv_gen : forall (rho : nat -> C) (Sb : R),
+  (forall n, 1 <= Cmod (rho n)) ->
+  (forall N, sum_f_R0 (fun n => invsq (rho n)) N <= Sb) ->
   forall z, { T | Un_cv (sum_f_R0 (dev (fun n => Efac z (rho n)))) T }.
 Proof.
-  intros rho Henum Hlow z.
+  intros rho Sb Hlow Hsum z.
   set (g := fun n => Efac z (rho n)).
   set (Un := sum_f_R0 (dev g)).
   assert (Hgrow : Un_growing Un).
   { intro N. unfold Un. rewrite tech5.
     pose proof (Cmod_nonneg (Cminus (g (S N)) C1)). unfold dev. lra. }
   assert (Hub : has_ub Un).
-  { exists (KR (Cmod z) * (4 * agrow)). intros v [N ->]. unfold Un.
+  { exists (KR (Cmod z) * Sb). intros v [N ->]. unfold Un.
     apply Rle_trans with (sum_f_R0 (fun n => invsq (rho n) * KR (Cmod z)) N).
     - apply sumR0_le. intro i. unfold dev, g, invsq.
       rewrite Rmult_comm. apply Efac_dev_le. apply Hlow.
     - rewrite <- (scal_sum (fun n => invsq (rho n)) N (KR (Cmod z))).
       apply Rmult_le_compat_l;
-        [ apply KR_nonneg; apply Cmod_nonneg | ].
-      rewrite <- sumlist_takeN. apply enum_sum_bound; assumption. }
+        [ apply KR_nonneg; apply Cmod_nonneg | ]. apply Hsum. }
   destruct (growing_cv Un Hgrow Hub) as [l Hl]. exists l; exact Hl.
 Defined.
+
+Definition Efac_devsum_cv (rho : nat -> C) (He : ZeroEnum rho)
+  (Hl : forall n, 1 <= Cmod (rho n)) (z : C)
+  : { T | Un_cv (sum_f_R0 (dev (fun n => Efac z (rho n)))) T } :=
+  Efac_devsum_cv_gen rho (4 * agrow) Hl (enum_invsq_cap rho He Hl) z.
 
 (* ================================================================= *)
 (*  D.  THE PRODUCT CONVERGES                                          *)
 (* ================================================================= *)
-Theorem hadamard_prod_cv : forall (rho : nat -> C),
-  ZeroEnum rho -> (forall n, 1 <= Cmod (rho n)) ->
+Theorem hadamard_prod_cv_gen : forall (rho : nat -> C) (Sb : R),
+  (forall n, 1 <= Cmod (rho n)) ->
+  (forall N, sum_f_R0 (fun n => invsq (rho n)) N <= Sb) ->
   forall z, { P : C | CUn_cv (Pprod (fun n => Efac z (rho n))) P }.
 Proof.
-  intros rho Henum Hlow z.
-  destruct (Efac_devsum_cv rho Henum Hlow z) as [T HT].
+  intros rho Sb Hlow Hsum z.
+  destruct (Efac_devsum_cv_gen rho Sb Hlow Hsum z) as [T HT].
   exact (Pprod_cv (fun n => Efac z (rho n)) T HT).
 Defined.
+
+Definition hadamard_prod_cv (rho : nat -> C) (He : ZeroEnum rho)
+  (Hl : forall n, 1 <= Cmod (rho n)) (z : C)
+  : { P : C | CUn_cv (Pprod (fun n => Efac z (rho n))) P } :=
+  hadamard_prod_cv_gen rho (4 * agrow) Hl (enum_invsq_cap rho He Hl) z.
 
 Print Assumptions hadamard_prod_cv.
