@@ -1173,3 +1173,4 @@ spectral-theory/XiBubBound.v
 spectral-theory/XiSubQuadLog.v
 spectral-theory/COmega.v
 spectral-theory/COmegaOrth.v
+spectral-theory/CZetaMod3.v
