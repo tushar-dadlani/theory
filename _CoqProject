@@ -1167,3 +1167,5 @@ spectral-theory/XiLogDerivZeros.v
 spectral-theory/XiLnBound.v
 spectral-theory/XiHDiskBound.v
 spectral-theory/RLogPower.v
+spectral-theory/RSubQuad.v
+spectral-theory/XiLxiMajor.v
