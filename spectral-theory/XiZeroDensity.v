@@ -23,8 +23,9 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra Lia List.
-Require Import ComplexField Cmodulus Holomorphic CPathIntegral
-        RiemannXiEntire XiGrowthBound XiZeroCount CDyadicSum.
+Require Import ComplexField Cmodulus Holomorphic CDeriv CHoloCcontC CPathIntegral
+        JensenMultiZero CZeroListFactor CPeelBound
+        RiemannXiEntire XiNonzero XiGrowthBound XiZeroCount CDyadicSum.
 Open Scope R_scope.
 
 (* the counting majorant *)
@@ -80,8 +81,104 @@ Theorem xi_sum_inv_sq : forall a : R,
     sumlist invsq s <= 4 * a.
 Proof.
   intros a Ha Hgrow s Hnd HP Hlow.
-  exact (dyadic_sum_bound (fun z => XiC z = C0) Bxi xi_count_below
+  exact (dyadic_sum_bound (fun z => XiC z = C0) Bxi (fun l => NoDup l)
+           (fun p l Hl => NoDup_filter p Hl) xi_count_below
            a Ha Hgrow s Hnd HP Hlow).
 Qed.
 
 Print Assumptions xi_sum_inv_sq.
+
+(* ================================================================= *)
+(*  THE MULTIPLICITY VERSION.                                          *)
+(*                                                                    *)
+(*  xi_sum_inv_sq above counts each zero ONCE (NoDup).  The Hadamard   *)
+(*  product repeats a zero according to its multiplicity, so it needs  *)
+(*  the sum over a list that may repeat.  The admissible lists are the *)
+(*  PEEL LISTS: those l for which xi = prodfac l . G with G still       *)
+(*  regular.  Repeats are exactly what a peel list records.           *)
+(*                                                                    *)
+(*  Two facts make this work with no new analysis:                     *)
+(*   * peel lists are closed under filter (a sublist of a peel list is *)
+(*     one -- push the discarded factors into the cofactor), which is   *)
+(*     all the dyadic argument asked NoDup for;                        *)
+(*   * CPeelBound.peel_count_explicit already counts WITH multiplicity, *)
+(*     and taking the circle radius Rc := 8(r+1) makes its bound come   *)
+(*     out as exactly Bxi r -- so the SAME majorant, and hence the same *)
+(*     xi_Hgrow, is reused unchanged.                                  *)
+(* ================================================================= *)
+Definition XiPeel (s : list C) : Prop :=
+  exists G : C -> C,
+    (forall z, XiC z = Cmul (prodfac s z) (G z)) /\
+    ptcont G /\ (forall R2, disk_holo G R2).
+
+Lemma prodfac_holo : forall (l : list C) (z : C),
+  exists d, is_Cderiv (prodfac l) z d.
+Proof.
+  induction l as [| w l' IH]; intro z.
+  - exists C0. exact (Cderiv_const C1 z).
+  - destruct (IH z) as [d Hd]. eexists.
+    change (prodfac (w :: l')) with (fun u => Cmul (Cminus u w) (prodfac l' u)).
+    apply (Cderiv_mul (fun u => Cminus u w) (prodfac l') z (Cminus C1 C0) d).
+    + apply (Cderiv_minus (fun u => u) (fun _ => w) z C1 C0);
+        [ apply Cderiv_id | apply Cderiv_const ].
+    + exact Hd.
+Qed.
+
+Lemma prodfac_filter_split : forall (p : C -> bool) (l : list C) (z : C),
+  prodfac l z
+  = Cmul (prodfac (filter p l) z) (prodfac (filter (fun x => negb (p x)) l) z).
+Proof.
+  intros p l z. induction l as [| w l' IH]; cbn [filter].
+  - cbn [prodfac]. ring.
+  - destruct (p w); cbn [prodfac negb]; rewrite IH; ring.
+Qed.
+
+Lemma XiPeel_filter : forall (p : C -> bool) (s : list C),
+  XiPeel s -> XiPeel (filter p s).
+Proof.
+  intros p s [G [Hid [Hptc Hhol]]].
+  set (G' := fun z => Cmul (prodfac (filter (fun x => negb (p x)) s) z) (G z)).
+  assert (Hhol' : forall z, exists d, is_Cderiv G' z d).
+  { intro z.
+    destruct (prodfac_holo (filter (fun x => negb (p x)) s) z) as [d1 Hd1].
+    destruct (Hhol (Cmod z + 1) z ltac:(lra)) as [d2 Hd2].
+    unfold G'. eexists. apply Cderiv_mul; [ exact Hd1 | exact Hd2 ]. }
+  exists G'. split; [ | split ].
+  - intro z. unfold G'. rewrite (Hid z), (prodfac_filter_split p s z). ring.
+  - exact (holo_ptcont G' Hhol').
+  - intros R2 z _. apply Hhol'.
+Qed.
+
+Theorem xi_count_peel : forall (r : R) (s : list C),
+  0 < r -> XiPeel s ->
+  (forall x, In x s -> Cmod x < r) ->
+  INR (length s) <= Bxi r.
+Proof.
+  intros r s HR [G [Hid [Hptc Hhol]]] Hsmall.
+  set (Rc := 8 * (r + 1)).
+  assert (HRc : 0 < Rc) by (unfold Rc; lra).
+  assert (Hsm4 : forall w, In w s -> Cmod w <= Rc / 4).
+  { intros w Hw. pose proof (Hsmall w Hw) as Hw'. unfold Rc. lra. }
+  pose proof (peel_count_explicit XiC G Rc (XiM Rc) s HRc XiC_ne0_at0 Hid Hptc
+                (Hhol (Rc + 1)) (XiC_circle_bound Rc HRc) Hsm4) as Hpc.
+  rewrite Cmod_XiC_C0 in Hpc.
+  replace (2 * XiM Rc / / 2) with (4 * XiM Rc) in Hpc by field.
+  unfold Bxi. fold Rc. exact Hpc.
+Qed.
+
+Theorem xi_sum_inv_sq_mult : forall a : R,
+  0 <= a ->
+  (forall k : nat, Bxi (2 ^ (S k)) <= a * INR (S k) * 2 ^ k) ->
+  forall s : list C,
+    XiPeel s ->
+    (forall x, In x s -> XiC x = C0) ->
+    (forall x, In x s -> 1 <= Cmod x) ->
+    sumlist invsq s <= 4 * a.
+Proof.
+  intros a Ha Hgrow s Hpeel HP Hlow.
+  exact (dyadic_sum_bound (fun z => XiC z = C0) Bxi XiPeel XiPeel_filter
+           (fun r s' Hr Hq _ Hsm => xi_count_peel r s' Hr Hq Hsm)
+           a Ha Hgrow s Hpeel HP Hlow).
+Qed.
+
+Print Assumptions xi_sum_inv_sq_mult.

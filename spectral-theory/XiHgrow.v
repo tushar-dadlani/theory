@@ -239,3 +239,18 @@ Proof.
 Qed.
 
 Print Assumptions xi_sum_inv_sq_uncond.
+
+(* the same, counting each zero with its MULTIPLICITY -- which is what the
+   Hadamard product actually needs.  Same majorant Bxi, so the same
+   xi_Hgrow discharges it. *)
+Theorem xi_sum_inv_sq_mult_uncond : forall s : list C,
+  XiPeel s ->
+  (forall x, In x s -> XiC x = C0) ->
+  (forall x, In x s -> 1 <= Cmod x) ->
+  sumlist invsq s <= 4 * agrow.
+Proof.
+  intros s Hpeel HP Hlow.
+  exact (xi_sum_inv_sq_mult agrow agrow_nonneg xi_Hgrow s Hpeel HP Hlow).
+Qed.
+
+Print Assumptions xi_sum_inv_sq_mult_uncond.

@@ -2,9 +2,9 @@
 (*  CDyadicSum.v  —  from a zero-COUNTING bound to a SUMMABILITY        *)
 (*  bound:  n(r) = O(r ln r)  ==>  sum 1/|rho|^2 bounded.              *)
 (*                                                                    *)
-(*    dyadic_sum_bound : if every NoDup list of P-points of modulus     *)
+(*    dyadic_sum_bound : if every ADMISSIBLE list of P-points of       *)
 (*      < r has length <= B r, and B (2^(k+1)) <= a . (k+1) . 2^k,      *)
-(*      then for EVERY NoDup list s of P-points with 1 <= |x|,          *)
+(*      then for EVERY admissible list s of P-points with 1 <= |x|,    *)
 (*                                                                    *)
 (*        sumlist (fun x => / |x|^2) s  <=  4 a.                        *)
 (*                                                                    *)
@@ -114,8 +114,16 @@ Section Dyadic.
 
 Variable P : C -> Prop.
 Variable B : R -> R.
+
+(* The admissibility predicate on lists.  It was NoDup, but the Hadamard
+   product repeats each zero according to MULTIPLICITY, so the counting
+   input has to admit repeats.  All the dyadic argument ever needs of it
+   is closure under filter -- exactly what NoDup_filter provided. *)
+Variable Q : list C -> Prop.
+Hypothesis Qfilter : forall (p : C -> bool) (s : list C), Q s -> Q (filter p s).
+
 Hypothesis Hcount : forall (r : R) (s : list C),
-  0 < r -> NoDup s ->
+  0 < r -> Q s ->
   (forall x, In x s -> P x) ->
   (forall x, In x s -> Cmod x < r) ->
   INR (length s) <= B r.
@@ -135,7 +143,7 @@ Proof.
 Qed.
 
 Lemma dyadic_bounded : forall (K : nat) (s : list C),
-  NoDup s ->
+  Q s ->
   (forall x, In x s -> P x) ->
   (forall x, In x s -> 1 <= Cmod x < 2 ^ K) ->
   sumlist invsq s <= Dsum K.
@@ -149,7 +157,7 @@ Proof.
     (* the inner bucket, by induction *)
     assert (Hin1 : sumlist invsq (filter p s) <= Dsum K).
     { apply IH.
-      - apply NoDup_filter; exact Hnd.
+      - apply Qfilter; exact Hnd.
       - intros x Hx. apply HP. exact (proj1 (proj1 (filter_In p x s) Hx)).
       - intros x Hx.
         destruct (proj1 (filter_In p x s) Hx) as [Hxs Hpx].
@@ -174,7 +182,7 @@ Proof.
       assert (Hlen : INR (length t) <= B (2 ^ (S K))).
       { apply (Hcount (2 ^ (S K))).
         - apply pow2_pos.
-        - apply NoDup_filter; exact Hnd.
+        - apply Qfilter; exact Hnd.
         - intros x Hx. apply HP. exact (proj1 (Hmem x Hx)).
         - intros x Hx. exact (proj2 (Hrange x (proj1 (Hmem x Hx)))). }
       apply Rle_trans with (INR (length t) * / 4 ^ K).
@@ -205,7 +213,7 @@ Proof.
 Qed.
 
 Theorem dyadic_sum_bound : forall s : list C,
-  NoDup s ->
+  Q s ->
   (forall x, In x s -> P x) ->
   (forall x, In x s -> 1 <= Cmod x) ->
   sumlist invsq s <= 4 * a.
