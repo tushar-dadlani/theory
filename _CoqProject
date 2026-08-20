@@ -1151,3 +1151,5 @@ spectral-theory/CFiniteCancel.v
 spectral-theory/XiHcofCoh.v
 spectral-theory/XiTMSelect.v
 spectral-theory/XiHadamardGlue.v
+spectral-theory/CDerivGlobal.v
+spectral-theory/XiHadamardOrderOne.v
