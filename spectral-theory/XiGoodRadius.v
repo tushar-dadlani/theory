@@ -42,7 +42,7 @@ Open Scope R_scope.
 
 Theorem xi_good_radius : forall r cov : R, 0 < r -> 0 < cov ->
   exists rr del : R,
-    2 * r <= rr /\ rr <= 4 * r /\ 0 < del /\
+    2 * r <= rr /\ rr <= 4 * r /\ 0 < del /\ del <= r /\
     r / (Bxi cov + 1) <= del /\
     forall rho, XiC rho = C0 -> Cmod rho < cov ->
       forall w, Cmod w = rr -> del <= Cmod (Cminus w rho).
@@ -58,6 +58,11 @@ Proof.
   exists rr, (r / (INR (length l) + 1)).
   split; [ exact Hlo | ]. split; [ exact Hhi | ].
   split; [ apply Rdiv_lt_0_compat; lra | ].
+  split.
+  { (* del <= r : the denominator is at least 1 *)
+    unfold Rdiv. rewrite <- (Rmult_1_r r) at 2.
+    apply Rmult_le_compat_l; [ lra | ].
+    rewrite <- Rinv_1. apply Rinv_le_contravar; lra. }
   split.
   - unfold Rdiv. apply Rmult_le_compat_l;
       [ lra | apply Rinv_le_contravar; lra ].

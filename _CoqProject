@@ -1158,3 +1158,6 @@ spectral-theory/XiSumBounds.v
 spectral-theory/CEfacLower.v
 spectral-theory/CGoodRadius.v
 spectral-theory/XiGoodRadius.v
+spectral-theory/CDyadicBracket.v
+spectral-theory/CListProdBound.v
+spectral-theory/XiProdLower.v
