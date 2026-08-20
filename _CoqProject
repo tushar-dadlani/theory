@@ -1164,3 +1164,5 @@ spectral-theory/XiProdLower.v
 spectral-theory/CCauchyEstimate.v
 spectral-theory/CSpecDet.v
 spectral-theory/XiLogDerivZeros.v
+spectral-theory/XiLnBound.v
+spectral-theory/XiHDiskBound.v
