@@ -7,7 +7,8 @@
 (*                                                                    *)
 (*        ln |Hglob z|  <=  ln 4 + Lxi rr - LBexp rr del K             *)
 (*                                                                    *)
-(*      for EVERY z with |z| <= r.                                     *)
+(*      for EVERY z with |z| <= r, together with the constraints on    *)
+(*      del and K that the next step needs to size the bound.          *)
 (*                                                                    *)
 (*  THE WHOLE POINT is that the bound holds on a DISK while the        *)
 (*  estimate is only available on a CIRCLE.  |H| = |xi|/|P| is         *)
@@ -34,7 +35,7 @@ From Stdlib Require Import Reals Lra Lia List.
 Require Import ComplexField Cmodulus Holomorphic CDeriv CHoloCcontC CSegInt
         CPathIntegral CSeries CInfProd CCauchyEstimate PerronRemovable
         JensenMultiZero CZeroListFactor RiemannXiEntire XiGrowthBound
-        XiZeroCount XiHgrow XiZeroEnum XiHadamardProd XiHcof XiProdLimit
+        XiZeroCount XiZeroDensity XiHgrow XiZeroEnum XiHadamardProd XiHcof XiProdLimit
         XiHadamardLocal XiHadamardGlue XiProdLower XiLnBound.
 Open Scope R_scope.
 
@@ -55,6 +56,8 @@ Proof. exact (holo_ptcont Hg (Hglob_holo rho Gseq HZ Hlow)). Qed.
 Theorem xi_H_disk_bound : forall r, 8 <= r ->
   exists (rr del : R) (K : nat),
     2 * r <= rr /\ rr <= 4 * r /\
+    0 < del /\ del <= r /\ r / (Bxi (80 * r) + 1) <= del /\
+    10 * rr <= 2 ^ K /\ 2 ^ K < 20 * rr /\
     forall z, Cmod z <= r ->
       ln (Cmod (Hg z)) <= ln 4 + Lxi rr - LBexp rr del K.
 Proof.
@@ -91,6 +94,8 @@ Proof.
     rewrite Hcancel, Rmult_1_r. exact Hstep. }
   (* ---- carried inward ---- *)
   split; [ exact Hlo | ]. split; [ exact Hhi | ].
+  split; [ exact Hd0 | ]. split; [ exact Hdr | ]. split; [ exact Hdb | ].
+  split; [ exact HK1 | ]. split; [ exact HK2 | ].
   intros z Hz.
   assert (HzR : Cmod z <= rr / 2) by lra.
   assert (Hdisk : Cmod (Hg z) <= 4 * B).
