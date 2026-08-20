@@ -1174,3 +1174,5 @@ spectral-theory/XiSubQuadLog.v
 spectral-theory/COmega.v
 spectral-theory/COmegaOrth.v
 spectral-theory/CZetaMod3.v
+spectral-theory/CCubicChar.v
+spectral-theory/CEisenstein.v
