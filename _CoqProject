@@ -1161,3 +1161,4 @@ spectral-theory/XiGoodRadius.v
 spectral-theory/CDyadicBracket.v
 spectral-theory/CListProdBound.v
 spectral-theory/XiProdLower.v
+spectral-theory/CCauchyEstimate.v
