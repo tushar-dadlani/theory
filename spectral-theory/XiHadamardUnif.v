@@ -66,8 +66,13 @@ Qed.
 Section Unif.
 
 Variable rho : nat -> C.
-Hypothesis Henum : ZeroEnum rho.
 Hypothesis Hlow : forall n, 1 <= Cmod (rho n).
+(* the ONLY thing the argument needs of the enumeration: a cap on the
+   inverse-square sums.  Keeping it abstract is what lets the very same
+   section be instantiated at a SHIFTED tail of rho -- which is exactly
+   the tail-product statement.  See XiTailProd. *)
+Variable Sb : R.
+Hypothesis Hsum : forall N, sum_f_R0 (fun n => invsq (rho n)) N <= Sb.
 Variable Rr : R.
 Hypothesis HR : 0 < Rr.
 
@@ -86,8 +91,7 @@ Proof.
   assert (Hgrow : Un_growing Un).
   { intro N. unfold Un. rewrite tech5. pose proof (invsq_pos (S N)). lra. }
   assert (Hub : has_ub Un).
-  { exists (4 * agrow). intros v [N ->]. unfold Un.
-    rewrite <- sumlist_takeN. apply enum_sum_bound; assumption. }
+  { exists Sb. intros v [N ->]. unfold Un. apply Hsum. }
   destruct (growing_cv Un Hgrow Hub) as [l Hl]. exists l; exact Hl.
 Defined.
 
@@ -116,7 +120,7 @@ Proof.
   - apply KR_mono; [ apply Cmod_nonneg | exact Hz ].
 Qed.
 
-Definition TU : R := KR Rr * (4 * agrow).
+Definition TU : R := KR Rr * Sb.
 
 Lemma sumdev_le_TU : forall z, Cmod z <= Rr ->
   forall N, sum_f_R0 (dev (fun k => Efac z (rho k))) N <= TU.
@@ -125,8 +129,19 @@ Proof.
   apply Rle_trans with (sum_f_R0 (fun n => invsq (rho n) * KR Rr) N).
   - apply sumR0_le. intro i. rewrite Rmult_comm. apply dev_unif; exact Hz.
   - rewrite <- (scal_sum (fun n => invsq (rho n)) N (KR Rr)).
-    apply Rmult_le_compat_l; [ apply KR_nonneg; lra | ].
-    rewrite <- sumlist_takeN. apply enum_sum_bound; assumption.
+    apply Rmult_le_compat_l; [ apply KR_nonneg; lra | ]. apply Hsum.
+Qed.
+
+(* every partial product stays within exp TU - 1 of 1, uniformly in z *)
+Lemma Pprod_near1 : forall z, Cmod z <= Rr -> forall k,
+  Cmod (Cminus (Pprod (fun j => Efac z (rho j)) k) C1) <= exp TU - 1.
+Proof.
+  intros z Hz k.
+  eapply Rle_trans; [ apply Pprod_dev_bound | ].
+  apply Rplus_le_compat_r.
+  eapply Rle_trans;
+    [ apply (RPdev_le_exp (dev (fun j => Efac z (rho j))) (dev_nonneg _)) | ].
+  apply exp_le. apply sumdev_le_TU; exact Hz.
 Qed.
 
 Definition dtail (M : nat) : R := Ssum - sum_f_R0 (fun n => invsq (rho n)) M.
@@ -252,6 +267,37 @@ Qed.
 End Unif.
 
 (* ----------------------------------------------------------------- *)
+(*  the two instantiations of Hsum we need                             *)
+(* ----------------------------------------------------------------- *)
+Lemma enum_invsq_bound : forall rho, ZeroEnum rho ->
+  (forall n, 1 <= Cmod (rho n)) ->
+  forall N, sum_f_R0 (fun n => invsq (rho n)) N <= 4 * agrow.
+Proof.
+  intros rho He Hl N. rewrite <- sumlist_takeN. apply enum_sum_bound; assumption.
+Qed.
+
+(* a SHIFTED tail of rho is capped by the TAIL of the sum -- which tends to
+   0, and that is what makes the tail products cluster around 1 *)
+Lemma shift_invsq_tail : forall (rho : nat -> C) (T : R) (M : nat),
+  (forall n, 0 <= invsq (rho n)) ->
+  Un_cv (sum_f_R0 (fun n => invsq (rho n))) T ->
+  forall N, sum_f_R0 (fun n => invsq (rho (S (M + n)))) N
+            <= T - sum_f_R0 (fun n => invsq (rho n)) M.
+Proof.
+  intros rho T M Hpos Hcv N.
+  assert (Heq : sum_f_R0 (fun n => invsq (rho (S (M + n)))) N
+              = sum_f_R0 (fun n => invsq (rho n)) (S (M + N))
+                - sum_f_R0 (fun n => invsq (rho n)) M)
+    by (apply (sumtail_eq (fun n => invsq (rho n)) M N)).
+  rewrite Heq.
+  assert (Hle : sum_f_R0 (fun n => invsq (rho n)) (S (M + N)) <= T).
+  { apply (growing_ineq (sum_f_R0 (fun n => invsq (rho n)))); [ | exact Hcv ].
+    intro n. rewrite tech5. pose proof (Hpos (S n)). lra. }
+  lra.
+Qed.
+
+
+(* ----------------------------------------------------------------- *)
 (*  the same, instantiated at the limit function that phase 1 built.   *)
 (*                                                                    *)
 (*  hadamard_prod_cv returns a sig, so proj1_sig of it IS a function   *)
@@ -269,7 +315,7 @@ Corollary hadamard_prod_unif_inst :
                      (proj1_sig (hadamard_prod_cv rho He Hl z))) < eps.
 Proof.
   intros rho He Hl Rr HR eps Heps.
-  apply (hadamard_prod_unif rho He Hl Rr HR
+  apply (hadamard_prod_unif rho Hl (4 * agrow) (enum_invsq_bound rho He Hl) Rr HR
            (fun z => proj1_sig (hadamard_prod_cv rho He Hl z))).
   - intro z. exact (proj2_sig (hadamard_prod_cv rho He Hl z)).
   - exact Heps.
@@ -277,3 +323,4 @@ Qed.
 
 Print Assumptions hadamard_prod_unif.
 Print Assumptions hadamard_prod_unif_inst.
+Print Assumptions shift_invsq_tail.

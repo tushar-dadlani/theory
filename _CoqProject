@@ -1144,3 +1144,4 @@ spectral-theory/XiProdFactor.v
 spectral-theory/XiProdLimit.v
 spectral-theory/XiHcof.v
 spectral-theory/CMorera.v
+spectral-theory/XiTailProd.v
