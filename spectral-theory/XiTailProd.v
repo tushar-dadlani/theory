@@ -92,6 +92,24 @@ Proof.
   apply (shift_invsq_tail rho Tsum M invsq_nonneg Tsum_spec).
 Qed.
 
+Lemma sum_invsq_mono : forall a b, (a <= b)%nat ->
+  sum_f_R0 (fun n => invsq (rho n)) a <= sum_f_R0 (fun n => invsq (rho n)) b.
+Proof.
+  intros a b Hab. induction Hab as [| b Hab IH]; [ lra | ].
+  rewrite tech5. pose proof (invsq_nonneg (S b)). lra.
+Qed.
+
+Lemma Ttl_decr : forall M N, (M <= N)%nat -> Ttl N <= Ttl M.
+Proof. intros M N H. unfold Ttl. pose proof (sum_invsq_mono M N H). lra. Qed.
+
+Lemma Ttl_small : forall eps, 0 < eps -> exists M, Ttl M < eps.
+Proof.
+  intros eps Heps. destruct (Tsum_spec eps Heps) as [M HM].
+  exists M. pose proof (HM M (le_n M)) as H.
+  pose proof (Ttl_nonneg M) as H0. unfold Ttl, R_dist in *.
+  rewrite Rabs_left1 in H by lra. lra.
+Qed.
+
 (* the tail product converges pointwise -- same generalisation *)
 Definition tail_prod_cv (M : nat) (z : C)
   : { P : C | CUn_cv (Pprod (fun j => Efac z (rsh M j))) P } :=
