@@ -1166,3 +1166,4 @@ spectral-theory/CSpecDet.v
 spectral-theory/XiLogDerivZeros.v
 spectral-theory/XiLnBound.v
 spectral-theory/XiHDiskBound.v
+spectral-theory/RLogPower.v
