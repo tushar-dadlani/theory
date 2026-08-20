@@ -1156,3 +1156,5 @@ spectral-theory/XiHadamardOrderOne.v
 spectral-theory/CDyadicSum2.v
 spectral-theory/XiSumBounds.v
 spectral-theory/CEfacLower.v
+spectral-theory/CGoodRadius.v
+spectral-theory/XiGoodRadius.v
