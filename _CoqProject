@@ -1134,3 +1134,4 @@ spectral-theory/CArcWeight.v
 spectral-theory/CCoeffTwo.v
 spectral-theory/CConjHalf.v
 spectral-theory/CBorelBound.v
+spectral-theory/XiHgrow.v
