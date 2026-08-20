@@ -1136,3 +1136,5 @@ spectral-theory/CConjHalf.v
 spectral-theory/CBorelBound.v
 spectral-theory/XiHgrow.v
 spectral-theory/XiZeroEnum.v
+spectral-theory/CWeierFactor.v
+spectral-theory/XiHadamardProd.v
