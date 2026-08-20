@@ -1147,3 +1147,7 @@ spectral-theory/CMorera.v
 spectral-theory/XiTailProd.v
 spectral-theory/XiTMHolo.v
 spectral-theory/XiHadamardLocal.v
+spectral-theory/CFiniteCancel.v
+spectral-theory/XiHcofCoh.v
+spectral-theory/XiTMSelect.v
+spectral-theory/XiHadamardGlue.v
