@@ -1140,3 +1140,4 @@ spectral-theory/CWeierFactor.v
 spectral-theory/XiHadamardProd.v
 spectral-theory/CInfProdUnif.v
 spectral-theory/XiHadamardUnif.v
+spectral-theory/XiProdFactor.v
