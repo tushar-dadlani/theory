@@ -28,8 +28,9 @@
 
 From Stdlib Require Import Reals Lra Lia.
 Require Import ComplexField Cmodulus Holomorphic CSeries CImproperIntegral
-        CIntegral2 CPathIntegral CSegInt CTriangle CGoursatML CGoursatLin
-        CPrimitive CPrimConv CDerivConst UniformIntegralSwap.
+        CIntegral2 CPathIntegral CSegInt CSegIntCont CTriangle CGoursatML
+        CGoursatLin CPrimitive CPrimConv CPrimitiveDisk CDerivConst
+        CDerivHoloDisk UniformIntegralSwap.
 Open Scope R_scope.
 
 (* ----------------------------------------------------------------- *)
@@ -122,5 +123,143 @@ Qed.
 
 End MoreraPrim.
 
+(* ----------------------------------------------------------------- *)
+(*  C.  segment and triangle integrals of a uniform limit             *)
+(* ----------------------------------------------------------------- *)
+Lemma CUn_cv_add2 : forall (u v : nat -> C) (a b : C),
+  CUn_cv u a -> CUn_cv v b -> CUn_cv (fun n => Cadd (u n) (v n)) (Cadd a b).
+Proof.
+  intros u v a b Hu Hv eps Heps.
+  destruct (Hu (eps / 2) ltac:(lra)) as [N1 H1].
+  destruct (Hv (eps / 2) ltac:(lra)) as [N2 H2].
+  exists (Nat.max N1 N2). intros n Hn.
+  pose proof (H1 n ltac:(lia)) as Ha. pose proof (H2 n ltac:(lia)) as Hb.
+  replace (Cminus (Cadd (u n) (v n)) (Cadd a b))
+    with (Cadd (Cminus (u n) a) (Cminus (v n) b)) by ring.
+  eapply Rle_lt_trans; [ apply Cmod_triangle | ]. lra.
+Qed.
+
+Lemma CUn_cv_C0 : CUn_cv (fun _ : nat => C0) C0.
+Proof.
+  intros eps Heps. exists 0%nat. intros n _.
+  replace (Cminus C0 C0) with C0 by ring.
+  rewrite (proj2 (Cmod0 C0) eq_refl). exact Heps.
+Qed.
+
+Lemma CUn_cv_ext2 : forall (u v : nat -> C) (l : C),
+  (forall n, u n = v n) -> CUn_cv u l -> CUn_cv v l.
+Proof.
+  intros u v l Heq Hcv eps Heps. destruct (Hcv eps Heps) as [N HN].
+  exists N. intros n Hn. rewrite <- (Heq n). apply HN; exact Hn.
+Qed.
+
+Lemma seg_int_unif_limit : forall (Fn : nat -> C -> C) (G : C -> C)
+  (HFn : forall n, CcontC (Fn n)) (HG : CcontC G) (U : C -> Prop) (a b : C),
+  Convex U -> U a -> U b ->
+  (forall eps, 0 < eps -> exists N, forall n, (N <= n)%nat ->
+     forall w, U w -> Cmod (Cminus (Fn n w) (G w)) <= eps) ->
+  CUn_cv (fun n => seg_int (Fn n) (HFn n) a b) (seg_int G HG a b).
+Proof.
+  intros Fn G HFn HG U a b HU Ha Hb Hunif.
+  unfold seg_int.
+  apply (Cintf_unif_limit
+           (fun n u => Cmul (Fn n (seg a b u)) (seg' a b u))
+           (fun u => Cmul (G (seg a b u)) (seg' a b u))
+           (fun n => seg_ig_cont (Fn n) (HFn n) a b)
+           (seg_ig_cont G HG a b) 0 1 ltac:(lra)).
+  intros eps Heps.
+  set (M := Cmod (Cminus b a) + 1).
+  assert (Hm0 : 0 <= Cmod (Cminus b a)) by apply Cmod_nonneg.
+  assert (HM : 0 < M) by (unfold M; lra).
+  destruct (Hunif (eps / M) ltac:(apply Rdiv_lt_0_compat; lra)) as [N HN].
+  exists N. intros n Hn t Ht.
+  replace (Cminus (Cmul (Fn n (seg a b t)) (seg' a b t))
+                  (Cmul (G (seg a b t)) (seg' a b t)))
+    with (Cmul (Cminus (Fn n (seg a b t)) (G (seg a b t))) (seg' a b t)) by ring.
+  rewrite Cmod_mul. unfold seg'.
+  assert (HUs : U (seg a b t)) by (apply HU; [ exact Ha | exact Hb | exact Ht ]).
+  pose proof (HN n Hn (seg a b t) HUs) as Hd.
+  assert (Hle : Cmod (Cminus (Fn n (seg a b t)) (G (seg a b t))) * Cmod (Cminus b a)
+                <= eps / M * M).
+  { apply Rle_trans with (eps / M * Cmod (Cminus b a)).
+    - apply Rmult_le_compat_r; [ exact Hm0 | exact Hd ].
+    - apply Rmult_le_compat_l;
+        [ left; apply Rdiv_lt_0_compat; lra | unfold M; lra ]. }
+  replace (eps / M * M) with eps in Hle by (field; lra). exact Hle.
+Qed.
+
+Lemma tri_int_unif_limit : forall (Fn : nat -> C -> C) (G : C -> C)
+  (HFn : forall n, CcontC (Fn n)) (HG : CcontC G) (U : C -> Prop) (a b c : C),
+  Convex U -> U a -> U b -> U c ->
+  (forall eps, 0 < eps -> exists N, forall n, (N <= n)%nat ->
+     forall w, U w -> Cmod (Cminus (Fn n w) (G w)) <= eps) ->
+  CUn_cv (fun n => tri_int (Fn n) (HFn n) a b c) (tri_int G HG a b c).
+Proof.
+  intros Fn G HFn HG U a b c HU Ha Hb Hc Hunif. unfold tri_int.
+  apply CUn_cv_add2;
+    [ apply (seg_int_unif_limit Fn G HFn HG U a b HU Ha Hb Hunif) | ].
+  apply CUn_cv_add2;
+    [ apply (seg_int_unif_limit Fn G HFn HG U b c HU Hb Hc Hunif)
+    | apply (seg_int_unif_limit Fn G HFn HG U c a HU Hc Ha Hunif) ].
+Qed.
+
+(* ================================================================= *)
+(*  D.  WEIERSTRASS'S CONVERGENCE THEOREM                              *)
+(*                                                                    *)
+(*  A uniform limit of holomorphic functions is holomorphic.  Morera    *)
+(*  in three moves: the fn have vanishing triangle integrals            *)
+(*  (tri_int_conv_all), those pass to the limit (tri_int_unif_limit),   *)
+(*  so MPrim_deriv gives g a primitive -- and a primitive's derivative  *)
+(*  is holomorphic (CDerivHoloDisk.deriv_holo_radius).  The Rr -> Rr/2  *)
+(*  style shrink is the tower's, inherited through deriv_holo_radius.   *)
+(* ================================================================= *)
+Theorem unif_limit_holo : forall (fn : nat -> C -> C) (g : C -> C) (Rr : R),
+  1 < Rr ->
+  (forall n, CcontC (fn n)) ->
+  (forall n z, exists d, is_Cderiv (fn n) z d) ->
+  CcontC g ->
+  (forall z eps, 0 < eps -> exists del, 0 < del /\
+     forall z', Cmod (Cminus z' z) < del -> Cmod (Cminus (g z') (g z)) < eps) ->
+  (forall eps, 0 < eps -> exists N, forall n, (N <= n)%nat ->
+     forall w, Cmod w < Rr -> Cmod (Cminus (fn n w) (g w)) <= eps) ->
+  forall z, Cmod z < (Rr - 1) / 2 -> exists d, is_Cderiv g z d.
+Proof.
+  intros fn g Rr HR Hfnc Hfnh Hgc Hgptc Hunif z Hz.
+  assert (HU : Convex (disk Rr)) by apply disk_convex.
+  assert (HO : Open (disk Rr)) by apply disk_open.
+  (* the limit's triangle integrals vanish *)
+  assert (Hvan : forall a b c, disk Rr a -> disk Rr b -> disk Rr c ->
+                   tri_int g Hgc a b c = C0).
+  { intros a b c Ha Hb Hc.
+    assert (Hcv : CUn_cv (fun n => tri_int (fn n) (Hfnc n) a b c)
+                         (tri_int g Hgc a b c)).
+    { apply (tri_int_unif_limit fn g Hfnc Hgc (disk Rr) a b c HU Ha Hb Hc).
+      intros eps Heps. destruct (Hunif eps Heps) as [N HN].
+      exists N. intros n Hn w Hw. apply HN; [ exact Hn | exact Hw ]. }
+    assert (Hzero : forall n, tri_int (fn n) (Hfnc n) a b c = C0).
+    { intro n. apply (tri_int_conv_all (disk Rr) HU HO (fn n) (Hfnc n) a b c
+                        Ha Hb Hc). intros w _. apply Hfnh. }
+    assert (Hc0 : CUn_cv (fun n => tri_int (fn n) (Hfnc n) a b c) C0).
+    { apply (CUn_cv_ext2 (fun _ : nat => C0));
+        [ intro n; symmetry; apply Hzero | apply CUn_cv_C0 ]. }
+    exact (CUn_cv_unique _ _ _ Hcv Hc0). }
+  (* Morera gives a primitive *)
+  assert (HUz0 : disk Rr C0)
+    by (unfold disk; rewrite (proj2 (Cmod0 C0) eq_refl); lra).
+  pose proof (MPrim_deriv (disk Rr) HO g Hgc Hvan
+                (fun w _ eps He => Hgptc w eps He) C0 HUz0) as HPd.
+  (* the primitive is pointwise continuous *)
+  assert (HPptc : forall w eps, 0 < eps -> exists del, 0 < del /\
+             forall v, Cmod (Cminus v w) < del ->
+               Cmod (Cminus (MPrim g Hgc C0 v) (MPrim g Hgc C0 w)) < eps)
+    by (intros w eps He; exact (seg_int_cmod_cont g Hgc C0 Hgptc w eps He)).
+  (* and a primitive's derivative is holomorphic *)
+  apply (deriv_holo_radius (MPrim g Hgc C0) g ((Rr - 1) / 2) ltac:(lra) HPptc).
+  - intros w Hw. apply HPd. unfold disk. lra.
+  - exact Hz.
+Qed.
+
 Print Assumptions Cintf_unif_limit.
 Print Assumptions MPrim_deriv.
+Print Assumptions tri_int_unif_limit.
+Print Assumptions unif_limit_holo.
