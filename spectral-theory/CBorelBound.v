@@ -21,7 +21,7 @@ Require Import ComplexField Cmodulus Holomorphic CDeriv CIntegral2 CSegInt
         CPathIntegral RootsOfUnity CImproperIntegral
         CIntfLinear CConjIntegral CArcWeight CConjHalf
         PerronRemovable CUnifCont CPrimitiveDisk CMeanValueDisk
-        CDerivUnique CCoeffTwo.
+        CDerivUnique CCoeffTwo CHoloCcontC CDerivConst CexpFull COrderOne.
 Open Scope R_scope.
 
 Lemma RtoC_two_Re : forall w : C, RtoC (2 * Re w) = Cadd w (Cconj w).
@@ -290,4 +290,124 @@ Proof.
 Qed.
 
 Print Assumptions second_deriv_zero.
+
+(* ================================================================= *)
+(*  STEP 10 -- an ARBITRARY centre, by translation.                    *)
+(*                                                                    *)
+(*  Step 9 kills G'' only at 0.  Applying it to the translate          *)
+(*  Gw u := G (u + w) moves the centre anywhere -- and this is the      *)
+(*  step that needs Mf MONOTONE: the translated majorant is            *)
+(*  Mfw r := Mf (r + |w|), and Re Gw z <= Mf |z + w| <= Mf (|z| + |w|)  *)
+(*  only because Mf is nondecreasing.  (This is exactly why            *)
+(*  COrderOne.BorelCaratheodory carries the monotonicity hypothesis.)  *)
+(*  Mfw is still o(r^2) since (r + c)^2 <= 4 r^2 once r >= c.          *)
+(* ================================================================= *)
+Lemma is_Cderiv_translate : forall (F : C -> C) (w z d : C),
+  is_Cderiv F (Cadd z w) d -> is_Cderiv (fun u => F (Cadd u w)) z d.
+Proof.
+  intros F w z d H eps Heps.
+  destruct (H eps Heps) as [del [Hdel Hb]].
+  exists del. split; [ exact Hdel | ].
+  intros h Hh. specialize (Hb h Hh).
+  replace (Cadd (Cadd z h) w) with (Cadd (Cadd z w) h) by ring.
+  exact Hb.
+Qed.
+
+Theorem second_deriv_zero_any : forall (G Gp : C -> C) (Mf : R -> R) (w d : C),
+  CcontC G ->
+  (forall z eps, 0 < eps -> exists del, 0 < del /\
+     forall z', Cmod (Cminus z' z) < del -> Cmod (Cminus (G z') (G z)) < eps) ->
+  (forall z, is_Cderiv G z (Gp z)) ->
+  (forall z eps, 0 < eps -> exists del, 0 < del /\
+     forall z', Cmod (Cminus z' z) < del -> Cmod (Cminus (Gp z') (Gp z)) < eps) ->
+  (forall z, Re (G z) <= Mf (Cmod z)) ->
+  (forall r1 r2, r1 <= r2 -> Mf r1 <= Mf r2) ->
+  (forall eps, 0 < eps -> exists R0, 0 < R0 /\
+     forall r, R0 <= r -> Mf r <= eps * r ^ 2) ->
+  is_Cderiv Gp w d ->
+  d = C0.
+Proof.
+  intros G Gp Mf w d HGc HGptc HG HGpptc HReG Hmono Hsub Hd.
+  set (c := Cmod w).
+  assert (Hc0 : 0 <= c) by apply Cmod_nonneg.
+  apply (second_deriv_zero (fun u => G (Cadd u w)) (fun u => Gp (Cadd u w))
+           (fun r => Mf (r + c)) d).
+  - (* CcontC of the translate *)
+    intros g Hg. apply (HGc (fun u => Cadd (g u) w)).
+    apply Ccont_add; [ exact Hg | apply Ccont_const ].
+  - (* pointwise continuity of the translate *)
+    intros z eps Heps. destruct (HGptc (Cadd z w) eps Heps) as [del [Hdel Hb]].
+    exists del. split; [ exact Hdel | ]. intros z' Hz'. apply Hb.
+    replace (Cminus (Cadd z' w) (Cadd z w)) with (Cminus z' z) by ring. exact Hz'.
+  - intro z. apply is_Cderiv_translate. apply HG.
+  - intros z eps Heps. destruct (HGpptc (Cadd z w) eps Heps) as [del [Hdel Hb]].
+    exists del. split; [ exact Hdel | ]. intros z' Hz'. apply Hb.
+    replace (Cminus (Cadd z' w) (Cadd z w)) with (Cminus z' z) by ring. exact Hz'.
+  - (* the translated majorant -- MONOTONICITY is used here *)
+    intro z. apply Rle_trans with (Mf (Cmod (Cadd z w))); [ apply HReG | ].
+    apply Hmono. unfold c. apply Cmod_triangle.
+  - (* still o(r^2) *)
+    intros eps Heps.
+    destruct (Hsub (eps / 4) ltac:(lra)) as [R0 [HR0 HR0b]].
+    exists (Rmax R0 (c + 1)). split.
+    + apply Rlt_le_trans with R0; [ exact HR0 | apply Rmax_l ].
+    + intros r Hr.
+      assert (Hr0 : R0 <= r) by (apply Rle_trans with (Rmax R0 (c + 1));
+                                [ apply Rmax_l | exact Hr ]).
+      assert (Hrc : c + 1 <= r) by (apply Rle_trans with (Rmax R0 (c + 1));
+                                    [ apply Rmax_r | exact Hr ]).
+      assert (Hrpos : 0 < r) by lra.
+      apply Rle_trans with (eps / 4 * (r + c) ^ 2); [ apply HR0b; lra | ].
+      assert (Hsq : (r + c) ^ 2 <= 4 * r ^ 2) by nra.
+      nra.
+  - (* the derivative value at the translated centre *)
+    apply is_Cderiv_translate.
+    replace (Cadd C0 w) with w by ring. exact Hd.
+Qed.
+
+(* ================================================================= *)
+(*  STEP 11 -- BorelCaratheodory, PROVED.                              *)
+(* ================================================================= *)
+Theorem BorelCaratheodory_holds : BorelCaratheodory.
+Proof.
+  intros G Gp Mf HG HGphol HReG Hmono Hsub.
+  assert (HGhol : forall z, exists d, is_Cderiv G z d)
+    by (intro z; exists (Gp z); apply HG).
+  assert (HGptc := holo_ptcont G HGhol).
+  assert (HGpptc := holo_ptcont Gp HGphol).
+  assert (HGc : CcontC G) by (apply ptcont_CcontC; exact HGptc).
+  (* every point is a zero of G'' *)
+  assert (Hzero : forall z, is_Cderiv Gp z C0).
+  { intro z. destruct (HGphol z) as [dz Hdz].
+    rewrite <- (second_deriv_zero_any G Gp Mf z dz
+                  HGc HGptc HG HGpptc HReG Hmono Hsub Hdz).
+    exact Hdz. }
+  exists (Gp C0). intro z.
+  exact (Cderiv0_const (fun _ : C => True) Convex_all Gp
+           (fun u _ => Hzero u) z C0 I I).
+Qed.
+
+Print Assumptions second_deriv_zero_any.
+(* ================================================================= *)
+(*  THE ORDER-1 STEP, now UNCONDITIONAL.                               *)
+(*                                                                    *)
+(*  COrderOne.order_one_step took BorelCaratheodory as a hypothesis.   *)
+(*  It is now a theorem, so the hypothesis is discharged and Hadamard's *)
+(*  last step stands on its own:  an entire, zero-free function whose   *)
+(*  log-modulus is o(r^2) is exactly A . e^{bz}.                       *)
+(* ================================================================= *)
+Corollary order_one_step_uncond : forall (H Hp : C -> C),
+  (forall z, is_Cderiv H z (Hp z)) ->
+  (forall z, exists d, is_Cderiv Hp z d) ->
+  (forall z, H z <> C0) ->
+  CcontC (fun w => Cmul (Hp w) (Cinv (H w))) ->
+  SubQuadLog H ->
+  exists A b : C, A <> C0 /\ forall z, H z = Cmul A (Cexpf (Cmul b z)).
+Proof.
+  intros H Hp Hhol Hphol Hne0 Hcont Hsq.
+  exact (order_one_step BorelCaratheodory_holds H Hp Hhol Hphol Hne0 Hcont Hsq).
+Qed.
+
+Print Assumptions BorelCaratheodory_holds.
+Print Assumptions order_one_step_uncond.
 Print Assumptions mean_value_G.

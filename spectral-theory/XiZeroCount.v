@@ -29,7 +29,7 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra List.
-Require Import ComplexField Cmodulus Holomorphic CDeriv CHoloCalculus
+Require Import ComplexField Cmodulus Holomorphic CDeriv CHoloCalculus CHoloCcontC
         CPathIntegral CSegInt JensenMultiZero JensenCount CZeroListFactor
         JensenCountComplete RiemannXiEntire XiNonzero XiGrowthBound.
 Open Scope R_scope.
@@ -39,17 +39,7 @@ Open Scope R_scope.
 (*  in increment form (F (z + h) vs F z); ptcont wants it in           *)
 (*  two-point form.  Same step as inside CHoloCcontC.holo_CcontC.      *)
 (* ----------------------------------------------------------------- *)
-Lemma holo_ptcont : forall F : C -> C,
-  (forall z, exists d, is_Cderiv F z d) -> ptcont F.
-Proof.
-  intros F Hhol z eps Heps.
-  destruct (Hhol z) as [d Hd].
-  destruct (is_Cderiv_cont F z d Hd eps Heps) as [del [Hdel Hb]].
-  exists del. split; [ exact Hdel | ].
-  intros z' Hz'. specialize (Hb (Cminus z' z) Hz').
-  replace (Cadd z (Cminus z' z)) with z' in Hb by ring.
-  exact Hb.
-Qed.
+(* holo_ptcont now lives in CHoloCcontC, next to holo_CcontC *)
 
 (* ----------------------------------------------------------------- *)
 (*  xi's three inputs, in the shape the counting theorem consumes      *)
@@ -61,7 +51,7 @@ Lemma XiC_disk_holo : forall R, disk_holo XiC R.
 Proof. intros R z _. apply XiC_holo. Qed.
 
 Lemma XiC_ptcont : ptcont XiC.
-Proof. apply holo_ptcont, XiC_holo. Qed.
+Proof. exact (holo_ptcont XiC XiC_holo). Qed.
 
 (* the circle bound, from the order-1 growth *)
 Definition XiM (Rc : R) : R := / 2 + (Rc + 1) ^ 2 * Tgb (Rc + 1).

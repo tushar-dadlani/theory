@@ -67,4 +67,24 @@ Proof.
   split; [ apply (comp Re Cmod_Re_le ReCm) | apply (comp Im Cmod_Im_le ImCm) ].
 Qed.
 
+(* ----------------------------------------------------------------- *)
+(*  holomorphic ==> POINTWISE continuous.  is_Cderiv_cont states this   *)
+(*  in increment form (F (z+h) vs F z); the two-point form is what      *)
+(*  every disk lemma in this development actually asks for.            *)
+(* ----------------------------------------------------------------- *)
+Lemma holo_ptcont : forall F : C -> C,
+  (forall z, exists d, is_Cderiv F z d) ->
+  forall z eps, 0 < eps -> exists del, 0 < del /\
+    forall z', Cmod (Cminus z' z) < del -> Cmod (Cminus (F z') (F z)) < eps.
+Proof.
+  intros F Hhol z eps Heps.
+  destruct (Hhol z) as [d Hd].
+  destruct (is_Cderiv_cont F z d Hd eps Heps) as [del [Hdel Hb]].
+  exists del. split; [ exact Hdel | ].
+  intros z' Hz'. specialize (Hb (Cminus z' z) Hz').
+  replace (Cadd z (Cminus z' z)) with z' in Hb by ring.
+  exact Hb.
+Qed.
+
 Print Assumptions holo_CcontC.
+Print Assumptions holo_ptcont.
