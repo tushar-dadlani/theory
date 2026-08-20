@@ -1155,3 +1155,4 @@ spectral-theory/CDerivGlobal.v
 spectral-theory/XiHadamardOrderOne.v
 spectral-theory/CDyadicSum2.v
 spectral-theory/XiSumBounds.v
+spectral-theory/CEfacLower.v
