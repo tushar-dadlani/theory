@@ -25,6 +25,14 @@
 (*  order_one_step -- deliberately NOT an Axiom.  Nothing here is       *)
 (*  assumed; the development's axiom set is untouched.                 *)
 (*                                                                    *)
+(*  WHY Mf IS REQUIRED MONOTONE.  D proves G'' w = 0 at a general centre  *)
+(*  by applying the centre result to the translate Gw z := G (z + w),    *)
+(*  which needs Re G (z+w) <= Mf (Cmod z + Cmod w) -- and that step is    *)
+(*  exactly where monotonicity of Mf is used.  Without it D is NOT        *)
+(*  provable as stated.  The cost is nil: order_one_step's own shifted    *)
+(*  majorant Mf r - ln |Cc| is monotone whenever Mf is, and xi's          *)
+(*  majorant from XiGrowthBound is increasing.                           *)
+(*                                                                    *)
 (*  WHY SubQuadLog AND NOT "order <= 1".  The hypothesis that actually  *)
 (*  forces degree <= 1 is ln|H| = o(r^2), i.e. order < 2, and that is   *)
 (*  what D consumes.  It is also exactly what xi supplies              *)
@@ -89,6 +97,7 @@ Qed.
 (* ----------------------------------------------------------------- *)
 Definition SubQuadLog (H : C -> C) : Prop :=
   exists Mf : R -> R,
+    (forall r1 r2, r1 <= r2 -> Mf r1 <= Mf r2) /\
     (forall z, ln (Cmod (H z)) <= Mf (Cmod z)) /\
     (forall eps, 0 < eps -> exists R0, 0 < R0 /\
        forall r, R0 <= r -> Mf r <= eps * r ^ 2).
@@ -175,6 +184,7 @@ Definition BorelCaratheodory : Prop :=
     (forall z, is_Cderiv G z (Gp z)) ->
     (forall z, exists d, is_Cderiv Gp z d) ->
     (forall z, Re (G z) <= Mf (Cmod z)) ->
+    (forall r1 r2, r1 <= r2 -> Mf r1 <= Mf r2) ->
     (forall eps, 0 < eps -> exists R0, 0 < R0 /\
        forall r, R0 <= r -> Mf r <= eps * r ^ 2) ->
     exists b, forall z, Gp z = b.
@@ -191,7 +201,7 @@ Theorem order_one_step : BorelCaratheodory ->
     SubQuadLog H ->
     exists A b : C, A <> C0 /\ forall z, H z = Cmul A (Cexpf (Cmul b z)).
 Proof.
-  intros BC H Hp Hhol Hphol Hne0 Hcont [Mf [Hbd Hsub]].
+  intros BC H Hp Hhol Hphol Hne0 Hcont [Mf [Hmono [Hbd Hsub]]].
   destruct (zero_free_log_entire H Hp Hhol Hphol Hne0 Hcont)
     as [G [Cc [HCc [HG Hexp]]]].
   set (Gp := fun z => Cmul (Hp z) (Cinv (H z))).
@@ -205,6 +215,9 @@ Proof.
   { intro z. unfold Mf'.
     pose proof (log_mod_split H G Cc HCc Hexp z) as Hsplit.
     pose proof (Hbd z) as Hz. lra. }
+  (* the shift preserves monotonicity *)
+  assert (Hmono' : forall r1 r2, r1 <= r2 -> Mf' r1 <= Mf' r2)
+    by (intros r1 r2 H12; unfold Mf'; pose proof (Hmono r1 r2 H12); lra).
   (* and is still o(r^2): a constant is absorbed *)
   assert (Hsub' : forall eps, 0 < eps -> exists R0, 0 < R0 /\
              forall r, R0 <= r -> Mf' r <= eps * r ^ 2).
@@ -237,7 +250,7 @@ Proof.
         replace (2 / eps * (eps / 2 * r)) with r by (field; lra).
         replace (2 / eps * c) with (2 * c / eps) by (field; lra). lra. }
       pose proof (HR0b r Hr0) as Hm. unfold Mf'. lra. }
-  destruct (BC G Gp Mf' HG HGp HReG Hsub') as [b Hb].
+  destruct (BC G Gp Mf' HG HGp HReG Hmono' Hsub') as [b Hb].
   destruct (order_one_of_logderiv_const H Hp b Hhol Hphol Hne0 Hcont Hb)
     as [A [HA HAe]].
   exists A, b. split; [ exact HA | exact HAe ].

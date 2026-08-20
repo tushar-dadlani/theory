@@ -1129,3 +1129,4 @@ spectral-theory/XiZeroDensity.v
 spectral-theory/CDyadicSum.v
 spectral-theory/COrderOne.v
 spectral-theory/CConjIntegral.v
+spectral-theory/CIntfLinear.v
