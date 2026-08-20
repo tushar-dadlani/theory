@@ -1130,3 +1130,5 @@ spectral-theory/CDyadicSum.v
 spectral-theory/COrderOne.v
 spectral-theory/CConjIntegral.v
 spectral-theory/CIntfLinear.v
+spectral-theory/CArcWeight.v
+spectral-theory/CCoeffTwo.v
