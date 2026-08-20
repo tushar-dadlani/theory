@@ -1179,3 +1179,4 @@ spectral-theory/CEisenstein.v
 spectral-theory/CEisensteinUnits.v
 spectral-theory/CEisensteinDiv.v
 spectral-theory/CEisensteinGcd.v
+spectral-theory/CEisensteinSplit.v
