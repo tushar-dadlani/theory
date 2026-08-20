@@ -1172,3 +1172,4 @@ spectral-theory/XiLxiMajor.v
 spectral-theory/XiBubBound.v
 spectral-theory/XiSubQuadLog.v
 spectral-theory/COmega.v
+spectral-theory/COmegaOrth.v
