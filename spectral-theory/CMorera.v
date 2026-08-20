@@ -203,6 +203,58 @@ Proof.
     | apply (seg_int_unif_limit Fn G HFn HG U c a HU Hc Ha Hunif) ].
 Qed.
 
+(* ----------------------------------------------------------------- *)
+(*  C'. a LOCALLY uniform limit of continuous functions is continuous.  *)
+(*                                                                    *)
+(*  unif_limit_holo assumes its limit continuous, and nothing supplied  *)
+(*  that.  This does, and it is the form the application needs: the     *)
+(*  hypothesis is uniformity only on SOME neighbourhood of each point,  *)
+(*  which is exactly what locally uniform convergence gives, and the    *)
+(*  conclusion is global pointwise continuity -- from which            *)
+(*  PerronRemovable.ptcont_CcontC yields the global CcontC that the     *)
+(*  seg_int API demands.                                               *)
+(* ----------------------------------------------------------------- *)
+Lemma Cmod_minus_sym0 : forall a b, Cmod (Cminus a b) = Cmod (Cminus b a).
+Proof. intros a b. rewrite <- (Cmod_opp (Cminus a b)). f_equal. ring. Qed.
+
+Theorem unif_limit_ptcont : forall (fn : nat -> C -> C) (g : C -> C),
+  (forall n z eps, 0 < eps -> exists del, 0 < del /\
+     forall z', Cmod (Cminus z' z) < del -> Cmod (Cminus (fn n z') (fn n z)) < eps) ->
+  (forall z0 : C, exists r, 0 < r /\ forall eps, 0 < eps -> exists N,
+     forall n, (N <= n)%nat -> forall w, Cmod (Cminus w z0) < r ->
+       Cmod (Cminus (fn n w) (g w)) <= eps) ->
+  forall z eps, 0 < eps -> exists del, 0 < del /\
+    forall z', Cmod (Cminus z' z) < del -> Cmod (Cminus (g z') (g z)) < eps.
+Proof.
+  intros fn g Hptc Hunif z eps Heps.
+  destruct (Hunif z) as [r [Hr Hu]].
+  destruct (Hu (eps / 4) ltac:(lra)) as [N HN].
+  destruct (Hptc N z (eps / 4) ltac:(lra)) as [del0 [Hdel0 Hc]].
+  exists (Rmin del0 r). split; [ apply Rmin_pos; lra | ].
+  intros z' Hz'.
+  assert (Hz'r : Cmod (Cminus z' z) < r)
+    by (eapply Rlt_le_trans; [ exact Hz' | apply Rmin_r ]).
+  assert (Hz'd : Cmod (Cminus z' z) < del0)
+    by (eapply Rlt_le_trans; [ exact Hz' | apply Rmin_l ]).
+  assert (H1 : Cmod (Cminus (fn N z') (g z')) <= eps / 4)
+    by (apply HN; [ lia | exact Hz'r ]).
+  assert (H2 : Cmod (Cminus (fn N z) (g z)) <= eps / 4).
+  { apply HN; [ lia | ].
+    replace (Cminus z z) with C0 by ring.
+    rewrite (proj2 (Cmod0 C0) eq_refl). exact Hr. }
+  assert (H3 : Cmod (Cminus (fn N z') (fn N z)) < eps / 4)
+    by (apply Hc; exact Hz'd).
+  replace (Cminus (g z') (g z))
+    with (Cadd (Cminus (g z') (fn N z'))
+               (Cadd (Cminus (fn N z') (fn N z)) (Cminus (fn N z) (g z)))) by ring.
+  eapply Rle_lt_trans; [ apply Cmod_triangle | ].
+  assert (Hin : Cmod (Cadd (Cminus (fn N z') (fn N z)) (Cminus (fn N z) (g z)))
+                <= Cmod (Cminus (fn N z') (fn N z)) + Cmod (Cminus (fn N z) (g z)))
+    by apply Cmod_triangle.
+  rewrite (Cmod_minus_sym0 (g z') (fn N z')) in *.
+  lra.
+Qed.
+
 (* ================================================================= *)
 (*  D.  WEIERSTRASS'S CONVERGENCE THEOREM                              *)
 (*                                                                    *)
@@ -263,3 +315,4 @@ Print Assumptions Cintf_unif_limit.
 Print Assumptions MPrim_deriv.
 Print Assumptions tri_int_unif_limit.
 Print Assumptions unif_limit_holo.
+Print Assumptions unif_limit_ptcont.
