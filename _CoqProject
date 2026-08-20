@@ -1177,3 +1177,4 @@ spectral-theory/CZetaMod3.v
 spectral-theory/CCubicChar.v
 spectral-theory/CEisenstein.v
 spectral-theory/CEisensteinUnits.v
+spectral-theory/CEisensteinDiv.v
