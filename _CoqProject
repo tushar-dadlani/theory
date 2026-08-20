@@ -1142,3 +1142,4 @@ spectral-theory/CInfProdUnif.v
 spectral-theory/XiHadamardUnif.v
 spectral-theory/XiProdFactor.v
 spectral-theory/XiProdLimit.v
+spectral-theory/XiHcof.v
