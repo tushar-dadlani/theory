@@ -1193,3 +1193,4 @@ spectral-theory/CEisensteinCubicFun.v
 spectral-theory/CEisensteinSum.v
 spectral-theory/CEisensteinJacobi.v
 spectral-theory/CEisensteinNormJ.v
+spectral-theory/CEisensteinJPrimary.v
