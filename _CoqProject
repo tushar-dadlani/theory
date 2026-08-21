@@ -1218,3 +1218,4 @@ spectral-theory/ZetaLogBound.v
 spectral-theory/ZetaDerivBound.v
 spectral-theory/CHorizMVT.v
 spectral-theory/RPowerTail.v
+spectral-theory/RPowerLogTail.v
