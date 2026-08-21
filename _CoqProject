@@ -1197,3 +1197,4 @@ spectral-theory/CEisensteinJPrimary.v
 spectral-theory/CEisensteinPiDivJ.v
 spectral-theory/CycIndex.v
 spectral-theory/CEisensteinCyc.v
+spectral-theory/CEisensteinCycQuot.v
