@@ -1209,3 +1209,5 @@ spectral-theory/CEisensteinInertChar.v
 spectral-theory/CEisensteinRecInert.v
 spectral-theory/CEisensteinRamified.v
 spectral-theory/CEisensteinSupp2.v
+spectral-theory/ZetaOpenStrip.v
+spectral-theory/CriticalDepth.v
