@@ -1185,3 +1185,4 @@ spectral-theory/CEisensteinUnique.v
 spectral-theory/CEisensteinInert.v
 spectral-theory/CEisensteinResidue.v
 spectral-theory/CEisensteinFermat.v
+spectral-theory/CEisensteinCubicMul.v
