@@ -1190,3 +1190,4 @@ spectral-theory/CEisensteinCubicSupp.v
 spectral-theory/CEisensteinPrimary.v
 spectral-theory/CEisensteinCubicConv.v
 spectral-theory/CEisensteinCubicFun.v
+spectral-theory/CEisensteinSum.v
