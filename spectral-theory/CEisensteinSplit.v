@@ -107,9 +107,10 @@ Qed.
 (* ----------------------------------------------------------------- *)
 (*  D.  THE SPLITTING                                                  *)
 (* ----------------------------------------------------------------- *)
-Theorem eisenstein_split : forall p : nat,
+Theorem eisenstein_split_witness : forall p : nat,
   prime (Z.of_nat p) -> Nat.divide 3 (p - 1)%nat -> (7 <= p)%nat ->
-  exists pi : Eis, enorm pi = Z.of_nat p.
+  exists (pi : Eis) (t : Z),
+    enorm pi = Z.of_nat p /\ edvd pi (esub (mkEis t 0) eom).
 Proof.
   intros p Hp Hd Hp7.
   destruct (order3_elt p Hp Hd Hp7) as [t [Ht Hcube]].
@@ -119,6 +120,8 @@ Proof.
   set (Pe := mkEis P 0).
   set (A := mkEis T (-1)).
   set (B := mkEis (T + 1) 1).
+  assert (HA : A = esub (mkEis T 0) eom)
+    by (unfold A, esub, eadd, eopp, eom; cbn [ea eb]; apply Eis_eq; ring).
   assert (Hprod : emul A B = mkEis (T ^ 2 + T + 1) 0)
     by (unfold A, B, emul; cbn [ea eb]; apply Eis_eq; ring).
   assert (HdvdAB : edvd Pe (emul A B)).
@@ -138,25 +141,35 @@ Proof.
     by (unfold Pe, enorm; cbn [ea eb]; ring).
   assert (Hnorms : enorm g * enorm h = P * P)
     by (rewrite <- HPe0, Hh, enorm_mul; reflexivity).
-  destruct (Z.eq_dec (enorm g) 1) as [Hgu | Hgnu].
-  { exfalso. apply HnB.
-    destruct (norm_eunit g Hgu) as [gi Hgi].
-    apply (dvd_mul_coprime Pe A B (emul u gi) (emul v gi));
-      [ rewrite <- Hgi, Hg; ring | exact HdvdAB ]. }
-  destruct (Z.eq_dec (enorm h) 1) as [Hhu | Hhnu].
-  { exfalso. apply HnA.
-    destruct (norm_eunit h Hhu) as [hi Hhi].
-    apply (edvd_trans Pe g A); [ | exact Hga ].
-    exists hi. rewrite Hh, emul_assoc, Hhi. ring. }
-  exists g.
-  assert (Hg0 : 0 <= enorm g) by apply enorm_nonneg.
-  assert (Hh0 : 0 <= enorm h) by apply enorm_nonneg.
-  assert (HdvdP : (P | enorm g * enorm h)) by (exists P; lia).
-  destruct (prime_mult P Hp _ _ HdvdP) as [[m Hm] | [m Hm]].
-  - assert (Hmdvd : (m | P)) by (exists (enorm h); nia).
-    destruct (prime_divisors P Hp m Hmdvd) as [E | [E | [E | E]]]; nia.
-  - assert (Hmdvd : (m | P)) by (exists (enorm g); nia).
-    destruct (prime_divisors P Hp m Hmdvd) as [E | [E | [E | E]]]; nia.
+  assert (Hnorm_g : enorm g = P).
+  { destruct (Z.eq_dec (enorm g) 1) as [Hgu | Hgnu].
+    { exfalso. apply HnB.
+      destruct (norm_eunit g Hgu) as [gi Hgi].
+      apply (dvd_mul_coprime Pe A B (emul u gi) (emul v gi));
+        [ rewrite <- Hgi, Hg; ring | exact HdvdAB ]. }
+    destruct (Z.eq_dec (enorm h) 1) as [Hhu | Hhnu].
+    { exfalso. apply HnA.
+      destruct (norm_eunit h Hhu) as [hi Hhi].
+      apply (edvd_trans Pe g A); [ | exact Hga ].
+      exists hi. rewrite Hh, emul_assoc, Hhi. ring. }
+    assert (Hg0 : 0 <= enorm g) by apply enorm_nonneg.
+    assert (Hh0 : 0 <= enorm h) by apply enorm_nonneg.
+    assert (HdvdP : (P | enorm g * enorm h)) by (exists P; lia).
+    destruct (prime_mult P Hp _ _ HdvdP) as [[m Hm] | [m Hm]].
+    - assert (Hmdvd : (m | P)) by (exists (enorm h); nia).
+      destruct (prime_divisors P Hp m Hmdvd) as [E | [E | [E | E]]]; nia.
+    - assert (Hmdvd : (m | P)) by (exists (enorm g); nia).
+      destruct (prime_divisors P Hp m Hmdvd) as [E | [E | [E | E]]]; nia. }
+  exists g, T. split; [ exact Hnorm_g | rewrite <- HA; exact Hga ].
+Qed.
+
+Theorem eisenstein_split : forall p : nat,
+  prime (Z.of_nat p) -> Nat.divide 3 (p - 1)%nat -> (7 <= p)%nat ->
+  exists pi : Eis, enorm pi = Z.of_nat p.
+Proof.
+  intros p Hp Hd Hp7.
+  destruct (eisenstein_split_witness p Hp Hd Hp7) as [pi [t [Hn _]]].
+  exists pi. exact Hn.
 Qed.
 
 Corollary eisenstein_split_conj : forall p : nat,
@@ -168,5 +181,6 @@ Proof.
   exists pi. rewrite emul_econj, Hpi. reflexivity.
 Qed.
 
+Print Assumptions eisenstein_split_witness.
 Print Assumptions eisenstein_split.
 Print Assumptions eisenstein_split_conj.
