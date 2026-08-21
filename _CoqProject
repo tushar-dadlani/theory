@@ -1201,3 +1201,4 @@ spectral-theory/CEisensteinCycQuot.v
 spectral-theory/CEisensteinGaussSum.v
 spectral-theory/CEisensteinBinomial.v
 spectral-theory/CEisensteinFrobenius.v
+spectral-theory/CEisensteinQuotCong.v
