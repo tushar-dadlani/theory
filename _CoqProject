@@ -1199,3 +1199,4 @@ spectral-theory/CycIndex.v
 spectral-theory/CEisensteinCyc.v
 spectral-theory/CEisensteinCycQuot.v
 spectral-theory/CEisensteinGaussSum.v
+spectral-theory/CEisensteinBinomial.v
