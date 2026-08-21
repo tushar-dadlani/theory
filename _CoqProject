@@ -1213,3 +1213,4 @@ spectral-theory/ZetaOpenStrip.v
 spectral-theory/CriticalDepth.v
 spectral-theory/DepthBound.v
 spectral-theory/ZetaStripBound.v
+spectral-theory/ZetaLowerBound.v
