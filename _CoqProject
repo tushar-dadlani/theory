@@ -1216,3 +1216,4 @@ spectral-theory/ZetaStripBound.v
 spectral-theory/ZetaLowerBound.v
 spectral-theory/ZetaLogBound.v
 spectral-theory/ZetaDerivBound.v
+spectral-theory/CHorizMVT.v
