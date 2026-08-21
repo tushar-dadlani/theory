@@ -1205,3 +1205,4 @@ spectral-theory/CEisensteinQuotCong.v
 spectral-theory/CEisensteinRelA.v
 spectral-theory/CEisensteinReciprocity.v
 spectral-theory/CEisensteinInertFermat.v
+spectral-theory/CEisensteinInertChar.v
