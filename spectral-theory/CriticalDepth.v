@@ -103,6 +103,72 @@ Proof.
 Qed.
 
 (* ----------------------------------------------------------------- *)
+(*  A'.  the INVERSE coordinate                                        *)
+(* ----------------------------------------------------------------- *)
+(*  expit takes a depth back to a value.  With it the dictionary of    *)
+(*  section F below becomes a genuine bijection: a finite depth bound  *)
+(*  D is a zero-free region Re z <= expit D, and expit D < 1 STRICTLY. *)
+Definition expit (d : R) : R := exp d / (1 + exp d).
+
+Lemma expit_range : forall d, 0 < expit d < 1.
+Proof.
+  intro d. pose proof (exp_pos d) as He. unfold expit. split.
+  - apply Rdiv_lt_0_compat; lra.
+  - apply (Rmult_lt_reg_r (1 + exp d)); [ lra | ].
+    unfold Rdiv; rewrite Rmult_assoc, Rinv_l by lra. lra.
+Qed.
+
+Theorem logit_expit : forall d, logit (expit d) = d.
+Proof.
+  intro d. pose proof (exp_pos d) as He. unfold logit, expit.
+  replace (exp d / (1 + exp d) / (1 - exp d / (1 + exp d))) with (exp d)
+    by (field; lra).
+  apply ln_exp.
+Qed.
+
+Theorem expit_logit : forall s, 0 < s < 1 -> expit (logit s) = s.
+Proof.
+  intros s Hs. unfold expit, logit.
+  rewrite exp_ln by (apply logit_pos_arg; exact Hs).
+  destruct Hs as [H0 H1]. field. lra.
+Qed.
+
+Lemma expit_zero : expit 0 = / 2.
+Proof. unfold expit. rewrite exp_0. field. Qed.
+
+(* the reflection again: negating depth reflects the value about 1/2 *)
+Theorem expit_odd : forall d, expit (- d) = 1 - expit d.
+Proof.
+  intro d. pose proof (exp_pos d) as He.
+  unfold expit. rewrite exp_Ropp. field. split; [ lra | ].
+  assert (0 < / exp d) by (apply Rinv_0_lt_compat; lra). lra.
+Qed.
+
+Lemma expit_le_iff : forall a b, (expit a <= expit b <-> a <= b).
+Proof.
+  intros a b.
+  pose proof (logit_le_iff (expit a) (expit b) (expit_range a) (expit_range b)) as H.
+  rewrite !logit_expit in H. exact (iff_sym H).
+Qed.
+
+(* a depth bound is a value bound, strictly inside the strip *)
+Theorem depth_le_value : forall s D, 0 < s < 1 -> logit s <= D -> s <= expit D.
+Proof.
+  intros s D Hs H.
+  rewrite <- (expit_logit s Hs).
+  apply (logit_le_iff (expit (logit s)) (expit D)); [ apply expit_range | apply expit_range | ].
+  rewrite !logit_expit. exact H.
+Qed.
+
+Theorem value_le_depth : forall s D, 0 < s < 1 -> D <= logit s -> expit D <= s.
+Proof.
+  intros s D Hs H.
+  rewrite <- (expit_logit s Hs).
+  apply (logit_le_iff (expit D) (expit (logit s))); [ apply expit_range | apply expit_range | ].
+  rewrite !logit_expit. exact H.
+Qed.
+
+(* ----------------------------------------------------------------- *)
 (*  B.  the edges are at infinite depth                                *)
 (* ----------------------------------------------------------------- *)
 Theorem logit_diverge_right :
@@ -222,6 +288,11 @@ Proof.
     apply (logit_le_iff (Re z) s0 Hs Hs0). exact (H z Hz).
 Qed.
 
+Print Assumptions expit_odd.
+Print Assumptions expit_le_iff.
+Print Assumptions logit_expit.
+Print Assumptions expit_logit.
+Print Assumptions depth_le_value.
 Print Assumptions logit_odd.
 Print Assumptions logit_incr.
 Print Assumptions depth_zero_iff.
