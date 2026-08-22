@@ -104,6 +104,88 @@ Proof.
   lra.
 Qed.
 
+(* ----------------------------------------------------------------- *)
+(*  The geometric half, isolated for reuse: what survives after the    *)
+(*  growing factor has been absorbed.  Used at both orders.            *)
+(* ----------------------------------------------------------------- *)
+Lemma exp_half_geo : forall u n, / 2 <= u ->
+  exp (- (PI * INR (S n) ^ 2 * u / 2)) <= exp (- (PI / 4)) ^ n.
+Proof.
+  intros u n Hu. pose proof PI_RGT_0 as HPI.
+  set (k := INR (S n)).
+  assert (Hk1 : 1 <= k) by (unfold k; rewrite S_INR; pose proof (pos_INR n); lra).
+  assert (Hk2 : k <= k ^ 2) by nra.
+  assert (Hchain : - (PI * k ^ 2 * u / 2) <= - (PI * k * u / 2)).
+  { assert (Hd : PI * k ^ 2 * u / 2 - PI * k * u / 2
+               = (PI * u / 2) * (k ^ 2 - k)) by field.
+    assert (Hpu : 0 < PI * u / 2) by (apply Rdiv_lt_0_compat; nra).
+    assert (Hprod : 0 <= (PI * u / 2) * (k ^ 2 - k))
+      by (apply Rmult_le_pos; lra).
+    lra. }
+  eapply Rle_trans; [ apply exp_le_mono; exact Hchain | ].
+  assert (Hkn : INR n + 1 = k) by (unfold k; rewrite S_INR; ring).
+  assert (E : - (PI * k * u / 2) = INR n * (- (PI * u / 2)) + (- (PI * u / 2)))
+    by (rewrite <- Hkn; field).
+  rewrite E, exp_plus, <- exp_INR_pow, <- exp_plus.
+  apply exp_le_mono.
+  assert (Hn : 0 <= INR n) by apply pos_INR.
+  assert (Hp1 : 0 <= INR n * (u / 2 - / 4)) by (apply Rmult_le_pos; lra).
+  assert (Hp2 : 0 <= PI * (INR n * (u / 2 - / 4) + u / 2))
+    by (apply Rmult_le_pos; lra).
+  assert (Hexp : PI * (INR n * (u / 2 - / 4) + u / 2)
+               = INR n * - (PI / 4)
+                 - (INR n * - (PI * u / 2) + - (PI * u / 2))) by field.
+  lra.
+Qed.
+
+(* ----------------------------------------------------------------- *)
+(*  Second order.  midpoint_single wants a LIPSCHITZ bound on Psi',    *)
+(*  i.e. a bound on the twice-differentiated series, whose terms       *)
+(*  carry pi^2 n^4.  Same absorption, one notch harder: the split is   *)
+(*  into QUARTERS and v e^{-v} <= 1 is applied and then SQUARED.       *)
+(* ----------------------------------------------------------------- *)
+Theorem dtheta2_term_bound : forall u n, / 2 <= u ->
+  PI ^ 2 * INR (S n) ^ 4 * exp (- (PI * INR (S n) ^ 2 * u))
+  <= 64 * exp (- (PI / 4)) ^ n.
+Proof.
+  intros u n Hu. pose proof PI_RGT_0 as HPI.
+  set (k := INR (S n)).
+  assert (Hk1 : 1 <= k) by (unfold k; rewrite S_INR; pose proof (pos_INR n); lra).
+  assert (Hk2 : 1 <= k ^ 2) by nra.
+  set (a := PI * k ^ 2).
+  assert (Ha : 0 < a) by (unfold a; nra).
+  assert (Hsq4 : PI ^ 2 * k ^ 4 = a ^ 2) by (unfold a; ring).
+  assert (Hv : (a * u / 4) * exp (- (a * u / 4)) <= 1)
+    by (apply v_exp_neg_v; nra).
+  assert (Hpos1 : 0 <= a * u / 4) by nra.
+  assert (Hpos2 : 0 < exp (- (a * u / 4))) by apply exp_pos.
+  assert (Hsq : (a * u / 4) ^ 2 * exp (- (a * u / 2)) <= 1).
+  { assert (E : exp (- (a * u / 2)) = exp (- (a * u / 4)) * exp (- (a * u / 4)))
+      by (rewrite <- exp_plus; f_equal; lra).
+    rewrite E.
+    assert (Hxy : 0 <= a * u / 4 * exp (- (a * u / 4)))
+      by (apply Rmult_le_pos; lra).
+    assert (Hsq2 : (a * u / 4 * exp (- (a * u / 4))) ^ 2 <= 1) by nra.
+    assert (Eexp : (a * u / 4 * exp (- (a * u / 4))) ^ 2
+                 = (a * u / 4) ^ 2 * (exp (- (a * u / 4)) * exp (- (a * u / 4))))
+      by ring.
+    lra. }
+  assert (Hu2 : a ^ 2 * exp (- (a * u / 2)) <= 64).
+  { assert (E : (a * u / 4) ^ 2 * exp (- (a * u / 2))
+              = u ^ 2 / 16 * (a ^ 2 * exp (- (a * u / 2)))) by field.
+    rewrite E in Hsq.
+    assert (Hu16 : / 64 <= u ^ 2 / 16) by nra.
+    assert (Hnn : 0 <= a ^ 2 * exp (- (a * u / 2)))
+      by (apply Rmult_le_pos; [ nra | left; apply exp_pos ]).
+    nra. }
+  assert (Hsplit : exp (- (a * u)) = exp (- (a * u / 2)) * exp (- (a * u / 2)))
+    by (rewrite <- exp_plus; f_equal; lra).
+  assert (Hgeo : exp (- (a * u / 2)) <= exp (- (PI / 4)) ^ n)
+    by (unfold a; apply exp_half_geo; exact Hu).
+  assert (He : 0 < exp (- (a * u / 2))) by apply exp_pos.
+  rewrite Hsq4, Hsplit. nra.
+Qed.
+
 (* the ratio is genuinely below 1, so the majorant series converges *)
 Corollary dtheta_ratio_lt1 : exp (- (PI / 4)) < 1.
 Proof.
@@ -112,3 +194,4 @@ Qed.
 
 Print Assumptions v_exp_neg_v.
 Print Assumptions dtheta_term_bound.
+Print Assumptions dtheta2_term_bound.

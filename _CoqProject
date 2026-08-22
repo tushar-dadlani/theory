@@ -1233,3 +1233,4 @@ spectral-theory/MidpointQuad.v
 spectral-theory/PsiXSpace.v
 spectral-theory/ThetaDerivMajorant.v
 spectral-theory/ThetaDeriv.v
+spectral-theory/ThetaDeriv2.v
