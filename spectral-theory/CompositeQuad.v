@@ -121,9 +121,12 @@ Proof.
     rewrite HSn. nra.
 Qed.
 
-(* the form the quadrature consumes: n panels of width (b-a)/n *)
+(* the form the quadrature consumes: n panels of width (b-a)/n.       *)
+(* Stated with pr over [a,b] itself, NOT over a + n.(b-a)/n: those     *)
+(* are equal as reals, but the second form leaves b - a inside pr's    *)
+(* TYPE, where no caller can rewrite it away.                          *)
 Corollary composite_midpoint_ab : forall (f f' : R -> R) (a b M : R) (n : nat)
-  (pr : Riemann_integrable f a (a + INR n * ((b - a) / INR n))),
+  (pr : Riemann_integrable f a b),
   (0 < n)%nat -> a <= b -> 0 <= M ->
   (forall y, a <= y <= b -> derivable_pt_lim f y (f' y)) ->
   (forall y z, a <= y <= b -> a <= z <= b ->
@@ -133,15 +136,17 @@ Corollary composite_midpoint_ab : forall (f f' : R -> R) (a b M : R) (n : nat)
 Proof.
   intros f f' a b M n pr Hn Hab HM Hd Hlip.
   assert (Hn0 : 0 < INR n) by (apply lt_0_INR; lia).
-  set (h := (b - a) / INR n).
-  assert (Hh : 0 <= h) by (unfold h; apply Rle_mult_inv_pos; lra).
-  assert (Etop : a + INR n * h = b) by (unfold h; field; lra).
-  assert (Erate : INR n * (M * h ^ 3 / 12) = M * (b - a) ^ 3 / (12 * INR n ^ 2))
-    by (unfold h; field; lra).
+  assert (Hh : 0 <= (b - a) / INR n) by (apply Rle_mult_inv_pos; lra).
+  assert (Etop : a + INR n * ((b - a) / INR n) = b) by (field; lra).
+  assert (pr' : Riemann_integrable f a (a + INR n * ((b - a) / INR n)))
+    by (rewrite Etop; exact pr).
+  rewrite (RI_endpoint f a b (a + INR n * ((b - a) / INR n)) pr pr' (eq_sym Etop)).
+  assert (Erate : INR n * (M * ((b - a) / INR n) ^ 3 / 12)
+                = M * (b - a) ^ 3 / (12 * INR n ^ 2)) by (field; lra).
   rewrite <- Erate.
-  apply (composite_midpoint f f' a h M n pr Hh HM).
+  apply (composite_midpoint f f' a ((b - a) / INR n) M n pr' Hh HM).
   - intros y Hy. apply Hd. rewrite Etop in Hy. exact Hy.
-  - intros y z Hy Hz. apply Hlip; rewrite Etop in *; assumption.
+  - intros y z Hy Hz. rewrite Etop in Hy, Hz. apply Hlip; assumption.
 Qed.
 
 Print Assumptions composite_midpoint.
