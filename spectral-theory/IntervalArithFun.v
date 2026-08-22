@@ -80,7 +80,14 @@ Proof. intro m. unfold Qp2. rewrite Qp2_nat, Q2R_inject, <- INR_IZR_INZ. reflexi
 Definition Qfl (p : nat) (q : Q) : Q := inject_Z (Qfloor (q * Qp2 p)) / Qp2 p.
 Definition Qce (p : nat) (q : Q) : Q := inject_Z (Qceiling (q * Qp2 p)) / Qp2 p.
 
-Definition Iround (p : nat) (i : Itv) : Itv := mkI (Qfl p (ilo i)) (Qce p (ihi i)).
+(*  Qred is essential, not cosmetic: Qdiv leaves the result
+    unnormalised, so without it the denominators grow through every
+    Imul despite the rounding, and the whole point of Iround is lost. *)
+Definition Iround (p : nat) (i : Itv) : Itv :=
+  mkI (Qred (Qfl p (ilo i))) (Qred (Qce p (ihi i))).
+
+Lemma Q2R_Qred : forall q, Q2R (Qred q) = Q2R q.
+Proof. intro q. apply Qeq_eqR. apply Qred_correct. Qed.
 
 Lemma Qfl_le : forall p q, Q2R (Qfl p q) <= Q2R q.
 Proof.
@@ -108,7 +115,8 @@ Qed.
 
 Theorem Iround_sound : forall p i x, Icontains i x -> Icontains (Iround p i) x.
 Proof.
-  intros p i x [H1 H2]. unfold Icontains, Iround; simpl.
+  intros p i x [H1 H2]. unfold Icontains, Iround; cbn [ilo ihi].
+  rewrite !Q2R_Qred.
   pose proof (Qfl_le p (ilo i)). pose proof (Qce_ge p (ihi i)). lra.
 Qed.
 
