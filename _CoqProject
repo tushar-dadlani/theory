@@ -1244,3 +1244,8 @@ spectral-theory/IntervalGint.v
 spectral-theory/XirSignChange.v
 spectral-theory/XirConstants.v
 spectral-theory/FirstZeroBridge.v
+spectral-theory/FirstZeroT12.v
+spectral-theory/FirstZeroT16.v
+spectral-theory/FirstZero.v
+spectral-theory/FirstZeroChk12.v
+spectral-theory/FirstZeroChk16.v

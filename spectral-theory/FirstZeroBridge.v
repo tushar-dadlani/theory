@@ -39,4 +39,28 @@ Proof. exact Qle_R. Qed.
 Lemma Qbound_lo : forall (q r : Q), Qle_bool r q = true -> Q2R r <= Q2R q.
 Proof. intros q r H. exact (Qle_R _ _ H). Qed.
 
+(* Extraction WITHOUT destructing the computed term.  o is a bound
+   variable here, so `destruct o` is free; the only place the option is
+   ever forced is inside the chk lemma's own vm_compute. *)
+Lemma extract_ub : forall (o : option Itv) (r : Q) (x : R),
+  match o with Some i => Qle_bool (ihi i) r | None => false end = true ->
+  (forall i, o = Some i -> Icontains i x) ->
+  x <= Q2R r.
+Proof.
+  intros o r x H Hs. destruct o as [i |]; [ | discriminate ].
+  destruct (Hs i eq_refl) as [_ Hh].
+  eapply Rle_trans; [ exact Hh | apply Qle_R; exact H ].
+Qed.
+
+Lemma extract_lb : forall (o : option Itv) (r : Q) (x : R),
+  match o with Some i => Qle_bool r (ilo i) | None => false end = true ->
+  (forall i, o = Some i -> Icontains i x) ->
+  Q2R r <= x.
+Proof.
+  intros o r x H Hs. destruct o as [i |]; [ | discriminate ].
+  destruct (Hs i eq_refl) as [Hl _].
+  eapply Rle_trans; [ apply Qle_R; exact H | exact Hl ].
+Qed.
+
 Print Assumptions msum_encl.
+Print Assumptions extract_ub.
