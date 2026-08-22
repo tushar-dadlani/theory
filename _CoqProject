@@ -1225,3 +1225,4 @@ spectral-theory/ZeroFreeOpt.v
 spectral-theory/ZeroFreeRegion.v
 spectral-theory/CertifiedPi.v
 spectral-theory/ThetaTailSharp.v
+spectral-theory/IntervalArithFun.v
