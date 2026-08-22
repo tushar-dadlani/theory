@@ -186,6 +186,79 @@ Proof.
   rewrite Hsq4, Hsplit. nra.
 Qed.
 
+(* ----------------------------------------------------------------- *)
+(*  X-SPACE.  The quadrature runs in x with u = e^x, so what the       *)
+(*  error term actually needs is a bound on the x-derivatives of       *)
+(*  Psi(e^x), i.e. on  u Psi'(u)  and  u^2 Psi''(u) - u Psi'(u).       *)
+(*                                                                    *)
+(*  Bounding those by combining the u-space bounds with u <= e^L is    *)
+(*  catastrophically lossy: it multiplies the worst case of Psi'' (at  *)
+(*  u = 1/2) by e^{2L} = 25 (at u = 5), where Psi'' is ~10^{-6}.  For  *)
+(*  the sign change at t = 16 that route costs a factor 2200 in the    *)
+(*  quadrature constant -- 44000 nodes instead of 940.                 *)
+(*                                                                    *)
+(*  Bounding a u . e^{-a u} directly costs nothing extra: the same     *)
+(*  half-split applies, and u simply rides along inside v = a u.       *)
+(* ----------------------------------------------------------------- *)
+Theorem xterm_bound : forall u n, 1 <= u ->
+  PI * INR (S n) ^ 2 * u * exp (- (PI * INR (S n) ^ 2 * u))
+  <= 2 * exp (- (PI / 4)) ^ n.
+Proof.
+  intros u n Hu. pose proof PI_RGT_0 as HPI.
+  set (k := INR (S n)).
+  assert (Hk1 : 1 <= k) by (unfold k; rewrite S_INR; pose proof (pos_INR n); lra).
+  assert (Hk2 : 1 <= k ^ 2) by nra.
+  set (a := PI * k ^ 2).
+  assert (Ha : 0 < a) by (unfold a; nra).
+  assert (Hv : a * u / 2 * exp (- (a * u / 2)) <= 1)
+    by (apply v_exp_neg_v; nra).
+  assert (He : 0 < exp (- (a * u / 2))) by apply exp_pos.
+  assert (Hone : a * u * exp (- (a * u / 2)) <= 2) by lra.
+  assert (Hsplit : exp (- (a * u)) = exp (- (a * u / 2)) * exp (- (a * u / 2)))
+    by (rewrite <- exp_plus; f_equal; lra).
+  assert (Hgeo : exp (- (a * u / 2)) <= exp (- (PI / 4)) ^ n)
+    by (unfold a; apply exp_half_geo; lra).
+  rewrite Hsplit. nra.
+Qed.
+
+Theorem xterm2_bound : forall u n, 1 <= u ->
+  ((PI * INR (S n) ^ 2 * u) ^ 2 + PI * INR (S n) ^ 2 * u)
+    * exp (- (PI * INR (S n) ^ 2 * u))
+  <= 18 * exp (- (PI / 4)) ^ n.
+Proof.
+  intros u n Hu. pose proof PI_RGT_0 as HPI.
+  set (k := INR (S n)).
+  assert (Hk1 : 1 <= k) by (unfold k; rewrite S_INR; pose proof (pos_INR n); lra).
+  assert (Hk2 : 1 <= k ^ 2) by nra.
+  set (a := PI * k ^ 2).
+  assert (Ha : 0 < a) by (unfold a; nra).
+  assert (He : 0 < exp (- (a * u / 2))) by apply exp_pos.
+  (* linear part, via the half split *)
+  assert (Hv2 : a * u / 2 * exp (- (a * u / 2)) <= 1)
+    by (apply v_exp_neg_v; nra).
+  assert (Hlin : a * u * exp (- (a * u / 2)) <= 2) by lra.
+  (* quadratic part, via the quarter split squared *)
+  assert (Hv4 : a * u / 4 * exp (- (a * u / 4)) <= 1)
+    by (apply v_exp_neg_v; nra).
+  assert (Hp1 : 0 <= a * u / 4) by nra.
+  assert (Hp2 : 0 < exp (- (a * u / 4))) by apply exp_pos.
+  assert (Hquad : (a * u) ^ 2 * exp (- (a * u / 2)) <= 16).
+  { assert (E4 : exp (- (a * u / 2)) = exp (- (a * u / 4)) * exp (- (a * u / 4)))
+      by (rewrite <- exp_plus; f_equal; lra).
+    assert (Hxy : 0 <= a * u / 4 * exp (- (a * u / 4)))
+      by (apply Rmult_le_pos; lra).
+    assert (Hsq2 : (a * u / 4 * exp (- (a * u / 4))) ^ 2 <= 1) by nra.
+    assert (Eexp : (a * u / 4 * exp (- (a * u / 4))) ^ 2
+                 = (a * u) ^ 2 / 16
+                   * (exp (- (a * u / 4)) * exp (- (a * u / 4)))) by field.
+    rewrite E4. lra. }
+  assert (Hsplit : exp (- (a * u)) = exp (- (a * u / 2)) * exp (- (a * u / 2)))
+    by (rewrite <- exp_plus; f_equal; lra).
+  assert (Hgeo : exp (- (a * u / 2)) <= exp (- (PI / 4)) ^ n)
+    by (unfold a; apply exp_half_geo; lra).
+  rewrite Hsplit. nra.
+Qed.
+
 (* the ratio is genuinely below 1, so the majorant series converges *)
 Corollary dtheta_ratio_lt1 : exp (- (PI / 4)) < 1.
 Proof.
@@ -195,3 +268,5 @@ Qed.
 Print Assumptions v_exp_neg_v.
 Print Assumptions dtheta_term_bound.
 Print Assumptions dtheta2_term_bound.
+Print Assumptions xterm_bound.
+Print Assumptions xterm2_bound.
