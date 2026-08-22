@@ -1224,3 +1224,4 @@ spectral-theory/ZetaDerivBoundExt.v
 spectral-theory/ZeroFreeOpt.v
 spectral-theory/ZeroFreeRegion.v
 spectral-theory/CertifiedPi.v
+spectral-theory/ThetaTailSharp.v
