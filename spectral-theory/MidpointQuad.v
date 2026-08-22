@@ -23,6 +23,7 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra.
+Require Import ContinuousCoV.
 Open Scope R_scope.
 
 (* ----------------------------------------------------------------- *)
@@ -102,3 +103,109 @@ Proof.
 Qed.
 
 Print Assumptions taylor1_bound.
+
+(* ----------------------------------------------------------------- *)
+(*  the two polynomial integrals, via the LOCAL antiderivative         *)
+(* ----------------------------------------------------------------- *)
+(*  ContinuousCoV.FTC_antideriv wants stdlib's `antiderivative`, which  *)
+(*  asks only for differentiability ON [a,b] -- no global C1_fun.  That *)
+(*  is what makes these cheap.                                         *)
+
+Definition lin (c : R) : R -> R := fun y => y - c.
+
+Lemma dlim_lin : forall c x, derivable_pt_lim (lin c) x 1.
+Proof.
+  intros c x.
+  apply (derivable_pt_lim_ext (id - fct_cte c)%F);
+    [ intro z; unfold minus_fct, fct_cte, id, lin; reflexivity | ].
+  replace 1 with (1 - 0) by ring.
+  apply derivable_pt_lim_minus;
+    [ apply derivable_pt_lim_id | apply derivable_pt_lim_const ].
+Qed.
+
+Lemma dlim_sq : forall c x, derivable_pt_lim (fun y => (y - c) ^ 2 / 2) x (x - c).
+Proof.
+  intros c x.
+  apply (derivable_pt_lim_ext (mult_real_fct (/ 2) (lin c * lin c))%F).
+  - intro z. unfold mult_real_fct, mult_fct, lin. field.
+  - replace (x - c) with (/ 2 * (1 * lin c x + lin c x * 1))
+      by (unfold lin; field).
+    apply (derivable_pt_lim_scal (lin c * lin c)%F (/ 2) x).
+    apply derivable_pt_lim_mult; apply dlim_lin.
+Qed.
+
+Definition sq (c : R) : R -> R := fun y => (y - c) ^ 2.
+
+Lemma dlim_sq2 : forall c x, derivable_pt_lim (sq c) x (2 * (x - c)).
+Proof.
+  intros c x.
+  apply (derivable_pt_lim_ext (mult_real_fct 2 (fun y => (y - c) ^ 2 / 2))).
+  - intro z. unfold mult_real_fct, sq. field.
+  - replace (2 * (x - c)) with (2 * (x - c)) by ring.
+    apply (derivable_pt_lim_scal (fun y => (y - c) ^ 2 / 2) 2 x).
+    apply dlim_sq.
+Qed.
+
+Lemma dlim_cube : forall c x,
+  derivable_pt_lim (fun y => (y - c) ^ 3 / 3) x ((x - c) ^ 2).
+Proof.
+  intros c x.
+  apply (derivable_pt_lim_ext (mult_real_fct (/ 3) (lin c * sq c))%F).
+  - intro z. unfold mult_real_fct, mult_fct, lin, sq. field.
+  - replace ((x - c) ^ 2)
+      with (/ 3 * (1 * sq c x + lin c x * (2 * (x - c))))
+      by (unfold lin, sq; field).
+    apply (derivable_pt_lim_scal (lin c * sq c)%F (/ 3) x).
+    apply derivable_pt_lim_mult; [ apply dlim_lin | apply dlim_sq2 ].
+Qed.
+
+Lemma antideriv_lin : forall c r, 0 <= r ->
+  antiderivative (lin c) (fun y => (y - c) ^ 2 / 2) (c - r) (c + r).
+Proof.
+  intros c r Hr. split; [ | lra ].
+  intros x _. exists (exist _ (x - c) (dlim_sq c x)). reflexivity.
+Qed.
+
+Lemma antideriv_sq : forall c r, 0 <= r ->
+  antiderivative (sq c) (fun y => (y - c) ^ 3 / 3) (c - r) (c + r).
+Proof.
+  intros c r Hr. split; [ | lra ].
+  intros x _. exists (exist _ ((x - c) ^ 2) (dlim_cube c x)). reflexivity.
+Qed.
+
+(* ----------------------------------------------------------------- *)
+(*  the two integrals, evaluated                                       *)
+(* ----------------------------------------------------------------- *)
+Lemma cont_lin : forall c x, continuity_pt (lin c) x.
+Proof. intros c x. apply derivable_continuous_pt. exists 1. apply dlim_lin. Qed.
+
+Lemma cont_sq : forall c x, continuity_pt (sq c) x.
+Proof.
+  intros c x. apply derivable_continuous_pt. exists (2 * (x - c)). apply dlim_sq2.
+Qed.
+
+(*  THE CANCELLATION.  This is where the O(h^3) comes from: the linear
+    term of the Taylor expansion integrates to zero over an interval
+    symmetric about c.  Without it the midpoint rule would be O(h^2),
+    no better than the rectangle rule. *)
+Theorem int_lin_zero : forall c r (pr : Riemann_integrable (lin c) (c - r) (c + r)),
+  0 <= r -> RiemannInt pr = 0.
+Proof.
+  intros c r pr Hr.
+  rewrite (FTC_antideriv (lin c) (fun y => (y - c) ^ 2 / 2) (c - r) (c + r)
+             ltac:(lra) (fun x _ => cont_lin c x) pr (antideriv_lin c r Hr)).
+  field.
+Qed.
+
+Theorem int_sq_val : forall c r (pr : Riemann_integrable (sq c) (c - r) (c + r)),
+  0 <= r -> RiemannInt pr = 2 * r ^ 3 / 3.
+Proof.
+  intros c r pr Hr.
+  rewrite (FTC_antideriv (sq c) (fun y => (y - c) ^ 3 / 3) (c - r) (c + r)
+             ltac:(lra) (fun x _ => cont_sq c x) pr (antideriv_sq c r Hr)).
+  field.
+Qed.
+
+Print Assumptions antideriv_lin.
+Print Assumptions int_lin_zero.
+Print Assumptions int_sq_val.
