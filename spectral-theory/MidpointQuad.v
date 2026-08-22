@@ -209,3 +209,61 @@ Qed.
 Print Assumptions antideriv_lin.
 Print Assumptions int_lin_zero.
 Print Assumptions int_sq_val.
+
+(* ----------------------------------------------------------------- *)
+(*  THE MIDPOINT BOUND ON ONE SUBINTERVAL                              *)
+(* ----------------------------------------------------------------- *)
+Lemma cont_cte : forall k x, continuity_pt (fct_cte k) x.
+Proof. intros k x. apply derivable_continuous_pt. exists 0. apply derivable_pt_lim_const. Qed.
+
+Theorem midpoint_single : forall (f f' : R -> R) (c M2 r : R)
+  (prf : Riemann_integrable f (c - r) (c + r)),
+  0 <= r -> 0 <= M2 ->
+  (forall y, c - r <= y <= c + r -> derivable_pt_lim f y (f' y)) ->
+  (forall y z, c - r <= y <= c + r -> c - r <= z <= c + r ->
+     Rabs (f' y - f' z) <= M2 * Rabs (y - z)) ->
+  Rabs (RiemannInt prf - 2 * r * f c) <= 2 * M2 * r ^ 3 / 3.
+Proof.
+  intros f f' c M2 r prf Hr HM Hder HLip.
+  assert (Hab : c - r <= c + r) by lra.
+  assert (Hc : c - r <= c <= c + r) by lra.
+  (* the pieces, all integrable because continuous *)
+  assert (pr_cte : Riemann_integrable (fct_cte (f c)) (c - r) (c + r))
+    by (apply continuity_implies_RiemannInt; [ exact Hab | intros x _; apply cont_cte ]).
+  assert (pr_lin : Riemann_integrable (lin c) (c - r) (c + r))
+    by (apply continuity_implies_RiemannInt; [ exact Hab | intros x _; apply cont_lin ]).
+  assert (pr_sq : Riemann_integrable (sq c) (c - r) (c + r))
+    by (apply continuity_implies_RiemannInt; [ exact Hab | intros x _; apply cont_sq ]).
+  assert (pr_z : Riemann_integrable (fct_cte 0) (c - r) (c + r))
+    by (apply continuity_implies_RiemannInt; [ exact Hab | intros x _; apply cont_cte ]).
+  pose proof (RiemannInt_P10 (f' c) pr_cte pr_lin) as pr_g.
+  pose proof (RiemannInt_P10 (-1) prf pr_g) as pr_R.
+  pose proof (RiemannInt_P16 pr_R) as pr_A.
+  pose proof (RiemannInt_P10 M2 pr_z pr_sq) as pr_Q.
+  (* the linear approximant integrates to 2 r f c : the cancellation *)
+  assert (Hg : RiemannInt pr_g = 2 * r * f c).
+  { rewrite (RiemannInt_P13 pr_cte pr_lin pr_g).
+    rewrite (RiemannInt_P15 pr_cte).
+    rewrite (int_lin_zero c r pr_lin Hr). ring. }
+  (* so the remainder integral IS the quantity we are bounding *)
+  assert (HR : RiemannInt pr_R = RiemannInt prf - 2 * r * f c).
+  { rewrite (RiemannInt_P13 prf pr_g pr_R), Hg. ring. }
+  (* and the majorant integrates to 2 M2 r^3 / 3 *)
+  assert (HQ : RiemannInt pr_Q = 2 * M2 * r ^ 3 / 3).
+  { rewrite (RiemannInt_P13 pr_z pr_sq pr_Q).
+    rewrite (RiemannInt_P15 pr_z).
+    rewrite (int_sq_val c r pr_sq Hr). field. }
+  rewrite <- HR.
+  eapply Rle_trans; [ apply (RiemannInt_P17 pr_R pr_A Hab) | ].
+  rewrite <- HQ.
+  apply (RiemannInt_P19 pr_A pr_Q Hab).
+  intros x Hx.
+  assert (Hxc : c - r <= x <= c + r) by lra.
+  pose proof (taylor1_bound f f' c M2 r x HM Hder HLip Hc Hxc) as HT.
+  unfold fct_cte, lin, sq.
+  replace (f x + -1 * (f c + f' c * (x - c)))
+    with (f x - f c - f' c * (x - c)) by ring.
+  lra.
+Qed.
+
+Print Assumptions midpoint_single.
