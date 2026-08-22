@@ -31,7 +31,7 @@
 
 From Stdlib Require Import Reals Lra.
 Require Import ComplexField Cmodulus CSeries CZeta ZetaFn ThreeFourOne
-        ZetaStripBound.
+        ZetaStripBound ZetaLogBound.
 Open Scope R_scope.
 
 (* ----------------------------------------------------------------- *)
@@ -172,3 +172,104 @@ Qed.
 Print Assumptions zF_upper_real.
 Print Assumptions zF_upper_double.
 Print Assumptions zeta_lower.
+
+(* ================================================================= *)
+(*  D.  THE SAME BOUND, WITH THE CONSTANTS AS PARAMETERS               *)
+(* ================================================================= *)
+(*  The 7 and the 17 above are not structure, they are roundings of my *)
+(*  own slack: the 7 is 1 + (2a+2) at the cap a <= 2, absorbed via     *)
+(*  1/(a-1) >= 1, and the 17 is ceil(1/2 + 16|b|)/|b|.  Cap at a <= 3/2 *)
+(*  instead and the first is 6.  Only the CUBE on the first is real -- *)
+(*  it is the exponent 3 of Mertens 3-4-1.                             *)
+(*                                                                    *)
+(*  Parametrising them costs nothing and buys the splice below: the    *)
+(*  second factor can then be supplied by ZetaLogBound.zeta_log_bound  *)
+(*  instead of the O(|s|) bound, which is what keeps the zero-free     *)
+(*  region logarithmic rather than polynomial.                         *)
+(* ================================================================= *)
+Theorem zeta_lower_gen : forall a b C1 C2, 1 < a -> a <= 2 -> 1 <= Rabs b ->
+  0 <= C2 ->
+  Cmod (zF (mkC a 0)) <= C1 / (a - 1) ->
+  Cmod (zF (mkC a (2 * b))) <= C2 ->
+  (a - 1) ^ 3 <= C1 ^ 3 * C2 * (Cmod (zF (mkC a b))) ^ 4.
+Proof.
+  intros a b C1 C2 Ha Ha2 Hb HC2 Hu Hw.
+  assert (H00 : 0 < Re (mkC a 0)) by (cbn [Re]; lra).
+  assert (H10 : 0 < Re (mkC a b)) by (cbn [Re]; lra).
+  assert (H20 : 0 < Re (mkC a (2 * b))) by (cbn [Re]; lra).
+  pose proof (tfo_zeta a b Ha H00 (ne1_gen a 0 Ha) H10 (ne1_gen a b Ha)
+                H20 (ne1_gen a (2 * b) Ha)) as Htfo.
+  rewrite <- (zF_eq (mkC a 0) H00 (ne1_gen a 0 Ha)) in Htfo.
+  rewrite <- (zF_eq (mkC a b) H10 (ne1_gen a b Ha)) in Htfo.
+  rewrite <- (zF_eq (mkC a (2 * b)) H20 (ne1_gen a (2 * b) Ha)) in Htfo.
+  set (u := Cmod (zF (mkC a 0))) in *.
+  set (v := Cmod (zF (mkC a b))) in *.
+  set (w := Cmod (zF (mkC a (2 * b)))) in *.
+  assert (Hu0 : 0 <= u) by apply Cmod_nonneg.
+  assert (Hv0 : 0 <= v) by apply Cmod_nonneg.
+  assert (Hw0 : 0 <= w) by apply Cmod_nonneg.
+  assert (HA : 0 < a - 1) by lra.
+  assert (HC1 : 0 <= C1)
+    by (replace C1 with (C1 / (a - 1) * (a - 1)) by (field; lra); nra).
+  assert (HA3 : 0 < (a - 1) ^ 3) by (apply pow_lt; lra).
+  assert (Hv4 : 0 <= v ^ 4) by (apply pow_le; exact Hv0).
+  assert (Hu3 : u ^ 3 <= (C1 / (a - 1)) ^ 3)
+    by (apply pow_incr; split; assumption).
+  assert (Hc3 : (C1 / (a - 1)) ^ 3 = C1 ^ 3 / (a - 1) ^ 3) by (field; lra).
+  rewrite Hc3 in Hu3.
+  assert (Hstep1 : u ^ 3 * v ^ 4 * w <= C1 ^ 3 / (a - 1) ^ 3 * v ^ 4 * w).
+  { apply Rmult_le_compat_r; [ exact Hw0 | ].
+    apply Rmult_le_compat_r; [ exact Hv4 | exact Hu3 ]. }
+  assert (HC13 : 0 <= C1 ^ 3) by (apply pow_le; exact HC1).
+  assert (Hpos : 0 <= C1 ^ 3 / (a - 1) ^ 3 * v ^ 4)
+    by (apply Rmult_le_pos; [ apply Rle_mult_inv_pos; lra | exact Hv4 ]).
+  assert (Hstep2 : C1 ^ 3 / (a - 1) ^ 3 * v ^ 4 * w
+                <= C1 ^ 3 / (a - 1) ^ 3 * v ^ 4 * C2)
+    by (apply Rmult_le_compat_l; [ exact Hpos | exact Hw ]).
+  assert (Hchain : 1 <= C1 ^ 3 / (a - 1) ^ 3 * v ^ 4 * C2) by lra.
+  assert (Hfinal : (a - 1) ^ 3 * 1
+                <= (a - 1) ^ 3 * (C1 ^ 3 / (a - 1) ^ 3 * v ^ 4 * C2))
+    by (apply Rmult_le_compat_l; [ lra | exact Hchain ]).
+  rewrite Rmult_1_r in Hfinal.
+  replace ((a - 1) ^ 3 * (C1 ^ 3 / (a - 1) ^ 3 * v ^ 4 * C2))
+    with (C1 ^ 3 * C2 * v ^ 4) in Hfinal by (field; lra).
+  exact Hfinal.
+Qed.
+
+(* ================================================================= *)
+(*  E.  THE SPLICE: the same bound with a LOGARITHMIC second factor    *)
+(* ================================================================= *)
+(*  The point a + 2ib sits at Re = a > 1, so the PLAIN zeta_log_bound  *)
+(*  applies -- no below-the-line extension is needed here.  Only the   *)
+(*  mean value segment dips below 1.                                   *)
+(*                                                                    *)
+(*  This is the step that fixes the exponent of the zero-free region.  *)
+(*  The constant here enters K = 16 A M^4 linearly and K enters the    *)
+(*  region as 1/K, so the |b| carried by zeta_lower is a factor |t| in *)
+(*  the region: it would turn c/ln^9 t into c/(t ln^8 t), polynomial   *)
+(*  and vacuous.  With ln(2|b|) in its place the region stays          *)
+(*  logarithmic.                                                      *)
+(* ================================================================= *)
+Theorem zeta_lower_log : forall a b, 1 < a -> a <= 2 -> 1 <= Rabs b ->
+  (a - 1) ^ 3 <= 343 * (ln (2 * Rabs b) + 10) * (Cmod (zF (mkC a b))) ^ 4.
+Proof.
+  intros a b Ha Ha2 Hb.
+  assert (Habs : Rabs (2 * b) = 2 * Rabs b)
+    by (rewrite Rabs_mult, (Rabs_right 2 ltac:(lra)); reflexivity).
+  assert (Hln : 0 <= ln (2 * Rabs b))
+    by (apply ln_nonneg; lra).
+  assert (Hlog : Cmod (zF (mkC a (2 * b))) <= ln (2 * Rabs b) + 10).
+  { assert (Hre : Re (mkC a (2 * b)) = a) by reflexivity.
+    assert (Him : Im (mkC a (2 * b)) = 2 * b) by reflexivity.
+    pose proof (zeta_log_bound (mkC a (2 * b))
+                  ltac:(rewrite Hre; lra) ltac:(rewrite Hre; lra)
+                  ltac:(rewrite Him, Habs; lra)) as H.
+    rewrite Him, Habs in H. exact H. }
+  pose proof (zeta_lower_gen a b 7 (ln (2 * Rabs b) + 10) Ha Ha2 Hb
+                ltac:(lra) (zF_upper_real a Ha Ha2) Hlog) as H.
+  replace (7 ^ 3) with 343 in H by ring.
+  exact H.
+Qed.
+
+Print Assumptions zeta_lower_gen.
+Print Assumptions zeta_lower_log.
