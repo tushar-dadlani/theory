@@ -1228,3 +1228,4 @@ spectral-theory/ThetaTailSharp.v
 spectral-theory/IntervalArithFun.v
 spectral-theory/IntervalCos.v
 spectral-theory/IntervalLn.v
+spectral-theory/XSpaceIntegral.v
