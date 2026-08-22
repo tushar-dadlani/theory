@@ -1240,3 +1240,5 @@ spectral-theory/IntegrandLip.v
 spectral-theory/CompositeQuad.v
 spectral-theory/XSpaceWire.v
 spectral-theory/ReTCQuad.v
+spectral-theory/IntervalGint.v
+spectral-theory/XirSignChange.v
