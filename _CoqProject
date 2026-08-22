@@ -1230,3 +1230,4 @@ spectral-theory/IntervalCos.v
 spectral-theory/IntervalLn.v
 spectral-theory/XSpaceIntegral.v
 spectral-theory/MidpointQuad.v
+spectral-theory/PsiXSpace.v
