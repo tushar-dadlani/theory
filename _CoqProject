@@ -1242,3 +1242,4 @@ spectral-theory/XSpaceWire.v
 spectral-theory/ReTCQuad.v
 spectral-theory/IntervalGint.v
 spectral-theory/XirSignChange.v
+spectral-theory/XirConstants.v
