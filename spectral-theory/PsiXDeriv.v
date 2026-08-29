@@ -43,22 +43,82 @@ Definition gterm' (x : R) (n : nat) : R :=
     * exp (- (PI * INR (S n) ^ 2 * exp x)).
 Definition g2partial (x : R) (N : nat) : R := sum_f_R0 (gterm' x) N.
 
-Definition Kg1 : R := 2 / (1 - qd).
-Definition Kg2 : R := 18 / (1 - qd).
+(* --- the SHARP constants: k = 1, 2 exact, k >= 3 geometric --- *)
+(* The uniform majorant gives 2/(1-q) = 3.68 and 18/(1-q) = 33.1,     *)
+(* against true values 0.1358 and 0.5623 -- factors of 27 and 59, all *)
+(* of it slack in the FIRST term (2 q^0 = 2 vs pi e^{-pi} = 0.136).   *)
+(* Evaluating k = 1, 2 exactly removes essentially all of it: the     *)
+(* residual tail below is 1.5e-6 and 1.4e-5 respectively.  Since the  *)
+(* quadrature node count scales as sqrt(Mfin), this is what takes the *)
+(* t = 16 run from 8192 panels to 2048.                                *)
+Definition qt : R := exp (- PI).
+Definition Ktail : R := exp (- (9 * PI / 2)) / (1 - qt).
+
+Definition Kg1 : R :=
+  PI * exp (- PI) + 4 * PI * exp (- (4 * PI)) + 2 * Ktail.
+Definition Kg2 : R :=
+  (PI ^ 2 + PI) * exp (- PI)
+  + (16 * PI ^ 2 + 4 * PI) * exp (- (4 * PI))
+  + 18 * Ktail.
+
+Lemma qt_bounds : 0 < qt < 1.
+Proof.
+  split; [ apply exp_pos | ].
+  unfold qt. rewrite <- exp_0. apply exp_increasing. pose proof PI_RGT_0; lra.
+Qed.
+
+Lemma Ktail_nonneg : 0 <= Ktail.
+Proof.
+  pose proof qt_bounds as [H0 H1]. unfold Ktail.
+  apply Rle_mult_inv_pos; [ left; apply exp_pos | lra ].
+Qed.
+
+(* INR at the two exact indices *)
+Lemma INR_S0 : INR 1 = 1. Proof. simpl; ring. Qed.
+Lemma INR_S1 : INR 2 = 2. Proof. simpl; ring. Qed.
 
 Lemma exp_ge_1 : forall x, 0 <= x -> 1 <= exp x.
 Proof. intros x Hx. rewrite <- exp_0. apply exp_le_compat; exact Hx. Qed.
 
 Lemma Kg1_nonneg : 0 <= Kg1.
 Proof.
-  pose proof qd_bounds as [H0 H1]. unfold Kg1, Rdiv.
-  apply Rmult_le_pos; [ lra | left; apply Rinv_0_lt_compat; lra ].
+  unfold Kg1. pose proof PI_RGT_0. pose proof Ktail_nonneg.
+  pose proof (exp_pos (- PI)). pose proof (exp_pos (- (4 * PI))). nra.
 Qed.
 
 Lemma Kg2_nonneg : 0 <= Kg2.
 Proof.
-  pose proof qd_bounds as [H0 H1]. unfold Kg2, Rdiv.
-  apply Rmult_le_pos; [ lra | left; apply Rinv_0_lt_compat; lra ].
+  unfold Kg2. pose proof PI_RGT_0. pose proof Ktail_nonneg.
+  pose proof (exp_pos (- PI)). pose proof (exp_pos (- (4 * PI))). nra.
+Qed.
+
+(* the head terms, at their maxima u = 1 *)
+Lemma gterm_at1 : forall x n, 0 <= x ->
+  gterm x n <= PI * INR (S n) ^ 2 * exp (- (PI * INR (S n) ^ 2)).
+Proof.
+  intros x n Hx. unfold gterm. apply xterm_at1. apply exp_ge_1; exact Hx.
+Qed.
+
+Lemma gterm_head0 : forall x, 0 <= x -> gterm x 0 <= PI * exp (- PI).
+Proof.
+  intros x Hx. eapply Rle_trans; [ apply gterm_at1; exact Hx | ].
+  rewrite INR_S0. replace (PI * 1 ^ 2) with PI by ring. right; reflexivity.
+Qed.
+
+Lemma gterm_head1 : forall x, 0 <= x -> gterm x 1 <= 4 * PI * exp (- (4 * PI)).
+Proof.
+  intros x Hx. eapply Rle_trans; [ apply gterm_at1; exact Hx | ].
+  rewrite INR_S1. replace (PI * 2 ^ 2) with (4 * PI) by ring. right; reflexivity.
+Qed.
+
+Lemma gterm_tail : forall x i, 0 <= x ->
+  gterm x (2 + i) <= 2 * exp (- (9 * PI / 2)) * qt ^ i.
+Proof.
+  intros x i Hx.
+  eapply Rle_trans; [ apply gterm_at1; exact Hx | ].
+  assert (Hk : INR (S (2 + i)) = INR i + 3)
+    by (rewrite !S_INR, plus_INR; simpl; ring).
+  rewrite Hk. unfold qt. apply sharp_tail1.
 Qed.
 
 (* ----------------------------------------------------------------- *)
@@ -103,19 +163,50 @@ Proof.
   - pose proof (gterm_nonneg x (S N)). lra.
 Qed.
 
+(* the split: two exact head terms, then a geometric tail *)
 Lemma gpartial_bound : forall x N, 0 <= x -> gpartial x N <= Kg1.
 Proof.
-  intros x N Hx. pose proof qd_bounds as [Hq0 Hq1].
-  pose proof (exp_ge_1 x Hx) as He1.
-  unfold gpartial, Kg1.
-  apply Rle_trans with (sum_f_R0 (fun k => 2 * qd ^ k) N).
-  - apply sum_f_R0_le. intro i. unfold gterm, qd.
-    apply xterm_bound; exact He1.
-  - assert (E : sum_f_R0 (fun k => 2 * qd ^ k) N
-              = 2 * sum_f_R0 (fun k => qd ^ k) N).
-    { rewrite (scal_sum (fun k => qd ^ k) N 2). apply sum_eq; intros i _; ring. }
-    rewrite E. unfold Rdiv.
-    apply Rmult_le_compat_l; [ lra | apply geom_partial_bound; lra ].
+  intros x N Hx. pose proof qt_bounds as [Hq0 Hq1].
+  pose proof (gterm_head0 x Hx) as H0.
+  pose proof (gterm_head1 x Hx) as H1.
+  pose proof (gterm_nonneg x 1) as Hn1.
+  assert (Htail : 0 <= 2 * Ktail)
+    by (pose proof Ktail_nonneg; lra).
+  unfold Kg1, gpartial.
+  destruct (Nat.le_gt_cases N 1) as [Hle | Hgt].
+  - (* N <= 1 : monotone, so at most the two head terms *)
+    assert (Hmono : sum_f_R0 (gterm x) N <= gterm x 0 + gterm x 1).
+    { destruct N as [| [| N]].
+      - cbn [sum_f_R0]. lra.
+      - cbn [sum_f_R0]. lra.
+      - exfalso; lia. }
+    lra.
+  - (* N >= 2 : split off the head, majorize the rest geometrically *)
+    rewrite (tech2 (gterm x) 1 N Hgt).
+    assert (Hhead : sum_f_R0 (gterm x) 1
+                    <= PI * exp (- PI) + 4 * PI * exp (- (4 * PI)))
+      by (cbn [sum_f_R0]; lra).
+    assert (Htl : sum_f_R0 (fun i => gterm x (S 1 + i)) (N - S 1) <= 2 * Ktail).
+    { eapply Rle_trans.
+      - apply sum_f_R0_le. intro i.
+        change (S 1 + i)%nat with (2 + i)%nat. apply gterm_tail; exact Hx.
+      - assert (E : sum_f_R0 (fun i => 2 * exp (- (9 * PI / 2)) * qt ^ i) (N - S 1)
+                  = 2 * exp (- (9 * PI / 2))
+                    * sum_f_R0 (fun i => qt ^ i) (N - S 1)).
+        { rewrite (scal_sum (fun i => qt ^ i) (N - S 1)
+                     (2 * exp (- (9 * PI / 2)))).
+          apply sum_eq; intros i _; ring. }
+        rewrite E. unfold Ktail, Rdiv.
+        assert (Hgp : sum_f_R0 (fun i => qt ^ i) (N - S 1) <= / (1 - qt))
+          by (apply geom_partial_bound; lra).
+        assert (Hc : 0 <= 2 * exp (- (9 * PI / 2)))
+          by (pose proof (exp_pos (- (9 * PI / 2))); lra).
+        assert (Hstep : 2 * exp (- (9 * PI / 2))
+                          * sum_f_R0 (fun i => qt ^ i) (N - S 1)
+                     <= 2 * exp (- (9 * PI / 2)) * / (1 - qt))
+          by (apply Rmult_le_compat_l; assumption).
+        lra. }
+    lra.
 Qed.
 
 Theorem DG_bound : forall x, 0 <= x -> Rabs (DG x) <= Kg1.
@@ -173,12 +264,16 @@ Proof.
   - eapply Rle_trans; [ apply Rabs_triang | ]. lra.
 Qed.
 
-Lemma gterm'_abs_bound : forall x n, 0 <= x -> Rabs (gterm' x n) <= 18 * qd ^ n.
+(* |gterm'| <= ((au)^2 + au) e^{-au}, then both pieces at u = 1 *)
+Lemma gterm'_abs_at1 : forall x n, 0 <= x ->
+  Rabs (gterm' x n)
+  <= (PI * INR (S n) ^ 2) ^ 2 * exp (- (PI * INR (S n) ^ 2))
+     + PI * INR (S n) ^ 2 * exp (- (PI * INR (S n) ^ 2)).
 Proof.
-  intros x n Hx. pose proof (exp_ge_1 x Hx) as He1.
-  assert (Hmaj : (( PI * INR (S n) ^ 2 * exp x) ^ 2 + PI * INR (S n) ^ 2 * exp x)
-                   * exp (- (PI * INR (S n) ^ 2 * exp x)) <= 18 * qd ^ n)
-    by (unfold qd; apply xterm2_bound; exact He1).
+  intros x n Hx.
+  assert (He1 : 1 <= exp x) by (apply exp_ge_1; exact Hx).
+  pose proof (xterm_at1 (exp x) n He1) as A1.
+  pose proof (xterm2_at1 (exp x) n He1) as A2.
   set (w := PI * INR (S n) ^ 2 * exp x) in *.
   assert (Hw : 0 <= w).
   { unfold w. pose proof PI_RGT_0.
@@ -189,18 +284,75 @@ Proof.
   apply Rabs_le. split; nra.
 Qed.
 
+Lemma gterm'_head0 : forall x, 0 <= x ->
+  Rabs (gterm' x 0) <= (PI ^ 2 + PI) * exp (- PI).
+Proof.
+  intros x Hx. eapply Rle_trans; [ apply gterm'_abs_at1; exact Hx | ].
+  rewrite INR_S0. replace (PI * 1 ^ 2) with PI by ring. right; ring.
+Qed.
+
+Lemma gterm'_head1 : forall x, 0 <= x ->
+  Rabs (gterm' x 1) <= (16 * PI ^ 2 + 4 * PI) * exp (- (4 * PI)).
+Proof.
+  intros x Hx. eapply Rle_trans; [ apply gterm'_abs_at1; exact Hx | ].
+  rewrite INR_S1. replace (PI * 2 ^ 2) with (4 * PI) by ring. right; ring.
+Qed.
+
+Lemma gterm'_tail : forall x i, 0 <= x ->
+  Rabs (gterm' x (2 + i)) <= 18 * exp (- (9 * PI / 2)) * qt ^ i.
+Proof.
+  intros x i Hx.
+  eapply Rle_trans; [ apply gterm'_abs_at1; exact Hx | ].
+  assert (Hk : INR (S (2 + i)) = INR i + 3)
+    by (rewrite !S_INR, plus_INR; simpl; ring).
+  rewrite Hk. unfold qt.
+  eapply Rle_trans; [ | apply (sharp_tail2 i) ]. right; ring.
+Qed.
+
 Lemma g2partial_abs_bound : forall x N, 0 <= x -> Rabs (g2partial x N) <= Kg2.
 Proof.
-  intros x N Hx. pose proof qd_bounds as [Hq0 Hq1].
-  unfold g2partial, Kg2.
+  intros x N Hx. pose proof qt_bounds as [Hq0 Hq1].
+  pose proof (gterm'_head0 x Hx) as H0.
+  pose proof (gterm'_head1 x Hx) as H1.
+  pose proof (Rabs_pos (gterm' x 1)) as Hn1.
+  assert (Htail : 0 <= 18 * Ktail) by (pose proof Ktail_nonneg; lra).
+  unfold Kg2, g2partial.
   eapply Rle_trans; [ apply sum_f_R0_abs | ].
-  apply Rle_trans with (sum_f_R0 (fun k => 18 * qd ^ k) N).
-  - apply sum_f_R0_le. intro i. apply gterm'_abs_bound; exact Hx.
-  - assert (E : sum_f_R0 (fun k => 18 * qd ^ k) N
-              = 18 * sum_f_R0 (fun k => qd ^ k) N).
-    { rewrite (scal_sum (fun k => qd ^ k) N 18). apply sum_eq; intros i _; ring. }
-    rewrite E. unfold Rdiv.
-    apply Rmult_le_compat_l; [ lra | apply geom_partial_bound; lra ].
+  destruct (Nat.le_gt_cases N 1) as [Hle | Hgt].
+  - assert (Hmono : sum_f_R0 (fun i => Rabs (gterm' x i)) N
+                    <= Rabs (gterm' x 0) + Rabs (gterm' x 1)).
+    { destruct N as [| [| N]].
+      - cbn [sum_f_R0]. lra.
+      - cbn [sum_f_R0]. lra.
+      - exfalso; lia. }
+    lra.
+  - rewrite (tech2 (fun i => Rabs (gterm' x i)) 1 N Hgt).
+    assert (Hhead : sum_f_R0 (fun i => Rabs (gterm' x i)) 1
+                    <= (PI ^ 2 + PI) * exp (- PI)
+                       + (16 * PI ^ 2 + 4 * PI) * exp (- (4 * PI)))
+      by (cbn [sum_f_R0]; lra).
+    assert (Htl : sum_f_R0 (fun i => Rabs (gterm' x (S 1 + i))) (N - S 1)
+                  <= 18 * Ktail).
+    { eapply Rle_trans.
+      - apply sum_f_R0_le. intro i.
+        change (S 1 + i)%nat with (2 + i)%nat. apply gterm'_tail; exact Hx.
+      - assert (E : sum_f_R0 (fun i => 18 * exp (- (9 * PI / 2)) * qt ^ i) (N - S 1)
+                  = 18 * exp (- (9 * PI / 2))
+                    * sum_f_R0 (fun i => qt ^ i) (N - S 1)).
+        { rewrite (scal_sum (fun i => qt ^ i) (N - S 1)
+                     (18 * exp (- (9 * PI / 2)))).
+          apply sum_eq; intros i _; ring. }
+        rewrite E. unfold Ktail, Rdiv.
+        assert (Hgp : sum_f_R0 (fun i => qt ^ i) (N - S 1) <= / (1 - qt))
+          by (apply geom_partial_bound; lra).
+        assert (Hc : 0 <= 18 * exp (- (9 * PI / 2)))
+          by (pose proof (exp_pos (- (9 * PI / 2))); lra).
+        assert (Hstep : 18 * exp (- (9 * PI / 2))
+                          * sum_f_R0 (fun i => qt ^ i) (N - S 1)
+                     <= 18 * exp (- (9 * PI / 2)) * / (1 - qt))
+          by (apply Rmult_le_compat_l; assumption).
+        lra. }
+    lra.
 Qed.
 
 (* ----------------------------------------------------------------- *)

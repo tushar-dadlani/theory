@@ -42,30 +42,87 @@ Qed.
 (* ----------------------------------------------------------------- *)
 (*  B.  q = e^{-pi/4}, and the two Lipschitz constants                *)
 (* ----------------------------------------------------------------- *)
-Lemma qd_ub : qd <= 456 / 1000.
+(* ----------------------------------------------------------------- *)
+(*  B.  the sharp constants.  Only TWO interval evaluations are        *)
+(*  needed -- e^{-pi} and e^{-4 pi}; everything else follows by         *)
+(*  monotonicity of exp, since -9 pi and -9 pi/2 are both below -4 pi. *)
+(* ----------------------------------------------------------------- *)
+Lemma exp_pi_ub : exp (- PI) <= 4322 / 100000.
 Proof.
-  unfold qd.
-  assert (Hmono : exp (- (PI / 4)) <= exp (Q2R (-7853975 # 10000000))).
+  assert (Hmono : exp (- PI) <= exp (Q2R (-314159 # 100000))).
   { apply exp_le_compat. pose proof PI_lower. unfold Q2R; simpl; lra. }
   eapply Rle_trans; [ exact Hmono | ].
-  eapply Rle_trans; [ apply (Iexp_ub 40 20); vm_compute; reflexivity | ].
+  eapply Rle_trans; [ apply (Iexp_ub 50 24); vm_compute; reflexivity | ].
   eapply Rle_trans;
-    [ apply (Qle_R _ (456 # 1000)); vm_compute; reflexivity | ].
+    [ apply (Qle_R _ (4322 # 100000)); vm_compute; reflexivity | ].
   unfold Q2R; simpl; lra.
 Qed.
 
-Lemma Kg1_ub : Kg1 <= 368 / 100.
+Lemma exp_4pi_ub : exp (- (4 * PI)) <= 4 / 1000000.
 Proof.
-  unfold Kg1. pose proof qd_ub as H. pose proof qd_bounds as [H0 H1].
-  apply (Rmult_le_reg_r (1 - qd)); [ lra | ].
+  assert (Hmono : exp (- (4 * PI)) <= exp (Q2R (-1256636 # 100000))).
+  { apply exp_le_compat. pose proof PI_lower. unfold Q2R; simpl; lra. }
+  eapply Rle_trans; [ exact Hmono | ].
+  eapply Rle_trans; [ apply (Iexp_ub 50 24); vm_compute; reflexivity | ].
+  eapply Rle_trans;
+    [ apply (Qle_R _ (4 # 1000000)); vm_compute; reflexivity | ].
+  unfold Q2R; simpl; lra.
+Qed.
+
+(* -9 pi and -9 pi/2 are both below -4 pi, so monotonicity suffices *)
+Lemma exp_9pi_ub : exp (- (9 * PI)) <= 4 / 1000000.
+Proof.
+  eapply Rle_trans; [ | apply exp_4pi_ub ].
+  apply exp_le_compat. pose proof PI_RGT_0. lra.
+Qed.
+
+Lemma exp_45pi_ub : exp (- (9 * PI / 2)) <= 4 / 1000000.
+Proof.
+  eapply Rle_trans; [ | apply exp_4pi_ub ].
+  apply exp_le_compat. pose proof PI_RGT_0. lra.
+Qed.
+
+Lemma Ktail_ub : Ktail <= 5 / 1000000.
+Proof.
+  unfold Ktail, qt.
+  pose proof exp_pi_ub as Hq. pose proof exp_45pi_ub as Hn.
+  pose proof (exp_pos (- PI)) as Hp. pose proof (exp_pos (- (9 * PI / 2))) as Hp2.
+  assert (Hden : 0 < 1 - exp (- PI)) by lra.
+  apply (Rmult_le_reg_r (1 - exp (- PI))); [ exact Hden | ].
   unfold Rdiv. rewrite Rmult_assoc, Rinv_l by lra. lra.
 Qed.
 
-Lemma Kg2_ub : Kg2 <= 3309 / 100.
+Lemma Kg1_ub : Kg1 <= 136 / 1000.
 Proof.
-  unfold Kg2. pose proof qd_ub as H. pose proof qd_bounds as [H0 H1].
-  apply (Rmult_le_reg_r (1 - qd)); [ lra | ].
-  unfold Rdiv. rewrite Rmult_assoc, Rinv_l by lra. lra.
+  unfold Kg1. pose proof PI_upper as HPu. pose proof PI_RGT_0.
+  pose proof exp_pi_ub. pose proof exp_4pi_ub. pose proof Ktail_ub.
+  pose proof (exp_pos (- PI)). pose proof (exp_pos (- (4 * PI))).
+  pose proof Ktail_nonneg.
+  assert (W1 : PI * exp (- PI) <= 31416 / 10000 * (4322 / 100000)) by nra.
+  assert (W2 : 4 * PI * exp (- (4 * PI))
+               <= 4 * (31416 / 10000) * (4 / 1000000)) by nra.
+  lra.
+Qed.
+
+Lemma Kg2_ub : Kg2 <= 564 / 1000.
+Proof.
+  unfold Kg2. pose proof PI_upper as HPu. pose proof PI_RGT_0.
+  pose proof exp_pi_ub. pose proof exp_4pi_ub. pose proof Ktail_ub.
+  pose proof (exp_pos (- PI)). pose proof (exp_pos (- (4 * PI))).
+  pose proof Ktail_nonneg.
+  assert (HP2 : PI ^ 2 <= 98697 / 10000) by nra.
+  assert (V1 : (PI ^ 2 + PI) * exp (- PI)
+               <= (98697 / 10000 + 31416 / 10000) * (4322 / 100000)) by nra.
+  assert (V2 : (16 * PI ^ 2 + 4 * PI) * exp (- (4 * PI))
+               <= (16 * (98697 / 10000) + 4 * (31416 / 10000))
+                  * (4 / 1000000)) by nra.
+  lra.
+Qed.
+
+Lemma MP_ub : MP <= 433 / 10000.
+Proof.
+  unfold MP. pose proof exp_pi_ub. pose proof exp_4pi_ub. pose proof exp_9pi_ub.
+  lra.
 Qed.
 
 (* ----------------------------------------------------------------- *)
@@ -137,23 +194,27 @@ Qed.
 Lemma Tt_val : forall t, 0 <= t -> Tt t = t / 2.
 Proof. intros t Ht. unfold Tt. rewrite Rabs_pos_eq by exact Ht. reflexivity. Qed.
 
-Lemma Mfin_12 : Mfin 12 (13 / 8) <= 149.
+Lemma Mfin_12 : Mfin 12 (13 / 8) <= 6.
 Proof.
   unfold Mfin. rewrite (Tt_val 12) by lra.
-  pose proof Kg1_ub. pose proof Kg2_ub. pose proof EL_ub.
-  pose proof Kg1_nonneg. pose proof Kg2_nonneg. pose proof (EL_pos (13 / 8)).
+  pose proof Kg1_ub. pose proof Kg2_ub. pose proof EL_ub. pose proof MP_ub.
+  pose proof Kg1_nonneg. pose proof Kg2_nonneg. pose proof MP_nonneg.
+  pose proof (EL_pos (13 / 8)).
   nra.
 Qed.
 
-Lemma Mfin_16 : Mfin 16 (13 / 8) <= 194.
+Lemma Mfin_16 : Mfin 16 (13 / 8) <= 87 / 10.
 Proof.
   unfold Mfin. rewrite (Tt_val 16) by lra.
-  pose proof Kg1_ub. pose proof Kg2_ub. pose proof EL_ub.
-  pose proof Kg1_nonneg. pose proof Kg2_nonneg. pose proof (EL_pos (13 / 8)).
+  pose proof Kg1_ub. pose proof Kg2_ub. pose proof EL_ub. pose proof MP_ub.
+  pose proof Kg1_nonneg. pose proof Kg2_nonneg. pose proof MP_nonneg.
+  pose proof (EL_pos (13 / 8)).
   nra.
 Qed.
 
-Print Assumptions qd_ub.
+Print Assumptions exp_pi_ub.
+Print Assumptions Kg1_ub.
+Print Assumptions Kg2_ub.
 Print Assumptions EL_ub.
 Print Assumptions ET_ub.
 Print Assumptions Mfin_12.

@@ -30,7 +30,7 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra Lia.
-Require Import ExpEnclosure ThetaTailBounds.
+Require Import ExpEnclosure ThetaTailBounds CertifiedPi.
 Open Scope R_scope.
 
 (* v e^{-v} <= 1 : exp_ineq1_le, one more time *)
@@ -259,6 +259,154 @@ Proof.
   rewrite Hsplit. nra.
 Qed.
 
+(* ================================================================= *)
+(*  SHARP BOUNDS.  The geometric majorants above are uniform in n but  *)
+(*  badly slack at the FIRST term: 2 q^0 = 2 against a true value of   *)
+(*  pi e^{-pi} = 0.136, a factor 15, and 18 q^0 = 18 against 0.562, a  *)
+(*  factor 32.  Since the first term dominates the sum, that slack is  *)
+(*  the whole error constant, and it propagates straight into the      *)
+(*  quadrature node count as its square root.                          *)
+(*                                                                    *)
+(*  Same fix as ThetaTailSharp used for Psi itself: evaluate k = 1, 2  *)
+(*  EXACTLY and majorize only k >= 3.  It works for the same reason --  *)
+(*  the exponents are QUADRATIC, so the first neglected term is        *)
+(*  e^{-9 pi} rather than a constant factor down.                      *)
+(*                                                                    *)
+(*  Two ingredients.  First, every term is maximised at u = 1, because *)
+(*  z e^{-z} and z^2 e^{-z} are antitone past z = 1 and z = 2 and the  *)
+(*  smallest exponent here is pi.  Second, past k = 3 the same         *)
+(*  half-split as above still applies, now with room to spare.         *)
+(* ================================================================= *)
+
+(* z e^{-cz} is antitone once cz >= 1 -- the only monotonicity needed, *)
+(* used at c = 1 for the first-order terms and c = 1/2 for the second  *)
+(* (where z^2 e^{-z} = (z e^{-z/2})^2 makes it the same statement).    *)
+Lemma vexp_antitone : forall c v w, 0 < c -> 1 <= c * v -> v <= w ->
+  w * exp (- (c * w)) <= v * exp (- (c * v)).
+Proof.
+  intros c v w Hc Hcv Hvw.
+  assert (Hv : 0 < v) by nra.
+  assert (H1 : w <= v * (1 + c * (w - v))).
+  { assert (E : v * (1 + c * (w - v)) - w = (w - v) * (c * v - 1)) by ring. nra. }
+  assert (H2 : 1 + c * (w - v) <= exp (c * (w - v))) by apply exp_ineq1_le.
+  assert (H3 : w <= v * exp (c * (w - v))) by nra.
+  assert (E2 : exp (c * (w - v)) * exp (- (c * w)) = exp (- (c * v)))
+    by (rewrite <- exp_plus; f_equal; ring).
+  assert (H4 : w * exp (- (c * w)) <= v * exp (c * (w - v)) * exp (- (c * w)))
+    by (apply Rmult_le_compat_r; [ left; apply exp_pos | exact H3 ]).
+  rewrite Rmult_assoc, E2 in H4. exact H4.
+Qed.
+
+(* every term is largest at u = 1 *)
+Lemma xterm_at1 : forall u n, 1 <= u ->
+  PI * INR (S n) ^ 2 * u * exp (- (PI * INR (S n) ^ 2 * u))
+  <= PI * INR (S n) ^ 2 * exp (- (PI * INR (S n) ^ 2)).
+Proof.
+  intros u n Hu. pose proof PI_lower as HP3.
+  set (k := INR (S n)).
+  assert (Hk1 : 1 <= k) by (unfold k; rewrite S_INR; pose proof (pos_INR n); lra).
+  assert (Hk2 : 1 <= k ^ 2) by nra.
+  set (a := PI * k ^ 2).
+  assert (Ha : 1 <= a) by (unfold a; nra).
+  assert (Haw : a <= a * u) by nra.
+  pose proof (vexp_antitone 1 a (a * u) ltac:(lra) ltac:(lra) Haw) as H.
+  replace (1 * (a * u)) with (a * u) in H by ring.
+  replace (1 * a) with a in H by ring.
+  unfold a in H. exact H.
+Qed.
+
+Lemma xterm2_at1 : forall u n, 1 <= u ->
+  (PI * INR (S n) ^ 2 * u) ^ 2 * exp (- (PI * INR (S n) ^ 2 * u))
+  <= (PI * INR (S n) ^ 2) ^ 2 * exp (- (PI * INR (S n) ^ 2)).
+Proof.
+  intros u n Hu. pose proof PI_lower as HP3.
+  set (k := INR (S n)).
+  assert (Hk1 : 1 <= k) by (unfold k; rewrite S_INR; pose proof (pos_INR n); lra).
+  assert (Hk2 : 1 <= k ^ 2) by nra.
+  set (a := PI * k ^ 2).
+  assert (Ha : 2 <= a) by (unfold a; nra).
+  assert (Haw : a <= a * u) by nra.
+  pose proof (vexp_antitone (/ 2) a (a * u) ltac:(lra) ltac:(lra) Haw) as H.
+  (* square both sides; both are nonnegative *)
+  assert (Hl : 0 <= a * u * exp (- (/ 2 * (a * u))))
+    by (apply Rmult_le_pos; [ nra | left; apply exp_pos ]).
+  assert (Hsq : (a * u * exp (- (/ 2 * (a * u)))) ^ 2
+             <= (a * exp (- (/ 2 * a))) ^ 2)
+    by (apply pow_incr; lra).
+  assert (E1 : (a * u * exp (- (/ 2 * (a * u)))) ^ 2
+             = (a * u) ^ 2 * exp (- (a * u))).
+  { assert (Ee : exp (- (/ 2 * (a * u))) * exp (- (/ 2 * (a * u)))
+               = exp (- (a * u))) by (rewrite <- exp_plus; f_equal; field).
+    simpl. rewrite <- Ee. ring. }
+  assert (E2 : (a * exp (- (/ 2 * a))) ^ 2 = a ^ 2 * exp (- a)).
+  { assert (Ee : exp (- (/ 2 * a)) * exp (- (/ 2 * a)) = exp (- a))
+      by (rewrite <- exp_plus; f_equal; field).
+    simpl. rewrite <- Ee. ring. }
+  rewrite E1, E2 in Hsq. unfold a in Hsq. exact Hsq.
+Qed.
+
+(* past k = 3 the half-split still applies, geometrically in j = k - 3 *)
+Lemma sharp_tail1 : forall j : nat,
+  PI * (INR j + 3) ^ 2 * exp (- (PI * (INR j + 3) ^ 2))
+  <= 2 * exp (- (9 * PI / 2)) * exp (- PI) ^ j.
+Proof.
+  intro j. pose proof PI_RGT_0 as HPI. pose proof (pos_INR j) as Hj.
+  set (a := PI * (INR j + 3) ^ 2).
+  assert (Ha : 0 < a) by (unfold a; nra).
+  assert (Hv : a / 2 * exp (- (a / 2)) <= 1) by (apply v_exp_neg_v; lra).
+  assert (He : 0 < exp (- (a / 2))) by apply exp_pos.
+  assert (Hsplit : exp (- a) = exp (- (a / 2)) * exp (- (a / 2)))
+    by (rewrite <- exp_plus; f_equal; lra).
+  assert (Hstep : a * exp (- a) <= 2 * exp (- (a / 2))) by (rewrite Hsplit; nra).
+  assert (Hgeo : exp (- (a / 2)) <= exp (- (9 * PI / 2)) * exp (- PI) ^ j).
+  { rewrite <- exp_INR_pow, <- exp_plus. apply exp_le_mono.
+    assert (Hq : 0 <= PI * (INR j ^ 2 + 4 * INR j) / 2)
+      by (apply Rmult_le_pos; [ nra | lra ]).
+    assert (E : PI * (INR j ^ 2 + 4 * INR j) / 2
+              = (- (9 * PI / 2) + INR j * - PI) - (- (a / 2)))
+      by (unfold a; field).
+    lra. }
+  unfold a in Hstep. nra.
+Qed.
+
+Lemma sharp_tail2 : forall j : nat,
+  ((PI * (INR j + 3) ^ 2) ^ 2 + PI * (INR j + 3) ^ 2)
+    * exp (- (PI * (INR j + 3) ^ 2))
+  <= 18 * exp (- (9 * PI / 2)) * exp (- PI) ^ j.
+Proof.
+  intro j. pose proof PI_RGT_0 as HPI. pose proof (pos_INR j) as Hj.
+  set (a := PI * (INR j + 3) ^ 2).
+  assert (Ha : 0 < a) by (unfold a; nra).
+  assert (He2 : 0 < exp (- (a / 2))) by apply exp_pos.
+  assert (He4 : 0 < exp (- (a / 4))) by apply exp_pos.
+  assert (Hsplit : exp (- a) = exp (- (a / 2)) * exp (- (a / 2)))
+    by (rewrite <- exp_plus; f_equal; lra).
+  (* linear part *)
+  assert (Hv2 : a / 2 * exp (- (a / 2)) <= 1) by (apply v_exp_neg_v; lra).
+  assert (Hlin : a * exp (- a) <= 2 * exp (- (a / 2))) by (rewrite Hsplit; nra).
+  (* quadratic part, quarter split squared *)
+  assert (Hv4 : a / 4 * exp (- (a / 4)) <= 1) by (apply v_exp_neg_v; lra).
+  assert (Hp : 0 <= a / 4 * exp (- (a / 4))) by nra.
+  assert (Hsq : (a / 4 * exp (- (a / 4))) ^ 2 <= 1) by nra.
+  assert (Equ : (a / 4 * exp (- (a / 4))) ^ 2
+              = a ^ 2 / 16 * exp (- (a / 2))).
+  { assert (Ee : exp (- (a / 4)) * exp (- (a / 4)) = exp (- (a / 2)))
+      by (rewrite <- exp_plus; f_equal; field).
+    simpl. rewrite <- Ee. field. }
+  rewrite Equ in Hsq.
+  assert (Hquad : a ^ 2 * exp (- a) <= 16 * exp (- (a / 2)))
+    by (rewrite Hsplit; nra).
+  assert (Hgeo : exp (- (a / 2)) <= exp (- (9 * PI / 2)) * exp (- PI) ^ j).
+  { rewrite <- exp_INR_pow, <- exp_plus. apply exp_le_mono.
+    assert (Hq : 0 <= PI * (INR j ^ 2 + 4 * INR j) / 2)
+      by (apply Rmult_le_pos; [ nra | lra ]).
+    assert (E : PI * (INR j ^ 2 + 4 * INR j) / 2
+              = (- (9 * PI / 2) + INR j * - PI) - (- (a / 2)))
+      by (unfold a; field).
+    lra. }
+  unfold a in Hlin, Hquad. nra.
+Qed.
+
 (* the ratio is genuinely below 1, so the majorant series converges *)
 Corollary dtheta_ratio_lt1 : exp (- (PI / 4)) < 1.
 Proof.
@@ -270,3 +418,7 @@ Print Assumptions dtheta_term_bound.
 Print Assumptions dtheta2_term_bound.
 Print Assumptions xterm_bound.
 Print Assumptions xterm2_bound.
+Print Assumptions vexp_antitone.
+Print Assumptions xterm_at1.
+Print Assumptions sharp_tail1.
+Print Assumptions sharp_tail2.

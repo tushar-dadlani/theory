@@ -101,21 +101,32 @@ Qed.
 (* ----------------------------------------------------------------- *)
 (*  B.  bounds on [0, L]                                              *)
 (* ----------------------------------------------------------------- *)
-Lemma GPsi_bdd : forall L, BddOn GPsi 0 L (/ 2).
+(* Psi(e^x) at ITS maximum, x = 0, rather than the crude 1/2.          *)
+(* MP = 0.0432 against 0.5 -- another factor 12, and it multiplies the *)
+(* (t/2)^2 term of Mfin, which is the dominant one at t = 16.          *)
+Definition MP : R := exp (- PI) + exp (- (4 * PI)) + 2 * exp (- (9 * PI)).
+
+Lemma MP_nonneg : 0 <= MP.
+Proof.
+  unfold MP. pose proof (exp_pos (- PI)). pose proof (exp_pos (- (4 * PI))).
+  pose proof (exp_pos (- (9 * PI))). lra.
+Qed.
+
+Lemma GPsi_bdd : forall L, BddOn GPsi 0 L MP.
 Proof.
   intros L x Hx. destruct Hx as [Hx0 HxL].
   assert (Hu : 1 <= exp x) by (apply exp_ge_1; exact Hx0).
   pose proof PI_RGT_0.
   destruct (Psi_simple (exp x) Hu) as [Hlo Hhi].
   pose proof (Psi_nonneg (exp x)) as Hnn.
-  assert (H1 : exp (- (PI * exp x)) <= / 8) by (apply exp_neg_pi_small; exact Hu).
-  assert (H2 : exp (- (PI * 4 * exp x)) <= / 8)
-    by (apply Rle_trans with (exp (- (PI * exp x)));
-        [ apply exp_le_compat; nra | exact H1 ]).
-  assert (H3 : exp (- (9 * (PI * exp x))) <= / 8)
-    by (apply Rle_trans with (exp (- (PI * exp x)));
-        [ apply exp_le_compat; nra | exact H1 ]).
-  unfold GPsi. rewrite Rabs_pos_eq by exact Hnn. lra.
+  (* each exponential is largest at u = 1 *)
+  assert (H1 : exp (- (PI * exp x)) <= exp (- PI))
+    by (apply exp_le_compat; nra).
+  assert (H2 : exp (- (PI * 4 * exp x)) <= exp (- (4 * PI)))
+    by (apply exp_le_compat; nra).
+  assert (H3 : exp (- (9 * (PI * exp x))) <= exp (- (9 * PI)))
+    by (apply exp_le_compat; nra).
+  unfold GPsi, MP. rewrite Rabs_pos_eq by exact Hnn. lra.
 Qed.
 
 Lemma DG_bdd : forall L, BddOn DG 0 L Kg1.
@@ -253,11 +264,11 @@ Definition EL (L : R) : R := exp (/ 4 * L).
 Definition Tt (t : R) : R := Rabs t / 2.
 
 Definition Mfin (t L : R) : R :=
-  ((Kg1 * EL L + / 2 * (/ 4 * EL L)) * Tt t
+  ((Kg1 * EL L + MP * (/ 4 * EL L)) * Tt t
    + 1 * ((Kg1 * (/ 4 * EL L) + EL L * Kg2)
-          + (/ 2 * (/ 16 * EL L) + / 4 * EL L * Kg1)))
-  + (/ 2 * EL L * (Tt t * Tt t)
-     + Tt t * (/ 2 * (/ 4 * EL L) + EL L * Kg1)).
+          + (MP * (/ 16 * EL L) + / 4 * EL L * Kg1)))
+  + (MP * EL L * (Tt t * Tt t)
+     + Tt t * (MP * (/ 4 * EL L) + EL L * Kg1)).
 
 Lemma EL_pos : forall L, 0 < EL L. Proof. intro L. apply exp_pos. Qed.
 Lemma Tt_nonneg : forall t, 0 <= Tt t.
@@ -267,16 +278,19 @@ Lemma Mfin_nonneg : forall t L, 0 <= Mfin t L.
 Proof.
   intros t L. unfold Mfin.
   pose proof (EL_pos L). pose proof (Tt_nonneg t).
-  pose proof Kg1_nonneg. pose proof Kg2_nonneg.
+  pose proof Kg1_nonneg. pose proof Kg2_nonneg. pose proof MP_nonneg.
   assert (G1 : 0 <= Kg1 * EL L) by (apply Rmult_le_pos; lra).
   assert (G3 : 0 <= Kg1 * (/ 4 * EL L)) by (apply Rmult_le_pos; lra).
   assert (G4 : 0 <= EL L * Kg2) by (apply Rmult_le_pos; lra).
   assert (G6 : 0 <= / 4 * EL L * Kg1) by (apply Rmult_le_pos; lra).
   assert (G8 : 0 <= Tt t * Tt t) by (apply Rmult_le_pos; lra).
-  assert (Ha : 0 <= (Kg1 * EL L + / 2 * (/ 4 * EL L)) * Tt t)
+  assert (G9 : 0 <= MP * (/ 4 * EL L)) by (apply Rmult_le_pos; lra).
+  assert (G10 : 0 <= MP * (/ 16 * EL L)) by (apply Rmult_le_pos; lra).
+  assert (G11 : 0 <= MP * EL L) by (apply Rmult_le_pos; lra).
+  assert (Ha : 0 <= (Kg1 * EL L + MP * (/ 4 * EL L)) * Tt t)
     by (apply Rmult_le_pos; lra).
-  assert (Hb : 0 <= / 2 * EL L * (Tt t * Tt t)) by (apply Rmult_le_pos; lra).
-  assert (Hc : 0 <= Tt t * (/ 2 * (/ 4 * EL L) + EL L * Kg1))
+  assert (Hb : 0 <= MP * EL L * (Tt t * Tt t)) by (apply Rmult_le_pos; lra).
+  assert (Hc : 0 <= Tt t * (MP * (/ 4 * EL L) + EL L * Kg1))
     by (apply Rmult_le_pos; lra).
   lra.
 Qed.
@@ -286,6 +300,7 @@ Proof.
   intros t L.
   pose proof (EL_pos L) as HE. pose proof (Tt_nonneg t) as HT.
   pose proof Kg1_nonneg as HK1. pose proof Kg2_nonneg as HK2.
+  pose proof MP_nonneg as HMP.
   assert (HQ  : 0 <= EL L) by lra.
   assert (HQ' : 0 <= / 4 * EL L) by lra.
   (* DG * Qe *)
@@ -299,10 +314,10 @@ Proof.
     - apply DG_lip.
     - apply Qe_lip. }
   (* GPsi * Qe' *)
-  assert (HB_b : BddOn (fun x => GPsi x * Qe' x) 0 L (/ 2 * (/ 4 * EL L)))
-    by (apply bdd_mult; [ lra | apply GPsi_bdd | apply Qe'_bdd ]).
+  assert (HB_b : BddOn (fun x => GPsi x * Qe' x) 0 L (MP * (/ 4 * EL L)))
+    by (apply bdd_mult; [ apply MP_nonneg | apply GPsi_bdd | apply Qe'_bdd ]).
   assert (HB_l : LipOn (fun x => GPsi x * Qe' x) 0 L
-                   (/ 2 * (/ 16 * EL L) + / 4 * EL L * Kg1)).
+                   (MP * (/ 16 * EL L) + / 4 * EL L * Kg1)).
   { apply lip_mult; try assumption; try lra.
     - apply GPsi_bdd.
     - apply Qe'_bdd.
@@ -310,17 +325,17 @@ Proof.
     - apply Qe'_lip. }
   (* their sum *)
   assert (HS_b : BddOn (fun x => DG x * Qe x + GPsi x * Qe' x) 0 L
-                   (Kg1 * EL L + / 2 * (/ 4 * EL L)))
+                   (Kg1 * EL L + MP * (/ 4 * EL L)))
     by (apply bdd_plus; assumption).
   assert (HS_l : LipOn (fun x => DG x * Qe x + GPsi x * Qe' x) 0 L
                    ((Kg1 * (/ 4 * EL L) + EL L * Kg2)
-                    + (/ 2 * (/ 16 * EL L) + / 4 * EL L * Kg1)))
+                    + (MP * (/ 16 * EL L) + / 4 * EL L * Kg1)))
     by (apply lip_plus; assumption).
   (* GPsi * Qe *)
-  assert (HP_b : BddOn (fun x => GPsi x * Qe x) 0 L (/ 2 * EL L))
-    by (apply bdd_mult; [ lra | apply GPsi_bdd | apply Qe_bdd ]).
+  assert (HP_b : BddOn (fun x => GPsi x * Qe x) 0 L (MP * EL L))
+    by (apply bdd_mult; [ apply MP_nonneg | apply GPsi_bdd | apply Qe_bdd ]).
   assert (HP_l : LipOn (fun x => GPsi x * Qe x) 0 L
-                   (/ 2 * (/ 4 * EL L) + EL L * Kg1)).
+                   (MP * (/ 4 * EL L) + EL L * Kg1)).
   { apply lip_mult; try assumption; try lra.
     - apply GPsi_bdd.
     - apply Qe_bdd.
@@ -329,11 +344,11 @@ Proof.
   (* assemble *)
   unfold dgint, Mfin.
   apply lip_plus.
-  - apply lip_mult with (M1 := Kg1 * EL L + / 2 * (/ 4 * EL L)) (M2 := 1);
+  - apply lip_mult with (M1 := Kg1 * EL L + MP * (/ 4 * EL L)) (M2 := 1);
       try assumption; try nra.
     + apply Ct_bdd.
     + apply Ct_lip.
-  - apply lip_mult with (M1 := / 2 * EL L) (M2 := Tt t);
+  - apply lip_mult with (M1 := MP * EL L) (M2 := Tt t);
       try assumption; try nra.
     + apply Ct'_bdd.
     + apply Ct'_lip.

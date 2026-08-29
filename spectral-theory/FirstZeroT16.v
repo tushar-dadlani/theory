@@ -16,7 +16,7 @@
 (*  Both were measured: unbounded vs 0.001 s.                          *)
 (*                                                                    *)
 (*  Budget at L = 13/8: truncation <= 6e-8 (ET_ub), Mfin_16 <= 194,     *)
-(*  n = 8192 so quadrature <= 1.04e-6.  msum >= 0.001954 against a     *)
+(*  n = 2048 so quadrature <= 7.5e-7.  msum >= 0.001954 against a     *)
 (*  threshold 1/(2(1/4+256)) = 1/512.5 = 0.00195122.                    *)
 (*  Axiom-clean.                                                       *)
 (* ================================================================= *)
@@ -28,24 +28,24 @@ Require Import IntervalArith IntervalGint CoherenceSingularity
 Local Open Scope R_scope.
 
 (* lia cannot see through a nat literal built by Init.Nat.of_num_uint *)
-Lemma pos8192 : (0 < 8192)%nat.
+Lemma pos2048 : (0 < 2048)%nat.
 Proof. apply Nat.ltb_lt. vm_compute. reflexivity. Qed.
 
-Lemma h16 : Q2R (13 # 65536) = 13 / 8 / INR 8192.
+Lemma h16 : Q2R (13 # 16384) = 13 / 8 / INR 2048.
 Proof.
-  rewrite (INR_lit 8192 8192) by (vm_compute; reflexivity).
+  rewrite (INR_lit 2048 2048) by (vm_compute; reflexivity).
   unfold Q2R; simpl; lra.
 Qed.
 
 Lemma msum16_b : Q2R (1954 # 1000000)
-                <= msum (gint 16) 0 (13 / 8 / INR 8192) 8192.
+                <= msum (gint 16) 0 (13 / 8 / INR 2048) 2048.
 Proof.
-  assert (Hh : 0 <= Q2R (13 # 65536)) by (unfold Q2R; simpl; lra).
+  assert (Hh : 0 <= Q2R (13 # 16384)) by (unfold Q2R; simpl; lra).
   assert (Et : Q2R (16 # 1) = 16) by (unfold Q2R; simpl; lra).
   pose proof chk16 as H.
-  destruct (Imsum 46 25 32 14 32 12 30 5 4 46 16 (13 # 65536) 8192)
+  destruct (Imsum 46 25 32 14 32 12 30 5 4 46 16 (13 # 16384) 2048)
     as [i |] eqn:E; [ | discriminate ].
-  pose proof (Imsum_sound 46 25 32 14 32 12 30 5 4 46 16 (13 # 65536) 8192
+  pose proof (Imsum_sound 46 25 32 14 32 12 30 5 4 46 16 (13 # 16384) 2048
                 i Hh E) as HC.
   rewrite Et, h16 in HC. unfold Icontains in HC.
   destruct HC as [Hb _].
@@ -54,9 +54,9 @@ Qed.
 
 Theorem xir_16_neg : xir 16 < 0.
 Proof.
-  apply (xir_neg_of 16 (13 / 8) 8192 194 (6 / 100000000)
-           pos8192 ltac:(lra) Mfin_16 ET_ub (Q2R (1954 # 1000000)) msum16_b).
-  - rewrite (INR_lit 8192 8192) by (vm_compute; reflexivity).
+  apply (xir_neg_of 16 (13 / 8) 2048 (87 / 10) (6 / 100000000)
+           pos2048 ltac:(lra) Mfin_16 ET_ub (Q2R (1954 # 1000000)) msum16_b).
+  - rewrite (INR_lit 2048 2048) by (vm_compute; reflexivity).
     assert (E2 : Q2R (1954 # 1000000) = 1954 / 1000000) by (unfold Q2R; simpl; lra).
     rewrite E2. lra.
   - lra.
