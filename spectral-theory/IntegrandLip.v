@@ -28,7 +28,7 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Ranalysis5 Lra Lia.
-Require Import JacobiTheta RiemannPsi ThetaTailSharp PsiXSpace
+Require Import JacobiTheta RiemannPsi ThetaTailSharp PsiXSpace CertifiedPi
         ThetaDerivMajorant ThetaDeriv ThetaDeriv2 PsiXDeriv
         LipCalc MidpointQuad.
 Open Scope R_scope.
@@ -132,6 +132,20 @@ Qed.
 Lemma DG_bdd : forall L, BddOn DG 0 L Kg1.
 Proof. intros L x Hx. apply DG_bound. apply Hx. Qed.
 
+(* ----------------------------------------------------------------- *)
+(*  JOINT bounds.  Both products below have their two factors peaking  *)
+(*  at OPPOSITE ends of [0, L] -- Psi(e^x) and |DG x| at x = 0, e^{x/4} *)
+(*  at x = L -- so bounding them separately pays a spurious factor      *)
+(*  e^{L/4} = 1.5 each.  Bounding the product directly costs one line   *)
+(*  in each case, because the e^{x/4} growth is dominated many times    *)
+(*  over by the e^{-pi e^x} decay: the requirement is only              *)
+(*  5x/4 <= pi (e^x - 1), and e^x - 1 >= x already gives 3x.            *)
+(* ----------------------------------------------------------------- *)
+Lemma DGQe_bdd : forall L, BddOn (fun x => DG x * Qe x) 0 L Kg1.
+Proof.
+  intros L x Hx. unfold Qe. apply DG_Qe_bound. apply Hx.
+Qed.
+
 Lemma GPsi_lip : forall L, LipOn GPsi 0 L Kg1.
 Proof.
   intro L. apply (lip_of_deriv GPsi DG 0 L Kg1).
@@ -145,6 +159,49 @@ Proof.
 Qed.
 
 Lemma Qe_pos : forall x, 0 < Qe x. Proof. intro x. apply exp_pos. Qed.
+
+Lemma GPsiQe_bdd : forall L, BddOn (fun x => GPsi x * Qe x) 0 L MP.
+Proof.
+  intros L x Hx. destruct Hx as [Hx0 HxL].
+  assert (Hu : 1 <= exp x) by (apply exp_ge_1; exact Hx0).
+  pose proof PI_lower as HP3.
+  destruct (Psi_simple (exp x) Hu) as [_ Hhi].
+  pose proof (Psi_nonneg (exp x)) as Hnn.
+  assert (Hex : 1 + x <= exp x) by apply exp_ineq1_le.
+  (* each exponential absorbs the e^{x/4} and is left at its x = 0 value *)
+  assert (Habs : forall d, PI <= d ->
+            exp (- (d * exp x)) * exp (/ 4 * x) <= exp (- d)).
+  { intros d Hd.
+    rewrite <- exp_plus. apply exp_le_compat.
+    assert (Hgap : x / 4 <= d * (exp x - 1)).
+    { apply Rle_trans with (d * x); [ nra | apply Rmult_le_compat_l; lra ]. }
+    lra. }
+  assert (A1 : exp (- (PI * exp x)) * exp (/ 4 * x) <= exp (- PI))
+    by (apply Habs; lra).
+  assert (A2 : exp (- (PI * 4 * exp x)) * exp (/ 4 * x) <= exp (- (4 * PI))).
+  { replace (PI * 4) with (4 * PI) by ring. apply Habs; lra. }
+  assert (A3 : exp (- (9 * (PI * exp x))) * exp (/ 4 * x) <= exp (- (9 * PI))).
+  { replace (9 * (PI * exp x)) with (9 * PI * exp x) by ring.
+    apply Habs; lra. }
+  assert (Hq : 0 < exp (/ 4 * x)) by apply exp_pos.
+  unfold GPsi, Qe, MP.
+  rewrite Rabs_pos_eq
+    by (apply Rmult_le_pos; [ exact Hnn | lra ]).
+  assert (Hmul : Psi (exp x) * exp (/ 4 * x)
+              <= (exp (- (PI * exp x)) + exp (- (PI * 4 * exp x))
+                  + 2 * exp (- (9 * (PI * exp x)))) * exp (/ 4 * x))
+    by (apply Rmult_le_compat_r; lra).
+  nra.
+Qed.
+
+(* Qe' = (1/4) Qe, so the same joint bound divides through *)
+Lemma GPsiQe'_bdd : forall L, BddOn (fun x => GPsi x * Qe' x) 0 L (/ 4 * MP).
+Proof.
+  intros L x Hx.
+  assert (E : GPsi x * Qe' x = / 4 * (GPsi x * Qe x)) by (unfold Qe'; ring).
+  rewrite E, Rabs_mult, (Rabs_pos_eq (/ 4)) by lra.
+  apply Rmult_le_compat_l; [ lra | exact (GPsiQe_bdd L x Hx) ].
+Qed.
 
 Lemma Qe_bdd : forall L, BddOn Qe 0 L (exp (/ 4 * L)).
 Proof.
@@ -263,35 +320,41 @@ Qed.
 Definition EL (L : R) : R := exp (/ 4 * L).
 Definition Tt (t : R) : R := Rabs t / 2.
 
+(* SB bounds the integrand's first derivative-factor (GPsi.Qe)', and   *)
+(* doubles as the Lipschitz constant of GPsi.Qe -- via lip_of_deriv    *)
+(* rather than the product rule, which is both sharper and shorter.    *)
+Definition SB (L : R) : R := Kg1 + / 4 * MP.
+Definition SL (L : R) : R :=
+  (Kg1 * (/ 4 * EL L) + EL L * Kg2) + / 4 * SB L.
+
 Definition Mfin (t L : R) : R :=
-  ((Kg1 * EL L + MP * (/ 4 * EL L)) * Tt t
-   + 1 * ((Kg1 * (/ 4 * EL L) + EL L * Kg2)
-          + (MP * (/ 16 * EL L) + / 4 * EL L * Kg1)))
-  + (MP * EL L * (Tt t * Tt t)
-     + Tt t * (MP * (/ 4 * EL L) + EL L * Kg1)).
+  (SB L * Tt t + 1 * SL L) + (MP * (Tt t * Tt t) + Tt t * SB L).
 
 Lemma EL_pos : forall L, 0 < EL L. Proof. intro L. apply exp_pos. Qed.
 Lemma Tt_nonneg : forall t, 0 <= Tt t.
 Proof. intro t. unfold Tt. pose proof (Rabs_pos t). lra. Qed.
 
+Lemma SB_nonneg : forall L, 0 <= SB L.
+Proof. intro L. unfold SB. pose proof Kg1_nonneg. pose proof MP_nonneg. lra. Qed.
+
+Lemma SL_nonneg : forall L, 0 <= SL L.
+Proof.
+  intro L. unfold SL. pose proof Kg1_nonneg. pose proof Kg2_nonneg.
+  pose proof (EL_pos L). pose proof (SB_nonneg L).
+  assert (0 <= Kg1 * (/ 4 * EL L)) by (apply Rmult_le_pos; lra).
+  assert (0 <= EL L * Kg2) by (apply Rmult_le_pos; lra).
+  lra.
+Qed.
+
 Lemma Mfin_nonneg : forall t L, 0 <= Mfin t L.
 Proof.
   intros t L. unfold Mfin.
-  pose proof (EL_pos L). pose proof (Tt_nonneg t).
-  pose proof Kg1_nonneg. pose proof Kg2_nonneg. pose proof MP_nonneg.
-  assert (G1 : 0 <= Kg1 * EL L) by (apply Rmult_le_pos; lra).
-  assert (G3 : 0 <= Kg1 * (/ 4 * EL L)) by (apply Rmult_le_pos; lra).
-  assert (G4 : 0 <= EL L * Kg2) by (apply Rmult_le_pos; lra).
-  assert (G6 : 0 <= / 4 * EL L * Kg1) by (apply Rmult_le_pos; lra).
-  assert (G8 : 0 <= Tt t * Tt t) by (apply Rmult_le_pos; lra).
-  assert (G9 : 0 <= MP * (/ 4 * EL L)) by (apply Rmult_le_pos; lra).
-  assert (G10 : 0 <= MP * (/ 16 * EL L)) by (apply Rmult_le_pos; lra).
-  assert (G11 : 0 <= MP * EL L) by (apply Rmult_le_pos; lra).
-  assert (Ha : 0 <= (Kg1 * EL L + MP * (/ 4 * EL L)) * Tt t)
-    by (apply Rmult_le_pos; lra).
-  assert (Hb : 0 <= MP * EL L * (Tt t * Tt t)) by (apply Rmult_le_pos; lra).
-  assert (Hc : 0 <= Tt t * (MP * (/ 4 * EL L) + EL L * Kg1))
-    by (apply Rmult_le_pos; lra).
+  pose proof (Tt_nonneg t). pose proof MP_nonneg.
+  pose proof (SB_nonneg L). pose proof (SL_nonneg L).
+  assert (0 <= SB L * Tt t) by (apply Rmult_le_pos; lra).
+  assert (0 <= MP * (Tt t * Tt t))
+    by (apply Rmult_le_pos; [ lra | apply Rmult_le_pos; lra ]).
+  assert (0 <= Tt t * SB L) by (apply Rmult_le_pos; lra).
   lra.
 Qed.
 
@@ -301,11 +364,11 @@ Proof.
   pose proof (EL_pos L) as HE. pose proof (Tt_nonneg t) as HT.
   pose proof Kg1_nonneg as HK1. pose proof Kg2_nonneg as HK2.
   pose proof MP_nonneg as HMP.
+  pose proof (SB_nonneg L) as HSB. pose proof (SL_nonneg L) as HSL.
   assert (HQ  : 0 <= EL L) by lra.
   assert (HQ' : 0 <= / 4 * EL L) by lra.
-  (* DG * Qe *)
-  assert (HA_b : BddOn (fun x => DG x * Qe x) 0 L (Kg1 * EL L))
-    by (apply bdd_mult; [ exact HK1 | apply DG_bdd | apply Qe_bdd ]).
+  (* DG * Qe : JOINTLY bounded by Kg1, no e^{L/4} factor *)
+  assert (HA_b : BddOn (fun x => DG x * Qe x) 0 L Kg1) by apply DGQe_bdd.
   assert (HA_l : LipOn (fun x => DG x * Qe x) 0 L
                    (Kg1 * (/ 4 * EL L) + EL L * Kg2)).
   { apply lip_mult; try assumption; try lra.
@@ -313,43 +376,43 @@ Proof.
     - apply Qe_bdd.
     - apply DG_lip.
     - apply Qe_lip. }
-  (* GPsi * Qe' *)
-  assert (HB_b : BddOn (fun x => GPsi x * Qe' x) 0 L (MP * (/ 4 * EL L)))
-    by (apply bdd_mult; [ apply MP_nonneg | apply GPsi_bdd | apply Qe'_bdd ]).
-  assert (HB_l : LipOn (fun x => GPsi x * Qe' x) 0 L
-                   (MP * (/ 16 * EL L) + / 4 * EL L * Kg1)).
-  { apply lip_mult; try assumption; try lra.
-    - apply GPsi_bdd.
-    - apply Qe'_bdd.
-    - apply GPsi_lip.
-    - apply Qe'_lip. }
-  (* their sum *)
-  assert (HS_b : BddOn (fun x => DG x * Qe x + GPsi x * Qe' x) 0 L
-                   (Kg1 * EL L + MP * (/ 4 * EL L)))
-    by (apply bdd_plus; assumption).
-  assert (HS_l : LipOn (fun x => DG x * Qe x + GPsi x * Qe' x) 0 L
-                   ((Kg1 * (/ 4 * EL L) + EL L * Kg2)
-                    + (MP * (/ 16 * EL L) + / 4 * EL L * Kg1)))
-    by (apply lip_plus; assumption).
-  (* GPsi * Qe *)
-  assert (HP_b : BddOn (fun x => GPsi x * Qe x) 0 L (MP * EL L))
-    by (apply bdd_mult; [ apply MP_nonneg | apply GPsi_bdd | apply Qe_bdd ]).
-  assert (HP_l : LipOn (fun x => GPsi x * Qe x) 0 L
-                   (MP * (/ 4 * EL L) + EL L * Kg1)).
-  { apply lip_mult; try assumption; try lra.
-    - apply GPsi_bdd.
-    - apply Qe_bdd.
-    - apply GPsi_lip.
-    - apply Qe_lip. }
+  (* GPsi * Qe' : jointly bounded by MP/4 *)
+  assert (HB_b : BddOn (fun x => GPsi x * Qe' x) 0 L (/ 4 * MP))
+    by apply GPsiQe'_bdd.
+  (* GPsi * Qe : jointly bounded by MP *)
+  assert (HP_b : BddOn (fun x => GPsi x * Qe x) 0 L MP) by apply GPsiQe_bdd.
+  (* (GPsi.Qe)' = DG.Qe + GPsi.Qe', bounded by SB *)
+  assert (HS_b : BddOn (fun x => DG x * Qe x + GPsi x * Qe' x) 0 L (SB L)).
+  { unfold SB. apply bdd_plus; assumption. }
+  (* hence GPsi.Qe is Lipschitz with constant SB -- via the DERIVATIVE, *)
+  (* not the product rule: sharper, and it reuses HS_b for free.        *)
+  assert (HP_l : LipOn (fun x => GPsi x * Qe x) 0 L (SB L)).
+  { apply (lip_of_deriv _ (fun x => DG x * Qe x + GPsi x * Qe' x) 0 L).
+    - intros y Hy. apply derivable_pt_lim_mult;
+        [ apply GPsi_deriv; apply Hy | apply Qe_deriv ].
+    - exact HS_b. }
+  (* GPsi * Qe' = (1/4) (GPsi * Qe), so its Lipschitz constant divides *)
+  assert (HB_l : LipOn (fun x => GPsi x * Qe' x) 0 L (/ 4 * SB L)).
+  { intros y z Hy Hz.
+    assert (Ey : GPsi y * Qe' y = / 4 * (GPsi y * Qe y)) by (unfold Qe'; ring).
+    assert (Ez : GPsi z * Qe' z = / 4 * (GPsi z * Qe z)) by (unfold Qe'; ring).
+    rewrite Ey, Ez.
+    replace (/ 4 * (GPsi y * Qe y) - / 4 * (GPsi z * Qe z))
+      with (/ 4 * (GPsi y * Qe y - GPsi z * Qe z)) by ring.
+    rewrite Rabs_mult, (Rabs_pos_eq (/ 4)) by lra.
+    assert (H := HP_l y z Hy Hz).
+    replace (/ 4 * SB L * Rabs (y - z)) with (/ 4 * (SB L * Rabs (y - z)))
+      by ring.
+    apply Rmult_le_compat_l; lra. }
+  assert (HS_l : LipOn (fun x => DG x * Qe x + GPsi x * Qe' x) 0 L (SL L)).
+  { unfold SL. apply lip_plus; assumption. }
   (* assemble *)
   unfold dgint, Mfin.
   apply lip_plus.
-  - apply lip_mult with (M1 := Kg1 * EL L + MP * (/ 4 * EL L)) (M2 := 1);
-      try assumption; try nra.
+  - apply lip_mult with (M1 := SB L) (M2 := 1); try assumption; try nra.
     + apply Ct_bdd.
     + apply Ct_lip.
-  - apply lip_mult with (M1 := MP * EL L) (M2 := Tt t);
-      try assumption; try nra.
+  - apply lip_mult with (M1 := MP) (M2 := Tt t); try assumption; try nra.
     + apply Ct'_bdd.
     + apply Ct'_lip.
 Qed.

@@ -194,21 +194,33 @@ Qed.
 Lemma Tt_val : forall t, 0 <= t -> Tt t = t / 2.
 Proof. intros t Ht. unfold Tt. rewrite Rabs_pos_eq by exact Ht. reflexivity. Qed.
 
-Lemma Mfin_12 : Mfin 12 (13 / 8) <= 6.
+Lemma SB_ub : SB (13 / 8) <= 147 / 1000.
+Proof.
+  unfold SB. pose proof Kg1_ub. pose proof MP_ub. lra.
+Qed.
+
+Lemma SL_ub : SL (13 / 8) <= 94 / 100.
+Proof.
+  unfold SL. pose proof Kg1_ub. pose proof Kg2_ub. pose proof EL_ub.
+  pose proof SB_ub. pose proof Kg1_nonneg. pose proof Kg2_nonneg.
+  pose proof (EL_pos (13 / 8)). nra.
+Qed.
+
+Lemma Mfin_12 : Mfin 12 (13 / 8) <= 43 / 10.
 Proof.
   unfold Mfin. rewrite (Tt_val 12) by lra.
-  pose proof Kg1_ub. pose proof Kg2_ub. pose proof EL_ub. pose proof MP_ub.
-  pose proof Kg1_nonneg. pose proof Kg2_nonneg. pose proof MP_nonneg.
-  pose proof (EL_pos (13 / 8)).
+  pose proof SB_ub. pose proof SL_ub. pose proof MP_ub.
+  pose proof (SB_nonneg (13 / 8)). pose proof (SL_nonneg (13 / 8)).
+  pose proof MP_nonneg.
   nra.
 Qed.
 
-Lemma Mfin_16 : Mfin 16 (13 / 8) <= 87 / 10.
+Lemma Mfin_16 : Mfin 16 (13 / 8) <= 61 / 10.
 Proof.
   unfold Mfin. rewrite (Tt_val 16) by lra.
-  pose proof Kg1_ub. pose proof Kg2_ub. pose proof EL_ub. pose proof MP_ub.
-  pose proof Kg1_nonneg. pose proof Kg2_nonneg. pose proof MP_nonneg.
-  pose proof (EL_pos (13 / 8)).
+  pose proof SB_ub. pose proof SL_ub. pose proof MP_ub.
+  pose proof (SB_nonneg (13 / 8)). pose proof (SL_nonneg (13 / 8)).
+  pose proof MP_nonneg.
   nra.
 Qed.
 

@@ -16,7 +16,7 @@
 (*  Both were measured: unbounded vs 0.001 s.                          *)
 (*                                                                    *)
 (*  Budget at L = 13/8: truncation <= 6e-8 (ET_ub), Mfin_12 <= 149,     *)
-(*  n = 256 so quadrature <= 3.3e-5.  msum <= 0.003406 against a     *)
+(*  n = 256 so quadrature <= 2.4e-5.  msum <= 0.003406 against a     *)
 (*  threshold 1/(2(1/4+144)) = 1/288.5 = 0.00346620.                    *)
 (*  Axiom-clean.                                                       *)
 (* ================================================================= *)
@@ -54,7 +54,7 @@ Qed.
 
 Theorem xir_12_pos : 0 < xir 12.
 Proof.
-  apply (xir_pos_of 12 (13 / 8) 256 6 (6 / 100000000)
+  apply (xir_pos_of 12 (13 / 8) 256 (43 / 10) (6 / 100000000)
            pos256 ltac:(lra) Mfin_12 ET_ub (Q2R (3406 # 1000000)) msum12_b).
   - rewrite (INR_lit 256 256) by (vm_compute; reflexivity).
     assert (E2 : Q2R (3406 # 1000000) = 3406 / 1000000) by (unfold Q2R; simpl; lra).

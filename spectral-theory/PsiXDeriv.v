@@ -28,7 +28,7 @@
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Ranalysis5 Lra Lia.
-Require Import JacobiTheta RiemannPsi ThetaTailSharp ThetaDerivMajorant ThetaDeriv ThetaDeriv2.
+Require Import JacobiTheta RiemannPsi ThetaTailSharp CertifiedPi ThetaDerivMajorant ThetaDeriv ThetaDeriv2.
 Open Scope R_scope.
 
 Definition GPsi (x : R) : R := Psi (exp x).
@@ -163,33 +163,46 @@ Proof.
   - pose proof (gterm_nonneg x (S N)). lra.
 Qed.
 
-(* the split: two exact head terms, then a geometric tail *)
-Lemma gpartial_bound : forall x N, 0 <= x -> gpartial x N <= Kg1.
+(* the split: two exact head terms, then a geometric tail.             *)
+(* Stated for an ARBITRARY termwise-dominated sequence, so that the    *)
+(* same argument serves both the plain sum and the e^{x/4}-weighted    *)
+(* one below without being written twice.                              *)
+Lemma sharp_sum_bound : forall (f : nat -> R) N,
+  (forall n, 0 <= f n) ->
+  (forall n, f n <= PI * INR (S n) ^ 2 * exp (- (PI * INR (S n) ^ 2))) ->
+  sum_f_R0 f N <= Kg1.
 Proof.
-  intros x N Hx. pose proof qt_bounds as [Hq0 Hq1].
-  pose proof (gterm_head0 x Hx) as H0.
-  pose proof (gterm_head1 x Hx) as H1.
-  pose proof (gterm_nonneg x 1) as Hn1.
-  assert (Htail : 0 <= 2 * Ktail)
-    by (pose proof Ktail_nonneg; lra).
-  unfold Kg1, gpartial.
+  intros f N Hpos Hdom. pose proof qt_bounds as [Hq0 Hq1].
+  assert (H0 : f 0%nat <= PI * exp (- PI)).
+  { eapply Rle_trans; [ apply Hdom | ].
+    rewrite INR_S0. replace (PI * 1 ^ 2) with PI by ring. right; reflexivity. }
+  assert (H1 : f 1%nat <= 4 * PI * exp (- (4 * PI))).
+  { eapply Rle_trans; [ apply Hdom | ].
+    rewrite INR_S1. replace (PI * 2 ^ 2) with (4 * PI) by ring.
+    right; reflexivity. }
+  assert (Htl0 : forall i, f (2 + i)%nat <= 2 * exp (- (9 * PI / 2)) * qt ^ i).
+  { intro i. eapply Rle_trans; [ apply Hdom | ].
+    assert (Hk : INR (S (2 + i)) = INR i + 3)
+      by (rewrite !S_INR, plus_INR; simpl; ring).
+    rewrite Hk. unfold qt. apply sharp_tail1. }
+  pose proof (Hpos 1%nat) as Hn1.
+  assert (Htail : 0 <= 2 * Ktail) by (pose proof Ktail_nonneg; lra).
+  unfold Kg1.
   destruct (Nat.le_gt_cases N 1) as [Hle | Hgt].
-  - (* N <= 1 : monotone, so at most the two head terms *)
-    assert (Hmono : sum_f_R0 (gterm x) N <= gterm x 0 + gterm x 1).
+  - assert (Hmono : sum_f_R0 f N <= f 0%nat + f 1%nat).
     { destruct N as [| [| N]].
       - cbn [sum_f_R0]. lra.
       - cbn [sum_f_R0]. lra.
       - exfalso; lia. }
     lra.
-  - (* N >= 2 : split off the head, majorize the rest geometrically *)
-    rewrite (tech2 (gterm x) 1 N Hgt).
-    assert (Hhead : sum_f_R0 (gterm x) 1
+  - rewrite (tech2 f 1 N Hgt).
+    assert (Hhead : sum_f_R0 f 1
                     <= PI * exp (- PI) + 4 * PI * exp (- (4 * PI)))
       by (cbn [sum_f_R0]; lra).
-    assert (Htl : sum_f_R0 (fun i => gterm x (S 1 + i)) (N - S 1) <= 2 * Ktail).
+    assert (Htl : sum_f_R0 (fun i => f (S 1 + i)%nat) (N - S 1) <= 2 * Ktail).
     { eapply Rle_trans.
       - apply sum_f_R0_le. intro i.
-        change (S 1 + i)%nat with (2 + i)%nat. apply gterm_tail; exact Hx.
+        change (S 1 + i)%nat with (2 + i)%nat. apply Htl0.
       - assert (E : sum_f_R0 (fun i => 2 * exp (- (9 * PI / 2)) * qt ^ i) (N - S 1)
                   = 2 * exp (- (9 * PI / 2))
                     * sum_f_R0 (fun i => qt ^ i) (N - S 1)).
@@ -209,7 +222,68 @@ Proof.
     lra.
 Qed.
 
-Theorem DG_bound : forall x, 0 <= x -> Rabs (DG x) <= Kg1.
+Lemma gpartial_bound : forall x N, 0 <= x -> gpartial x N <= Kg1.
+Proof.
+  intros x N Hx. unfold gpartial.
+  apply sharp_sum_bound; [ intro n; apply gterm_nonneg | ].
+  intro n; apply gterm_at1; exact Hx.
+Qed.
+
+(* ----------------------------------------------------------------- *)
+(*  The JOINT bound.  |DG(x)| . e^{x/4} <= Kg1 -- the same constant    *)
+(*  as |DG| alone, because the e^{x/4} growth is dominated by the      *)
+(*  e^{-pi k^2 e^x} decay many times over, so the product still peaks  *)
+(*  at x = 0.  Bounding the two factors SEPARATELY would cost a factor *)
+(*  e^{L/4} = 1.5 for nothing: sup|DG| and sup e^{x/4} are attained at *)
+(*  opposite ends of [0, L].                                           *)
+(* ----------------------------------------------------------------- *)
+Lemma gterm_Qe_at1 : forall x n, 0 <= x ->
+  gterm x n * exp (/ 4 * x)
+  <= PI * INR (S n) ^ 2 * exp (- (PI * INR (S n) ^ 2)).
+Proof.
+  intros x n Hx. pose proof PI_lower as HP3.
+  set (k := INR (S n)).
+  assert (Hk1 : 1 <= k) by (unfold k; rewrite S_INR; pose proof (pos_INR n); lra).
+  assert (Hk2 : 1 <= k ^ 2) by nra.
+  set (a := PI * k ^ 2).
+  assert (Ha : 3 <= a) by (unfold a; nra).
+  assert (Hex : 1 + x <= exp x) by apply exp_ineq1_le.
+  unfold gterm. fold k. fold a.
+  (* a e^x e^{-a e^x} e^{x/4} = a . exp (x - a e^x + x/4) <= a e^{-a} *)
+  assert (E : exp x * exp (- (a * exp x)) * exp (/ 4 * x)
+            = exp (x + - (a * exp x) + / 4 * x))
+    by (rewrite <- !exp_plus; reflexivity).
+  assert (Hle : x + - (a * exp x) + / 4 * x <= - a).
+  { assert (Hgap : 5 * x / 4 <= a * (exp x - 1)).
+    { assert (H3x : 3 * x <= a * (exp x - 1)).
+      { apply Rle_trans with (a * x); [ nra | ].
+        apply Rmult_le_compat_l; lra. }
+      lra. }
+    lra. }
+  assert (Hmono : exp (x + - (a * exp x) + / 4 * x) <= exp (- a))
+    by (apply exp_le_compat; exact Hle).
+  assert (Hchain : a * exp x * exp (- (a * exp x)) * exp (/ 4 * x)
+                 = a * (exp x * exp (- (a * exp x)) * exp (/ 4 * x))) by ring.
+  rewrite Hchain, E. nra.
+Qed.
+
+Lemma gpartial_Qe_bound : forall x N, 0 <= x ->
+  gpartial x N * exp (/ 4 * x) <= Kg1.
+Proof.
+  intros x N Hx.
+  assert (E : gpartial x N * exp (/ 4 * x)
+            = sum_f_R0 (fun n => gterm x n * exp (/ 4 * x)) N).
+  { unfold gpartial.
+    assert (Ec : sum_f_R0 (gterm x) N * exp (/ 4 * x)
+               = exp (/ 4 * x) * sum_f_R0 (gterm x) N) by ring.
+    rewrite Ec, (scal_sum (gterm x) N (exp (/ 4 * x))).
+    apply sum_eq; intros i _; ring. }
+  rewrite E. apply sharp_sum_bound.
+  - intro n. apply Rmult_le_pos; [ apply gterm_nonneg | left; apply exp_pos ].
+  - intro n. apply gterm_Qe_at1; exact Hx.
+Qed.
+
+Lemma DG_nonpos : forall x, 0 <= x -> DG x <= 0.
 Proof.
   intros x Hx. pose proof (gpartial_cv x Hx) as Hcv.
   assert (Hlo : 0 <= - DG x).
@@ -217,6 +291,13 @@ Proof.
     apply (growing_ineq (gpartial x)); [ | exact Hcv ].
     intro N. unfold gpartial. cbn [sum_f_R0].
     pose proof (gterm_nonneg x (S N)). lra. }
+  lra.
+Qed.
+
+Theorem DG_bound : forall x, 0 <= x -> Rabs (DG x) <= Kg1.
+Proof.
+  intros x Hx. pose proof (gpartial_cv x Hx) as Hcv.
+  assert (Hlo : 0 <= - DG x) by (pose proof (DG_nonpos x Hx); lra).
   assert (Hhi : - DG x <= Kg1).
   { eapply Rle_cv_lim.
     2: exact Hcv.
@@ -224,6 +305,24 @@ Proof.
     intro N. apply gpartial_bound; exact Hx. }
   rewrite Rabs_left1 by lra. lra.
 Qed.
+
+Theorem DG_Qe_bound : forall x, 0 <= x -> Rabs (DG x * exp (/ 4 * x)) <= Kg1.
+Proof.
+  intros x Hx. pose proof (gpartial_cv x Hx) as Hcv.
+  assert (Hq : 0 < exp (/ 4 * x)) by apply exp_pos.
+  assert (Hcv2 : Un_cv (fun N => gpartial x N * exp (/ 4 * x))
+                   (- DG x * exp (/ 4 * x)))
+    by (apply CV_mult; [ exact Hcv | apply Un_cv_const' ]).
+  assert (Hlo : 0 <= - DG x * exp (/ 4 * x)).
+  { apply Rmult_le_pos; [ pose proof (DG_nonpos x Hx); lra | lra ]. }
+  assert (Hhi : - DG x * exp (/ 4 * x) <= Kg1).
+  { eapply Rle_cv_lim.
+    2: exact Hcv2.
+    2: apply Un_cv_const'.
+    intro N. apply gpartial_Qe_bound; exact Hx. }
+  rewrite Rabs_left1 by nra. lra.
+Qed.
+
 
 (* ----------------------------------------------------------------- *)
 (*  B.  differentiating the partials in x                             *)
