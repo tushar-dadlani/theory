@@ -1255,3 +1255,6 @@ spectral-theory/XMomentSum.v
 spectral-theory/PsiXDeriv3.v
 spectral-theory/IntegrandLip4.v
 spectral-theory/ReTCSimpson.v
+spectral-theory/SecondZeroChk22.v
+spectral-theory/SecondZeroT22.v
+spectral-theory/SecondZero.v
