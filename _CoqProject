@@ -1249,3 +1249,4 @@ spectral-theory/FirstZeroT16.v
 spectral-theory/FirstZero.v
 spectral-theory/FirstZeroChk10.v
 spectral-theory/FirstZeroChk16.v
+spectral-theory/SimpsonQuad.v
