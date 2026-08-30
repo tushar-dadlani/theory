@@ -2,7 +2,7 @@
 (*  FirstZeroChk12.v  --  THE COMPUTATION at t = 12.                     *)
 (*                                                                    *)
 (*  Isolated in its own file: a .vo persists, so a mistake downstream  *)
-(*  costs seconds rather than re-running 256 midpoint panels.         *)
+(*  costs seconds rather than re-running 128 midpoint panels.         *)
 (*                                                                    *)
 (*  The Imsum application is INLINED rather than named.  A named       *)
 (*  Definition would be transparent, and a later conversion between    *)
@@ -20,7 +20,7 @@ From Stdlib Require Import QArith Reals.
 Require Import IntervalArith XirSignChange.
 
 Lemma chk12 :
-  match Imsum 46 25 32 14 32 12 30 5 4 46 12 (13 # 2048) 256 with
+  match Imsum 46 25 32 14 32 12 30 5 4 46 12 (13 # 1024) 128 with
   | Some i => Qle_bool (ihi i) (3406 # 1000000)
   | None => false
   end = true.

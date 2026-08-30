@@ -4,7 +4,7 @@
 (*    gint t x  =  Psi(e^x) . e^{x/4} . cos(t x / 2)                   *)
 (*                                                                    *)
 (*    gint_midpoint : 0 <= r -> 0 <= c - r -> c + r <= L ->            *)
-(*      |int_{c-r}^{c+r} gint t - 2 r . gint t c| <= 2 Mfin r^3 / 3    *)
+(*      |int_{c-r}^{c+r} gint t - 2 r . gint t c| <= Mfin r^3 / 3      *)
 (*                                                                    *)
 (*  Stage 4b/4c join.  MidpointQuad.midpoint_single has been proved    *)
 (*  since the quadrature brick; this is the first time its hypotheses  *)
@@ -423,7 +423,7 @@ Qed.
 Theorem gint_midpoint : forall t L c r
   (prf : Riemann_integrable (gint t) (c - r) (c + r)),
   0 <= r -> 0 <= c - r -> c + r <= L ->
-  Rabs (RiemannInt prf - 2 * r * gint t c) <= 2 * Mfin t L * r ^ 3 / 3.
+  Rabs (RiemannInt prf - 2 * r * gint t c) <= Mfin t L * r ^ 3 / 3.
 Proof.
   intros t L c r prf Hr Hlo Hhi.
   apply (midpoint_single (gint t) (dgint t) c (Mfin t L) r prf).

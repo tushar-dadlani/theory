@@ -4,7 +4,7 @@
 (*    msum f a h n  =  sum_{k<n} h . f(a + (k + 1/2) h)                *)
 (*                                                                    *)
 (*    composite_midpoint :                                            *)
-(*      |int_a^{a+n h} f - msum f a h n|  <=  n . M h^3 / 12           *)
+(*      |int_a^{a+n h} f - msum f a h n|  <=  n . M h^3 / 24           *)
 (*                                                                    *)
 (*  Stage 4b, closing brick.  MidpointQuad.midpoint_single bounds ONE  *)
 (*  panel; the quadrature needs the whole interval, so the panels must *)
@@ -21,10 +21,10 @@
 (*  induction: they are regenerated at each endpoint from continuity,  *)
 (*  which is free because differentiability is already assumed.        *)
 (*                                                                    *)
-(*  Rate: with h = (b-a)/n the bound reads M (b-a)^3 / (12 n^2), the   *)
-(*  classical composite midpoint O(h^2), with the constant 12 rather   *)
-(*  than 24 -- the factor 2 that MidpointQuad pays for going through   *)
-(*  MVT twice instead of Taylor-Lagrange.  Axiom-clean.                *)
+(*  Rate: with h = (b-a)/n the bound reads M (b-a)^3 / (24 n^2) -- the  *)
+(*  classical composite-midpoint constant exactly, now that            *)
+(*  MidpointQuad proves the sharp Taylor remainder M2 (x-c)^2/2.       *)
+(*  Axiom-clean.                                                       *)
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra Lia.
@@ -57,7 +57,7 @@ Theorem composite_midpoint : forall (f f' : R -> R) (a h M : R) (n : nat)
   (forall y, a <= y <= a + INR n * h -> derivable_pt_lim f y (f' y)) ->
   (forall y z, a <= y <= a + INR n * h -> a <= z <= a + INR n * h ->
      Rabs (f' y - f' z) <= M * Rabs (y - z)) ->
-  Rabs (RiemannInt pr - msum f a h n) <= INR n * (M * h ^ 3 / 12).
+  Rabs (RiemannInt pr - msum f a h n) <= INR n * (M * h ^ 3 / 24).
 Proof.
   intros f f' a h M n. induction n as [| n IH]; intros pr Hh HM Hd Hlip.
   - (* empty range *)
@@ -103,12 +103,12 @@ Proof.
       reflexivity. }
     (* the single-panel bound *)
     assert (Hseg : Rabs (RiemannInt prs - 2 * (h / 2) * f c)
-                   <= 2 * M * (h / 2) ^ 3 / 3).
+                   <= M * (h / 2) ^ 3 / 3).
     { apply (midpoint_single f f' c M (h / 2) prs); try lra.
       - intros y Hy. apply Hd. lra.
       - intros y z Hy Hz. apply Hlip; lra. }
     assert (Eseg : 2 * (h / 2) * f c = h * f c) by field.
-    assert (Erate : 2 * M * (h / 2) ^ 3 / 3 = M * h ^ 3 / 12) by field.
+    assert (Erate : M * (h / 2) ^ 3 / 3 = M * h ^ 3 / 24) by field.
     rewrite Eseg, Erate in Hseg.
     (* the induction hypothesis *)
     pose proof (IH prn Hh HM Hd_n Hlip_n) as HIH.
@@ -132,7 +132,7 @@ Corollary composite_midpoint_ab : forall (f f' : R -> R) (a b M : R) (n : nat)
   (forall y z, a <= y <= b -> a <= z <= b ->
      Rabs (f' y - f' z) <= M * Rabs (y - z)) ->
   Rabs (RiemannInt pr - msum f a ((b - a) / INR n) n)
-  <= M * (b - a) ^ 3 / (12 * INR n ^ 2).
+  <= M * (b - a) ^ 3 / (24 * INR n ^ 2).
 Proof.
   intros f f' a b M n pr Hn Hab HM Hd Hlip.
   assert (Hn0 : 0 < INR n) by (apply lt_0_INR; lia).
@@ -141,8 +141,8 @@ Proof.
   assert (pr' : Riemann_integrable f a (a + INR n * ((b - a) / INR n)))
     by (rewrite Etop; exact pr).
   rewrite (RI_endpoint f a b (a + INR n * ((b - a) / INR n)) pr pr' (eq_sym Etop)).
-  assert (Erate : INR n * (M * ((b - a) / INR n) ^ 3 / 12)
-                = M * (b - a) ^ 3 / (12 * INR n ^ 2)) by (field; lra).
+  assert (Erate : INR n * (M * ((b - a) / INR n) ^ 3 / 24)
+                = M * (b - a) ^ 3 / (24 * INR n ^ 2)) by (field; lra).
   rewrite <- Erate.
   apply (composite_midpoint f f' a ((b - a) / INR n) M n pr' Hh HM).
   - intros y Hy. apply Hd. rewrite Etop in Hy. exact Hy.

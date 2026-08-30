@@ -1,16 +1,18 @@
 (* ================================================================= *)
 (*  CertifiedPi.v  --  a sharp, axiom-clean decimal enclosure of PI.   *)
 (*                                                                    *)
-(*    PI_lower : 3.14159 <= PI                                        *)
-(*    PI_upper : PI <= 3.1416                                         *)
+(*    PI_lower : 3.1415926533 <= PI                                    *)
+(*    PI_upper : PI <= 3.1415926546                                    *)
 (*                                                                    *)
 (*  Prerequisite for the verified-quadrature route to exhibiting the   *)
 (*  first zeta zero.  The integrand there is Psi(u) u^{-3/4}           *)
 (*  cos((t/2) ln u) with Psi built from e^{-pi n^2 u}, so every        *)
 (*  enclosure downstream is only as good as the enclosure of PI.       *)
-(*  Measured sensitivity: perturbing PI by d shifts xir(16) by         *)
-(*  3.55e-5 (d/1e-4), against a margin of 7.7e-4 -- so d = 1e-4        *)
-(*  suffices and the 1e-5 proved here is comfortable.                  *)
+(*  Measured sensitivity: at 1e-5 the enclosure of PI was ALONE the    *)
+(*  entire 1.25e-7 width of the accumulated midpoint sum, since        *)
+(*  e^{-pi u} inherits a relative width of about (width PI) x u.       *)
+(*  At 1.3e-9 PI is no longer a factor and the outward dyadic          *)
+(*  rounding of Iexp_pt becomes the limit.                             *)
 (*                                                                    *)
 (*  WHY NOT THE OBVIOUS ROUTES.                                        *)
 (*   * Rtrigo_alt.cos_bound is unusable: it is stated under            *)
@@ -26,9 +28,10 @@
 (*  and the identity is EXACT, not approximate: tan(a+b) = (1/2+1/3) / *)
 (*  (1 - 1/6) = 1 on the nose.  Each atan is then bracketed by its     *)
 (*  alternating series, which converges geometrically (ratios 1/4 and  *)
-(*  1/9) rather than like 1/N.  Eight terms apiece already give a      *)
-(*  width of 1e-5 with denominators of at most ten digits, well within *)
-(*  what lra handles.  Axiom-clean.                                   *)
+(*  1/9) rather than like 1/N.  Fourteen terms apiece give a width of  *)
+(*  1.3e-9 with 22-digit denominators, and lra still closes each        *)
+(*  decimal in under 2 ms -- the series is short, the numbers are      *)
+(*  merely long.  Axiom-clean.                                        *)
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra Lia Ratan.
@@ -99,37 +102,43 @@ Corollary PI_machin : PI = 4 * (atan (/ 2) + atan (/ 3)).
 Proof. rewrite machin. field. Qed.
 
 (* ----------------------------------------------------------------- *)
-(*  C.  the decimals, at eight terms apiece                            *)
+(*  C.  the decimals, at fourteen terms apiece                         *)
 (* ----------------------------------------------------------------- *)
-(*  N = 3 gives sum indices S (2*3) = 7 (lower) and 2*3 = 6 (upper).   *)
+(*  N = 6 gives sum indices S (2*6) = 13 (lower) and 2*6 = 12 (upper). *)
 (*  Exact partial sums:                                                *)
-(*    atan(1/2) in [0.4636472421, 0.4636492766]   (width 2.0e-6)       *)
-(*    atan(1/3) in [0.3217505540, 0.3217505586]   (width 4.6e-9)       *)
-(*  so 4 * (sum + sum) lands in [3.1415911, 3.1415994].                *)
+(*    atan(1/2) in [0.4636476089487, 0.4636476092247]  (width 2.8e-10) *)
+(*    atan(1/3) in [0.3217505543966, 0.3217505543966]  (width 3.4e-15) *)
+(*  so 4 * (sum + sum) lands in [3.14159265338, 3.14159265449].        *)
+(*                                                                    *)
+(*  The two series converge at very different rates -- ratios 1/4 and  *)
+(*  1/9 -- so atan(1/2) alone sets the width; atan(1/3) is already at  *)
+(*  machine precision by term 8.  Adding terms only to the first would *)
+(*  be sharper still, but there is no need: 1e-9 is three orders below *)
+(*  the outward-rounding floor of the interval evaluator downstream.   *)
 (* ----------------------------------------------------------------- *)
 Lemma atan_half_bounds :
-  sum_f_R0 (tg_alt (Ratan_seq (/ 2))) 7 <= atan (/ 2)
-  <= sum_f_R0 (tg_alt (Ratan_seq (/ 2))) 6.
-Proof. exact (atan_enclose (/ 2) 3 ltac:(lra)). Qed.
+  sum_f_R0 (tg_alt (Ratan_seq (/ 2))) 13 <= atan (/ 2)
+  <= sum_f_R0 (tg_alt (Ratan_seq (/ 2))) 12.
+Proof. exact (atan_enclose (/ 2) 6 ltac:(lra)). Qed.
 
 Lemma atan_third_bounds :
-  sum_f_R0 (tg_alt (Ratan_seq (/ 3))) 7 <= atan (/ 3)
-  <= sum_f_R0 (tg_alt (Ratan_seq (/ 3))) 6.
-Proof. exact (atan_enclose (/ 3) 3 ltac:(lra)). Qed.
+  sum_f_R0 (tg_alt (Ratan_seq (/ 3))) 13 <= atan (/ 3)
+  <= sum_f_R0 (tg_alt (Ratan_seq (/ 3))) 12.
+Proof. exact (atan_enclose (/ 3) 6 ltac:(lra)). Qed.
 
-Lemma sum_half_lo : 0.4636472 <= sum_f_R0 (tg_alt (Ratan_seq (/ 2))) 7.
+Lemma sum_half_lo : 0.46364760894 <= sum_f_R0 (tg_alt (Ratan_seq (/ 2))) 13.
 Proof. unfold tg_alt, Ratan_seq; simpl; lra. Qed.
 
-Lemma sum_half_hi : sum_f_R0 (tg_alt (Ratan_seq (/ 2))) 6 <= 0.4636493.
+Lemma sum_half_hi : sum_f_R0 (tg_alt (Ratan_seq (/ 2))) 12 <= 0.46364760923.
 Proof. unfold tg_alt, Ratan_seq; simpl; lra. Qed.
 
-Lemma sum_third_lo : 0.3217505 <= sum_f_R0 (tg_alt (Ratan_seq (/ 3))) 7.
+Lemma sum_third_lo : 0.32175055439 <= sum_f_R0 (tg_alt (Ratan_seq (/ 3))) 13.
 Proof. unfold tg_alt, Ratan_seq; simpl; lra. Qed.
 
-Lemma sum_third_hi : sum_f_R0 (tg_alt (Ratan_seq (/ 3))) 6 <= 0.3217506.
+Lemma sum_third_hi : sum_f_R0 (tg_alt (Ratan_seq (/ 3))) 12 <= 0.32175055440.
 Proof. unfold tg_alt, Ratan_seq; simpl; lra. Qed.
 
-Theorem PI_lower : 3.14159 <= PI.
+Theorem PI_lower : 3.1415926533 <= PI.
 Proof.
   rewrite PI_machin.
   destruct atan_half_bounds as [Hl2 _].
@@ -137,7 +146,7 @@ Proof.
   pose proof sum_half_lo. pose proof sum_third_lo. lra.
 Qed.
 
-Theorem PI_upper : PI <= 3.1416.
+Theorem PI_upper : PI <= 3.1415926546.
 Proof.
   rewrite PI_machin.
   destruct atan_half_bounds as [_ Hu2].
@@ -145,7 +154,7 @@ Proof.
   pose proof sum_half_hi. pose proof sum_third_hi. lra.
 Qed.
 
-Corollary PI_enclosure : 3.14159 <= PI <= 3.1416.
+Corollary PI_enclosure : 3.1415926533 <= PI <= 3.1415926546.
 Proof. split; [ apply PI_lower | apply PI_upper ]. Qed.
 
 Print Assumptions machin.

@@ -49,7 +49,12 @@ Qed.
 (* ----------------------------------------------------------------- *)
 (*  B.  pi, as an interval                                            *)
 (* ----------------------------------------------------------------- *)
-Definition Ipi : Itv := mkI (314159 # 100000) (31416 # 10000).
+(* PI to 1.3e-9.  This width is inherited MULTIPLICATIVELY by every    *)
+(* e^{-pi u} below -- the enclosure of that acquires a relative width   *)
+(* of about (width of Ipi) x u -- so at the previous 1e-5 it was ALONE  *)
+(* the entire 1.25e-7 width of the accumulated midpoint sum.           *)
+Definition Ipi : Itv := mkI (31415926533 # 10000000000)
+                            (31415926546 # 10000000000).
 
 Lemma Ipi_sound : Icontains Ipi PI.
 Proof.

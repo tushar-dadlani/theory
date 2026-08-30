@@ -105,16 +105,16 @@ Hypothesis HL : 0 <= L.
 Hypothesis HEM : Mfin t L <= EM.
 Hypothesis HET : Cc * exp (- (PI * exp L)) / PI <= ET.
 
-Let err : R := EM * L ^ 3 / (12 * INR n ^ 2) + ET.
+Let err : R := EM * L ^ 3 / (24 * INR n ^ 2) + ET.
 
 Lemma ReTC_enclosed :
   Rabs (Re (TC (crit t)) - msum (gint t) 0 (L / INR n) n) <= err.
 Proof.
   pose proof (ReTC_quadrature t L n Hn HL) as H.
   assert (Hn0 : 0 < INR n) by (apply lt_0_INR; lia).
-  assert (Hpos : 0 < 12 * INR n ^ 2) by nra.
-  assert (HQ : Mfin t L * L ^ 3 / (12 * INR n ^ 2)
-               <= EM * L ^ 3 / (12 * INR n ^ 2)).
+  assert (Hpos : 0 < 24 * INR n ^ 2) by nra.
+  assert (HQ : Mfin t L * L ^ 3 / (24 * INR n ^ 2)
+               <= EM * L ^ 3 / (24 * INR n ^ 2)).
   { unfold Rdiv. apply Rmult_le_compat_r.
     - left; apply Rinv_0_lt_compat; exact Hpos.
     - apply Rmult_le_compat_r; [ apply pow_le; exact HL | exact HEM ]. }

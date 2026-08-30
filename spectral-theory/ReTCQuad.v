@@ -3,7 +3,7 @@
 (*                                                                    *)
 (*    ReTC_quadrature : 0 < n -> 0 <= L ->                             *)
 (*      |Re (TC (crit t)) - msum (gint t) 0 (L/n) n|                   *)
-(*        <=  Mfin t L . L^3 / (12 n^2)        (quadrature)            *)
+(*        <=  Mfin t L . L^3 / (24 n^2)        (quadrature)            *)
 (*          + Cc . e^{-pi e^L} / pi            (truncation)            *)
 (*                                                                    *)
 (*  Stage 4 capstone.  This is the object XirIntegralReduction.        *)
@@ -35,7 +35,7 @@ Open Scope R_scope.
 
 Theorem ReTC_quadrature : forall t L n, (0 < n)%nat -> 0 <= L ->
   Rabs (Re (TC (crit t)) - msum (gint t) 0 (L / INR n) n)
-  <= Mfin t L * L ^ 3 / (12 * INR n ^ 2)
+  <= Mfin t L * L ^ 3 / (24 * INR n ^ 2)
      + Cc * exp (- (PI * exp L)) / PI.
 Proof.
   intros t L n Hn HL.
