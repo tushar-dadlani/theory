@@ -1251,3 +1251,4 @@ spectral-theory/FirstZeroChk10.v
 spectral-theory/FirstZeroChk16.v
 spectral-theory/SimpsonQuad.v
 spectral-theory/XMomentMajorant.v
+spectral-theory/XMomentSum.v
