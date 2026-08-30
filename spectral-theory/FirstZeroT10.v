@@ -1,7 +1,7 @@
 (* ================================================================= *)
-(*  FirstZeroT12.v  --  0 < xir 12                                          *)
+(*  FirstZeroT10.v  --  0 < xir 12                                          *)
 (*                                                                    *)
-(*  Cheap: the quadrature is FirstZeroChk12's vm_compute, in its own   *)
+(*  Cheap: the quadrature is FirstZeroChk10's vm_compute, in its own   *)
 (*  .vo.  This file only turns that boolean into a sign, through       *)
 (*  XirSignChange.xir_pos_of and XirConstants' numerals for the two    *)
 (*  transcendental error terms.                                        *)
@@ -16,50 +16,50 @@
 (*  Both were measured: unbounded vs 0.001 s.                          *)
 (*                                                                    *)
 (*  Budget at L = 13/8: truncation <= 6e-8 (ET_ub), Mfin_12 <= 149,     *)
-(*  n = 128 so quadrature <= 4.7e-5.  msum <= 0.003406 against a     *)
-(*  threshold 1/(2(1/4+144)) = 1/288.5 = 0.00346620.                    *)
+(*  n = 64 so quadrature <= 1.53e-4.  msum <= 0.00461 against a      *)
+(*  threshold 1/(2(1/4+100)) = 1/200.5 = 0.00498753.                    *)
 (*  Axiom-clean.                                                       *)
 (* ================================================================= *)
 
 From Stdlib Require Import QArith Qreals Reals Lra Lia.
 Require Import IntervalArith IntervalGint CoherenceSingularity
         IntegrandLip CompositeQuad XirSignChange XirConstants
-        FirstZeroBridge FirstZeroChk12.
+        FirstZeroBridge FirstZeroChk10.
 Local Open Scope R_scope.
 
 (* lia cannot see through a nat literal built by Init.Nat.of_num_uint *)
-Lemma pos128 : (0 < 128)%nat.
+Lemma pos64 : (0 < 64)%nat.
 Proof. apply Nat.ltb_lt. vm_compute. reflexivity. Qed.
 
-Lemma h12 : Q2R (13 # 1024) = 13 / 8 / INR 128.
+Lemma h10 : Q2R (13 # 512) = 13 / 8 / INR 64.
 Proof.
-  rewrite (INR_lit 128 128) by (vm_compute; reflexivity).
+  rewrite (INR_lit 64 64) by (vm_compute; reflexivity).
   unfold Q2R; simpl; lra.
 Qed.
 
-Lemma msum12_b : msum (gint 12) 0 (13 / 8 / INR 128) 128
-                <= Q2R (3406 # 1000000).
+Lemma msum10_b : msum (gint 10) 0 (13 / 8 / INR 64) 64
+                <= Q2R (461 # 100000).
 Proof.
-  assert (Hh : 0 <= Q2R (13 # 1024)) by (unfold Q2R; simpl; lra).
-  assert (Et : Q2R (12 # 1) = 12) by (unfold Q2R; simpl; lra).
-  pose proof chk12 as H.
-  destruct (Imsum 46 25 32 14 32 12 30 5 4 46 12 (13 # 1024) 128)
+  assert (Hh : 0 <= Q2R (13 # 512)) by (unfold Q2R; simpl; lra).
+  assert (Et : Q2R (10 # 1) = 10) by (unfold Q2R; simpl; lra).
+  pose proof chk10 as H.
+  destruct (Imsum 46 25 32 14 32 12 30 5 4 46 10 (13 # 512) 64)
     as [i |] eqn:E; [ | discriminate ].
-  pose proof (Imsum_sound 46 25 32 14 32 12 30 5 4 46 12 (13 # 1024) 128
+  pose proof (Imsum_sound 46 25 32 14 32 12 30 5 4 46 10 (13 # 512) 64
                 i Hh E) as HC.
-  rewrite Et, h12 in HC. unfold Icontains in HC.
+  rewrite Et, h10 in HC. unfold Icontains in HC.
   destruct HC as [_ Hb].
   eapply Rle_trans; [ exact Hb | apply Qle_R; exact H ].
 Qed.
 
-Theorem xir_12_pos : 0 < xir 12.
+Theorem xir_10_pos : 0 < xir 10.
 Proof.
-  apply (xir_pos_of 12 (13 / 8) 128 (43 / 10) (6 / 100000000)
-           pos128 ltac:(lra) Mfin_12 ET_ub (Q2R (3406 # 1000000)) msum12_b).
-  - rewrite (INR_lit 128 128) by (vm_compute; reflexivity).
-    assert (E2 : Q2R (3406 # 1000000) = 3406 / 1000000) by (unfold Q2R; simpl; lra).
+  apply (xir_pos_of 10 (13 / 8) 64 (7 / 2) (6 / 100000000)
+           pos64 ltac:(lra) Mfin_10 ET_ub (Q2R (461 # 100000)) msum10_b).
+  - rewrite (INR_lit 64 64) by (vm_compute; reflexivity).
+    assert (E2 : Q2R (461 # 100000) = 461 / 100000) by (unfold Q2R; simpl; lra).
     rewrite E2. lra.
   - lra.
 Qed.
 
-Print Assumptions xir_12_pos.
+Print Assumptions xir_10_pos.

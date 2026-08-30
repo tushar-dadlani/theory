@@ -206,6 +206,15 @@ Proof.
   pose proof (EL_pos (13 / 8)). nra.
 Qed.
 
+Lemma Mfin_10 : Mfin 10 (13 / 8) <= 7 / 2.
+Proof.
+  unfold Mfin. rewrite (Tt_val 10) by lra.
+  pose proof SB_ub. pose proof SL_ub. pose proof MP_ub.
+  pose proof (SB_nonneg (13 / 8)). pose proof (SL_nonneg (13 / 8)).
+  pose proof MP_nonneg.
+  nra.
+Qed.
+
 Lemma Mfin_12 : Mfin 12 (13 / 8) <= 43 / 10.
 Proof.
   unfold Mfin. rewrite (Tt_val 12) by lra.

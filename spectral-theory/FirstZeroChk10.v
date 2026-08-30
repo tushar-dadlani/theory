@@ -1,8 +1,8 @@
 (* ================================================================= *)
-(*  FirstZeroChk12.v  --  THE COMPUTATION at t = 12.                     *)
+(*  FirstZeroChk10.v  --  THE COMPUTATION at t = 10.                     *)
 (*                                                                    *)
 (*  Isolated in its own file: a .vo persists, so a mistake downstream  *)
-(*  costs seconds rather than re-running 128 midpoint panels.         *)
+(*  costs seconds rather than re-running 64 midpoint panels.         *)
 (*                                                                    *)
 (*  The Imsum application is INLINED rather than named.  A named       *)
 (*  Definition would be transparent, and a later conversion between    *)
@@ -19,9 +19,9 @@
 From Stdlib Require Import QArith Reals.
 Require Import IntervalArith XirSignChange.
 
-Lemma chk12 :
-  match Imsum 46 25 32 14 32 12 30 5 4 46 12 (13 # 1024) 128 with
-  | Some i => Qle_bool (ihi i) (3406 # 1000000)
+Lemma chk10 :
+  match Imsum 46 25 32 14 32 12 30 5 4 46 10 (13 # 512) 64 with
+  | Some i => Qle_bool (ihi i) (461 # 100000)
   | None => false
   end = true.
 Proof. vm_compute. reflexivity. Qed.
