@@ -170,6 +170,59 @@ Qed.
 
 End Sign.
 
+(* ----------------------------------------------------------------- *)
+(*  D.  the sign rule with the error ABSTRACT                          *)
+(*                                                                    *)
+(*  The two lemmas above tie the error to the midpoint rule's shape.   *)
+(*  These take it as a parameter, so the Simpson route feeds the same  *)
+(*  algebra without duplicating it.  The section versions are the      *)
+(*  special case S = msum, err = EM L^3/(24 n^2) + ET.                 *)
+(* ----------------------------------------------------------------- *)
+Theorem xir_pos_of_gen : forall t S err,
+  Rabs (Re (TC (crit t)) - S) <= err ->
+  S + err < / (2 * (/ 4 + t ^ 2)) ->
+  0 < / 4 + t ^ 2 ->
+  0 < xir t.
+Proof.
+  intros t S err HE Hlt Hq. rewrite xir_reduction'.
+  assert (Hup : Re (TC (crit t)) <= S + err).
+  { pose proof (Rle_abs (Re (TC (crit t)) - S)) as H1. lra. }
+  assert (Hkey : Re (TC (crit t)) < / (2 * (/ 4 + t ^ 2))) by lra.
+  assert (Hprod : (/ 4 + t ^ 2) * Re (TC (crit t)) < / 2).
+  { apply (Rmult_lt_reg_l (/ (/ 4 + t ^ 2))).
+    - apply Rinv_0_lt_compat; exact Hq.
+    - assert (E1 : / (/ 4 + t ^ 2) * ((/ 4 + t ^ 2) * Re (TC (crit t)))
+                 = Re (TC (crit t))) by (field; lra).
+      assert (E2 : / (/ 4 + t ^ 2) * / 2 = / (2 * (/ 4 + t ^ 2)))
+        by (field; lra).
+      rewrite E1, E2. exact Hkey. }
+  lra.
+Qed.
+
+Theorem xir_neg_of_gen : forall t S err,
+  Rabs (Re (TC (crit t)) - S) <= err ->
+  / (2 * (/ 4 + t ^ 2)) < S - err ->
+  0 < / 4 + t ^ 2 ->
+  xir t < 0.
+Proof.
+  intros t S err HE Hlt Hq. rewrite xir_reduction'.
+  assert (Hlo : S - err <= Re (TC (crit t))).
+  { pose proof (Rle_abs (- (Re (TC (crit t)) - S))) as H1.
+    rewrite Rabs_Ropp in H1. lra. }
+  assert (Hkey : / (2 * (/ 4 + t ^ 2)) < Re (TC (crit t))) by lra.
+  assert (Hprod : / 2 < (/ 4 + t ^ 2) * Re (TC (crit t))).
+  { apply (Rmult_lt_reg_l (/ (/ 4 + t ^ 2))).
+    - apply Rinv_0_lt_compat; exact Hq.
+    - assert (E1 : / (/ 4 + t ^ 2) * ((/ 4 + t ^ 2) * Re (TC (crit t)))
+                 = Re (TC (crit t))) by (field; lra).
+      assert (E2 : / (/ 4 + t ^ 2) * / 2 = / (2 * (/ 4 + t ^ 2)))
+        by (field; lra).
+      rewrite E1, E2. exact Hkey. }
+  lra.
+Qed.
+
+Print Assumptions xir_pos_of_gen.
+Print Assumptions xir_neg_of_gen.
 Print Assumptions Imsum_sound.
 Print Assumptions xir_pos_of.
 Print Assumptions xir_neg_of.
