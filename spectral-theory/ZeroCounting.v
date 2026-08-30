@@ -145,6 +145,22 @@ Proof.
   repeat split; try assumption; lra.
 Qed.
 
+(* The mirrored companion.  two_zeros_from_alternation wants (-,+,-);   *)
+(* the verified facts for the first two zeros are xir 10 > 0,            *)
+(* xir 16 < 0, xir 22 > 0, i.e. (+,-,+).  Same two IVT calls, swapped.   *)
+Theorem two_zeros_from_alternation' : forall a b c, a < b -> b < c ->
+  0 < xir a -> xir b < 0 -> 0 < xir c ->
+  exists t1 t2, a < t1 < b /\ b < t2 < c /\ spec Bxi t1 /\ spec Bxi t2 /\ t1 < t2.
+Proof.
+  intros a b c Hab Hbc Ha Hb Hc.
+  destruct (sign_change_zero_down a b Hab Ha Hb) as [t1 [Ht1 Hs1]].
+  destruct (sign_change_zero_up b c Hbc Hb Hc) as [t2 [Ht2 Hs2]].
+  exists t1, t2.
+  destruct Ht1 as [Ht1a Ht1b]; destruct Ht2 as [Ht2a Ht2b].
+  repeat split; try assumption; lra.
+Qed.
+
+Print Assumptions two_zeros_from_alternation'.
 Print Assumptions xir_continuity_pt.
 Print Assumptions alternation_zeros.
 Print Assumptions two_zeros_from_alternation.
