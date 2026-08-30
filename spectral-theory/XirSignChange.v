@@ -26,7 +26,7 @@ From Stdlib Require Import QArith Qreals Reals Lra Lia.
 Require Import ComplexField IntervalArith IntervalArithFun IntervalCos IntervalLn
         CoherenceSingularity ThetaTailEntire XirIntegralReduction
         RiemannPsi PsiXSpace PsiXDeriv IntegrandLip CompositeQuad
-        ReTCTailBound ReTCQuad IntervalGint.
+        ReTCTailBound ReTCQuad IntervalGint SimpsonQuad.
 Local Open Scope R_scope.
 
 (* ----------------------------------------------------------------- *)
@@ -221,6 +221,113 @@ Proof.
   lra.
 Qed.
 
+(* ----------------------------------------------------------------- *)
+(*  E.  the interval SIMPSON sum                                       *)
+(*                                                                    *)
+(*  Panels are self-contained (SimpsonQuad.ssum), so each contributes  *)
+(*  three Igint evaluations combined as (h/6)(f_l + 4 f_m + f_r).      *)
+(*  Shared nodes are evaluated twice -- 3n calls instead of 2n+1 --    *)
+(*  which at n = 512 is 1536 against 1025, and buys a Fixpoint whose   *)
+(*  induction matches ssum's exactly.                                  *)
+(*                                                                    *)
+(*  As with Imsum, Iround after EVERY accumulation is what makes this  *)
+(*  terminate: Qplus never reduces, so an unrounded sum of n terms     *)
+(*  carries the product of all n denominators.                        *)
+(* ----------------------------------------------------------------- *)
+Definition Inodek (hq : Q) (k : nat) : Q := inject_Z (Z.of_nat k) * hq.
+Definition Inodem (hq : Q) (k : nat) : Q :=
+  (2 * inject_Z (Z.of_nat k) + 1) / 2 * hq.
+
+Lemma Q2R_Inodek : forall hq k, Q2R (Inodek hq k) = INR k * Q2R hq.
+Proof.
+  intros hq k. unfold Inodek.
+  rewrite Q2R_mult, Q2R_inject, INR_IZR_INZ. reflexivity.
+Qed.
+
+Lemma Q2R_Inodem : forall hq k, Q2R (Inodem hq k) = (INR k + / 2) * Q2R hq.
+Proof.
+  intros hq k. unfold Inodem.
+  rewrite Q2R_mult, Q2R_div by (apply inject_Z_neq0; lia).
+  rewrite Q2R_plus, Q2R_mult, Q2R_inject, (Q2R_lit 2), (Q2R_lit 1).
+  rewrite INR_IZR_INZ. field.
+Qed.
+
+Lemma Inodek_nonneg : forall hq k, 0 <= Q2R hq -> 0 <= Q2R (Inodek hq k).
+Proof.
+  intros hq k Hh. rewrite Q2R_Inodek.
+  apply Rmult_le_pos; [ apply pos_INR | exact Hh ].
+Qed.
+
+Lemma Inodem_nonneg : forall hq k, 0 <= Q2R hq -> 0 <= Q2R (Inodem hq k).
+Proof.
+  intros hq k Hh. rewrite Q2R_Inodem.
+  apply Rmult_le_pos; [ pose proof (pos_INR k); lra | exact Hh ].
+Qed.
+
+Fixpoint Issum (p m p2 m2 p3 m3 pc mc nc pr : nat) (tq hq : Q) (n : nat)
+  : option Itv :=
+  match n with
+  | O => Some (Iconst 0)
+  | S k =>
+      match Issum p m p2 m2 p3 m3 pc mc nc pr tq hq k,
+            Igint p m p2 m2 p3 m3 pc mc nc tq (Inodek hq k),
+            Igint p m p2 m2 p3 m3 pc mc nc tq (Inodem hq k),
+            Igint p m p2 m2 p3 m3 pc mc nc tq (Inodek hq (S k)) with
+      | Some acc, Some vl, Some vm, Some vr =>
+          Some (Iround pr
+                  (Iadd acc
+                     (Imul (Iconst (hq / 6))
+                        (Iadd (Iadd vl (Imul (Iconst 4) vm)) vr))))
+      | _, _, _, _ => None
+      end
+  end.
+
+Theorem Issum_sound : forall p m p2 m2 p3 m3 pc mc nc pr tq hq n i,
+  0 <= Q2R hq ->
+  Issum p m p2 m2 p3 m3 pc mc nc pr tq hq n = Some i ->
+  Icontains i (ssum (gint (Q2R tq)) 0 (Q2R hq) n).
+Proof.
+  intros p m p2 m2 p3 m3 pc mc nc pr tq hq n.
+  induction n as [| k IH]; intros i Hh H.
+  - cbn [Issum ssum] in *. injection H as <-.
+    replace 0 with (Q2R 0) by (unfold Q2R; simpl; lra).
+    apply Iconst_sound.
+  - cbn [Issum] in H.
+    destruct (Issum p m p2 m2 p3 m3 pc mc nc pr tq hq k) as [acc |] eqn:Ha;
+      [ | discriminate ].
+    destruct (Igint p m p2 m2 p3 m3 pc mc nc tq (Inodek hq k)) as [vl |] eqn:Hl;
+      [ | discriminate ].
+    destruct (Igint p m p2 m2 p3 m3 pc mc nc tq (Inodem hq k)) as [vm |] eqn:Hm;
+      [ | discriminate ].
+    destruct (Igint p m p2 m2 p3 m3 pc mc nc tq (Inodek hq (S k)))
+      as [vr |] eqn:Hr; [ | discriminate ].
+    injection H as <-.
+    pose proof (IH acc Hh eq_refl) as Hacc.
+    pose proof (Igint_sound p m p2 m2 p3 m3 pc mc nc tq (Inodek hq k) vl
+                  (Inodek_nonneg hq k Hh) Hl) as Gl.
+    pose proof (Igint_sound p m p2 m2 p3 m3 pc mc nc tq (Inodem hq k) vm
+                  (Inodem_nonneg hq k Hh) Hm) as Gm.
+    pose proof (Igint_sound p m p2 m2 p3 m3 pc mc nc tq (Inodek hq (S k)) vr
+                  (Inodek_nonneg hq (S k) Hh) Hr) as Gr.
+    rewrite Q2R_Inodek in Gl, Gr. rewrite Q2R_Inodem in Gm.
+    cbn [ssum].
+    replace (0 + INR k * Q2R hq) with (INR k * Q2R hq) by ring.
+    replace (0 + (INR k + / 2) * Q2R hq) with ((INR k + / 2) * Q2R hq) by ring.
+    replace (0 + INR (S k) * Q2R hq) with (INR (S k) * Q2R hq) by ring.
+    apply Iround_sound, Iadd_sound; [ exact Hacc | ].
+    assert (Eh : Q2R hq / 6 = Q2R (hq / 6)).
+    { rewrite Q2R_div by (apply inject_Z_neq0; lia).
+      rewrite (Q2R_lit 6). reflexivity. }
+    rewrite Eh.
+    apply Imul_sound; [ apply Iconst_sound | ].
+    apply Iadd_sound; [ apply Iadd_sound | exact Gr ].
+    + exact Gl.
+    + apply Imul_sound; [ | exact Gm ].
+      replace 4 with (Q2R (4 # 1)) by (rewrite Q2R_lit; simpl; lra).
+      apply Iconst_sound.
+Qed.
+
+Print Assumptions Issum_sound.
 Print Assumptions xir_pos_of_gen.
 Print Assumptions xir_neg_of_gen.
 Print Assumptions Imsum_sound.
