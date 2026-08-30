@@ -1253,3 +1253,4 @@ spectral-theory/SimpsonQuad.v
 spectral-theory/XMomentMajorant.v
 spectral-theory/XMomentSum.v
 spectral-theory/PsiXDeriv3.v
+spectral-theory/IntegrandLip4.v
