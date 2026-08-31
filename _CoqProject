@@ -1272,3 +1272,5 @@ spectral-theory/GammaConst.v
 spectral-theory/LnConstants.v
 spectral-theory/XirSignZ.v
 spectral-theory/ZfunSigns.v
+spectral-theory/IntervalAtan.v
+spectral-theory/ThetaEnclose.v
