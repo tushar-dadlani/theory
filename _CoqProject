@@ -1263,3 +1263,4 @@ spectral-theory/ThirdZeroT26.v
 spectral-theory/ThirdZero.v
 spectral-theory/CExpQuot.v
 spectral-theory/CExpEntire.v
+spectral-theory/CZetaRegTerm.v
