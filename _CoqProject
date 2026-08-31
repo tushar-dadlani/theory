@@ -1275,3 +1275,4 @@ spectral-theory/ZfunSigns.v
 spectral-theory/IntervalAtan.v
 spectral-theory/ThetaEnclose.v
 spectral-theory/ZetaTrap.v
+spectral-theory/ZetaEM.v
