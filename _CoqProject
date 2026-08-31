@@ -1277,3 +1277,5 @@ spectral-theory/ThetaEnclose.v
 spectral-theory/ZetaTrap.v
 spectral-theory/ZetaEM.v
 spectral-theory/IntervalTrig.v
+spectral-theory/IntervalLnSeries.v
+spectral-theory/ZetaEnclose.v
