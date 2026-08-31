@@ -1262,3 +1262,4 @@ spectral-theory/ThirdZeroChk26.v
 spectral-theory/ThirdZeroT26.v
 spectral-theory/ThirdZero.v
 spectral-theory/CExpQuot.v
+spectral-theory/CExpEntire.v
