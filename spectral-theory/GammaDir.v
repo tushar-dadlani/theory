@@ -354,3 +354,149 @@ Proof.
   rewrite (wangsum_neg z N).
   unfold Rabs; destruct (Rcase_abs (Wangl z - - negwang z N)); lra.
 Qed.
+
+(* ================================================================= *)
+(*  The SHARP tail bound.                                             *)
+(*                                                                    *)
+(*  Wangl_tail above degrades u^3 <= y^3/k^3 to y^3/k^2 so that both   *)
+(*  pieces share one 1/k^2, which is sound but costs a whole factor    *)
+(*  of N: at z = 1/4 + i t/2 it reads (t/8 + t^3/8)/N, demanding       *)
+(*  ~2e5 terms at t = 26.  Keeping the cube gives                     *)
+(*                                                                    *)
+(*     |Wangl z - wangsum z N| <= Re z Im z / N + Im z^3 / (2 N^2)     *)
+(*                             =  t/(8N) + t^3/(16 N^2)               *)
+(*                                                                    *)
+(*  which needs ~500 terms at t = 26 for 0.01 rad.  Two telescopes:    *)
+(*  1/m^2 <= 1/(m-1) - 1/m  and  1/m^3 <= (1/2)(1/(m-1)^2 - 1/m^2).    *)
+(* ================================================================= *)
+
+Lemma wang_bound2 : forall z m, 0 < Re z -> 0 <= Im z ->
+  - wang z (S m)
+  <= Re z * Im z / INR (S m) ^ 2 + Im z ^ 3 / INR (S m) ^ 3.
+Proof.
+  intros z m Hx Hy.
+  assert (Hk1 : 1 <= INR (S m)) by (rewrite S_INR; pose proof (pos_INR m); lra).
+  set (x := Re z) in *. set (y := Im z) in *. set (k := INR (S m)) in *.
+  assert (Hk : 0 < k) by lra.
+  set (v := y / k). set (d := 1 + x / k). set (u := v / d).
+  assert (Hxk : 0 < x / k) by (apply Rdiv_lt_0_compat; assumption).
+  assert (Hd : 1 <= d) by (unfold d; lra).
+  assert (Hd0 : 0 < d) by lra.
+  assert (Hv : 0 <= v) by (unfold v; apply div_nonneg; lra).
+  assert (Hu0 : 0 <= u) by (unfold u; apply div_nonneg; lra).
+  assert (Hw : wang z (S m) = atan u - v).
+  { cbn [wang]. unfold u, v, d, x, y, k. reflexivity. }
+  assert (Hsplit : - wang z (S m) = (v - u) + (u - atan u)) by (rewrite Hw; ring).
+  (* first piece, as before *)
+  assert (Hvu : v - u = v * (d - 1) / d) by (unfold u; field; lra).
+  assert (Hd1 : d - 1 = x / k) by (unfold d; ring).
+  assert (B1 : v - u <= x * y / k ^ 2).
+  { rewrite Hvu, Hd1.
+    assert (Hvx : 0 <= v * (x / k)) by nra.
+    assert (Hle : v * (x / k) / d <= v * (x / k)).
+    { apply Rmult_le_reg_r with d; [ lra | ].
+      unfold Rdiv at 1. rewrite Rmult_assoc, Rinv_l by lra. nra. }
+    assert (Heq : v * (x / k) = x * y / k ^ 2) by (unfold v; field; lra).
+    lra. }
+  (* second piece, keeping the cube *)
+  destruct (atan_sandwich u Hu0) as [_ B2b].
+  assert (Huv : u <= v).
+  { assert (Hud : u * d = v) by (unfold u; field; lra). nra. }
+  assert (B2 : u ^ 3 <= y ^ 3 / k ^ 3).
+  { assert (Hu2 : 0 <= u ^ 2) by (apply pow_le; lra).
+    assert (Hc1 : u ^ 3 <= u ^ 2 * v) by nra.
+    assert (Hv2 : u ^ 2 <= v ^ 2) by nra.
+    assert (Hc2 : u ^ 2 * v <= v ^ 3).
+    { replace (v ^ 3) with (v ^ 2 * v) by ring.
+      apply Rmult_le_compat_r; [ lra | exact Hv2 ]. }
+    assert (Hv3 : v ^ 3 = y ^ 3 / k ^ 3) by (unfold v; field; lra).
+    lra. }
+  lra.
+Qed.
+
+Lemma negwang_step2 : forall z N j, 0 < Re z -> 0 <= Im z -> (1 <= N)%nat ->
+  negwang z (N + j) <= negwang z N
+    + Re z * Im z * (/ INR N - / INR (N + j))
+    + Im z ^ 3 / 2 * (/ INR N ^ 2 - / INR (N + j) ^ 2).
+Proof.
+  intros z N j Hx Hy HN.
+  assert (Hxy : 0 <= Re z * Im z) by nra.
+  assert (Hy3 : 0 <= Im z ^ 3) by (apply pow_le; lra).
+  induction j as [| j IH].
+  - rewrite Nat.add_0_r. lra.
+  - assert (Hstep : negwang z (N + S j) = negwang z (N + j) + - wang z (S (N + j))).
+    { replace (N + S j)%nat with (S (N + j)) by lia.
+      unfold negwang. rewrite tech5. reflexivity. }
+    rewrite Hstep.
+    pose proof (wang_bound2 z (N + j) Hx Hy) as Hb.
+    assert (Hn1 : 1 <= INR (N + j)) by (rewrite <- INR_1; apply le_INR; lia).
+    assert (Hn2 : INR (S (N + j)) = INR (N + j) + 1) by (rewrite S_INR; reflexivity).
+    rewrite Hn2 in Hb.
+    set (m := INR (N + j)) in *.
+    assert (Hm0 : 0 < m) by lra.
+    assert (T1 : / (m + 1) ^ 2 <= / m - / (m + 1)).
+    { assert (E : / m - / (m + 1) = / (m * (m + 1)))
+        by (field; split; apply Rgt_not_eq; lra).
+      rewrite E. apply Rinv_le_contravar; nra. }
+    assert (T2 : / (m + 1) ^ 3 <= / 2 * (/ m ^ 2 - / (m + 1) ^ 2)).
+    { assert (Hpos : 0 < m ^ 2 * (m + 1) ^ 3) by nra.
+      apply Rmult_le_reg_r with (m ^ 2 * (m + 1) ^ 3); [ exact Hpos | ].
+      assert (EL : / (m + 1) ^ 3 * (m ^ 2 * (m + 1) ^ 3) = m ^ 2)
+        by (field; apply Rgt_not_eq; nra).
+      assert (ER : / 2 * (/ m ^ 2 - / (m + 1) ^ 2) * (m ^ 2 * (m + 1) ^ 3)
+                   = / 2 * ((m + 1) ^ 3 - m ^ 2 * (m + 1)))
+        by (field; split; apply Rgt_not_eq; nra).
+      rewrite EL, ER. nra. }
+    assert (P1 : Re z * Im z * / (m + 1) ^ 2
+                 <= Re z * Im z * (/ m - / (m + 1)))
+      by (apply Rmult_le_compat_l; assumption).
+    assert (P2 : Im z ^ 3 * / (m + 1) ^ 3
+                 <= Im z ^ 3 * (/ 2 * (/ m ^ 2 - / (m + 1) ^ 2)))
+      by (apply Rmult_le_compat_l; assumption).
+    assert (Heq : INR (N + S j) = m + 1).
+    { replace (N + S j)%nat with (S (N + j)) by lia.
+      rewrite S_INR. reflexivity. }
+    rewrite Heq. unfold Rdiv in *. lra.
+Qed.
+
+Theorem Wangl_tail2 : forall z N, 0 < Re z -> 0 <= Im z -> (1 <= N)%nat ->
+  Rabs (Wangl z - wangsum z N)
+  <= Re z * Im z / INR N + Im z ^ 3 / 2 / INR N ^ 2.
+Proof.
+  intros z N Hx Hy HN.
+  assert (Hxy : 0 <= Re z * Im z) by nra.
+  assert (Hy3 : 0 <= Im z ^ 3) by (apply pow_le; lra).
+  assert (HNpos : 0 < INR N) by (apply lt_0_INR; lia).
+  assert (HN2 : 0 < INR N ^ 2) by nra.
+  set (B := Re z * Im z / INR N + Im z ^ 3 / 2 / INR N ^ 2).
+  assert (HB : 0 <= B).
+  { unfold B. apply Rplus_le_le_0_compat.
+    - apply div_nonneg; lra.
+    - apply div_nonneg; [ apply div_nonneg; lra | exact HN2 ]. }
+  assert (Hall : forall n, negwang z n <= negwang z N + B).
+  { intro n. destruct (Nat.le_gt_cases n N) as [Hc | Hc].
+    - pose proof (negwang_mono z n N Hx Hy Hc). lra.
+    - assert (Hj : n = (N + (n - N))%nat) by lia.
+      rewrite Hj.
+      pose proof (negwang_step2 z N (n - N) Hx Hy HN) as Hs.
+      assert (Hpos : 0 < INR (N + (n - N))) by (apply lt_0_INR; lia).
+      assert (Ha : 0 <= / INR (N + (n - N)))
+        by (left; apply Rinv_0_lt_compat; exact Hpos).
+      assert (Hb : 0 <= / INR (N + (n - N)) ^ 2)
+        by (left; apply Rinv_0_lt_compat; nra).
+      assert (Q1 : Re z * Im z * (/ INR N - / INR (N + (n - N)))
+                   <= Re z * Im z * / INR N) by nra.
+      assert (Q2 : Im z ^ 3 / 2 * (/ INR N ^ 2 - / INR (N + (n - N)) ^ 2)
+                   <= Im z ^ 3 / 2 * / INR N ^ 2) by nra.
+      unfold B, Rdiv in *. lra. }
+  assert (Hlim : Un_cv (negwang z) (- Wangl z)).
+  { apply (Un_cv_ext' (fun n => - wangsum z n) (negwang z)).
+    - intro n. rewrite wangsum_neg. ring.
+    - apply CV_opp. apply Wangl_cv; assumption. }
+  assert (Hle : - Wangl z <= negwang z N + B)
+    by (apply (cv_le_ub (negwang z) (- Wangl z)); assumption).
+  assert (Hge : negwang z N <= - Wangl z)
+    by (apply growing_ineq; [ apply negwang_growing; assumption | exact Hlim ]).
+  rewrite (wangsum_neg z N). unfold B in *.
+  unfold Rabs; destruct (Rcase_abs (Wangl z - - negwang z N)); lra.
+Qed.
