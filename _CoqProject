@@ -1267,5 +1267,6 @@ spectral-theory/CPolarDir.v
 spectral-theory/GammaDir.v
 spectral-theory/GammaExpLog.v
 spectral-theory/GammaArg.v
+spectral-theory/LnSeries.v
 spectral-theory/XirSignZ.v
 spectral-theory/ZfunSigns.v
