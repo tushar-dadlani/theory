@@ -275,3 +275,82 @@ Proof.
       by (unfold Cmul, RtoC; cbn [Re Im]; ring).
     rewrite <- E. apply dir_Cexpf.
 Qed.
+
+(* ================================================================= *)
+(*  The tail bound: N terms suffice to within Kang z / N.             *)
+(*  1/m^2 <= 1/(m-1) - 1/m telescopes, so the remainder after N terms *)
+(*  is at most Kang z / N -- linear in Im z, NOT quadratic.  At        *)
+(*  z = 1/4 + i t/2 this is (t/8 + t^3/8)/N ... the t^3 comes from the *)
+(*  atan expansion and dominates; either way the term count needed for *)
+(*  a FIXED angular accuracy is polynomial in t, not exponential.     *)
+(* ================================================================= *)
+
+Lemma negwang_mono : forall z n m, 0 < Re z -> 0 <= Im z -> (n <= m)%nat ->
+  negwang z n <= negwang z m.
+Proof.
+  intros z n m Hx Hy Hnm. induction Hnm as [| m Hnm IH]; [ lra | ].
+  pose proof (negwang_growing z Hx Hy m). lra.
+Qed.
+
+Lemma negwang_step : forall z N j, 0 < Re z -> 0 <= Im z -> (1 <= N)%nat ->
+  negwang z (N + j) <= negwang z N + Kang z * (/ INR N - / INR (N + j)).
+Proof.
+  intros z N j Hx Hy HN.
+  assert (HK : 0 <= Kang z) by (apply Kang_nonneg; assumption).
+  induction j as [| j IH].
+  - rewrite Nat.add_0_r. lra.
+  - assert (Hstep : negwang z (N + S j) = negwang z (N + j) + - wang z (S (N + j))).
+    { replace (N + S j)%nat with (S (N + j)) by lia.
+      unfold negwang. rewrite tech5. reflexivity. }
+    rewrite Hstep.
+    destruct (wang_bound z (N + j) Hx Hy) as [_ Hb].
+    (* 1/(N+j+1)^2 <= 1/(N+j) - 1/(N+j+1) *)
+    assert (Hn1 : 1 <= INR (N + j)) by
+      (rewrite <- (INR_1); apply le_INR; lia).
+    assert (Hn2 : INR (S (N + j)) = INR (N + j) + 1) by (rewrite S_INR; reflexivity).
+    assert (Htel : Kang z / INR (S (N + j)) ^ 2
+                   <= Kang z * (/ INR (N + j) - / INR (S (N + j)))).
+    { rewrite Hn2.
+      assert (Hd : / INR (N + j) - / (INR (N + j) + 1)
+                   = / (INR (N + j) * (INR (N + j) + 1))) by (field; lra).
+      rewrite Hd.
+      assert (Hle : / (INR (N + j) + 1) ^ 2 <= / (INR (N + j) * (INR (N + j) + 1))).
+      { apply Rinv_le_contravar; nra. }
+      unfold Rdiv. apply Rmult_le_compat_l; assumption. }
+    assert (Heq : INR (N + S j) = INR (S (N + j)))
+      by (replace (N + S j)%nat with (S (N + j)) by lia; reflexivity).
+    rewrite Heq. lra.
+Qed.
+
+Theorem Wangl_tail : forall z N, 0 < Re z -> 0 <= Im z -> (1 <= N)%nat ->
+  Rabs (Wangl z - wangsum z N) <= Kang z / INR N.
+Proof.
+  intros z N Hx Hy HN.
+  assert (HK : 0 <= Kang z) by (apply Kang_nonneg; assumption).
+  assert (HNpos : 0 < INR N) by (apply lt_0_INR; lia).
+  (* every partial sum is below the bound *)
+  assert (Hall : forall n, negwang z n <= negwang z N + Kang z / INR N).
+  { intro n. destruct (Nat.le_gt_cases n N) as [Hc | Hc].
+    - pose proof (negwang_mono z n N Hx Hy Hc).
+      assert (0 <= Kang z / INR N) by (apply div_nonneg; lra). lra.
+    - assert (Hj : n = (N + (n - N))%nat) by lia.
+      rewrite Hj.
+      pose proof (negwang_step z N (n - N) Hx Hy HN) as Hs.
+      assert (Hpos : 0 < INR (N + (n - N))) by (apply lt_0_INR; lia).
+      assert (Hinv : 0 < / INR (N + (n - N))) by (apply Rinv_0_lt_compat; exact Hpos).
+      assert (Hb : Kang z * (/ INR N - / INR (N + (n - N))) <= Kang z / INR N).
+      { unfold Rdiv. apply Rmult_le_compat_l; lra. }
+      lra. }
+  (* pass to the limit *)
+  assert (Hlim : Un_cv (negwang z) (- Wangl z)).
+  { apply (Un_cv_ext' (fun n => - wangsum z n) (negwang z)).
+    - intro n. rewrite wangsum_neg. ring.
+    - apply CV_opp. apply Wangl_cv; assumption. }
+  assert (Hle : - Wangl z <= negwang z N + Kang z / INR N)
+    by (apply (cv_le_ub (negwang z) (- Wangl z)); assumption).
+  assert (Hge : negwang z N <= - Wangl z)
+    by (apply growing_ineq; [ apply negwang_growing; assumption | exact Hlim ]).
+  (* the remainder is between 0 and Kang z / N *)
+  rewrite (wangsum_neg z N).
+  unfold Rabs; destruct (Rcase_abs (Wangl z - - negwang z N)); lra.
+Qed.
