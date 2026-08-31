@@ -1264,5 +1264,6 @@ spectral-theory/ThirdZero.v
 spectral-theory/CExpQuot.v
 spectral-theory/CExpEntire.v
 spectral-theory/CPolarDir.v
+spectral-theory/GammaDir.v
 spectral-theory/XirSignZ.v
 spectral-theory/ZfunSigns.v
