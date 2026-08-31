@@ -1258,3 +1258,7 @@ spectral-theory/ReTCSimpson.v
 spectral-theory/SecondZeroChk22.v
 spectral-theory/SecondZeroT22.v
 spectral-theory/SecondZero.v
+spectral-theory/ThirdZeroChk26.v
+spectral-theory/ThirdZeroT26.v
+spectral-theory/ThirdZero.v
+spectral-theory/CExpQuot.v

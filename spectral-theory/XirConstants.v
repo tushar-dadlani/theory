@@ -436,6 +436,21 @@ Qed.
 Lemma Tt_val22 : Tt 22 = 11.
 Proof. unfold Tt. rewrite Rabs_pos_eq by lra. lra. Qed.
 
+Lemma Tt_val26 : Tt 26 = 13.
+Proof. unfold Tt. rewrite Rabs_pos_eq by lra. lra. Qed.
+
+Theorem M4fin_26 : M4fin 26 <= 3360.
+Proof.
+  unfold M4fin. rewrite Tt_val26.
+  destruct A_ub as [H0 [H1 [H2 [H3 H4]]]].
+  destruct B_nonneg as [N0 [N1 [N2 [N3 N4]]]].
+  assert (P0 : 0 <= A0) by (unfold A0; lra).
+  assert (P1 : 0 <= A1) by (unfold A1; lra).
+  assert (P2 : 0 <= A2) by (unfold A2; lra).
+  assert (P3 : 0 <= A3) by (unfold A3; lra).
+  nra.
+Qed.
+
 Theorem M4fin_22 : M4fin 22 <= 2040.
 Proof.
   unfold M4fin. rewrite Tt_val22.
@@ -451,6 +466,7 @@ Qed.
 Print Assumptions exp_pi_ub.
 Print Assumptions ET_ub2.
 Print Assumptions M4fin_22.
+Print Assumptions M4fin_26.
 Print Assumptions Kg1_ub.
 Print Assumptions Kg2_ub.
 Print Assumptions EL_ub.
