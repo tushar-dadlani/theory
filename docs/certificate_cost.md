@@ -196,11 +196,46 @@ time.
   bottleneck — the exp and trig evaluations are, and they were already one
   per index. Further speed must come from the transcendentals.
 
-## 9. Status
+## 9. The comparison
 
-Complete and axiom-clean: Sections 1, 4, 6, 7, and the sign test
-(`ZSign.v`, `xir_neg_of_IZ`). What remains is the end-to-end comparison of
-Section 3 against Sections 6–7 at a single `t` — a ~60 min `vm_compute` at
-M = 550, whose arithmetic predicts `Z(26) ∈ [1.38, 1.47]` and hence
-`xir 26 < 0` by the cheap route, independently of the 1024-panel Simpson
-quadrature that first established it.
+`spectral-theory/ThirdZeroCheap.v`:
+
+```coq
+xir_26_neg_cheap : xir 26 < 0
+```
+
+The same fact as `ThirdZeroT26.xir_26_neg`, by the polynomial route.
+Both are in the build; neither depends on the other.
+
+| | expensive route | cheap route |
+|---|---|---|
+| where | `ThirdZeroChk26` / `ThirdZeroT26` | `ThetaEnclose` / `ZetaEnclose` / `ThirdZeroCheap` |
+| what is computed | `Re TC` by quadrature | `theta` and `zeta` |
+| size | **1024 Simpson panels** | **40 trapezoid terms**, 200 arctan terms |
+| exp halvings | 36 | 28 |
+| decided quantity | `xir ~ 1e-9` | `Z(26) in [0.79, 2.10]` |
+| `\|Gamma(1/4+it/2)\|` | implicit in the 1e-9 | **never computed** |
+
+The margin is the whole story. The quadrature must resolve a quantity
+of size `1e-9` obtained as a difference of two quantities of size `1/2`
+-- 1.08 bits of cancellation per unit `t`, Section 2. The cheap route
+decides a quantity of size `1.4` with an interval of width `1.3`. The
+exponentially small factor is still there, but `xir_sign_Z` proves it
+is positive and in closed form, so it never has to be resolved.
+
+**Measured, at t = 26.** With M = 550 the zeta enclosure is
+
+    Re zeta in [0.4903651812, 0.5104155098]   (true 0.5005035361)
+    Im zeta in [1.3253855434, 1.3454360345]   (true 1.3355300007)
+
+both of width 0.0201, giving `Z(26) in [1.3964, 1.4557]`; that run took
+2h57m. But sizing `M` from the tail bound rather than from the margin
+in `Z` was over-provisioning by a factor of ~50: M = 40 gives a tail
+bound of 0.4937, `Z(26) in [0.79, 2.10]`, and the same conclusion in
+about 10 minutes. The committed theorem uses M = 40.
+
+## 10. Status
+
+Complete and axiom-clean: every section above. What is **not** done is
+any lower bound -- see Section 5 -- and the extension of Sections 6-8
+to other `t`, which needs only new constants, not new theory.

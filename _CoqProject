@@ -1280,3 +1280,4 @@ spectral-theory/IntervalTrig.v
 spectral-theory/IntervalLnSeries.v
 spectral-theory/ZetaEnclose.v
 spectral-theory/ZSign.v
+spectral-theory/ThirdZeroCheap.v
