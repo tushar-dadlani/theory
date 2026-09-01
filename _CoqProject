@@ -1285,3 +1285,4 @@ spectral-theory/CheapSign.v
 spectral-theory/FourthZero.v
 spectral-theory/MoreZeros.v
 spectral-theory/NineZeros.v
+spectral-theory/ZeroCountSandwich.v

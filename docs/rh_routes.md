@@ -1,0 +1,158 @@
+# Three routes to RH, and where this development sits on each
+
+This note exists because the work in this repository is easy to over-read. Nine zeros of
+`Xi` have been certified on the critical line. That is an **existential** result, and RH is
+**universal**. The two are almost unrelated, and saying so precisely is more useful than
+any further zero.
+
+## 1. The statement
+
+`spectral-theory/RiemannHypothesisXi.v`:
+
+```coq
+Definition RiemannHypothesis : Prop := forall z : C, XiC z = C0 -> Re z = / 2.
+```
+
+A note on a distinction that is often drawn and is **not** a real one: "all zeros lie on the
+critical line" and "no zero lies off the critical line" are the *same proposition*. In
+classical logic `∀x (P x → Q x) ≡ ¬∃x (P x ∧ ¬Q x)`, and the definition above is literally
+the ∀-form. What genuinely differ are the **proof programs**, and those differ so much that
+they share almost no machinery. There are three.
+
+## 2. Route A — exhaustion / counting
+
+*Shape*: produce zeros on the line, then show there are no others by counting.
+
+Write `N(T)` for the zeros of `Xi` in the strip below height `T`, and `N₀(T)` for those on
+the line. Always `N₀(T) ≤ N(T)`. If you also prove `N(T) ≤ N₀(T)`, the two coincide, and
+every zero below `T` is forced onto the line — and forced to be simple.
+
+*What it yields*: "RH verified up to height `T`". **It cannot yield RH.** RH would require
+every `T`, and that is a limit you cannot complete. This is the route all numerical
+verification takes.
+
+*What the repo has*:
+
+- **Lower half — done.** `NineZeros.nine_zeros` gives nine zeros below height 49 by IVT on
+  sign changes of `xir t = Re Xi(1/2+it)`, via `ZeroCounting.alternation_zeros`. The nine
+  gaps contain exactly the nine true ordinates, one each:
+
+  | gap | ordinate | | gap | ordinate |
+  |---|---|---|---|---|
+  | (10, 16) | 14.134725 | | (35, 39) | 37.586178 |
+  | (16, 22) | 21.022040 | | (39, 42) | 40.918719 |
+  | (22, 26) | 25.010858 | | (42, 45) | 43.327073 |
+  | (26, 31.5) | 30.424876 | | (45, 49) | 48.005151 |
+  | (31.5, 35) | 32.935062 | | | |
+
+- **Upper half — absent.** The best available is `XiZeroDensity.xi_count_below`:
+
+  ```coq
+  Theorem xi_count_below : forall (r : R) (s : list C),
+    0 < r -> NoDup s ->
+    (forall rho, In rho s -> XiC rho = C0) ->
+    (forall rho, In rho s -> Cmod rho < r) ->
+    INR (length s) <= Bxi r.
+  ```
+
+  with `Bxi r = ln (4 * XiM (8*(r+1))) / ln 3`. Numerically `Bxi 49 = 712.9` and
+  `Bxi 50 = 730.6`, against true counts of **18** and **20** (zeros come in conjugate
+  pairs). So the repo proves, at height 49, roughly
+
+  > 9 ≤ (zeros on the line) ≤ (zeros in the disk) ≤ 712.
+
+  A factor of about 40 from what `N(49) ≤ 9` would need.
+
+*Why that gap is structural, not constant-chasing*: Jensen's formula on a circle centred at
+0 is charged for `Xi`'s growth in the direction where it is largest — along the real axis,
+where `Xi(σ)` genuinely behaves like `π^{-σ/2}Γ(σ/2)ζ(σ) = exp(Θ(R log R))`. But the zeros
+are confined to a thin vertical strip. The circle pays for growth from a direction that
+contributes no zeros. `XiGrowthBound.Tgb` is a fair majorant, not a lossy one. An idealised
+Jensen bound still lands near 190. Retuning `CPeelBound.peel_count_explicit`'s hard-wired
+`Rr/4` and `ln 3` recovers roughly the 8× radius inflation and reaches the tens — never 18,
+let alone 9.
+
+*What would close it*: the argument principle, `(1/2πi)∮ Xi'/Xi`, which measures phase
+change along the strip boundary rather than max modulus on a large circle — the right shape
+for the problem. Missing, in dependency order:
+
+1. rectangle Cauchy formula at an **arbitrary** interior pole (`RectWinding.rect_winding`
+   fixes the pole at 0 and the corners);
+2. non-convex deformation (`CPrimConv.pathint_loop_conv` is convex-only;
+   `docs/identity_theorem_plan.md` flags this as *the* blocker);
+3. order of vanishing / local factorisation `f = (z−a)^m g` — absent;
+4. `∮ f'/f = 2πi·m` — absent; nothing in the repo integrates `f'/f` at all;
+5. a complex log/argument — `docs/complex_gamma_plan.md`: nothing named `Clog`/`Carg` exists.
+
+Finiteness of the zero set in a compact region, often the fiddly prerequisite, is **already
+available** from the completeness clause of `JensenCountComplete` / `XiZeroCount.xi_zero_count`:
+`forall z, Cmod z < Rj -> XiC z = C0 -> In z l`.
+
+## 3. Route B — zero-free region
+
+*Shape*: lower-bound `|Xi|` off the line. No enumeration; no counting.
+
+*What it yields*: RH in one stroke, if the region can be made to be everything off the line.
+
+*What the repo has*: this route is **already working**, at a coarse scale —
+
+```coq
+ZetaOpenStrip.XiC_zeros_in_open_strip : forall z, XiC z = C0 -> 0 < Re z < 1
+```
+
+That is a genuine zero-free region: no zeros outside the open strip. RH is the same shape
+with the region shrunk from the strip to the line. The proof uses the Euler product
+(`Re > 1`) and the functional equation to reflect it — and neither can be pushed inward.
+Every known zero-free region in the literature hugs `Re = 1`; none approaches `Re > 1/2 + δ`.
+
+`CriticalDepth.RH_iff_depth_zero` recoordinatises the strip by the logit so that the
+functional equation becomes negation and RH becomes "depth = 0" — a change of variables on
+this route, not progress along it.
+
+## 4. Route C — Hilbert–Pólya / spectral
+
+*Shape*: make off-line zeros **impossible** rather than excluded. Realise the ordinates as
+the spectrum of a self-adjoint operator; reality of eigenvalues then forces `Re = 1/2`.
+
+*What the repo has*: `HilbertPolyaCapstone.berry_keating_summary`, proved unconditionally —
+the boundary functional is `Xi` and is even, it has no zero off the reflection axis, the
+Weyl function selects zeros at the Dirichlet phase, the scattering matrix is trivial, and a
+sign change of `xir` is a half-winding of the Weyl phase. Notably **reality of the ordinates
+is a theorem** (`SelfAdjointExtension.icayley_real`), not an assumption.
+
+The remaining gap is isolated as one proposition:
+
+```coq
+Definition hilbert_polya_open : Prop := hp_target_via_extension.
+```
+
+— that the geometric boundary phase realising `XiC`'s zeros is the specific unit-phase
+sequence.
+
+*A caution*: "one open `Prop`" reads as nearly finished, and it is not. A single
+`Definition` can encode arbitrarily much, and this one encodes essentially the whole
+Hilbert–Pólya conjecture. The scaffolding around it being axiom-clean does not make the gap
+small. `HilbertPolyaCapstone.rh_conditional_realization` runs the other way — it *assumes*
+`RH_XiC` to place zeros in the spectrum.
+
+## 5. Where the nine zeros sit
+
+**None of the three.** They are `∃` statements: nine points shown to be zeros and shown to
+lie on the line. Route A wants `∀` by exhaustion, B by exclusion, C by structure. Existence
+of zeros *on* the line places no constraint on zeros *off* it — every result in this
+repository is consistent with a zero at `0.6 + 100i`.
+
+The one genuine connection is to Route A's lower half:
+`WeylWinding.weyl_winding_count` recasts the same sign changes as half-windings of the Weyl
+phase through the antipode. That feeds the counting program, which needs its upper half
+before it says anything at all about RH at any height — and which cannot reach RH regardless.
+
+## 6. Scope honesty
+
+Completing Route A at height 49 would give a machine-checked "RH up to height 49". That is
+about eleven orders of magnitude below what has been verified numerically since the 1980s
+(all zeros to height ~3×10¹², isolated zeros near 10²⁴). Its value would be that it is
+machine-checked, not the height reached.
+
+And no finite-height verification, at any height, is evidence for RH in the mathematical
+sense. RH is not the limit of these statements.
