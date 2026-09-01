@@ -1,5 +1,12 @@
 # C4 — Newman's analytic theorem (Zagier form) + Milestone D → PNT
 
+> **STATUS NOTE.** Blocker lists in this file are historical. Two were checked against source
+> and corrected in place: the **C0** bullet (its premise about `zetaC` lacking pole structure at
+> 1 was false; the value half is now proven) and the "machinery the repo does not yet have"
+> paragraph (that machinery was built — it is in this file's own DONE list). Verify against
+> `spectral-theory/` before relying on any remaining claim of absence.
+
+
 ## Progress snapshot (contour wall complete; Newman assembly + C0 remain)
 
 **DONE, axiom-clean:** bricks 1–3 (region Goursat / convex primitive / exceptional point),
@@ -9,12 +16,16 @@ region U = {|z|<R}∩{Re z>−δ}), brick 6 `CNewmanKernel`, brick 7 `CLaplace.g
 (g_T(z)=∫₀ᵀ f e^{−zt}dt entire, via CexpRemainder + ML). The contour wall is finished.
 
 **The deep remaining blockers** (each needs new infrastructure, not just assembly):
-- **C0 — holomorphy of `PhiMinus` at `s=1`.** `ZetaPoleCancel` gives holomorphy on Re z>0, z≠1,
-  ζ≠0; the removable pole at `s=1` is ABSENT. `zetaC` (the complex continuation to Re z>0) has no
-  Laurent/pole structure at 1 — only the REAL continuation `ζ(s)=1/(s−1)+Σgterm(s)` exists
-  (`ZetaContinuation.v`, all `s:R`). Need the COMPLEX pole: `(s−1)ζ(s)→1`, i.e. `Bfn` extends
-  holomorphically to 1 with `Bfn 1 = 1` (currently `Bfn 1 = 0` since `zF 1 = C0`). This gates
-  `g` being holomorphic on all of `U` (0 ∈ U).
+- **C0 — holomorphy of `PhiMinus` at `s=1`. PARTIALLY DISCHARGED.**
+  ⚠ The original premise here was **false**: `zetaC` *does* have explicit pole structure at 1 —
+  `CZeta.zetaC s = 1/(s−1) + Σ gtermC s` **by definition**, so the pole is the first summand and
+  the regular part is the series.
+  ✅ **The value half is proven**: `ZetaResidue.zeta_residue_one` gives `(s−1)·ζ(s) → 1`,
+  axiom-clean, from `ZetaEM.htermC_tail` at `M=0` plus `ZetaTrap.Cmod_htermC_bound` at `n=0`
+  (`|Hsum| ≤ 2·Kh`, and `Kh ≤ 5/8` for `|s−1| ≤ 1/2`). The predicted "complex Euler–Maclaurin"
+  already existed — it was built for the sign certificates.
+  ❌ **Still open**: `Bfn` **holomorphic** at 1, not merely convergent. That is what gates `g`
+  being holomorphic on all of `U` (0 ∈ U).
 - **The g-extension / discharge φ.** The integral infra needs GLOBAL `CcontC` continuity; `g` is
   only holomorphic near the truncated disk. Need a continuous extension off the domain (or a
   reformulation). Tied to C0.
@@ -32,8 +43,10 @@ Newman.** Newman's `g = PhiMinus = Φ − 1/(s−1)` is holomorphic only on `{0 
 (incl. the line `Re s=1` except `s=1`; see `ZetaPoleCancel.phi_minus_holo`/`phi_minus_line_holo`).
 A full circle of radius `R→∞` centered at 0 leaves that domain — which is exactly why Zagier uses
 the **truncated disk** `C = ∂({|z|≤R} ∩ {Re z ≥ −δ})` (arc + vertical chord). So C4 needs
-**region-restricted** contour machinery that the repo does not yet have: `goursat`, `Prim_deriv`,
-`cauchy_integral_formula` are all stated for **global/entire** holomorphy.
+**region-restricted** contour machinery, `goursat` / `Prim_deriv` / `cauchy_integral_formula`
+all being stated for **global/entire** holomorphy. ✅ **Superseded — that machinery was since
+built**: see the DONE list at the top of this file (`CGoursatConv.tri_int_conv`,
+`CPrimConv.pathint_loop_conv` + `PrimC_deriv`, `CGoursatExcept.pathint_loop_except`).
 
 The one lever already region-friendly: `CPathFTC.pathint_FTC` / `pathint_primitive_loop` take the
 primitive `H` **pointwise along the path only** — so once a primitive exists on the region, loop

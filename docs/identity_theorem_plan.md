@@ -1,5 +1,21 @@
 # The identity theorem: a scoping plan
 
+> **STATUS: CLOSED — this file is a chronological working log, not a list of open problems.**
+>
+> The program is complete. `CGammaComplete.GammaC_functional_equation` proves
+> `GammaC(z+1) = z·GammaC(z)` on `{Re z > 0}`, axiom-clean; the domain-restricted identity
+> tower B1→B6 is built (`cauchy_interior_dom` → `coeff_recur_D` → `taylor_center_zero_D` →
+> `identity_at_zero_D` → `identity_on_disk_D` → `identity_propagate_D`), together with the
+> general-`n` Cauchy analyticity key `CCauchyAnalytic.cauchy_integral_holo` and the walk
+> `CWalk.reach`. See the final section.
+>
+> **Interior sections state blockers that were later resolved.** In particular the paragraph
+> beginning "The precise blocker is located: `pathint_loop_except`" describes a difficulty
+> that was *bypassed* by the domain-restricted route — it is **not** an open problem, and
+> `pathint_loop_except` itself is built and axiom-clean. Do not quote a blocker from this
+> file without checking the source first.
+
+
 ## Goal
 
 Prove the **identity theorem** in the form the complex-Γ functional equation needs:

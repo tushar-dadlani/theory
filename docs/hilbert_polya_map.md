@@ -149,6 +149,11 @@ In the repo, that missing identification is **not proved**. It is now stated
   boundary-triple Weyl function is `Wxi` is the geometric Berry–Keating dilation.
   This is a genuine existence target, never asserted true.
 
+  ⚠ **Read "only" with care.** One open `Definition` reads as nearly finished, and this one
+  is not: a `Definition` can encode arbitrarily much, and `hilbert_polya_open` encodes
+  essentially the whole Hilbert–Pólya conjecture. The surrounding scaffolding being
+  axiom-clean does not make the gap small. See `rh_routes.md` §4.
+
 - **Legacy scaffolding, superseded.** An older file `SpectralTripleRH.v` (line 250)
   contains `Axiom berry_keating_correspondence`, whose conclusion `on_critical_line_q
   (1#2)` unfolds to `1#2 == 1#2` — a **tautology**; `st_self_adjoint : True` (line

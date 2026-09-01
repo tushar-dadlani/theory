@@ -26,14 +26,15 @@ analytic gap.
 
 ## The DEEP remaining blockers (each needs new infrastructure, not just assembly)
 
-1. **C0 — holomorphy of `PhiMinus` at `s=1`** (the gating blocker). `ZetaPoleCancel`
-   gives holomorphy on `Re z>0, z≠1, ζ≠0`. The removable pole at `s=1` is ABSENT.
-   The complex continuation `zetaC` (defined on `Re z>0`, `z≠1`) has NO Laurent/pole
-   structure at 1 — only the **real** continuation `ζ(s)=1/(s−1)+Σgterm(s)` exists
-   (`ZetaContinuation.v`, all `s:R`). Needed: the complex fact `(s−1)ζ(s)→1`, i.e.
-   `Bfn(s)=(s−1)zetaC(s)` extends holomorphically to 1 with `Bfn 1 = 1` (currently
-   `Bfn 1 = 0`, since `zF 1 = C0`). A complex Euler–Maclaurin, or a real→complex
-   bridge. Substantial file on its own.
+1. **C0 — holomorphy of `PhiMinus` at `s=1`** (the gating blocker).
+   **PARTIALLY DISCHARGED, and the premise below was false.** `zetaC` *does* have
+   explicit pole structure at 1: `CZeta.zetaC s = 1/(s−1) + Σ gtermC s` by definition.
+   The predicted "complex Euler–Maclaurin … substantial file on its own" already
+   existed (`ZetaTrap` / `ZetaEM`, built for the sign certificates), and
+   ✅ `ZetaResidue.zeta_residue_one` now proves `(s−1)·ζ(s) → 1`, axiom-clean, in
+   about 40 lines.
+   ❌ Still open: `Bfn` **holomorphic** at 1 rather than merely convergent — that is
+   what gates `g` on all of `U`.
 
 2. **The g-extension / discharge φ.** The integral infrastructure needs GLOBAL
    `CcontC` continuity; `g` is holomorphic only near the truncated disk. Need a
