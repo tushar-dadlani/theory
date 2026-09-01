@@ -31,5 +31,7 @@ first.** Claims found false on inspection, and since corrected in place:
 | local factorisation at a zero | `CZeroFactorDisk.zero_factor_disk`, `CZeroListFactor.DivBy_distinct` |
 | `∮ f'/f` machinery | `XiLogDerivZeros`, `ExplicitFormulaXiLogDeriv` |
 | complex residue of ζ at `s=1` | `ZetaResidue.zeta_residue_one` |
+| `(s−1)ζ(s)` **holomorphic** at `s=1` (blocker C0) | `CZetaRegular6.BfnT_holo`, wired up in `ZetaPoleCancel2.v` |
+| `∮dz/(z−a) = 2πi` at arbitrary interior `a` | `CWindingOffCenter.winding_interior` (circle); rectangle still open |
 
 That sweep was not exhaustive. Treat every remaining "absent" as unverified.

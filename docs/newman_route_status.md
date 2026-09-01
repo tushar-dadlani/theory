@@ -33,8 +33,10 @@ analytic gap.
    existed (`ZetaTrap` / `ZetaEM`, built for the sign certificates), and
    ✅ `ZetaResidue.zeta_residue_one` now proves `(s−1)·ζ(s) → 1`, axiom-clean, in
    about 40 lines.
-   ❌ Still open: `Bfn` **holomorphic** at 1 rather than merely convergent — that is
-   what gates `g` on all of `U`.
+   ✅ **Also closed.** `CZetaRegular6.BfnT_holo` already had the holomorphic extension;
+   it was never wired to `PhiMinus`. `ZetaPoleCancel2.v` supplies `BderivT` (the total
+   derivative, `ellsum` at `s=1`) and `PhiMinusT`, with `phi_minusT_at1` and
+   `phi_minusT_holo_near1`. **C0 is CLOSED**; the next blocker is the g-extension.
 
 2. **The g-extension / discharge φ.** The integral infrastructure needs GLOBAL
    `CcontC` continuity; `g` is holomorphic only near the truncated disk. Need a

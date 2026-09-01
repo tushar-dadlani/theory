@@ -24,8 +24,15 @@ region U = {|z|<R}∩{Re z>−δ}), brick 6 `CNewmanKernel`, brick 7 `CLaplace.g
   axiom-clean, from `ZetaEM.htermC_tail` at `M=0` plus `ZetaTrap.Cmod_htermC_bound` at `n=0`
   (`|Hsum| ≤ 2·Kh`, and `Kh ≤ 5/8` for `|s−1| ≤ 1/2`). The predicted "complex Euler–Maclaurin"
   already existed — it was built for the sign certificates.
-  ❌ **Still open**: `Bfn` **holomorphic** at 1, not merely convergent. That is what gates `g`
-  being holomorphic on all of `U` (0 ∈ U).
+  ✅ **The holomorphy half is also closed.** `CZetaRegular6.BfnT_holo` already proved that the
+  *total* function `BfnT` (`= (s−1)·zF` off 1, `= 1` at 1) is holomorphic on all of `{Re s > 0}`;
+  it was simply never wired to `PhiMinus`. `ZetaPoleCancel2.v` does that wiring:
+  `phi_minusT_holo`, `phi_minusT_at1`, `phi_minusT_holo_near1`, and `phi_minusT_eq` (agreement
+  with the old `PhiMinus` off 1), all axiom-clean. **C0 is CLOSED.**
+  Why a new function was needed rather than a patch: `ZetaFn.zF` is *defined* to be `C0` at
+  `s=1`, so `ZetaPoleCancel.Bfn C1 = C0` — recorded as the theorem
+  `ZetaPoleCancel2.old_Bfn_broken_at1`.
+  The next blocker is therefore the **g-extension**, not C0.
 - **The g-extension / discharge φ.** The integral infra needs GLOBAL `CcontC` continuity; `g` is
   only holomorphic near the truncated disk. Need a continuous extension off the domain (or a
   reformulation). Tied to C0.

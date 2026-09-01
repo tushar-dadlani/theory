@@ -10,8 +10,11 @@
 (*  Maclaurin tail estimate ZetaEM.htermC_tail evaluated at M = 0.     *)
 (*  No new analytic infrastructure is needed for the VALUE half of C0. *)
 (*                                                                    *)
-(*  (The remaining half of C0 -- Bfn HOLOMORPHIC at 1, not merely      *)
-(*  convergent -- is not addressed here.)                              *)
+(*  UPDATE: the remaining half of C0 -- Bfn HOLOMORPHIC at 1, not      *)
+(*  merely convergent -- is NOT open either.  CZetaRegular6.BfnT_holo  *)
+(*  already gives it (BfnT is total, = (s-1)*zF off 1, = 1 at 1, and    *)
+(*  holomorphic on all of Re s > 0).  ZetaPoleCancel2.v does the        *)
+(*  rewiring onto BfnT and closes C0.                                  *)
 (* ================================================================= *)
 
 From Stdlib Require Import Reals Lra Lia.

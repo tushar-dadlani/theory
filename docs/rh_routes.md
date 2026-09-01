@@ -101,9 +101,14 @@ integral **with no logarithm required**; each linear factor contributes `2πi`.
 
 What is genuinely confirmed absent:
 
-1. `∮ dz/(z−a) = 2πi` at an **arbitrary** interior `a` on the counting contour —
-   `rect_winding` fixes the pole at `0`. Possibly reachable from `pathint_loop_except`;
-   this is the piece to scope first.
+1. ~~`∮ dz/(z−a) = 2πi` at an arbitrary interior `a`~~ — **this claim was wrong.** It is
+   proven for a **circle** contour: `CWindingOffCenter.winding_interior`, plus
+   `CCauchyFull.cauchy_interior` and `CRemovableExtDom.cauchy_interior_dom` for the full
+   `∮F/(z−w) = 2πi·F(w)`. What is missing is only the **rectangle** version — and
+   `RectWinding.vseg_winding`/`hseg_winding` are already fully general in the segment, so
+   that is `atan` bookkeeping (~100 lines), not analysis. The genuinely hard remaining
+   piece for a counting contour is **multiplicity**: `CZeroListFactor.DivBy_distinct` is
+   `NoDup`-only, and the order-of-vanishing brick `f = (z−a)^m g` is unbuilt.
 2. a complex log/argument — nothing named `Clog`/`Carg` exists. Note the assembly above
    suggests this may not be needed for the count itself, only for evaluating `S(T)`, and
    Backlund's method bounds `S(T)` by **sign changes of `Re ζ`** on a segment — which is
