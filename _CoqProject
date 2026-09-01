@@ -1283,3 +1283,5 @@ spectral-theory/ZSign.v
 spectral-theory/ThirdZeroCheap.v
 spectral-theory/CheapSign.v
 spectral-theory/FourthZero.v
+spectral-theory/MoreZeros.v
+spectral-theory/NineZeros.v
