@@ -1286,3 +1286,4 @@ spectral-theory/FourthZero.v
 spectral-theory/MoreZeros.v
 spectral-theory/NineZeros.v
 spectral-theory/ZeroCountSandwich.v
+spectral-theory/ZetaResidue.v

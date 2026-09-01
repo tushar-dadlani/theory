@@ -74,15 +74,44 @@ let alone 9.
 
 *What would close it*: the argument principle, `(1/2πi)∮ Xi'/Xi`, which measures phase
 change along the strip boundary rather than max modulus on a large circle — the right shape
-for the problem. Missing, in dependency order:
+for the problem.
 
-1. rectangle Cauchy formula at an **arbitrary** interior pole (`RectWinding.rect_winding`
-   fixes the pole at 0 and the corners);
-2. non-convex deformation (`CPrimConv.pathint_loop_conv` is convex-only;
-   `docs/identity_theorem_plan.md` flags this as *the* blocker);
-3. order of vanishing / local factorisation `f = (z−a)^m g` — absent;
-4. `∮ f'/f = 2πi·m` — absent; nothing in the repo integrates `f'/f` at all;
-5. a complex log/argument — `docs/complex_gamma_plan.md`: nothing named `Clog`/`Carg` exists.
+**Do not take the planning docs' blocker lists at face value here.** Several are stale:
+`docs/identity_theorem_plan.md` localises a blocker at `pathint_loop_except` around line 130
+and then, in its own later sections, closes the entire program (`✅ COMPLETE`,
+`CGammaComplete.GammaC_functional_equation`). Checked against the source, the following are
+**already present and axiom-clean**:
+
+- convex-region loop-zero — `CPrimConv.pathint_loop_conv`, with `PrimC_deriv`;
+- loop-zero with an **exceptional point anywhere** — `CGoursatExcept.pathint_loop_except`;
+- `∮ dz/z = 2πi` and `∮ F/z = 2πi·F(0)` on the truncated disk — `CTruncWind.trunc_winding`,
+  `CTruncCauchy.trunc_cauchy`; the rectangle version is `RectWinding.rect_winding`;
+- **local factorisation at a zero** — `CZeroFactorDisk.zero_factor_disk`
+  (`F z = (z−w)·H z`, `H` disk-holomorphic), and the distinct-zero list version
+  `CZeroListFactor.DivBy_distinct`;
+- **log-derivative machinery** — `XiLogDerivZeros.xi_logderiv_zeros` (Hadamard-product form,
+  conditional on a zero enumeration), `ExplicitFormulaXiLogDeriv`;
+- finiteness/completeness of the zero set in a compact region — `JensenCountComplete` /
+  `XiZeroCount.xi_zero_count` (`forall z, Cmod z < Rj -> XiC z = C0 -> In z l`).
+
+That is most of the argument principle's skeleton. Sketching the assembly: factor out the
+zeros with `DivBy_distinct`; the residual factor is holomorphic and non-vanishing on the
+region, so its log-derivative is holomorphic there and `pathint_loop_conv` kills its loop
+integral **with no logarithm required**; each linear factor contributes `2πi`.
+
+What is genuinely confirmed absent:
+
+1. `∮ dz/(z−a) = 2πi` at an **arbitrary** interior `a` on the counting contour —
+   `rect_winding` fixes the pole at `0`. Possibly reachable from `pathint_loop_except`;
+   this is the piece to scope first.
+2. a complex log/argument — nothing named `Clog`/`Carg` exists. Note the assembly above
+   suggests this may not be needed for the count itself, only for evaluating `S(T)`, and
+   Backlund's method bounds `S(T)` by **sign changes of `Re ζ`** on a segment — which is
+   exactly what `CheapSign` already does.
+3. the bridge from a contour count to the height count, i.e. `N(T) = θ(T)/π + 1 + S(T)`.
+   Encouragingly `θ` is already certified at these heights (`ThetaEnclose.Itheta`, used at
+   `t = 49` in `MoreZeros.chk49`), and `θ(49)/π + 1 = 9.0944` against the nine zeros — so
+   pinning the integer `N(49) = 9` needs `S(49)` only to within about ±0.9.
 
 Finiteness of the zero set in a compact region, often the fiddly prerequisite, is **already
 available** from the completeness clause of `JensenCountComplete` / `XiZeroCount.xi_zero_count`:
@@ -108,6 +137,16 @@ Every known zero-free region in the literature hugs `Re = 1`; none approaches `R
 `CriticalDepth.RH_iff_depth_zero` recoordinatises the strip by the logit so that the
 functional equation becomes negation and RH becomes "depth = 0" — a change of variables on
 this route, not progress along it.
+
+*Adjacent, and not RH*: `docs/route_b_C4_newman_plan.md` targets **PNT** via Newman's
+analytic theorem. Its first listed blocker, C0, is the complex residue of `ζ` at `s = 1` —
+justified there by the claim that "`zetaC` has no Laurent/pole structure at 1". That claim
+is false: the pole *is* the first summand of `CZeta.zetaC`, and the regular part is
+uniformly bounded near `s = 1` by the Euler–Maclaurin tail estimate `ZetaEM.htermC_tail` at
+`M = 0`. `ZetaResidue.zeta_residue_one` now proves `(s−1)·ζ(s) → 1` outright, axiom-clean,
+with no new analytic infrastructure — the machinery built for the *sign certificates* paid
+for it. The remaining half of C0 (`Bfn` **holomorphic** at 1, not merely convergent) is
+still open.
 
 ## 4. Route C — Hilbert–Pólya / spectral
 
