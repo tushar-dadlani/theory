@@ -90,7 +90,19 @@ Chain: `LTN z (ln (INR (S (S M)))) = StepSum M − OneSum M` by cell additivity
 Risk: this is where the cell bookkeeping and the honest integral must be reconciled, and
 where a mismatch would surface late.
 
-### E5 — the contour identity (~250–350)
+### E5 — the contour identity (~250–350) — **first half DONE**
+
+✅ `CTruncCauchyDom.trunc_cauchy_dom` (108 lines, axiom-clean) makes the truncated Cauchy
+formula **unconditional**: it discharges `trunc_cauchy`'s whole exceptional-point interface
+by taking `phi := rphi F C0 dF`, exactly as `cauchy_interior_dom` does for the circle. Its
+input shape — `F` pointwise-continuous everywhere, holomorphic on `U` off `0`,
+differentiable at `0` — matches `NewmanCutoff.gtrunc_CcontC` exactly. Also proves
+`rphi_holo_off_gen`, the `U`-shaped version of `rphi_holo_off_dom` (the disk in the latter
+is incidental; its proof uses the hypothesis at a single point).
+
+Remaining in E5: instantiate at `F := (gtrunc − g_T)·e^{zT}`, and kill the `z/R²` half of
+the kernel with `pathint_loop_conv`.
+
 
 `F := (gtrunc − g_T) · e^{zT}`, `U := TruncDisk`. Split the kernel with
 `CNewmanKernel.newman_kernel_split`: `trunc_cauchy` for the `1/z` part,
