@@ -121,7 +121,32 @@ already in `CintfD_ML`.
 `LaplaceFull.LT_tail_bound` / `gfull_tail` but for `CintfD`. `B` comes from
 `ChebyshevPsiR.psiR_upper` (`psiR x <= x * Kup`), giving `|nf t| <= Kup + 1`.
 
-### E4 — `gN = gext` on `Re z > 0` (~200–300) — *the subtlest brick*
+### E4 — `gN = gext` on `Re z > 0` — **core DONE, limit plumbing remains**
+
+✅ `NewmanCellSum.v`, 137 lines, axiom-clean. The reconciliation that was flagged as the
+riskiest step in the endgame **works**:
+
+```coq
+LTN_stepsum : LTN z 0 (ln (INR (S (S M)))) H0 HT = Cminus (StepSum z M) (OneSum z M)
+```
+
+Route: `cexpzt_shift` (`e^{-(z+1)t} = e^{-t}·e^{-zt}`), then `lintN_cell_id` — on each open
+cell `nf t · e^{-zt} = psi(k+1)·e^{-(z+1)t} − e^{-zt}`, since `psiR(e^t)` is constant there
+(`PiecewiseTransform.psiRexp_const_cell`) and `nf t = psiR(e^t)/e^t − 1`
+(`NewmanTransform.nf_closed_form`). Both right-hand terms are continuous, so `CintfD_ext_open`
+then `CintfD_Cintf` (built in E1 for exactly this) collapse the honest integral to `Cintf`,
+which `Cintf_sub`/`Cintf_cmul_l` split into StepSum's and OneSum's k-th summands. `LTN_cell`
+is then summed by induction with `LTN_split`, using `LTN_endpoint` to move the base point
+from `0` to `ln (INR 1)` without proof transport.
+
+**Remaining in E4**: (i) `LTN z 0 T → gN z` as `T → ∞` along any divergent sequence — from
+`LTN_tail_le`, so `LTN z 0 (ln (INR (S (S M)))) → gN z`; (ii) chain with
+`newman_identity` and `NewmanGExt.gext_eq` to conclude `gN z = gext z`. Note `gext_eq` takes
+its `1 < Re (z+1)` proof as a parameter, so it can be instantiated at the exact proof term
+appearing in `newman_identity` — no `Phi` proof-irrelevance lemma is needed.
+
+*(original scoping below)*
+
 
 Chain: `LTN z (ln (INR (S (S M)))) = StepSum M − OneSum M` by cell additivity
 (`CellAdditivity.logpart_additive`) plus `ChebyshevPsiR.psiR_step` on each cell; then

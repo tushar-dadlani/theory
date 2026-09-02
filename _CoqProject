@@ -1299,3 +1299,4 @@ spectral-theory/CTruncCauchyDom.v
 spectral-theory/CIntegralD.v
 spectral-theory/NewmanTransform.v
 spectral-theory/NewmanTail.v
+spectral-theory/NewmanCellSum.v
