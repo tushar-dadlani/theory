@@ -100,18 +100,15 @@ differentiable at `0` — matches `NewmanCutoff.gtrunc_CcontC` exactly. Also pro
 `rphi_holo_off_gen`, the `U`-shaped version of `rphi_holo_off_dom` (the disk in the latter
 is incidental; its proof uses the hypothesis at a single point).
 
-Remaining in E5: instantiate at `F := (gtrunc − g_T)·e^{zT}`, and kill the `z/R²` half of
-the kernel with `pathint_loop_conv`.
-
-
-`F := (gtrunc − g_T) · e^{zT}`, `U := TruncDisk`. Split the kernel with
-`CNewmanKernel.newman_kernel_split`: `trunc_cauchy` for the `1/z` part,
-`CPrimConv.pathint_loop_conv` for the holomorphic `z/R²` part. Conclusion
+**Remaining in E5**: instantiate at `F := (gtrunc − g_T)·e^{zT}` with `U := TruncDisk`
+(`TruncDisk_convex`/`_open`), and split the kernel with
+`CNewmanKernel.newman_kernel_split` — `trunc_cauchy_dom` handles the `1/z` part,
+`CPrimConv.pathint_loop_conv` kills the holomorphic `z/R²` part. Conclusion
 `2πi·F(0) = ∮_C F·K_R`.
 
-**Already audited as dischargeable**: `trunc_cauchy` wants `CcontC phi` for the removable
-quotient, `CRemovableExtDom.rphi_cc_dom` supplies it from pointwise continuity, and
-`NewmanCutoff.gtrunc_CcontC` provides that. `CTruncDisk.TruncDisk_convex`/`_open` give `U`.
+Note this half depends on E2 (it needs `g_T`, the truncated transform of Newman's
+discontinuous `f`), so it is **not** independent of E1–E2 after all — only
+`trunc_cauchy_dom` was.
 
 ### E6 — the three ML estimates (~200–300, mostly assembly)
 
@@ -130,11 +127,12 @@ quotient, `CRemovableExtDom.rphi_cc_dom` supplies it from pointwise continuity, 
 
 ## Total and ordering
 
-Roughly **1500–2100 lines** across seven files. Strict dependency order is
-E1 → E2 → E3 → E4, with E5 independent of E1–E4 (it needs only what is already built), and
-E6 → E7 last. **E5 can be built first** and is the best next step: it is self-contained,
-its inputs are audited, and finishing it would confirm the `trunc_cauchy` interface before
-the larger E1–E4 investment.
+Roughly **1500–2100 lines** across seven files, of which `trunc_cauchy_dom` (108) is done.
+Dependency order is E1 → E2 → E3 → E4, then E5's instantiation, then E6 → E7.
+
+The `trunc_cauchy_dom` half of E5 was correctly identified as buildable first — it needed
+only what already existed, and it confirmed the interface. The *rest* of E5 needs `g_T`
+from E2, so **E1 is now the next step**.
 
 ## Verification, per brick
 
