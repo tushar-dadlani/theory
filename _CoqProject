@@ -1294,3 +1294,4 @@ spectral-theory/TauberianBlock.v
 spectral-theory/TauberianSqueeze.v
 spectral-theory/BfnUniform.v
 spectral-theory/NewmanCutoff.v
+spectral-theory/TintCoV.v
