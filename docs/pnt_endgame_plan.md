@@ -100,7 +100,22 @@ gN  (z : C) (Hz : 0 < Re z) : C  (* the T -> oo limit *)
 
 Reuse: `TintCoV.nf_cell_eq`, `nf_int_k`, `floor_exp_ge1`, `cell_lo`, `cell_hi`.
 
-### E3 — the tail bound (~120–180)
+### E3 — the tail bound and `gN` — ✅ **DONE**
+
+`NewmanTail.v`, 209 lines, axiom-clean. Delivered: `LTN_tail`
+(`<= 2(Kup+1)(e^{-Re z·a} − e^{-Re z·b})/Re z`), `LTN_tail_le` (the one-sided form),
+`tailN` with `tailN_nonneg`/`tailN_dec`/`tailN_cv0`, `LTNn_close`/`LTNn_close_sym`,
+`LTNn_Re_cauchy`/`LTNn_Im_cauchy`, and **`gN`** with `gN_Re_cv`/`gN_Im_cv`.
+
+`LaplaceFull.LT_tail_bound` proves the same estimate for continuous `f`, but via
+`Cintf_mod_le2` (`|∫f| <= ∫|f|`), which needs `Cmod (lint z u)` **integrable** — there had
+for free from continuity. `Cmod (lintN z u)` is discontinuous, so that route would have
+cost another cell argument. Bounding the two **components** separately against the
+continuous majorant `B·exp(−Re z·t)` avoids it entirely, at the cost of the same factor 2
+already in `CintfD_ML`.
+
+*(original scoping below)*
+
 
 `Cmod (gN z − LTN z T) <= B * exp (− Re z * T) / Re z`, mirroring
 `LaplaceFull.LT_tail_bound` / `gfull_tail` but for `CintfD`. `B` comes from
