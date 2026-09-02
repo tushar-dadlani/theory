@@ -1288,3 +1288,4 @@ spectral-theory/NineZeros.v
 spectral-theory/ZeroCountSandwich.v
 spectral-theory/ZetaResidue.v
 spectral-theory/ZetaPoleCancel2.v
+spectral-theory/NewmanGExt.v
