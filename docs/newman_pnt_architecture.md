@@ -131,6 +131,14 @@ axiom-clean. Status of the stitching:
    against that Cauchy tail + `psiR` monotonicity ⟹ `Un_cv (psi N/INR N) 1` ⟹
    `PNTConditional.pi_asymp_of_psi` ⟹ PNT.
 
+   ✅ **The Tauberian half is DONE** (`TauberianBlock.v`, `TauberianSqueeze.v`):
+   `pnt_of_tint_cauchy : TintCauchy -> Un_cv (fun N => pi_count N / (INR N / ln (INR N))) 1`.
+   PNT is now conditional on **one** analytic input, `TintCauchy` — the Cauchy tail of
+   `int_1^oo (psi(u)-u)/u^2 du` — which is exactly what the contour argument delivers.
+   `gen_block_int` generalises `NewmanBlock.block_int` to a numerator constant at either
+   endpoint (the undershoot case needs it at the LEFT endpoint), giving `block_lower` and
+   `block_upper`; the squeeze is then the contradiction against the non-shrinking block.
+
    Note the far end is shorter than it looks: `PsiAsymp.psi_asymp_cv` already gives
    `Un_cv Vrem 0 -> Un_cv (fun N => psi N / INR N) 1`, and `Vrem_cv0` reduces that
    to `is_limsup Vrem 0`. The Tauberian atoms `NewmanBlock.block_int`,

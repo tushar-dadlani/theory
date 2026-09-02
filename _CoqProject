@@ -1290,3 +1290,5 @@ spectral-theory/ZetaResidue.v
 spectral-theory/ZetaPoleCancel2.v
 spectral-theory/NewmanGExt.v
 spectral-theory/PsiRIntegrable.v
+spectral-theory/TauberianBlock.v
+spectral-theory/TauberianSqueeze.v
