@@ -75,7 +75,19 @@ already exists in the reals and transfers componentwise.
 pushes the same case analysis into every later brick, and the ML estimates become much
 harder to state.
 
-### E2 — `NewmanTransform.v`: Newman's transform as an honest integral (~200–300)
+### E2 — `NewmanTransform.v`: Newman's transform as an honest integral — ✅ **DONE**
+
+182 lines, axiom-clean. Delivered: `cellwise_integrable` (the cell gluing **abstracted**
+over the integrand — `TintCoV.nf_int_k` had it inlined for one function), `nfC`, `lintN`,
+`Re_lintN`/`Im_lintN`/`Cmod_lintN`, integrability of both components, `LTN` with
+`LTN_irrel` and `LTN_split`, plus `nf_closed_form` (`nf t = psiR(e^t)/e^t − 1`),
+`nf_bound` (`|nf| <= Kup + 1`) and `LTN_ML`.
+
+`gN` (the `T → ∞` limit) is **deferred to E3**, where the tail bound that proves the
+Cauchy property lives — defining it here would have been circular.
+
+*(original scoping below)*
+
 
 `nf` is already defined in `TintCoV`. Define `nfC t := RtoC (nf t)`, prove
 `fun t => nfC t * cexpzt (−z) t` integrable on `[0,T]` by the **same cell argument** as

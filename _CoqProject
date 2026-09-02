@@ -1297,3 +1297,4 @@ spectral-theory/NewmanCutoff.v
 spectral-theory/TintCoV.v
 spectral-theory/CTruncCauchyDom.v
 spectral-theory/CIntegralD.v
+spectral-theory/NewmanTransform.v
