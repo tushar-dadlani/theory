@@ -104,14 +104,41 @@ The bridge from **primes** (through `Λ`/`pterm`) to the **complex field** (`s �
 
 Every self-contained analytic *atom* of Newman's method — the identity, all
 pointwise/arc modulus estimates, and both limit atoms — is formalized and
-axiom-clean. Two heavy-infrastructure pieces remain to *stitch* them:
+axiom-clean. Status of the stitching:
 
-1. **`g` holomorphic in the disk** (Cauchy's formula needs `g` on `Re z ≤ 0`):
-   requires wiring the ζ-continuation (`ZetaPoleCancel.phi_minus_holo`) to a bound
-   `\|g\| ≤ M` on the left arc — where `Φ`'s convergence domain (`Re s > 1`) stops
-   and the ζ-machinery must take over.
+1. ~~**`g` holomorphic in the disk**~~ — **half closed.** `NewmanGExt.v` supplies
+   `gext z = (PhiMinusT (z+1) − 1)/(z+1)`, with `gext_eq` (it agrees with
+   `newman_identity`'s limit on `Re z > 0`), `gext_at0`, and
+   `gext_holo_re_ge0 : 0 <= Re z -> exists d, is_Cderiv gext z d`. The `1/z` that
+   looked like the obstruction cancels identically once `Φ` is written via
+   `PhiMinus`, and `z = 0` is `s = 1`, which `ZetaPoleCancel2.PhiMinusT` now
+   covers (blocker **C0**, closed). Non-vanishing on the closed half-plane is
+   `NewmanGExt.BfnT_ne0_re_ge1`.
+
+   **Still open in this item**, and neither is recorded elsewhere:
+   - a **uniform `δ`** — Newman's contour enters `Re z < 0`, so `g` must be
+     holomorphic on an open neighbourhood of the *compact* segment
+     `{Re z = 0, |z| ≤ R}`. Pointwise open non-vanishing exists
+     (`ZetaInvHolo.zeta_line_open_nonzero`); the compactness argument that turns
+     it into one `δ` does not. This needs a 2-D uniform-continuity input the repo
+     lacks.
+   - **global `CcontC`** for the integral infrastructure — `gext` is not globally
+     continuous. The `CCutoff.psi` / `CGcutCont.gcut` pattern used in
+     `ZetaPoleCancel2` for exactly this purpose should apply.
 2. **The orchestration**: Cauchy's formula on the Newman contour + the
    `δ→0, T→∞, R→∞` triple limit (near-axis `\|K_R\| ≤ 2δ/R²` control, arc split
    at `\|Re z\|=δ`) ⟹ `∫₁^∞(ψ(u)−u)/u²du` converges; then `block_int`/`gap_pos`
    against that Cauchy tail + `psiR` monotonicity ⟹ `Un_cv (psi N/INR N) 1` ⟹
    `PNTConditional.pi_asymp_of_psi` ⟹ PNT.
+
+   Note the far end is shorter than it looks: `PsiAsymp.psi_asymp_cv` already gives
+   `Un_cv Vrem 0 -> Un_cv (fun N => psi N / INR N) 1`, and `Vrem_cv0` reduces that
+   to `is_limsup Vrem 0`. The Tauberian atoms `NewmanBlock.block_int`,
+   `NewmanTauber.gap_pos` and `ChebyshevPsiR.psiR_mono` are all built.
+
+   **Unrecorded prerequisite for the Tauberian step**: nothing in the repo
+   integrates `psiR`. `grep Riemann_integrable` over `ChebyshevPsiR.v`/`PsiAsymp.v`
+   returns nothing, and Stdlib offers only `RiemannInt_P6` (*continuous* `f`).
+   `psiR` is a step function, so `Riemann_integrable` is easy *given* a `StepFun`
+   witness — but that means constructing an `adapted_couple` over the integer
+   breakpoints in `[a,b]`. Budget this as a separate brick before the squeeze.
