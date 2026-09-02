@@ -42,7 +42,21 @@ integral and integrate only `cexpzt`, which is continuous. The identity itself i
 Sizes are calibrated against this session's comparable files (`PsiRIntegrable` 255,
 `TintCoV` 351, `NewmanCutoff` 255).
 
-### E1 — `CIntegralD.v`: a complex integral for merely-integrable integrands (~250–350)
+### E1 — `CIntegralD.v`: a complex integral for merely-integrable integrands — ✅ **DONE**
+
+139 lines, axiom-clean. Delivered: `CintfD`, `Re_CintfD`/`Im_CintfD`, `CintfD_irrel`
+(proof-irrelevance via `RiemannInt_P5`), **`CintfD_Cintf`** (agrees with `Cintf` wherever
+both are defined — the bridge to `StepSum`/`OneSum`, which E4 needs), `CintfD_ext_open`
+(the transfer, via `RiemannInt_P18` componentwise), `CintfD_split` (Chasles, via
+`RiemannInt_P26`), and **`CintfD_ML`** with constant `2`, matching `CIntegral2.Cintf_ML`'s
+convention exactly.
+
+Came in at 139 lines against the 250–350 estimate: the transfer needed no new analysis
+(`RiemannInt_P18` is componentwise) and the ML bound reduced to a real one-component bound
+`RiemannInt_abs_bound`, proved by comparison against `fct_cte` with `RiemannInt_P19`/`P15`.
+
+**Deferred**: complex-scalar linearity (`CintfD_cmul_l`, `CintfD_add/sub`). Not yet needed,
+and its exact shape is best fixed by E4's demands rather than guessed now.
 
 The obstacle in finding (1) is dissolved rather than worked around.
 
