@@ -189,8 +189,21 @@ layer changes. The new layer is the **`NK` algebra**: `NK K HK a b Ha Hab` is
 linearity is proved once at the **kernel** level instead of per-integrand — which is what
 makes the `Hrw` step of `gT_holo` transcribable.
 
-Still to do in E5: `LTN_holo` itself (assemble the increment via `NK_sub`/`NK_cmul`, then
-the `NK_ML` estimate), then instantiate at `F := (gtrunc − g_T)·e^{zT}` with `U := TruncDisk`
+✅ **`LTN_holo` is DONE** — `NewmanHolo.v` is now 271 lines, axiom-clean:
+
+```coq
+LTN_holo : is_Cderiv (fun w => LTN w 0 T ..) z (LTN' z 0 T ..)
+```
+
+`gT_holo`'s proof transcribed onto `CintfD`: `Kz`/`Kd` name the two kernels, `brk` the
+increment kernel (written in the exact shape of `lint_increment`'s right-hand side so it
+matches syntactically), `brk_id` is the kernel-level increment identity from `cexpzt_add`,
+and the whole increment collapses to one `NK` by two `NK_sub`s and one `NK_cmul`. The ML
+estimate and the final arithmetic are `gT_holo`'s verbatim, with `NK_ML` for `Cintf_ML` and
+`nf_bound` for the bound on `|f|` — the constant `K = 2·K0·T + 1` is unchanged, since
+`CintfD_ML` and `Cintf_ML` share the factor 2.
+
+Still to do in E5: instantiate at `F := (gtrunc − g_T)·e^{zT}` with `U := TruncDisk`
 (`TruncDisk_convex`/`_open`), and split the kernel with
 `CNewmanKernel.newman_kernel_split` — `trunc_cauchy_dom` handles the `1/z` part,
 `CPrimConv.pathint_loop_conv` kills the holomorphic `z/R²` part. Conclusion
