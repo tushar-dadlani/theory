@@ -55,8 +55,12 @@ Came in at 139 lines against the 250–350 estimate: the transfer needed no new 
 (`RiemannInt_P18` is componentwise) and the ML bound reduced to a real one-component bound
 `RiemannInt_abs_bound`, proved by comparison against `fct_cte` with `RiemannInt_P19`/`P15`.
 
-**Deferred**: complex-scalar linearity (`CintfD_cmul_l`, `CintfD_add/sub`). Not yet needed,
-and its exact shape is best fixed by E4's demands rather than guessed now.
+✅ **The deferred linearity is now built** (`CIntegralDLin.v`, 143 lines, axiom-clean):
+`RI_scal_int`, `RI_scal_val`, **`RI_lincomb_val`**, and `CintfD_add`/`CintfD_sub`/
+`CintfD_cmul_l`. E5 fixed its shape: proving `g_T` holomorphic **in z** needs the increment
+identity `lint(z+h) − lint z − h·ldint z` under the integral, i.e. additivity plus complex
+scalars. Everything reduces to the single real lemma `RI_lincomb_val`, because the real and
+imaginary parts of `c·f` are each 2-term real combinations of `Re f` and `Im f`.
 
 The obstacle in finding (1) is dissolved rather than worked around.
 
