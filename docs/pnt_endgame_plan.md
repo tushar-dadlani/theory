@@ -143,11 +143,20 @@ which `Cintf_sub`/`Cintf_cmul_l` split into StepSum's and OneSum's k-th summands
 is then summed by induction with `LTN_split`, using `LTN_endpoint` to move the base point
 from `0` to `ln (INR 1)` without proof transport.
 
-**Remaining in E4**: (i) `LTN z 0 T → gN z` as `T → ∞` along any divergent sequence — from
-`LTN_tail_le`, so `LTN z 0 (ln (INR (S (S M)))) → gN z`; (ii) chain with
-`newman_identity` and `NewmanGExt.gext_eq` to conclude `gN z = gext z`. Note `gext_eq` takes
-its `1 < Re (z+1)` proof as a parameter, so it can be instantiated at the exact proof term
-appearing in `newman_identity` — no `Phi` proof-irrelevance lemma is needed.
+✅ **E4 is now COMPLETE.** `NewmanGN.v` (125 lines, axiom-clean) closes it:
+
+```coq
+gN_eq_gext : gN z Hz = gext z          (for 0 < Re z)
+```
+
+Route: `LTN_gN_bound` (distance from a fixed truncation to `gN`, via `LTN_tail_le` and a
+limit-of-bounded-sequence argument `Un_cv_le_const`), then `LTN_seq_cv` (convergence along
+**any** divergent nonnegative sequence), instantiated at `T_M = ln (INR (S (S M)))` with
+`cv_infty_ln_INR`; then `CUn_cv_ext` with `LTN_stepsum` turns that into convergence of
+`StepSum − OneSum`, and `CUn_cv_unique` against `newman_identity` identifies the limit.
+As predicted, `gext_eq` takes its `1 < Re (z+1)` proof as a parameter, so it unified with
+the exact proof term inside `newman_identity` — **no `Phi` proof-irrelevance lemma was
+needed**.
 
 *(original scoping below)*
 
