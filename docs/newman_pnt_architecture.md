@@ -124,10 +124,22 @@ axiom-clean. Status of the stitching:
      `[0, 2π]` (lub-of-good-radii → open cover by half-radius discs →
      `Rtopology.compact_P3` finite subcover → min half-radius). `BfnUniform.v` is
      that template instantiated on `[-Rb, Rb]`.
-   - **global `CcontC`** for the integral infrastructure — `gext` is not globally
-     continuous. The `CCutoff.psi` / `CGcutCont.gcut` pattern used in
-     `ZetaPoleCancel2` for exactly this purpose should apply.
-2. **The orchestration**: Cauchy's formula on the Newman contour + the
+   - ✅ **global `CcontC` is DONE** (`NewmanCutoff.v`): `gtrunc_CcontC`. Note that
+     `CGcutCont.gcut` does **not** apply — it is radial and needs holomorphy on a
+     whole disk, which fails once the disk swallows a zeta zero (the first sits at
+     `|z| ≈ 14.14`, and Newman needs `R → ∞`). The cutoff must be two-factor,
+     matching the truncated disk; the reusable core is `cutprod_ptcont`.
+2. **The orchestration — the only piece left.** Its inputs now compose; audited:
+   `trunc_cauchy` wants `CcontC phi` for the removable quotient `phi = (F − F 0)/z`,
+   and `CRemovableExtDom.rphi_cc_dom` supplies exactly that from *pointwise*
+   continuity of `F`, which `NewmanCutoff.gtrunc_CcontC` now gives. With
+   `F := (gtrunc − g_T)·e^{zT}` (`CLaplace.gT_holo` makes `g_T` entire) and
+   `U := TruncDisk` (`TruncDisk_convex`, `TruncDisk_open`), every hypothesis of
+   `trunc_cauchy` is dischargeable. What remains is genuinely assembly: the contour
+   identity, the three ML estimates, the `R,T → ∞` limits, and the `u = e^t` change
+   of variables converting "`∫₀^∞ f` converges" into `TauberianSqueeze.TintCauchy`.
+
+   Original scoping: Cauchy's formula on the Newman contour + the
    `δ→0, T→∞, R→∞` triple limit (near-axis `\|K_R\| ≤ 2δ/R²` control, arc split
    at `\|Re z\|=δ`) ⟹ `∫₁^∞(ψ(u)−u)/u²du` converges; then `block_int`/`gap_pos`
    against that Cauchy tail + `psiR` monotonicity ⟹ `Un_cv (psi N/INR N) 1` ⟹
