@@ -1302,3 +1302,4 @@ spectral-theory/NewmanTail.v
 spectral-theory/NewmanCellSum.v
 spectral-theory/CIntegralDLin.v
 spectral-theory/NewmanGN.v
+spectral-theory/NewmanHolo.v

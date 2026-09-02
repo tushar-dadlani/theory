@@ -179,7 +179,18 @@ differentiable at `0` — matches `NewmanCutoff.gtrunc_CcontC` exactly. Also pro
 `rphi_holo_off_gen`, the `U`-shaped version of `rphi_holo_off_dom` (the disk in the latter
 is incidental; its proof uses the hypothesis at a single point).
 
-**Remaining in E5**: instantiate at `F := (gtrunc − g_T)·e^{zT}` with `U := TruncDisk`
+**E5 progress**: `NewmanHolo.v` (140 lines, axiom-clean) builds the layer `LTN_holo` needs.
+`CLaplace.lint_increment` and `lint_increment_mod` turned out to be **generalised over `f`**
+(they use no continuity), so they are reusable verbatim at `f := nfC` — only the integral
+layer changes. The new layer is the **`NK` algebra**: `NK K HK a b Ha Hab` is
+`∫ nfC·K` for a continuous kernel `K`, with `nfK_Re_int`/`nfK_Im_int` (integrability for
+*any* continuous kernel, generalising `lintN_Re_int`), `NK_irrel`, `NK_sub`, `NK_cmul`,
+`NK_ML`. Every integrand in the increment argument has the shape `nfC × (continuous)`, so
+linearity is proved once at the **kernel** level instead of per-integrand — which is what
+makes the `Hrw` step of `gT_holo` transcribable.
+
+Still to do in E5: `LTN_holo` itself (assemble the increment via `NK_sub`/`NK_cmul`, then
+the `NK_ML` estimate), then instantiate at `F := (gtrunc − g_T)·e^{zT}` with `U := TruncDisk`
 (`TruncDisk_convex`/`_open`), and split the kernel with
 `CNewmanKernel.newman_kernel_split` — `trunc_cauchy_dom` handles the `1/z` part,
 `CPrimConv.pathint_loop_conv` kills the holomorphic `z/R²` part. Conclusion
