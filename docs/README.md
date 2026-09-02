@@ -9,6 +9,9 @@ hand-worked material such as `ARC_SOLVING_BY_HAND.md`.
   distinct RH proof programs and how they differ, and where the certified zeros actually sit
   (none of the three). Read this before trusting a status claim elsewhere.
 - **`certificate_cost.md`** — the cost model for the interval-arithmetic sign certificates.
+- **`pnt_endgame_plan.md`** — PNT is reduced to one proposition (`NfCauchy`); this is the
+  brick-by-brick decomposition of what remains, with two structural findings that are not
+  recorded elsewhere.
 
 ## How to read the plan documents
 
