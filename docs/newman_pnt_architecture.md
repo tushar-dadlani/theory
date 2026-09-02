@@ -116,12 +116,14 @@ axiom-clean. Status of the stitching:
    `NewmanGExt.BfnT_ne0_re_ge1`.
 
    **Still open in this item**, and neither is recorded elsewhere:
-   - a **uniform `δ`** — Newman's contour enters `Re z < 0`, so `g` must be
-     holomorphic on an open neighbourhood of the *compact* segment
-     `{Re z = 0, |z| ≤ R}`. Pointwise open non-vanishing exists
-     (`ZetaInvHolo.zeta_line_open_nonzero`); the compactness argument that turns
-     it into one `δ` does not. This needs a 2-D uniform-continuity input the repo
-     lacks.
+   - ✅ **the uniform `δ` is DONE** (`BfnUniform.v`): `BfnT_ne0_unif` and
+     `gext_holo_strip : 0 < Rb -> exists del > 0, forall z, |Re z| < del ->
+     |Im z| <= Rb -> exists d, is_Cderiv gext z d`. So the contour may be pushed
+     to `Re z = -del`. **The repo did NOT lack the 2-D uniform-continuity input**
+     — `CUnifCont.v` already contains exactly this argument for `Fp ∘ arc` over
+     `[0, 2π]` (lub-of-good-radii → open cover by half-radius discs →
+     `Rtopology.compact_P3` finite subcover → min half-radius). `BfnUniform.v` is
+     that template instantiated on `[-Rb, Rb]`.
    - **global `CcontC`** for the integral infrastructure — `gext` is not globally
      continuous. The `CCutoff.psi` / `CGcutCont.gcut` pattern used in
      `ZetaPoleCancel2` for exactly this purpose should apply.
