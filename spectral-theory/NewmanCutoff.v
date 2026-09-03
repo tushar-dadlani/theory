@@ -192,8 +192,8 @@ Qed.
 Definition gtrunc (Rr del : R) (z : C) : C :=
   Cmul (gext z) (RtoC (tcut Rr del z)).
 
-Theorem gtrunc_CcontC : forall Rr, 0 < Rr -> exists del, 0 < del /\
-  CcontC (gtrunc Rr del) /\
+Theorem gtrunc_ptcont : forall Rr, 0 < Rr -> exists del, 0 < del /\
+  PtcontC (gtrunc Rr del) /\
   (forall z, Cmod z <= Rr -> - (del / 2) <= Re z -> gtrunc Rr del z = gext z).
 Proof.
   intros Rr HRr.
@@ -206,7 +206,7 @@ Proof.
   assert (H2del : 2 * del < d0) by (unfold del; lra).
   assert (H2del1 : 2 * del < 1) by (unfold del; lra).
   exists del. split; [ exact Hdel | ]. split.
-  - apply ptcont_CcontC.
+  -
     apply (cutprod_ptcont gext (tcut Rr del)).
     + intro z; apply tcut_bounds.
     + apply tcut_ptcont; exact Hdel.
@@ -251,5 +251,16 @@ Proof.
     replace (RtoC 1) with C1 by reflexivity. ring.
 Qed.
 
+(* the CcontC form the contour machinery consumes *)
+Theorem gtrunc_CcontC : forall Rr, 0 < Rr -> exists del, 0 < del /\
+  CcontC (gtrunc Rr del) /\
+  (forall z, Cmod z <= Rr -> - (del / 2) <= Re z -> gtrunc Rr del z = gext z).
+Proof.
+  intros Rr HRr; destruct (gtrunc_ptcont Rr HRr) as [del [Hdel [Hpt Hag]]].
+  exists del; split; [ exact Hdel | ].
+  split; [ apply ptcont_CcontC; exact Hpt | exact Hag ].
+Qed.
+
 Print Assumptions cutprod_ptcont.
+Print Assumptions gtrunc_ptcont.
 Print Assumptions gtrunc_CcontC.

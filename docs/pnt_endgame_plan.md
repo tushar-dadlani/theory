@@ -169,7 +169,7 @@ Chain: `LTN z (ln (INR (S (S M)))) = StepSum M − OneSum M` by cell additivity
 Risk: this is where the cell bookkeeping and the honest integral must be reconciled, and
 where a mismatch would surface late.
 
-### E5 — the contour identity (~250–350) — **first half DONE**
+### E5 — the contour identity (scoped ~250–350) — ✅ **DONE** (1010 lines, four files)
 
 ✅ `CTruncCauchyDom.trunc_cauchy_dom` (108 lines, axiom-clean) makes the truncated Cauchy
 formula **unconditional**: it discharges `trunc_cauchy`'s whole exceptional-point interface
@@ -203,11 +203,44 @@ estimate and the final arithmetic are `gT_holo`'s verbatim, with `NK_ML` for `Ci
 `nf_bound` for the bound on `|f|` — the constant `K = 2·K0·T + 1` is unchanged, since
 `CintfD_ML` and `Cintf_ML` share the factor 2.
 
-Still to do in E5: instantiate at `F := (gtrunc − g_T)·e^{zT}` with `U := TruncDisk`
-(`TruncDisk_convex`/`_open`), and split the kernel with
-`CNewmanKernel.newman_kernel_split` — `trunc_cauchy_dom` handles the `1/z` part,
-`CPrimConv.pathint_loop_conv` kills the holomorphic `z/R²` part. Conclusion
-`2πi·F(0) = ∮_C F·K_R`.
+✅ **The kernel and the instantiation are DONE** — two more files, both axiom-clean:
+
+`CTruncKernel.v` (205 lines) upgrades `trunc_cauchy_dom` from `1/z` to Zagier's full kernel
+`K_R = 1/z + z/R²`, for an arbitrary `F` pointwise-continuous everywhere and holomorphic on
+the convex open `U` carrying the contour:
+
+```coq
+trunc_kernel_dom : ∫_arc F·K_R + ∫_chord F·K_R = F(0)·2πi
+```
+
+The `z/R²` half does **not** go through `pathint_loop_conv` as scoped — that lemma wants a
+single closed `gam` with `gam a = gam b`, and the truncated contour is two parametrised
+pieces. Instead `CPrimConv.PrimC` is a primitive for `F·z/R²` on `U` and `pathint_FTC`
+telescopes: the arc runs `Qc → Pc`, the chord runs `Pc → Qc`, and the two differences
+cancel. This is exactly how `trunc_cauchy` disposes of its `phi` loop, so the pattern was
+already in the file it builds on.
+
+`NewmanContour.v` (426 lines) instantiates at `F := (gtrunc − g_T)·e^{zT}`:
+
+```coq
+newman_contour : ∫_arc F·K_R + ∫_chord F·K_R = 2πi·(gext 0 − LTN 0 0 T)
+```
+
+with `U := TruncDisk (R+1) (2δ)`, contour radius `R`, and the chord at `Re z = −δ` (i.e.
+`R·cos α = −δ`). Supporting pieces:
+
+- `PtcontC_mul` / `PtcontC_sub` — pointwise continuity is closed under products and
+  differences. `cutprod_ptcont` covered only multiplication by a **real** cutoff; the
+  general complex product was missing and is ~35 lines.
+- `NewmanCutoff.gtrunc_ptcont` — `gtrunc_CcontC` threw away the `PtcontC` its own proof
+  established, and `CcontC` (continuity along paths) does not give it back. Restated with
+  `PtcontC` in the conclusion; the old `CcontC` form is now a two-line corollary.
+- `newman_contour_params` — the hypotheses are satisfiable: `δ := min(del/4, d₁/4, R/2)`
+  from `gtrunc_ptcont (R+1)` and `gext_holo_strip (R+1)`.
+- `alpha_of_delta` — `α := acos(−δ/R)` realises any `0 < δ < R`, so E7 can drive `δ → 0`.
+- `HfaK_wit` / `HfcK_wit` — the two `Ccont` witnesses the `pathint`s take as arguments, so
+  the identity is provably non-vacuous; and `Gdt_arc` / `Gdt_chord`, which say the cutoff is
+  invisible on the contour, so every E6 estimate may be stated for the honest `Gd`.
 
 Note this half depends on E2 (it needs `g_T`, the truncated transform of Newman's
 discontinuous `f`), so it is **not** independent of E1–E2 after all — only
@@ -230,12 +263,25 @@ discontinuous `f`), so it is **not** independent of E1–E2 after all — only
 
 ## Total and ordering
 
-Roughly **1500–2100 lines** across seven files, of which `trunc_cauchy_dom` (108) is done.
-Dependency order is E1 → E2 → E3 → E4, then E5's instantiation, then E6 → E7.
+Roughly **1500–2100 lines** across seven files. **E1–E5 are done: 1945 lines**, against a
+1500–2100 estimate for all seven bricks — so E6 and E7 will overrun the original scoping.
+
+| brick | status | files | lines |
+|---|---|---|---|
+| E1 | ✅ | `CIntegralD.v`, `CIntegralDLin.v` | 282 |
+| E2 | ✅ | `NewmanTransform.v` | 182 |
+| E3 | ✅ | `NewmanTail.v` | 209 |
+| E4 | ✅ | `NewmanCellSum.v`, `NewmanGN.v` | 262 |
+| E5 | ✅ | `CTruncCauchyDom.v`, `NewmanHolo.v`, `CTruncKernel.v`, `NewmanContour.v` | 1010 |
+| E6 | ⬜ | — | — |
+| E7 | ⬜ | — | — |
+
+Dependency order was E1 → E2 → E3 → E4 → E5, and **E6 is now the next step**.
 
 The `trunc_cauchy_dom` half of E5 was correctly identified as buildable first — it needed
-only what already existed, and it confirmed the interface. The *rest* of E5 needs `g_T`
-from E2, so **E1 is now the next step**.
+only what already existed, and it confirmed the interface. The rest of E5 needed `g_T` from
+E2, and came in at roughly three times its scoped size: the scoping counted the contour
+algebra but not the `NK` kernel layer, `LTN_holo`, or the pointwise-continuity plumbing.
 
 ## Verification, per brick
 

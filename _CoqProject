@@ -1303,3 +1303,5 @@ spectral-theory/NewmanCellSum.v
 spectral-theory/CIntegralDLin.v
 spectral-theory/NewmanGN.v
 spectral-theory/NewmanHolo.v
+spectral-theory/CTruncKernel.v
+spectral-theory/NewmanContour.v
