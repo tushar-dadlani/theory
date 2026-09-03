@@ -134,10 +134,20 @@ What is genuinely confirmed absent:
    `RectWinding.vseg_winding`/`hseg_winding` as predicted — `atan` bookkeeping, not analysis.
    Multiplicity (`f = (z−a)^m g`) remains unbuilt but is no longer on the critical path; see
    above.
-2. a complex log/argument — nothing named `Clog`/`Carg` exists. Note the assembly above
-   suggests this may not be needed for the count itself, only for evaluating `S(T)`, and
-   Backlund's method bounds `S(T)` by **sign changes of `Re ζ`** on a segment — which is
-   exactly what `CheapSign` already does.
+2. ~~a complex log/argument~~ — **closed, and without ever building one.** Nothing named
+   `Clog`/`Carg` exists and nothing now needs to. `CPolarPath.pathint_logderiv_phase` shows
+   the contour integral of `F'/F` *is* the phase change along the path, and
+   `CPathLift.path_polar_lift` constructs that phase: any pair of real functions whose
+   derivatives are the two components of the log-derivative, matching `F` at the **start
+   point**, automatically gives `F(γu) = e^{Lg u}(cos ph u, sin ph u)` on the whole interval.
+   So exactly one branch choice is made, at `u = a`, and everything after it is forced —
+   which is all a continuous argument ever was. The proof is two error functions with
+   identically zero derivative plus `null_derivative_loc`; the `e^{−Lg}` normalisation is
+   what makes the derivative exactly zero rather than a linear ODE.
+
+   Together with the argument principle this closes the whole **analytic** half of the
+   counting route: counting → contour integral (Stage 1) → phase change (B1) → constructed
+   phase (B2). What is left is entirely numeric.
 3. the bridge from a contour count to the height count, i.e. `N(T) = θ(T)/π + 1 + S(T)`.
    Encouragingly `θ` is already certified at these heights (`ThetaEnclose.Itheta`, used at
    `t = 49` in `MoreZeros.chk49`), and `θ(49)/π + 1 = 9.0944` against the nine zeros — so
