@@ -1316,3 +1316,4 @@ spectral-theory/CLogDerivList.v
 spectral-theory/CLoopCofactor.v
 spectral-theory/CArgPrincipleRect.v
 spectral-theory/CPolarPath.v
+spectral-theory/CPathLift.v
