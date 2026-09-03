@@ -2,19 +2,25 @@
 
 ## Where this stands
 
-PNT is reduced to **one unproved proposition**:
+✅ **DONE.** The prime number theorem is machine-checked, axiom-clean:
 
 ```coq
-TintCoV.pnt_of_nf_cauchy : NfCauchy ->
-  Un_cv (fun N => pi_count N / (INR N / ln (INR N))) 1
+NewmanE7.PNT : Un_cv (fun N => pi_count N / (INR N / ln (INR N))) 1
 ```
 
-`NfCauchy` is the Cauchy criterion for the tail of `∫₀^∞ f(t) dt` with
-`f(t) = ψ(e^t)e^{−t} − 1` — literally what Newman's contour argument outputs.
-Everything downstream is machine-checked and axiom-clean: C0 (`ZetaPoleCancel2`), the
-g-extension (`NewmanGExt`), the uniform δ (`BfnUniform`), global `CcontC`
-(`NewmanCutoff`), integrability (`PsiRIntegrable`), the Tauberian squeeze
-(`TauberianBlock`, `TauberianSqueeze`), and the `u = e^t` bridge (`TintCoV`).
+`Print Assumptions PNT` reports exactly the four standard classical-Reals axioms
+(`ClassicalDedekindReals.sig_not_dec`, `sig_forall_dec`,
+`FunctionalExtensionality.functional_extensionality_dep`, `Classical_Prop.classic`).
+There is no `Admitted`, `Abort`, `Axiom` or `admit` anywhere in the chain.
+
+The route was Newman's analytic proof in Zagier's form, via seven bricks E1–E7 built in
+dependency order. The final link is `TintCoV.pnt_of_nf_cauchy : NfCauchy -> PNT`, whose
+hypothesis `NfCauchy` — the Cauchy criterion for the tail of `∫₀^∞ f(t) dt` with
+`f(t) = ψ(e^t)e^{−t} − 1` — is discharged by `NewmanE7.newman_nf_cauchy`.
+
+*(The rest of this document is the scoping written before E1, kept because the two
+structural findings below were what actually shaped the work, and because the per-brick
+sections record where the scoping was wrong.)*
 
 ## Two findings from auditing the contour side
 
@@ -246,25 +252,76 @@ Note this half depends on E2 (it needs `g_T`, the truncated transform of Newman'
 discontinuous `f`), so it is **not** independent of E1–E2 after all — only
 `trunc_cauchy_dom` was.
 
-### E6 — the three ML estimates (~200–300, mostly assembly)
+### E6 — the contour estimate (scoped ~200–300) — ✅ **DONE** (1328 lines, five files)
 
-- right arc — restate `NewmanArc.right_arc_bound` for `gN`/`LTN` (needs E3), then
-  integrate with `NewmanArcML.arc_ML` ⇒ `O(B/R)`;
-- left arc, `g_T` part — `NewmanLeft.left_arc_bound`, likewise restated;
-- left arc, `g` part — `NewmanGLeft.gleft_decay` and `NewmanNearAxis.gleft_nearaxis` are
-  **already f-agnostic** (they take `gz z : C` as a plain value), so these two need no
-  restatement.
+The scoping said "mostly assembly". It was not. Three prerequisites had to be built first,
+each forced by a real obstruction:
 
-### E7 — the triple limit ⇒ `NfCauchy` (~250–350)
+- `CStripBound.strip_bounded` (182) — a pointwise-continuous `F` is bounded on a thin strip
+  around `{Re z = 0, |Im z| ≤ Rb}`, by `CUnifCont`/`BfnUniform`'s compactness template.
+  The chord estimate is `|g| ≤ M`, and `M` must be fixed **before** the truncation depth `δ`
+  is chosen — otherwise the `δ → 0` limit is circular. Reading `M` off the chord's own
+  parametrisation makes it depend on `δ`; a strip does not.
+- `NewmanKernelCut.Kcut` (168) — `K_R = 1/z + z/R²` with the `1/z` summand damped by a
+  radial cutoff. `PrimC` demands **global** `CcontC` and `K_R` has a pole;
+  `cutprod_ptcont`'s dichotomy fits exactly (at `0` the cutoff vanishes identically nearby).
+- `NewmanDeform.chord_to_arc` (281) — for any entire `W`, the chord `{Re z = −δ}` and the
+  far-left arc `{|z| = R, Re z ≤ −δ}` give the same integral of `W·K_R`. **Not optional**:
+  the direct chord bound for the `g_T` factor is `O(BR/δ²)`, with no cancellation available,
+  whereas on the circle `|K_R| = 2|Re z|/R²` cancels the `1/|Re z|` of the tail bound and
+  yields the uniform `4B/R²`. Again `PrimC` + `pathint_FTC`, not `pathint_loop_conv`.
 
-`δ → 0`, `R → ∞`, `T → ∞`, splitting the arc at `|Re z| = δ` with the near-axis control
-`|K_R| ≤ 2δ/R²`. Atoms exist: `NewmanLimits.exp_decay_T_cv0`, `bound_over_R_cv0`. Output is
-`NfCauchy`, which closes PNT via `TintCoV.pnt_of_nf_cauchy`.
+`NewmanML` (194) restates the pointwise bounds for the honest transform.
+`right_arc_bound`/`left_arc_bound` are stated for `LaplaceFull`'s `gfull`/`LT`, built on
+`Cintf`, so they cannot be instantiated at Newman's step function. `kern_bound` states the
+cancellation once, for **any** `w` obeying the tail bound, and covers both signs of `Re z`
+via `Rabs` — including `Re z = 0`, where the kernel vanishes on the circle. That last case
+is what lets the arc be split at `Re z = 0` with a *closed* parameter interval on each side.
+Also `LTN_tail_ne`/`LTN_tail_left`: `LTN_tail` assumed `0 < Re z` only through
+`exp_int_AB_scaled`, and `NewmanLeft.exp_int_AB_ne` removes that.
+
+`NewmanE6.newman_bound` (503) assembles five pieces:
+
+```coq
+|g(0) − g_T(0)|·2π  ≤  (24πB + 4πMδ)/R  +  4MR(1/δ + 1/R)·e^{−δT}
+```
+
+- arc `Re z ≥ 0`: `4B/R²` for the **combined** `g − g_T`. The halves cannot be separated
+  here — `|g_T| ~ 2B/Re z` blows up at the axis and only `|K_R| = 2Re z/R²` rescues it.
+- arc `Re z ≤ 0` (two pieces): `4B/R²` for `g_T` (its tail bound flips sign) plus `2Mδ/R²`
+  for `g`, the kernel being small there.
+- chord, `g_T` half: deformed to the far-left arc.
+- chord, `g` half: `|g| ≤ M`, `|e^{zT}| = e^{−δT}` — the only piece needing `T → ∞`.
+
+Two scoping corrections. The arc is split at `Re z = 0`, **not** at `|Re z| = δ`: on the
+truncated contour the left arc already has `|Re z| ≤ δ`, so `NewmanGLeft.gleft_decay`'s
+away-from-axis case never arises and that lemma goes unused. And `NewmanNearAxis.
+gleft_nearaxis` was indeed f-agnostic and reused verbatim, as predicted.
+
+### E7 — the triple limit ⇒ `NfCauchy` (scoped ~250–350) — ✅ **DONE** (239 lines)
+
+`NewmanE7.gext_LTN_cv` chooses the three parameters in the one order that works:
+
+- `R` first, killing `24πB/R` — `B = Kup + 1` is absolute;
+- then `δ`, killing `4πMδ/R` — `M` depends on `R` but **not** on `δ`, which is exactly what
+  `strip_bounded` buys and why it is stated on a strip;
+- then `T`, killing the last term, whose constant depends on both.
+
+`exp_decay_below` (`e^{−cT}` eventually undercuts any positive bound) replaces
+`NewmanLimits.exp_decay_T_cv0`, which is sequential (`INR n`) while the truncation time here
+is a real. `Re_LTN0` identifies `Re (LTN C0 a b)` with `∫_a^b nf` via `RiemannInt_P18`, and
+`LTN_split` turns convergence into `NfCauchy`. Then:
+
+```coq
+PNT : Un_cv (fun N => pi_count N / (INR N / ln (INR N))) 1
+```
+
+axiom-clean, on the four standard classical-Reals axioms.
 
 ## Total and ordering
 
-Roughly **1500–2100 lines** across seven files. **E1–E5 are done: 1945 lines**, against a
-1500–2100 estimate for all seven bricks — so E6 and E7 will overrun the original scoping.
+**All seven bricks are done: 3512 lines**, against a 1500–2100 scoping — an overrun of about
+70%, concentrated in E5 (3x) and E6 (5x).
 
 | brick | status | files | lines |
 |---|---|---|---|
@@ -273,15 +330,15 @@ Roughly **1500–2100 lines** across seven files. **E1–E5 are done: 1945 lines
 | E3 | ✅ | `NewmanTail.v` | 209 |
 | E4 | ✅ | `NewmanCellSum.v`, `NewmanGN.v` | 262 |
 | E5 | ✅ | `CTruncCauchyDom.v`, `NewmanHolo.v`, `CTruncKernel.v`, `NewmanContour.v` | 1010 |
-| E6 | ⬜ | — | — |
-| E7 | ⬜ | — | — |
+| E6 | ✅ | `CStripBound.v`, `NewmanKernelCut.v`, `NewmanDeform.v`, `NewmanML.v`, `NewmanE6.v` | 1328 |
+| E7 | ✅ | `NewmanE7.v` | 239 |
 
-Dependency order was E1 → E2 → E3 → E4 → E5, and **E6 is now the next step**.
-
-The `trunc_cauchy_dom` half of E5 was correctly identified as buildable first — it needed
-only what already existed, and it confirmed the interface. The rest of E5 needed `g_T` from
-E2, and came in at roughly three times its scoped size: the scoping counted the contour
-algebra but not the `NK` kernel layer, `LTN_holo`, or the pointwise-continuity plumbing.
+Where the scoping went wrong, consistently: it counted the *mathematical* content of each
+brick and not the *interface* work. Three separate times a lemma was unusable not because
+its statement was too weak but because `Cintf`/`PrimC` demand **global** continuity of the
+integrand — `NewmanCutoff.gtrunc` for `gext`, `NewmanKernelCut.Kcut` for `1/z`, and
+`CIntegralD.CintfD` for the step function itself. That single structural fact, recorded as
+finding (1) below before E1 began, accounts for most of the overrun.
 
 ## Verification, per brick
 
