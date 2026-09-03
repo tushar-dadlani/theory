@@ -1308,3 +1308,5 @@ spectral-theory/NewmanContour.v
 spectral-theory/CStripBound.v
 spectral-theory/NewmanKernelCut.v
 spectral-theory/NewmanDeform.v
+spectral-theory/NewmanML.v
+spectral-theory/NewmanE6.v
