@@ -1311,3 +1311,4 @@ spectral-theory/NewmanDeform.v
 spectral-theory/NewmanML.v
 spectral-theory/NewmanE6.v
 spectral-theory/NewmanE7.v
+spectral-theory/RectWindingGen.v
