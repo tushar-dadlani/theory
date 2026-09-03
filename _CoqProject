@@ -1305,3 +1305,6 @@ spectral-theory/NewmanGN.v
 spectral-theory/NewmanHolo.v
 spectral-theory/CTruncKernel.v
 spectral-theory/NewmanContour.v
+spectral-theory/CStripBound.v
+spectral-theory/NewmanKernelCut.v
+spectral-theory/NewmanDeform.v
