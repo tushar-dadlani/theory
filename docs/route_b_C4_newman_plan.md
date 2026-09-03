@@ -1,10 +1,14 @@
 # C4 — Newman's analytic theorem (Zagier form) + Milestone D → PNT
 
-> **STATUS NOTE.** Blocker lists in this file are historical. Two were checked against source
-> and corrected in place: the **C0** bullet (its premise about `zetaC` lacking pole structure at
-> 1 was false; the value half is now proven) and the "machinery the repo does not yet have"
-> paragraph (that machinery was built — it is in this file's own DONE list). Verify against
-> `spectral-theory/` before relying on any remaining claim of absence.
+> **STATUS: ✅ CLOSED.** This route now reaches PNT outright:
+> `NewmanE7.PNT : Un_cv (fun N => pi_count N / (INR N / ln (INR N))) 1`, axiom-clean, with no
+> `Admitted`/`Axiom`. Every blocker list below is **historical**; see
+> `docs/pnt_endgame_plan.md` for the brick-by-brick record (E1–E7) and for where this file's
+> scoping was wrong. Two claims here were already checked against source and corrected in
+> place: the **C0** bullet (its premise about `zetaC` lacking pole structure at 1 was false)
+> and the "machinery the repo does not yet have" paragraph (that machinery was in this
+> file's own DONE list). Verify against `spectral-theory/` before relying on any remaining
+> claim of absence.
 
 
 ## Progress snapshot (contour wall complete; Newman assembly + C0 remain)

@@ -9,9 +9,9 @@ hand-worked material such as `ARC_SOLVING_BY_HAND.md`.
   distinct RH proof programs and how they differ, and where the certified zeros actually sit
   (none of the three). Read this before trusting a status claim elsewhere.
 - **`certificate_cost.md`** — the cost model for the interval-arithmetic sign certificates.
-- **`pnt_endgame_plan.md`** — PNT is reduced to one proposition (`NfCauchy`); this is the
-  brick-by-brick decomposition of what remains, with two structural findings that are not
-  recorded elsewhere.
+- **`pnt_endgame_plan.md`** — **PNT is proved** (`NewmanE7.PNT`, axiom-clean). This is the
+  brick-by-brick record of how, including where the scoping was wrong and the two structural
+  findings that shaped the work.
 
 ## How to read the plan documents
 
@@ -36,5 +36,6 @@ first.** Claims found false on inspection, and since corrected in place:
 | complex residue of ζ at `s=1` | `ZetaResidue.zeta_residue_one` |
 | `(s−1)ζ(s)` **holomorphic** at `s=1` (blocker C0) | `CZetaRegular6.BfnT_holo`, wired up in `ZetaPoleCancel2.v` |
 | `∮dz/(z−a) = 2πi` at arbitrary interior `a` | `CWindingOffCenter.winding_interior` (circle); rectangle still open |
+| the prime number theorem | `NewmanE7.PNT` — proved, axiom-clean; every "PNT blocker" list in the plan docs is now stale |
 
 That sweep was not exhaustive. Treat every remaining "absent" as unverified.

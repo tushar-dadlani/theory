@@ -24,35 +24,35 @@ interface (global `CcontC` continuity, holo off 0, boundedness/continuity near 0
 agreement `φ = (F−F0)/z` on the contour) as hypotheses — isolating the one true
 analytic gap.
 
-## The DEEP remaining blockers (each needs new infrastructure, not just assembly)
+## The DEEP remaining blockers — ✅ ALL CLOSED
 
-1. **C0 — holomorphy of `PhiMinus` at `s=1`** (the gating blocker).
-   **PARTIALLY DISCHARGED, and the premise below was false.** `zetaC` *does* have
-   explicit pole structure at 1: `CZeta.zetaC s = 1/(s−1) + Σ gtermC s` by definition.
-   The predicted "complex Euler–Maclaurin … substantial file on its own" already
-   existed (`ZetaTrap` / `ZetaEM`, built for the sign certificates), and
-   ✅ `ZetaResidue.zeta_residue_one` now proves `(s−1)·ζ(s) → 1`, axiom-clean, in
-   about 40 lines.
-   ✅ **Also closed.** `CZetaRegular6.BfnT_holo` already had the holomorphic extension;
-   it was never wired to `PhiMinus`. `ZetaPoleCancel2.v` supplies `BderivT` (the total
-   derivative, `ellsum` at `s=1`) and `PhiMinusT`, with `phi_minusT_at1` and
-   `phi_minusT_holo_near1`. **C0 is CLOSED**; the next blocker is the g-extension.
+**This section is superseded.** Every item below has since been discharged, and the route
+now reaches `NewmanE7.PNT` outright, axiom-clean. See `docs/pnt_endgame_plan.md` for the
+brick-by-brick record. Kept for the history of what each blocker turned out to be.
 
-2. **The g-extension / discharge φ.** The integral infrastructure needs GLOBAL
-   `CcontC` continuity; `g` is holomorphic only near the truncated disk. Need a
-   continuous extension off the domain (or a reformulation). Tied to C0.
+1. **C0 — holomorphy of `PhiMinus` at `s=1`.** ✅ Closed by `ZetaPoleCancel2.v`. It was a
+   *rewiring*, not analysis: `CZetaRegular6.BfnT_holo` already had the holomorphic
+   extension, and `ZetaPoleCancel.Bfn` is a different function that is wrong exactly at
+   `s = 1` (`ZetaFn.zF` is *defined* to be `C0` there).
 
-3. **Brick 8 `CNewman.v`** — the analytic theorem: identity
-   `2πi(g(0)−g_T(0)) = ∮_C (g−g_T)e^{zT}K_R`, the three ML estimates, `R,T→∞`
-   limits ⇒ `∫₀^∞ f` converges. Needs C0 + extension + the `g_T` tail bound
-   (the improper `∫₀^∞`, `CImproperIntegral`).
+2. **The g-extension / discharge φ.** ✅ Closed by `NewmanCutoff.gtrunc` — a two-factor
+   (radial × half-plane) cutoff. `CGcutCont.gcut` cannot do it: being radial it needs
+   holomorphy on a whole disc, which fails once the disc swallows a zeta zero (the first at
+   `|z| ≈ 14.14`). This same demand for *global* continuity recurred twice more, for `1/z`
+   (`NewmanKernelCut.Kcut`) and for the step function itself (`CIntegralD.CintfD`), and is
+   the single largest source of work on the route.
 
-4. **Milestone D — Tauberian bridge** `∫₁^∞(ψ(x)−x)/x² dx converges ⟹ ψ(x)/x→1`
-   (ABSENT), then `PNTConditional.pi_asymp_of_psi` ⇒ PNT.
+3. **Brick 8 `CNewman.v`.** ✅ Closed, though not as one file: `CTruncKernel` (the kernel on
+   the truncated contour), `NewmanContour` (the identity), `NewmanDeform` (chord → far-left
+   arc, without which the `g_T` chord bound is `O(BR/δ²)` and useless), `NewmanML` and
+   `NewmanE6` (the estimates), `NewmanE7` (the `δ→0, R→∞, T→∞` limit).
+
+4. **Milestone D — Tauberian bridge.** ✅ Closed by `TauberianBlock` / `TauberianSqueeze`,
+   with `TintCoV` supplying the `u = e^t` change of variables.
 
 ## Note
 
-The **elementary (Selberg) route** already reaches `Un_cv (ψ N/INR N) 1` modulo a
-single lemma (`PsiAsymp.psi_asymp_of_avg_below`, further reduced via `SelbergDip`).
-The analytic route above is the independent, larger path to the same target;
-C0 is its highest-value next unlock.
+The **elementary (Selberg) route** reaches `Un_cv (ψ N/INR N) 1` modulo a single lemma
+(`PsiAsymp.psi_asymp_of_avg_below`, further reduced via `SelbergDip`). It is now the
+*second* route to a target the analytic route has already reached, so finishing it buys
+independence of the argument rather than the theorem.

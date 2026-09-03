@@ -148,10 +148,16 @@ analytic theorem. Its first listed blocker, C0, is the complex residue of `ζ` a
 justified there by the claim that "`zetaC` has no Laurent/pole structure at 1". That claim
 is false: the pole *is* the first summand of `CZeta.zetaC`, and the regular part is
 uniformly bounded near `s = 1` by the Euler–Maclaurin tail estimate `ZetaEM.htermC_tail` at
-`M = 0`. `ZetaResidue.zeta_residue_one` now proves `(s−1)·ζ(s) → 1` outright, axiom-clean,
+`M = 0`. `ZetaResidue.zeta_residue_one` proves `(s−1)·ζ(s) → 1` outright, axiom-clean,
 with no new analytic infrastructure — the machinery built for the *sign certificates* paid
-for it. The remaining half of C0 (`Bfn` **holomorphic** at 1, not merely convergent) is
-still open.
+for it. The other half of C0 (`Bfn` **holomorphic** at 1) was already present as
+`CZetaRegular6.BfnT_holo` and is wired up in `ZetaPoleCancel2.v`.
+
+**That whole route is now complete**: `NewmanE7.PNT` proves
+`π(N)/(N/ln N) → 1`, axiom-clean, via Newman's argument in Zagier's form
+(bricks E1–E7, `docs/pnt_endgame_plan.md`). PNT is of course not evidence for RH — it is
+equivalent to `ζ(1+it) ≠ 0`, the very edge of the strip, and Route B above explains why that
+edge cannot be pushed inward.
 
 ## 4. Route C — Hilbert–Pólya / spectral
 

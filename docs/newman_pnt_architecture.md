@@ -1,7 +1,11 @@
 # Newman's route to the Prime Number Theorem — formalization architecture
 
 A machine-checked (Coq/Rocq) development of the **Perron → Newman–Tauberian**
-route toward `ψ(x) ~ x` (hence `π(x) ~ x/ln x`), under `spectral-theory/`.
+route to `ψ(x) ~ x` (hence `π(x) ~ x/ln x`), under `spectral-theory/`.
+
+> **The route is complete.** `NewmanE7.PNT : Un_cv (fun N => pi_count N / (INR N / ln (INR N))) 1`.
+> The endgame that closed it (bricks E1–E7, ~3500 lines) is recorded in
+> `docs/pnt_endgame_plan.md`; the parts listed below are its inputs, not its remainder.
 Every file below compiles with **only the four classical-Reals axioms**
 (`Classical_Prop.classic`, the two `ClassicalDedekindReals` decidability axioms,
 `functional_extensionality_dep`) — no `Admitted`, `Axiom`, or `admit`.
