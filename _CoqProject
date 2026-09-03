@@ -1314,3 +1314,4 @@ spectral-theory/NewmanE7.v
 spectral-theory/RectWindingGen.v
 spectral-theory/CLogDerivList.v
 spectral-theory/CLoopCofactor.v
+spectral-theory/CArgPrincipleRect.v
