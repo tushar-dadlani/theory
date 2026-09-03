@@ -76,6 +76,32 @@ let alone 9.
 change along the strip boundary rather than max modulus on a large circle — the right shape
 for the problem.
 
+**The argument principle is now built** (`CArgPrincipleRect.arg_principle_rect`, axiom-clean,
+880 lines across four files):
+
+```coq
+F = prodfac l · G,  G holomorphic and non-vanishing on a convex open U,
+every w in l strictly inside [x0,x1] × [y0,y1]
+  ==>  ∮_{∂rect} F'/F = length l · 2πi
+```
+
+Three notes on what that does and does not settle.
+
+- **Multiplicity was dodged, not solved.** The order-of-vanishing brick `f = (z−a)^m·g` is
+  still unbuilt. Stating the theorem with a *factorisation hypothesis* whose list may repeat
+  moves multiplicity to the caller, exactly as `CZeroListFactor.DivBy_cons` and
+  `XiZeroDensity.xi_count_peel` already do. It is off the critical path, not done.
+- **No complex logarithm was needed.** The count comes out of residues — one `2πi` per
+  linear factor by `RectWindingGen.rect_winding_interior`, zero from the cofactor by
+  `CLoopCofactor.rect_loop_region`.
+- **It does not produce `N(49) ≤ 9`.** It converts "count the zeros" into "evaluate a contour
+  integral", and the integral is not yet evaluable: that needs certified `ζ` **off** the
+  critical line, and `ZetaEnclose.Izeta2` is hard-wired to `crit t = 1/2+it`. Generalising it
+  to rational `σ` is mechanical (`ZetaEM.htermC_tail` and `ZetaTrap.Cmod_htermC_bound` are
+  already general in `s`), and certified `|Γ|` — which the repo deliberately never computes —
+  is **not** required, since a winding count needs only Γ's direction, already general via
+  `GammaDir.Pang`. That is the remaining work, and it is the larger half.
+
 **Do not take the planning docs' blocker lists at face value here.** Several are stale:
 `docs/identity_theorem_plan.md` localises a blocker at `pathint_loop_except` around line 130
 and then, in its own later sections, closes the entire program (`✅ COMPLETE`,
@@ -101,14 +127,13 @@ integral **with no logarithm required**; each linear factor contributes `2πi`.
 
 What is genuinely confirmed absent:
 
-1. ~~`∮ dz/(z−a) = 2πi` at an arbitrary interior `a`~~ — **this claim was wrong.** It is
-   proven for a **circle** contour: `CWindingOffCenter.winding_interior`, plus
-   `CCauchyFull.cauchy_interior` and `CRemovableExtDom.cauchy_interior_dom` for the full
-   `∮F/(z−w) = 2πi·F(w)`. What is missing is only the **rectangle** version — and
-   `RectWinding.vseg_winding`/`hseg_winding` are already fully general in the segment, so
-   that is `atan` bookkeeping (~100 lines), not analysis. The genuinely hard remaining
-   piece for a counting contour is **multiplicity**: `CZeroListFactor.DivBy_distinct` is
-   `NoDup`-only, and the order-of-vanishing brick `f = (z−a)^m g` is unbuilt.
+1. ~~`∮ dz/(z−a) = 2πi` at an arbitrary interior `a`~~ — **closed.** The circle case was
+   already there (`CWindingOffCenter.winding_interior`, `CCauchyFull.cauchy_interior`,
+   `CRemovableExtDom.cauchy_interior_dom`); the rectangle case is now
+   `RectWindingGen.rect_winding_interior`, built off the already-general
+   `RectWinding.vseg_winding`/`hseg_winding` as predicted — `atan` bookkeeping, not analysis.
+   Multiplicity (`f = (z−a)^m g`) remains unbuilt but is no longer on the critical path; see
+   above.
 2. a complex log/argument — nothing named `Clog`/`Carg` exists. Note the assembly above
    suggests this may not be needed for the count itself, only for evaluating `S(T)`, and
    Backlund's method bounds `S(T)` by **sign changes of `Re ζ`** on a segment — which is
