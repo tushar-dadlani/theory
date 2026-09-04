@@ -1319,3 +1319,6 @@ spectral-theory/CPolarPath.v
 spectral-theory/CPathLift.v
 spectral-theory/ZetaLineS.v
 spectral-theory/ZetaEncloseS.v
+spectral-theory/ZetaSBounds.v
+spectral-theory/ZetaCertHalf2.v
+spectral-theory/ZetaCertOff2.v
