@@ -95,12 +95,29 @@ Three notes on what that does and does not settle.
   linear factor by `RectWindingGen.rect_winding_interior`, zero from the cofactor by
   `CLoopCofactor.rect_loop_region`.
 - **It does not produce `N(49) ≤ 9`.** It converts "count the zeros" into "evaluate a contour
-  integral", and the integral is not yet evaluable: that needs certified `ζ` **off** the
-  critical line, and `ZetaEnclose.Izeta2` is hard-wired to `crit t = 1/2+it`. Generalising it
-  to rational `σ` is mechanical (`ZetaEM.htermC_tail` and `ZetaTrap.Cmod_htermC_bound` are
-  already general in `s`), and certified `|Γ|` — which the repo deliberately never computes —
-  is **not** required, since a winding count needs only Γ's direction, already general via
-  `GammaDir.Pang`. That is the remaining work, and it is the larger half.
+  integral". The evaluator side is now built — `ZetaEncloseS.IzetaS` certifies `ζ` on **any**
+  vertical line `Re s = σ` for rational `σ > 0`, and `ZetaCertOff2` gives the repo's first
+  certified value off the critical line, `ζ(3/2+2i)`. At `σ = 1/2` it agrees with the
+  committed `Izeta2` **bit-identically**, which is what rules out the sign trap (the head term
+  carries `(σ−1)/D`, the `G` term `(1−σ)/D` — equal and opposite exactly at `σ = 1/2`).
+
+  Two constraints found in the process, both load-bearing for any contour design:
+
+  1. **`σ > 0` is not optional.** `CZeta.zetaC` *takes* `0 < Re s` as an argument, so the
+     classical rectangle `[−1,2]×[−T,T]` is unreachable. The fix belongs in the contour: make
+     it symmetric under `s ↦ 1−s`, and `XiC_symmetric` with `XiC_conj` make the left and
+     bottom edges reflections of the right and top, so only `σ ∈ [1/2, c]` is ever evaluated.
+  2. **Certified `|Γ|` is still not required** — a winding count needs only Γ's direction,
+     already general via `GammaDir.Pang`. What *is* still missing is `ThetaEnclose` at general
+     `σ/2` rather than `1/4`, so there is as yet no certified off-line `ξ` **argument**.
+
+  **The measured cost is now the binding constraint, not the proof effort:** ~87 s per
+  evaluation at `t = 2, M = 12`; ~275 s at `t = 26, M = 40`. Cost grows steeply in both the
+  ordinate and the term count, and the term count needed for a useful enclosure itself grows
+  with `t` (`M ≥ 8` at `t = 2`, `M ≥ 25` at `t = 26`). A contour count sampling hundreds of
+  points at `t ≈ 49` is many hours of `vm_compute` on this hardware. Whether the
+  pointwise-sampling design is viable at all, or whether it must be replaced by a
+  Backlund/Jensen argument needing far fewer points, is now the open question.
 
 **Do not take the planning docs' blocker lists at face value here.** Several are stale:
 `docs/identity_theorem_plan.md` localises a blocker at `pathint_loop_except` around line 130
