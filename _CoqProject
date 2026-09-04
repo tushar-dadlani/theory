@@ -1317,3 +1317,4 @@ spectral-theory/CLoopCofactor.v
 spectral-theory/CArgPrincipleRect.v
 spectral-theory/CPolarPath.v
 spectral-theory/CPathLift.v
+spectral-theory/ZetaLineS.v
