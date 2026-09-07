@@ -19,6 +19,29 @@ classical logic `∀x (P x → Q x) ≡ ¬∃x (P x ∧ ¬Q x)`, and the definit
 the ∀-form. What genuinely differ are the **proof programs**, and those differ so much that
 they share almost no machinery. There are three.
 
+## 1b. Theorems in this repo whose NAME claims RH, and which do not
+
+Grepping this repository for RH progress is actively misleading. These are the results a
+reader would hit first, and none of them says anything about ζ:
+
+| result | what it actually is |
+|---|---|
+| `SpectralTripleRH_closed.RIEMANN_HYPOTHESIS` | About an abstract `FormalSystem` record. **Zero contact with `ζ` or `Ξ`** — imports only `QArith`/`Arith`/`Lia`/`Triple`. Proves a `kernel` is empty at a "tower limit", so "all spectral zeros are on the critical line" is **vacuously true**. The file's own neighbouring theorems are named `RH_at_fixed_point_vacuous` and `spectral_zeros_satisfy_anything`. |
+| `SpectralTripleRH.RH_from_spectral_triple` | Rests on `Axiom berry_keating_correspondence`, whose conclusion `on_critical_line_q (1#2)` unfolds to `1#2 == 1#2`. **The axiom is a tautology**, and the theorem mentions no complex number. |
+| `millennium-problems/EulerZeta.RIEMANN_HYPOTHESIS_EULER` | Same empty-kernel construction. |
+| `packages/GHS/RiemannHypothesis.RIEMANN_HYPOTHESIS_SYMBOLIC` | About a seven-element finite symbol type `Sym7`. |
+| `KroneckerSelfAdjoint.zeta_zeros_are_N_phase` | `Proof. intros phases H. exact H. Qed.` — `is_zeta_zero` is *defined* as the conclusion. It is `id`. |
+
+None contaminates anything else (their importers do not use them), and most are self-aware in
+their comments. They are dead ends with dangerous names. Renaming or deleting them is a
+judgement call for the repo owner; this table exists so that no later status claim — including
+an automated one — mistakes them for progress.
+
+Separately, the honest RH results in the repo are **restatements, not reductions**:
+`RH_iff_depth_zero`, `RH_iff_no_left`/`no_right`, `RH_is_coherence`, `RH_zeros_are_Bxi_spectrum`,
+`RH_iff_WeilPositive`. Changing coordinates is not progress. `RiemannHypothesisXi.
+RiemannHypothesis` is not proved, and no theorem anywhere has it as a conclusion.
+
 ## 2. Route A — exhaustion / counting
 
 *Shape*: produce zeros on the line, then show there are no others by counting.
@@ -151,20 +174,25 @@ What is genuinely confirmed absent:
    `RectWinding.vseg_winding`/`hseg_winding` as predicted — `atan` bookkeeping, not analysis.
    Multiplicity (`f = (z−a)^m g`) remains unbuilt but is no longer on the critical path; see
    above.
-2. ~~a complex log/argument~~ — **closed, and without ever building one.** Nothing named
-   `Clog`/`Carg` exists and nothing now needs to. `CPolarPath.pathint_logderiv_phase` shows
-   the contour integral of `F'/F` *is* the phase change along the path, and
-   `CPathLift.path_polar_lift` constructs that phase: any pair of real functions whose
-   derivatives are the two components of the log-derivative, matching `F` at the **start
-   point**, automatically gives `F(γu) = e^{Lg u}(cos ph u, sin ph u)` on the whole interval.
-   So exactly one branch choice is made, at `u = a`, and everything after it is forced —
-   which is all a continuous argument ever was. The proof is two error functions with
-   identically zero derivative plus `null_derivative_loc`; the `e^{−Lg}` normalisation is
-   what makes the derivative exactly zero rather than a linear ODE.
+2. a complex log/argument — still absent, and **partly, not wholly, dispensed with.**
+   `CPolarPath.pathint_logderiv_phase` does show the contour integral of `F'/F` *is* the phase
+   change along the path. `CPathLift.path_polar_lift` then shows that *any* pair of real
+   functions whose derivatives are the two components of the log-derivative, and which match
+   `F` at the **start point**, satisfies `F(γu) = e^{Lg u}(cos ph u, sin ph u)` on the whole
+   interval — one branch choice at `u = a`, everything after forced.
 
-   Together with the argument principle this closes the whole **analytic** half of the
-   counting route: counting → contour integral (Stage 1) → phase change (B1) → constructed
-   phase (B2). What is left is entirely numeric.
+   **Correction to an earlier version of this file, which claimed `path_polar_lift`
+   "constructs that phase". It does not.** `Lg` and `ph` are *given*, with their derivatives
+   already assumed equal to the log-derivative components; their **existence** (the
+   FTC/primitive step) is nowhere proved. It is a uniqueness/consistency theorem, not an
+   existence theorem. Its hypotheses are also `forall u : R`, unrestricted — so
+   `Hne : forall u, F (gam u) <> C0` demands non-vanishing on the whole infinite line, not
+   just the segment, which is a real obstacle to instantiating it on `Xi`.
+
+   So the analytic half of the counting route is *nearly* closed: counting → contour integral
+   (`CArgPrincipleRect`) → phase change (`CPolarPath`) → phase *characterised* but not yet
+   constructed (`CPathLift`). Note also that `CArgPrincipleRect` and `CPathLift` currently
+   have **no downstream consumers at all**.
 3. the bridge from a contour count to the height count, i.e. `N(T) = θ(T)/π + 1 + S(T)`.
    Encouragingly `θ` is already certified at these heights (`ThetaEnclose.Itheta`, used at
    `t = 49` in `MoreZeros.chk49`), and `θ(49)/π + 1 = 9.0944` against the nine zeros — so
@@ -187,7 +215,23 @@ ZetaOpenStrip.XiC_zeros_in_open_strip : forall z, XiC z = C0 -> 0 < Re z < 1
 ```
 
 That is a genuine zero-free region: no zeros outside the open strip. RH is the same shape
-with the region shrunk from the strip to the line. The proof uses the Euler product
+with the region shrunk from the strip to the line.
+
+Two sharper results now exist, and neither approaches RH:
+
+- `DepthBound.zero_free_region_on_disk` — on each disc `|z| < r` there is `s0 ∈ [1/2,1)` with
+  no zeros in `s0 < Re z`. **Soft**: `s0` is a max over the finite zero list in that disc, so
+  there is no control as `r → ∞`.
+- `ZetaZeroFree.XiC_zero_free` — the first region here with **explicit height dependence**:
+  `Re z ≤ 1 − 27/(256·Kg(Im z))` for `|Im z| ≥ 2`, with `Kg` growing like `ln⁹|t|`. This is
+  the de la Vallée Poussin *shape*, obtained by finally composing
+  `ZeroFreeRegion.region_of_zero'` with `ZetaDerivBoundExt` — two halves that had sat
+  unjoined, with nothing in the repo even importing `ZeroFreeRegion.v`.
+
+  **Its constant is ~10²⁰ worse than the classical one**: width `4.9e-16` at `|t| = 2` and
+  `1.7e-19` at `|t| = 10⁶`, against de la Vallée Poussin's `~0.07`. The value is the shape and
+  the unconditionality, not the numbers. And it removes no *fixed* strip: for every `σ₀ < 1`
+  it fails for large `t`. The proof uses the Euler product
 (`Re > 1`) and the functional equation to reflect it — and neither can be pushed inward.
 Every known zero-free region in the literature hugs `Re = 1`; none approaches `Re > 1/2 + δ`.
 
@@ -230,6 +274,12 @@ Definition hilbert_polya_open : Prop := hp_target_via_extension.
 
 — that the geometric boundary phase realising `XiC`'s zeros is the specific unit-phase
 sequence.
+
+**And it would not imply RH even if proved.** Unfolding `hp_target_via_extension`, its
+surjectivity clause reads `forall z, XiC z = C0 -> Re z = / 2 -> exists n, ...` — guarded by
+`Re z = / 2`. It asserts only that the **on-line** zeros are enumerated by the phase sequence,
+and says nothing whatever about a hypothetical zero at `0.6 + 100i`. Genuine Hilbert–Pólya
+needs the spectrum to exhaust *all* zeros; this `Prop` has that quantifier restricted away.
 
 *A caution*: "one open `Prop`" reads as nearly finished, and it is not. A single
 `Definition` can encode arbitrarily much, and this one encodes essentially the whole
