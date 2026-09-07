@@ -1322,3 +1322,4 @@ spectral-theory/ZetaEncloseS.v
 spectral-theory/ZetaSBounds.v
 spectral-theory/ZetaCertHalf2.v
 spectral-theory/ZetaCertOff2.v
+spectral-theory/ZetaZeroFree.v
