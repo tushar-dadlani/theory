@@ -63,10 +63,10 @@ Theorem LFun_line_nonzero : forall p g A B
   (Hord : ord p g = (p - 1)%nat)
   (HA : (0 < A < p - 1)%nat) (HB : (0 < B < p - 1)%nat),
   (forall n, dchar p g (2 * A) n = dchar p g B n) ->
-  forall t, t <> 0 ->
+  forall t,
   LFun p g A Hp Hg Hord HA (mkC 1 t) <> C0.
 Proof.
-  intros p g A B Hp Hg Hord HA HB HBeq t Ht Hzero.
+  intros p g A B Hp Hg Hord HA HB HBeq t Hzero.
   assert (Hre1 : 0 < Re (mkC 1 t)) by (cbn [Re]; lra).
   assert (Hre2 : 0 < Re (mkC 1 (2 * t))) by (cbn [Re]; lra).
   destruct (LFun_holo p g A Hp Hg Hord HA (mkC 1 t) Hre1) as [D1 HD1].
@@ -189,16 +189,41 @@ Corollary LFun_line_nonzero_mod : forall p g A
   (Hp : prime (Z.of_nat p)) (Hg : (1 <= g <= p - 1)%nat)
   (Hord : ord p g = (p - 1)%nat) (HA : (0 < A < p - 1)%nat)
   (HB : (0 < (2 * A) mod (p - 1) < p - 1)%nat),
-  forall t, t <> 0 ->
+  forall t,
   LFun p g A Hp Hg Hord HA (mkC 1 t) <> C0.
 Proof.
-  intros p g A Hp Hg Hord HA HB t Ht.
+  intros p g A Hp Hg Hord HA HB t.
   apply (LFun_line_nonzero p g A ((2 * A) mod (p - 1)) Hp Hg Hord HA HB).
-  - intro n. apply dchar_index_mod. lia.
-  - exact Ht.
+  intro n. apply dchar_index_mod. lia.
+Qed.
+
+(* ================================================================= *)
+(*  L(1,chi) <> 0 FOR COMPLEX chi                                     *)
+(*                                                                    *)
+(*  t <> 0 is never used above.  For zeta it is essential -- zeta has  *)
+(*  a pole at s = 1, so at t = 0 the pole factor and the zero          *)
+(*  factor would be the same point.  A NON-PRINCIPAL L has no pole     *)
+(*  there, so the argument runs unchanged at t = 0 and delivers the    *)
+(*  value at s = 1.                                                    *)
+(*                                                                    *)
+(*  The side condition chi^2 non-principal is exactly: chi is not     *)
+(*  real, since chi = conj chi iff chi^2 = chi_0.  So this is the      *)
+(*  classical easy half of L(1,chi) <> 0 -- obtained straight from     *)
+(*  3-4-1, without the usual conjugate-pair argument.                  *)
+(* ================================================================= *)
+
+Corollary LFun_one_nonzero : forall p g A
+  (Hp : prime (Z.of_nat p)) (Hg : (1 <= g <= p - 1)%nat)
+  (Hord : ord p g = (p - 1)%nat) (HA : (0 < A < p - 1)%nat)
+  (HB : (0 < (2 * A) mod (p - 1) < p - 1)%nat),
+  LFun p g A Hp Hg Hord HA (mkC 1 0) <> C0.
+Proof.
+  intros p g A Hp Hg Hord HA HB.
+  apply (LFun_line_nonzero_mod p g A Hp Hg Hord HA HB 0).
 Qed.
 
 Print Assumptions LFun_line_nonzero.
+Print Assumptions LFun_one_nonzero.
 
 (* ================================================================= *)
 (*  END CLLineNonzero.v                                               *)
