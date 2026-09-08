@@ -1332,3 +1332,4 @@ spectral-theory/ZetaEMExt.v
 spectral-theory/CMoreraDisk.v
 spectral-theory/ZetaEMExtHolo.v
 spectral-theory/ZetaWindowCount.v
+spectral-theory/ZetaNTBound.v
