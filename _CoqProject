@@ -1348,3 +1348,4 @@ spectral-theory/CLContinue.v
 spectral-theory/CLHolo1.v
 spectral-theory/CLHolo2.v
 spectral-theory/CLHolo3.v
+spectral-theory/CLLineTools.v
