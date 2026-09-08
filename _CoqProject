@@ -1357,3 +1357,4 @@ spectral-theory/RAbelSum.v
 spectral-theory/CharTailBound.v
 spectral-theory/HyperbolaSplit.v
 spectral-theory/HyperbolaLower.v
+spectral-theory/HyperbolaDouble.v
