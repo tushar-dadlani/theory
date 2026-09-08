@@ -118,13 +118,14 @@ Qed.
 (*  f = 1 * chi, and its multiplicativity                              *)
 (* ----------------------------------------------------------------- *)
 
-Definition fchi : nat -> Z := dconv done chz.
+Definition fchi : nat -> Z := dconv chz done.
 
 Theorem fchi_mult : multiplicative fchi.
-Proof. apply dconv_mult; [ apply done_mult | apply chz_mult ]. Qed.
+Proof. apply dconv_mult; [ exact chz_mult | apply done_mult ]. Qed.
 
 End RealChar.
 
+About chz. About fchi. About chz_values. About chz_mult.
 Print Assumptions chz_mult.
 Print Assumptions fchi_mult.
 
