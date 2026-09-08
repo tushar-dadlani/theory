@@ -1331,3 +1331,4 @@ spectral-theory/CPeelAtCentre.v
 spectral-theory/ZetaEMExt.v
 spectral-theory/CMoreraDisk.v
 spectral-theory/ZetaEMExtHolo.v
+spectral-theory/ZetaWindowCount.v
