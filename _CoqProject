@@ -1323,3 +1323,5 @@ spectral-theory/ZetaSBounds.v
 spectral-theory/ZetaCertHalf2.v
 spectral-theory/ZetaCertOff2.v
 spectral-theory/ZetaZeroFree.v
+spectral-theory/LogBaseChange.v
+spectral-theory/LnPiPrimes.v
