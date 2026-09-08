@@ -1354,3 +1354,4 @@ spectral-theory/CRealChar.v
 spectral-theory/CRealCharPos.v
 spectral-theory/SqrtSumAsym.v
 spectral-theory/RAbelSum.v
+spectral-theory/CharTailBound.v
