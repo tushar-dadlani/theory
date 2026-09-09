@@ -1366,3 +1366,4 @@ spectral-theory/VonMangoldtReal.v
 spectral-theory/CHyperIter.v
 spectral-theory/LambdaConv.v
 spectral-theory/CVonMangoldtChi.v
+spectral-theory/CVonMangoldtLChi.v
