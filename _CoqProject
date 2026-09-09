@@ -1362,3 +1362,4 @@ spectral-theory/HyperbolaBridges.v
 spectral-theory/HyperbolaUpper.v
 spectral-theory/LFunOne.v
 spectral-theory/CharOrthogonality.v
+spectral-theory/VonMangoldtReal.v
