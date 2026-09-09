@@ -1372,3 +1372,4 @@ spectral-theory/CLLogDeriv.v
 spectral-theory/CLPrincipal.v
 spectral-theory/CharSelectorSeries.v
 spectral-theory/CLPrincipalLogDeriv.v
+spectral-theory/CAbelTail.v
