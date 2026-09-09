@@ -9,6 +9,9 @@ hand-worked material such as `ARC_SOLVING_BY_HAND.md`.
   distinct RH proof programs and how they differ, and where the certified zeros actually sit
   (none of the three). Read this before trusting a status claim elsewhere.
 - **`certificate_cost.md`** — the cost model for the interval-arithmetic sign certificates.
+- **`analytic_toolchain.md`** — an index of the Dirichlet-series and complex-analysis
+  machinery that already exists, written after four separate rebuild-what-exists
+  incidents in one session. Read it before writing any new analytic file.
 - **`pnt_endgame_plan.md`** — **PNT is proved** (`NewmanE7.PNT`, axiom-clean). This is the
   brick-by-brick record of how, including where the scoping was wrong and the two structural
   findings that shaped the work.
