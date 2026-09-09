@@ -1361,3 +1361,4 @@ spectral-theory/HyperbolaDouble.v
 spectral-theory/HyperbolaBridges.v
 spectral-theory/HyperbolaUpper.v
 spectral-theory/LFunOne.v
+spectral-theory/CharOrthogonality.v
