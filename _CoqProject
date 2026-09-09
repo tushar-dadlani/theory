@@ -1364,3 +1364,4 @@ spectral-theory/LFunOne.v
 spectral-theory/CharOrthogonality.v
 spectral-theory/VonMangoldtReal.v
 spectral-theory/CHyperIter.v
+spectral-theory/LambdaConv.v
