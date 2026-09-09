@@ -1363,3 +1363,4 @@ spectral-theory/HyperbolaUpper.v
 spectral-theory/LFunOne.v
 spectral-theory/CharOrthogonality.v
 spectral-theory/VonMangoldtReal.v
+spectral-theory/CHyperIter.v
