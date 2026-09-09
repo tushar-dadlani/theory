@@ -1370,3 +1370,4 @@ spectral-theory/CVonMangoldtLChi.v
 spectral-theory/CLDeriv.v
 spectral-theory/CLLogDeriv.v
 spectral-theory/CLPrincipal.v
+spectral-theory/CharSelectorSeries.v
