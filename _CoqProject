@@ -1379,3 +1379,4 @@ spectral-theory/CPPowTail.v
 spectral-theory/CPhiZetaLower.v
 spectral-theory/CLPhi0Lower.v
 spectral-theory/CDirichletClass.v
+spectral-theory/CClassPartial.v
