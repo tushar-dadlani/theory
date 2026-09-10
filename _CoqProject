@@ -1373,3 +1373,5 @@ spectral-theory/CLPrincipal.v
 spectral-theory/CharSelectorSeries.v
 spectral-theory/CLPrincipalLogDeriv.v
 spectral-theory/CAbelTail.v
+spectral-theory/CLWeightAnti.v
+spectral-theory/CLPhiBounded.v
