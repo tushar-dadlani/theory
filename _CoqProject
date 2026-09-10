@@ -1377,3 +1377,4 @@ spectral-theory/CLWeightAnti.v
 spectral-theory/CLPhiBounded.v
 spectral-theory/CPPowTail.v
 spectral-theory/CPhiZetaLower.v
+spectral-theory/CLPhi0Lower.v
