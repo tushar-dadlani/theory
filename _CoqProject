@@ -1381,3 +1381,4 @@ spectral-theory/CLPhi0Lower.v
 spectral-theory/CDirichletClass.v
 spectral-theory/CClassPartial.v
 spectral-theory/CLPhiUniform.v
+spectral-theory/CClassLimit.v
