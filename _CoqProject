@@ -1386,3 +1386,4 @@ spectral-theory/CDirichletAP.v
 spectral-theory/PhiThreeFourOne.v
 spectral-theory/DigammaSeries.v
 spectral-theory/DigammaBound.v
+spectral-theory/XiZeroModulus.v
