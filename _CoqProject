@@ -1387,3 +1387,5 @@ spectral-theory/PhiThreeFourOne.v
 spectral-theory/DigammaSeries.v
 spectral-theory/DigammaBound.v
 spectral-theory/XiZeroModulus.v
+spectral-theory/CDescription.v
+spectral-theory/XiPeelComplete.v

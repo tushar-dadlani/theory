@@ -12,6 +12,9 @@ hand-worked material such as `ARC_SOLVING_BY_HAND.md`.
 - **`analytic_toolchain.md`** — an index of the Dirichlet-series and complex-analysis
   machinery that already exists, written after four separate rebuild-what-exists
   incidents in one session. Read it before writing any new analytic file.
+- **`zero_enumeration_gap.md`** — why the Hadamard chain's `ZeroEnumG` hypothesis is still
+  unproved, and what it would take to construct it. The obstruction is **description, not
+  choice**; what actually blocks it is that infinitude of the zeros is nowhere proved.
 - **`pnt_endgame_plan.md`** — **PNT is proved** (`NewmanE7.PNT`, axiom-clean). This is the
   brick-by-brick record of how, including where the scoping was wrong and the two structural
   findings that shaped the work.
