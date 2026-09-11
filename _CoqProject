@@ -1389,3 +1389,4 @@ spectral-theory/DigammaBound.v
 spectral-theory/XiZeroModulus.v
 spectral-theory/CDescription.v
 spectral-theory/XiPeelComplete.v
+spectral-theory/XiRealGrowth.v
