@@ -1383,3 +1383,4 @@ spectral-theory/CClassPartial.v
 spectral-theory/CLPhiUniform.v
 spectral-theory/CClassLimit.v
 spectral-theory/CDirichletAP.v
+spectral-theory/PhiThreeFourOne.v
