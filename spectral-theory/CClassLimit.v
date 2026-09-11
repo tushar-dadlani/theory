@@ -139,14 +139,13 @@ Qed.
 
 (* ---- the a = 0 term is Phi(sigma,chi_0), and the rest is capped ---- *)
 
-Theorem class_lower : forall K, 0 <= K ->
-  (forall A, (0 < A < p - 1)%nat -> forall sig (Hs : 1 < Re (SC sig)),
+Theorem class_lower : forall K, 0 <= K -> forall sig (Hs : 1 < Re (SC sig)),
+  (forall A, (0 < A < p - 1)%nat ->
      Cmod (Phichi p g A Hg Hord (SC sig) Hs) <= K) ->
-  forall sig (Hs : 1 < Re (SC sig)),
     Re (Phichi p g 0 Hg Hord (SC sig) Hs) - INR (p - 2) * K
     <= INR (p - 1) * Cinf sig Hs.
 Proof.
-  intros K HK HB sig Hs.
+  intros K HK sig Hs HB.
   assert (Hpos := INRp1_pos).
   assert (Heq : INR (p - 1) * Cinf sig Hs = Re (Ftot sig Hs)).
   { unfold Cinf, Rdiv. field. lra. }
